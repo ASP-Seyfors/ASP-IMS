@@ -645,7 +645,11 @@
               break;
             }
           }
-          document.getElementById(`rawScan${targetLine}`).value = decodedText;
+
+          // Strip ]C1 or other AIM symbology prefixes right here:
+          let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
+          document.getElementById(`rawScan${targetLine}`).value = cleanText;
+          
           processAllScans();
           toggleCameraScanner();
         },
