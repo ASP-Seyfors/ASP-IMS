@@ -698,7 +698,7 @@
     document.getElementById('btnAddLine').style.display = 'inline-block';
   }
 
-  // Robust Sequential GS1 Parser
+  // Robust Sequential GS1 Parser (Includes AIM Symbology Identifier Stripping)
   function processAllScans() {
     let lines = [
       document.getElementById('rawScan1').value,
@@ -711,7 +711,9 @@
 
     lines.forEach(rawLine => {
       if (!rawLine.trim()) return;
-      let clean = rawLine.replace(/[\(\)]/g, '').trim();
+      
+      // Strip AIM Symbology Identifiers (e.g., ]C1, ]d2) and parentheses
+      let clean = rawLine.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').trim();
       let idx = 0;
 
       while (idx < clean.length) {
