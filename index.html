@@ -638,20 +638,39 @@
           qrbox: { width: 250, height: 150 }
         },
         (decodedText, decodedResult) => {
-          let targetLine = 1;
-          for (let i = 1; i <= visibleScanLines; i++) {
+          let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
+
+          // Find the first empty scan input line
+          let targetLine = 0;
+          for (let i = 1; i <= 4; i++) {
             if (!document.getElementById(`rawScan${i}`).value.trim()) {
               targetLine = i;
               break;
             }
           }
 
-          // Strip ]C1 or other AIM symbology prefixes right here:
-          let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
-          document.getElementById(`rawScan${targetLine}`).value = cleanText;
-          
-          processAllScans();
-          toggleCameraScanner();
+          // If current lines are full but under 4, dynamically open the next line
+          if (targetLine === 0 && visibleScanLines < 4) {
+            addScanLine();
+            targetLine = visibleScanLines;
+          }
+
+          if (targetLine > 0) {
+            document.getElementById(`rawScan${targetLine}`).value = cleanText;
+            processAllScans();
+
+            // Check if we have gathered all required details (GTIN, Lot, Exp)
+            let currentGtin = document.getElementById('gtinInput').value.trim();
+            let currentLot = document.getElementById('lotInput').value.trim();
+            let currentExp = document.getElementById('expInput').value.trim();
+
+            // If all 3 key details are filled, auto-close camera; otherwise open next line for multi-scan sweep
+            if (currentGtin && currentLot && currentExp) {
+              toggleCameraScanner();
+            } else if (visibleScanLines < 4) {
+              addScanLine();
+            }
+          }
         },
         (errorMessage) => {}
       ).catch(err => {
