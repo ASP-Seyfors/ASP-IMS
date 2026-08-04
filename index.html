@@ -128,6 +128,12 @@
 <body>
 
 <div class="card">
+  <div class="form-row" style="margin-bottom: 6px;">
+    <div class="form-label" style="width: 160px;">Session Name:</div>
+    <div class="input-wrapper">
+      <input type="text" id="sessionNameInput" placeholder="e.g. Medline Shipment, Inventory Receiving">
+    </div>
+  </div>
   <button id="sessionBtn" class="btn-action btn-start" onclick="toggleSession()">Start Scanning Session</button>
   <button class="btn-action" style="background-color: #00897b; color: #ffffff;" onclick="exportReceivingSummary()">📦 Export Receiving Summary</button>
   <button class="btn-action" style="background-color: #673ab7; color: #ffffff;" onclick="exportDatabaseUpdates()">📤 Export Database Updates</button>
@@ -252,9 +258,10 @@
 
 <script>
   // =========================================================================
-  // 1. MASTER PRODUCT DATABASE (329 ITEMS) - EDIT OR PASTE NEW ITEMS HERE
+  // 1. MASTER PRODUCT DATABASE (328 UNIQUE ITEMS) - EDIT OR PASTE NEW ITEMS HERE
   // =========================================================================
   const defaultDatabase = [
+    { gtin: "30705031038619", ref: "J304H", desc: "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H", price: "$0.00", mfr: "ETHICON" },
     { gtin: "", ref: "1200710", desc: "Bard Phasix St Mesh Rectangle 3.0in X 4.0in 1200710", price: "$700.00", mfr: "BARD" },
     { gtin: "20884521057569", ref: "134051", desc: "Covidien Premium Surgiclip II Auto Suture Clip Applier 9.75\" Medium 134051", price: "$375.00", mfr: "COVIDIEN" },
     { gtin: "", ref: "1611G", desc: "ETHICON 4-0 Ethilon Undyed 1X18\" PS-2 (BX/12) 1611G", price: "$110.00", mfr: "ETHICON" },
@@ -509,7 +516,6 @@
     { gtin: "", ref: "GST45G", desc: "ETHICON 45 mm Green Reload With Gripping Surface Technology GST45G", price: "$0.00", mfr: "ETHICON" },
     { gtin: "", ref: "GST45T", desc: "ETHICON 45 mm Black Reload With Gripping Surface Technology GST45T", price: "$0.00", mfr: "ETHICON" },
     { gtin: "", ref: "HAR9F", desc: "ETHICON Harmonic Focus®+ Shears HAR9F", price: "$0.00", mfr: "ETHICON" },
-        { gtin: "30705031038619", ref: "J304H", desc: "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H", price: "$0.00", mfr: "ETHICON" },
     { gtin: "", ref: "J316H", desc: "ETHICON 3-0 Absorbable Suture With Needle Coated Vicryl™ Polyglactin 910 1/2 Circle Taper Point Needle Braided Suture, Vicryl Vio BR CT 3-0 27\" SH (BX/36) J316H", price: "$0.00", mfr: "ETHICON" },
     { gtin: "30705031039135", ref: "J347H", desc: "Ethicon 1 (4 Ph. Eur.) CT-1 (36mm 1/2c Taperpoint) 36” (90cm) Coated VICRYL (BX/36) J347H", price: "$0.00", mfr: "ETHICON" },
     { gtin: "", ref: "J385H", desc: "ETHICON 5-0 Coated Vicryl Violet 1X18\" C-3 (BX/36) J385H", price: "$0.00", mfr: "ETHICON" },
@@ -609,6 +615,7 @@
   let isSessionActive = false;
   let sessionLogs = [];
   let currentSessionFilename = "";
+  let currentSessionName = "";
   let currentMatchedItem = null;
   let pendingUpdates = {};
 
@@ -626,6 +633,29 @@
     });
   }
   populateVendors();
+
+  // Helper function to generate clean custom filenames
+  function generateExportFilename(fileType, extension) {
+    const nowObj = new Date();
+    let datePart = nowObj.toISOString().slice(0, 10);
+    let timePart = nowObj.toTimeString().slice(0, 8).replace(/:/g, '');
+    let timestamp = `${datePart}_${timePart}`;
+    
+    let userSessionName = document.getElementById('sessionNameInput').value.trim();
+    if (!userSessionName && currentSessionName) userSessionName = currentSessionName;
+
+    if (userSessionName) {
+      return `${userSessionName} - ${fileType} ${timestamp}.${extension}`;
+    } else {
+      return `${fileType} ${timestamp}.${extension}`;
+    }
+  }
+
+  // Helper function to strip AIM symbology prefixes AND (01) GS1 prefixes
+  function cleanGtinValue(val) {
+    if (!val) return 'N/A';
+    return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
+  }
 
   // CAMERA SCANNER ENGINE (With Duplicate Prevention Shield & Rapid-Fire)
   function toggleCameraScanner() {
@@ -952,21 +982,21 @@
     if (!isSessionActive) {
       isSessionActive = true;
       sessionScannedObjects = []; // Reset active session receiving objects
+      currentSessionName = document.getElementById('sessionNameInput').value.trim();
       
-      let datePart = nowObj.toISOString().slice(0, 10);
-      let timePart = nowObj.toTimeString().slice(0, 8).replace(/:/g, '');
-      currentSessionFilename = `ASP-Android Scanner App - Session ${datePart}_${timePart}.txt`;
+      currentSessionFilename = generateExportFilename("Session", "txt");
 
       sessionLogs = [
         `================================================================================`,
         `ASP-ANDROID SCANNER APP - SESSION LOG`,
+        `SESSION NAME: ${currentSessionName || 'N/A'}`,
         `SESSION STARTED: ${nowStr}`,
         `================================================================================\n`
       ];
 
       btn.textContent = "Stop Scanning Session";
       btn.className = "btn-action btn-stop";
-      status.textContent = `Session Active (Logging to: ${currentSessionFilename})`;
+      status.textContent = `Session Active: ${currentSessionName ? currentSessionName : 'Logging Session'}`;
       status.style.backgroundColor = "#c8e6c9";
     } else {
       isSessionActive = false;
@@ -1014,7 +1044,7 @@
 
     // Save structured object for receiving summary calculation
     sessionScannedObjects.push({
-      gtin: gtin || 'N/A',
+      gtin: gtin || (currentMatchedItem ? currentMatchedItem.gtin : ''),
       ref: ref || 'UNREGISTERED',
       lot: lot || 'NO_LOT',
       exp: exp || 'NO_EXP',
@@ -1026,7 +1056,7 @@
     });
 
     let blockLines = [
-      `[${time}] GTIN: ${gtin || 'N/A'}`,
+      `[${time}] GTIN: ${cleanGtinValue(gtin)}`,
       ` | REF: ${ref || 'N/A'}`,
       ` | MFR: ${vendor}`,
       ` | DESC: ${desc}`,
@@ -1060,33 +1090,34 @@
     document.getElementById('rawScan1').focus();
   }
 
-  // Export Receiving Summary Engine (Clean REF & Lot/Exp Combinations Format)
+  // Export Receiving Summary Engine (Clean Header & GTIN Value Included)
   async function exportReceivingSummary() {
     if (sessionScannedObjects.length === 0) {
       alert("No items have been scanned in the current or recent session to summarize!");
       return;
     }
 
-    const nowObj = new Date();
-    let datePart = nowObj.toISOString().slice(0, 10);
-    let timePart = nowObj.toTimeString().slice(0, 8).replace(/:/g, '');
-    let filename = `Scanner App Receiving Inventory Summary ${datePart}_${timePart}.txt`;
+    let filename = generateExportFilename("ASP Scanner Inventory Received Summary", "txt");
 
     let refMap = {};
     let newRefsCreated = [];
 
     sessionScannedObjects.forEach(item => {
       let rKey = item.ref;
+      let cleanGtin = cleanGtinValue(item.gtin);
+
       if (!refMap[rKey]) {
         refMap[rKey] = {
           ref: item.ref,
-          gtin: item.gtin,
+          gtin: cleanGtin,
           mfr: item.mfr,
           price: item.price,
           totalQty: 0,
           lots: {},
           isNew: item.isNew
         };
+      } else if ((!refMap[rKey].gtin || refMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+        refMap[rKey].gtin = cleanGtin;
       }
 
       refMap[rKey].totalQty += item.qty;
@@ -1106,10 +1137,13 @@
       }
     });
 
+    let userSessionName = document.getElementById('sessionNameInput').value.trim() || currentSessionName;
+
     let reportLines = [
       `================================================================================`,
-      `SCANNER APP RECEIVING INVENTORY SUMMARY (THRIVE IMPORT LOG)`,
-      `EXPORT DATE: ${nowObj.toLocaleString()}`,
+      `ASP SCANNER INVENTORY RECEIVED SUMMARY (THRIVE IMPORT LOG)`,
+      `SESSION NAME: ${userSessionName || 'N/A'}`,
+      `EXPORT DATE: ${new Date().toLocaleString()}`,
       `TOTAL UNIQUE REFS RECEIVED: ${Object.keys(refMap).length}`,
       `================================================================================\n`,
       `--- ITEMIZED INVENTORY RECEIVED BY REF ---\n`
@@ -1119,6 +1153,7 @@
     for (let rKey in refMap) {
       let rData = refMap[rKey];
       reportLines.push(`[${count}] REF: ${rData.ref}`);
+      reportLines.push(`    | GTIN: ${rData.gtin}`);
       reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
       reportLines.push(`    | Lot & Expiration Breakdowns:`);
 
@@ -1164,7 +1199,7 @@
         const writable = await handle.createWritable();
         await writable.write(fileContent);
         await writable.close();
-        alert("Receiving Inventory Summary successfully saved to chosen location!");
+        alert("Inventory Received Summary successfully saved to chosen location!");
       } catch (err) {
         if (err.name === 'AbortError') return;
       }
@@ -1184,15 +1219,12 @@
       return;
     }
 
-    const nowObj = new Date();
-    let datePart = nowObj.toISOString().slice(0, 10);
-    let timePart = nowObj.toTimeString().slice(0, 8).replace(/:/g, '');
-    let filename = `Scanner App Updates and Additions Export ${datePart}_${timePart}.txt`;
+    let filename = generateExportFilename("Scanner App Updates and Additions Export", "txt");
 
     let reportLines = [
       `================================================================================`,
       `SCANNER APP UPDATES AND ADDITIONS EXPORT`,
-      `EXPORT DATE: ${nowObj.toLocaleString()}`,
+      `EXPORT DATE: ${new Date().toLocaleString()}`,
       `================================================================================\n`
     ];
 
@@ -1200,7 +1232,7 @@
       reportLines.push(`--- NEW ITEMS ADDED (${pendingNewItems.length}) ---`);
       pendingNewItems.forEach(item => {
         reportLines.push(`[+] REF: ${item.ref}`);
-        reportLines.push(`    | GTIN: ${item.gtin || 'N/A'}`);
+        reportLines.push(`    | GTIN: ${cleanGtinValue(item.gtin)}`);
         reportLines.push(`    | Manufacturer: ${item.mfr}`);
         reportLines.push(`    | Price: ${item.price}\n`);
       });
@@ -1211,7 +1243,7 @@
       pendingFieldUpdates.forEach(upd => {
         reportLines.push(`[*] REF: ${upd.ref}`);
         reportLines.push(`    | Field Updated: ${upd.field}`);
-        reportLines.push(`    | New Value: ${upd.newValue}`);
+        reportLines.push(`    | New Value: ${cleanGtinValue(upd.newValue)}`);
         reportLines.push(`    | Timestamp: ${upd.timestamp}\n`);
       });
     }
@@ -1266,7 +1298,7 @@
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({
-          suggestedName: currentSessionFilename || 'ASP_Scan_Session.txt',
+          suggestedName: currentSessionFilename || generateExportFilename("Session", "txt"),
           types: [{
             description: 'Text Files',
             accept: { 'text/plain': ['.txt'] },
@@ -1286,7 +1318,7 @@
     let blob = new Blob([fileContent], { type: 'text/plain' });
     let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = currentSessionFilename || `ASP_Scan_Session.txt`;
+    a.download = currentSessionFilename || generateExportFilename("Session", "txt");
     a.click();
   }
 </script>
