@@ -61,6 +61,26 @@
       border-radius: 2px;
       min-width: 140px;
     }
+    .action-selector {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-align: center;
+      border: 1px solid #000000;
+      background-color: #ffffff;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .action-btn.selected-inv { background-color: #2e7d32; color: #ffffff; }
+    .action-btn.selected-res { background-color: #0277bd; color: #ffffff; }
+
     .btn-confirm {
       padding: 8px 10px;
       background-color: #d9534f;
@@ -149,8 +169,9 @@
   <div class="form-row" style="margin-bottom: 6px;">
     <div class="form-label">Workflow Process:</div>
     <div class="input-wrapper">
-      <select id="workflowTypeSelect">
+      <select id="workflowTypeSelect" onchange="handleWorkflowChange(this.value)">
         <option value="Receiving">Receiving</option>
+        <option value="Receiving & Reserving">Receiving & Reserving</option>
         <option value="Picking & Reserving">Picking & Reserving</option>
         <option value="Picking & Packing">Picking & Packing</option>
       </select>
@@ -178,7 +199,6 @@
       <div>
         <button class="btn-small btn-clear" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
         <button class="btn-small btn-cam" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera Scanner</button>
-        <button class="btn-small" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
       </div>
     </h2>
 
@@ -211,9 +231,25 @@
         <input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()">
       </div>
     </div>
+
+    <!-- Clean Add Line Button Placement Below Lines -->
+    <div style="margin-top: 8px;">
+      <button class="btn-small" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
+    </div>
   </div>
 
   <h2>Item Details</h2>
+
+  <!-- Item Destination Selector (Appears for Receiving & Reserving) -->
+  <div class="form-row" id="rowItemDestination" style="display: none;">
+    <div class="form-label">Item Destination:</div>
+    <div class="input-wrapper">
+      <div class="action-selector">
+        <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
+        <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
+      </div>
+    </div>
+  </div>
 
   <!-- Field 1: GTIN Barcode -->
   <div class="form-row">
@@ -265,6 +301,7 @@
 <div class="card">
   <h2>Database Item Info (Session Output Preview)</h2>
   <div class="info-box">
+    <div class="info-line" id="infoActionLine" style="display:none;"><span class="info-title">Destination Action:</span> <span id="infoAction" style="font-weight:bold; color:#2e7d32;">Inventory</span></div>
     <div class="info-line"><span class="info-title">GTIN Barcode:</span> <span id="infoGtin">--</span></div>
     <div class="info-line"><span class="info-title">REF/SKU:</span> <span id="infoRef">--</span></div>
     <div class="info-line"><span class="info-title">Manufacturer:</span> <span id="infoMfr">--</span></div>
@@ -314,6 +351,7 @@
   let pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
   let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
 
+  let currentItemAction = "Inventory";
   let visibleScanLines = 1;
   let isSessionActive = false;
   let sessionLogs = JSON.parse(localStorage.getItem('asp_active_session_logs')) || [];
@@ -327,6 +365,29 @@
 
   let html5QrCode = null;
   let isCameraActive = false;
+
+  function handleWorkflowChange(val) {
+    currentWorkflowType = val;
+    localStorage.setItem('asp_workflow_type', val);
+
+    const destRow = document.getElementById('rowItemDestination');
+    const infoActionLine = document.getElementById('infoActionLine');
+
+    if (val === 'Receiving & Reserving') {
+      destRow.style.display = 'flex';
+      infoActionLine.style.display = 'block';
+    } else {
+      destRow.style.display = 'none';
+      infoActionLine.style.display = 'none';
+    }
+  }
+
+  function setItemAction(act) {
+    currentItemAction = act;
+    document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
+    document.getElementById('actBtnRes').className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
+    document.getElementById('infoAction').textContent = act;
+  }
 
   function populateVendors() {
     const sel = document.getElementById('vendorSelect');
@@ -383,7 +444,10 @@
       
       if (currentSessionName) document.getElementById('sessionNameInput').value = currentSessionName;
       if (currentOrderNum) document.getElementById('orderNumInput').value = currentOrderNum;
-      if (currentWorkflowType) document.getElementById('workflowTypeSelect').value = currentWorkflowType;
+      if (currentWorkflowType) {
+        document.getElementById('workflowTypeSelect').value = currentWorkflowType;
+        handleWorkflowChange(currentWorkflowType);
+      }
     }
   }
   checkSessionRecoveryState();
@@ -820,7 +884,16 @@
       localStorage.setItem('asp_pending_new_items', JSON.stringify(pendingNewItems));
     }
 
+    // Determine target tag automatically if not in hybrid workflow mode
+    let effectiveTag = currentItemAction;
+    if (currentWorkflowType !== 'Receiving & Reserving') {
+      if (currentWorkflowType === 'Picking & Reserving') effectiveTag = 'Reserved';
+      else if (currentWorkflowType === 'Picking & Packing') effectiveTag = 'Pack & Ship';
+      else effectiveTag = 'Inventory';
+    }
+
     sessionScannedObjects.push({
+      actionTag: effectiveTag,
       gtin: gtin || (currentMatchedItem ? currentMatchedItem.gtin : ''),
       ref: ref || 'UNREGISTERED',
       lot: lot || 'NO_LOT',
@@ -850,14 +923,18 @@
 
     let summaryFilename = generateExactFilename("txt");
 
-    let itemMap = {};
+    let invMap = {}, resMap = {}, packMap = {};
 
     sessionScannedObjects.forEach(item => {
       let rKey = item.ref;
       let cleanGtin = cleanGtinValue(item.gtin);
+      
+      let targetMap = invMap;
+      if (item.actionTag === 'Reserved') targetMap = resMap;
+      else if (item.actionTag === 'Pack & Ship') targetMap = packMap;
 
-      if (!itemMap[rKey]) {
-        itemMap[rKey] = {
+      if (!targetMap[rKey]) {
+        targetMap[rKey] = {
           ref: item.ref,
           gtin: cleanGtin,
           mfr: item.mfr,
@@ -865,21 +942,21 @@
           totalQty: 0,
           lots: {}
         };
-      } else if ((!itemMap[rKey].gtin || itemMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        itemMap[rKey].gtin = cleanGtin;
+      } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+        targetMap[rKey].gtin = cleanGtin;
       }
 
-      itemMap[rKey].totalQty += item.qty;
+      targetMap[rKey].totalQty += item.qty;
 
       let lotKey = `${item.lot}_${item.exp}`;
-      if (!itemMap[rKey].lots[lotKey]) {
-        itemMap[rKey].lots[lotKey] = {
+      if (!targetMap[rKey].lots[lotKey]) {
+        targetMap[rKey].lots[lotKey] = {
           lot: item.lot,
           exp: item.exp,
           qty: 0
         };
       }
-      itemMap[rKey].lots[lotKey].qty += item.qty;
+      targetMap[rKey].lots[lotKey].qty += item.qty;
     });
 
     let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
@@ -913,30 +990,50 @@
       `================================================================================\n`
     ];
 
-    // Dynamic Section Header Mapping
-    let sectionHeader = "INVENTORY ADDITIONS";
-    let qtyLabel = "Total Quantity Received";
-
-    if (wType === "Picking & Reserving") {
-      sectionHeader = "RESERVED FOR CUSTOMERS";
-      qtyLabel = "Total Quantity Reserved";
-    } else if (wType === "Picking & Packing") {
-      sectionHeader = "PACK & SHIP";
-      qtyLabel = "Total Quantity Packed";
+    if (Object.keys(invMap).length > 0) {
+      reportLines.push(`--- INVENTORY ADDITIONS ---\n`);
+      let count = 1;
+      for (let rKey in invMap) {
+        let rData = invMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}`);
+        reportLines.push(`    | GTIN: ${rData.gtin}`);
+        reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
+        reportLines.push(`    | Lot & Expiration Breakdowns:`);
+        for (let lKey in rData.lots) {
+          let lData = rData.lots[lKey];
+          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        }
+        reportLines.push(``);
+        count++;
+      }
     }
 
-    if (Object.keys(itemMap).length > 0) {
-      reportLines.push(`--- ${sectionHeader} ---\n`);
+    if (Object.keys(resMap).length > 0) {
+      reportLines.push(`--- RESERVED FOR CUSTOMERS ---\n`);
       let count = 1;
-      for (let rKey in itemMap) {
-        let rData = itemMap[rKey];
+      for (let rKey in resMap) {
+        let rData = resMap[rKey];
         reportLines.push(`[${count}] REF: ${rData.ref}`);
-        if (wType === "Picking & Packing") {
-          reportLines.push(`    | Price: ${rData.price}`);
-        } else {
-          reportLines.push(`    | GTIN: ${rData.gtin}`);
+        reportLines.push(`    | GTIN: ${rData.gtin}`);
+        reportLines.push(`    | Total Quantity Reserved: ${rData.totalQty}`);
+        reportLines.push(`    | Lot & Expiration Breakdowns:`);
+        for (let lKey in rData.lots) {
+          let lData = rData.lots[lKey];
+          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
         }
-        reportLines.push(`    | ${qtyLabel}: ${rData.totalQty}`);
+        reportLines.push(``);
+        count++;
+      }
+    }
+
+    if (Object.keys(packMap).length > 0) {
+      reportLines.push(`--- PACK & SHIP ---\n`);
+      let count = 1;
+      for (let rKey in packMap) {
+        let rData = packMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}`);
+        reportLines.push(`    | Price: ${rData.price}`);
+        reportLines.push(`    | Total Quantity Packed: ${rData.totalQty}`);
         reportLines.push(`    | Lot & Expiration Breakdowns:`);
         for (let lKey in rData.lots) {
           let lData = rData.lots[lKey];
