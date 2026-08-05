@@ -61,27 +61,6 @@
       border-radius: 2px;
       min-width: 140px;
     }
-    .action-selector {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      margin-top: 4px;
-    }
-    .action-btn {
-      flex: 1;
-      padding: 8px 4px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      text-align: center;
-      border: 1px solid #000000;
-      background-color: #ffffff;
-      cursor: pointer;
-      border-radius: 3px;
-    }
-    .action-btn.selected-inv { background-color: #2e7d32; color: #ffffff; }
-    .action-btn.selected-res { background-color: #0277bd; color: #ffffff; }
-    .action-btn.selected-pack { background-color: #e65100; color: #ffffff; }
-
     .btn-confirm {
       padding: 8px 10px;
       background-color: #d9534f;
@@ -234,19 +213,7 @@
     </div>
   </div>
 
-  <h2>Item Details & Item Destination</h2>
-
-  <!-- Item Destination Toggle -->
-  <div class="form-row">
-    <div class="form-label">Item Destination:</div>
-    <div class="input-wrapper">
-      <div class="action-selector">
-        <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
-        <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
-        <div id="actBtnPack" class="action-btn" onclick="setItemAction('Pack & Ship')">Pack & Ship</div>
-      </div>
-    </div>
-  </div>
+  <h2>Item Details</h2>
 
   <!-- Field 1: GTIN Barcode -->
   <div class="form-row">
@@ -298,7 +265,6 @@
 <div class="card">
   <h2>Database Item Info (Session Output Preview)</h2>
   <div class="info-box">
-    <div class="info-line"><span class="info-title">Destination Action:</span> <span id="infoAction" style="font-weight:bold; color:#2e7d32;">Inventory</span></div>
     <div class="info-line"><span class="info-title">GTIN Barcode:</span> <span id="infoGtin">--</span></div>
     <div class="info-line"><span class="info-title">REF/SKU:</span> <span id="infoRef">--</span></div>
     <div class="info-line"><span class="info-title">Manufacturer:</span> <span id="infoMfr">--</span></div>
@@ -313,7 +279,6 @@
 <button class="btn-action btn-save" onclick="saveItemLog()">Save Scanned Item</button>
 
 <script>
-  // Default fallback vendors if JSON is unavailable
   const defaultVendors = [
     "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
     "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
@@ -323,7 +288,6 @@
   let db = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
   let vendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors;
 
-  // Fetch external database.json on load
   async function loadMasterDatabase() {
     try {
       const response = await fetch('database.json');
@@ -350,7 +314,6 @@
   let pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
   let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
 
-  let currentItemAction = "Inventory";
   let visibleScanLines = 1;
   let isSessionActive = false;
   let sessionLogs = JSON.parse(localStorage.getItem('asp_active_session_logs')) || [];
@@ -364,14 +327,6 @@
 
   let html5QrCode = null;
   let isCameraActive = false;
-
-  function setItemAction(act) {
-    currentItemAction = act;
-    document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
-    document.getElementById('actBtnRes').className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
-    document.getElementById('actBtnPack').className = 'action-btn' + (act === 'Pack & Ship' ? ' selected-pack' : '');
-    document.getElementById('infoAction').textContent = act;
-  }
 
   function populateVendors() {
     const sel = document.getElementById('vendorSelect');
@@ -388,7 +343,6 @@
   function generateExactFilename(extension = "txt") {
     const nowObj = new Date();
     
-    // YYYY.MM.DD Date Format
     let yyyy = nowObj.getFullYear();
     let mm = String(nowObj.getMonth() + 1).padStart(2, '0');
     let dd = String(nowObj.getDate()).padStart(2, '0');
@@ -867,7 +821,6 @@
     }
 
     sessionScannedObjects.push({
-      actionTag: currentItemAction,
       gtin: gtin || (currentMatchedItem ? currentMatchedItem.gtin : ''),
       ref: ref || 'UNREGISTERED',
       lot: lot || 'NO_LOT',
@@ -881,7 +834,7 @@
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
-    alert(`Item logged as [${currentItemAction}]!`);
+    alert(`Item logged!`);
 
     if (isCameraActive) toggleCameraScanner();
 
@@ -897,15 +850,14 @@
 
     let summaryFilename = generateExactFilename("txt");
 
-    let invMap = {}, resMap = {}, packMap = {};
+    let itemMap = {};
 
     sessionScannedObjects.forEach(item => {
       let rKey = item.ref;
       let cleanGtin = cleanGtinValue(item.gtin);
-      let targetMap = item.actionTag === 'Reserved' ? resMap : (item.actionTag === 'Pack & Ship' ? packMap : invMap);
 
-      if (!targetMap[rKey]) {
-        targetMap[rKey] = {
+      if (!itemMap[rKey]) {
+        itemMap[rKey] = {
           ref: item.ref,
           gtin: cleanGtin,
           mfr: item.mfr,
@@ -913,21 +865,21 @@
           totalQty: 0,
           lots: {}
         };
-      } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        targetMap[rKey].gtin = cleanGtin;
+      } else if ((!itemMap[rKey].gtin || itemMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+        itemMap[rKey].gtin = cleanGtin;
       }
 
-      targetMap[rKey].totalQty += item.qty;
+      itemMap[rKey].totalQty += item.qty;
 
       let lotKey = `${item.lot}_${item.exp}`;
-      if (!targetMap[rKey].lots[lotKey]) {
-        targetMap[rKey].lots[lotKey] = {
+      if (!itemMap[rKey].lots[lotKey]) {
+        itemMap[rKey].lots[lotKey] = {
           lot: item.lot,
           exp: item.exp,
           qty: 0
         };
       }
-      targetMap[rKey].lots[lotKey].qty += item.qty;
+      itemMap[rKey].lots[lotKey].qty += item.qty;
     });
 
     let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
@@ -938,7 +890,12 @@
     if (oNum) sessionTitleHeader += ` (${oNum})`;
 
     const nowObj = new Date();
-    let datePartStr = nowObj.toISOString().slice(0, 10);
+    
+    let yyyy = nowObj.getFullYear();
+    let mm = String(nowObj.getMonth() + 1).padStart(2, '0');
+    let dd = String(nowObj.getDate()).padStart(2, '0');
+    let datePartDots = `${yyyy}.${mm}.${dd}`;
+
     let timeEndStr = nowObj.toLocaleTimeString();
 
     let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
@@ -950,56 +907,36 @@
       `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
       ``,
       `          Workflow Process:    ${wType}`,
-      `          Scanned Date:        ${datePartStr}`,
+      `          Scanned Date:        ${datePartDots}`,
       `          Session Start:       ${sessionStartStr || 'N/A'}`,
       `          Session End:         ${timeEndStr}`,
       `================================================================================\n`
     ];
 
-    if (Object.keys(invMap).length > 0) {
-      reportLines.push(`--- INVENTORY ADDITIONS ---\n`);
-      let count = 1;
-      for (let rKey in invMap) {
-        let rData = invMap[rKey];
-        reportLines.push(`[${count}] REF: ${rData.ref}`);
-        reportLines.push(`    | GTIN: ${rData.gtin}`);
-        reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in rData.lots) {
-          let lData = rData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
-        }
-        reportLines.push(``);
-        count++;
-      }
+    // Dynamic Section Header Mapping
+    let sectionHeader = "INVENTORY ADDITIONS";
+    let qtyLabel = "Total Quantity Received";
+
+    if (wType === "Picking & Reserving") {
+      sectionHeader = "RESERVED FOR CUSTOMERS";
+      qtyLabel = "Total Quantity Reserved";
+    } else if (wType === "Picking & Packing") {
+      sectionHeader = "PACK & SHIP";
+      qtyLabel = "Total Quantity Packed";
     }
 
-    if (Object.keys(resMap).length > 0) {
-      reportLines.push(`--- RESERVED FOR CUSTOMERS (Outgoing Bins) ---\n`);
+    if (Object.keys(itemMap).length > 0) {
+      reportLines.push(`--- ${sectionHeader} ---\n`);
       let count = 1;
-      for (let rKey in resMap) {
-        let rData = resMap[rKey];
+      for (let rKey in itemMap) {
+        let rData = itemMap[rKey];
         reportLines.push(`[${count}] REF: ${rData.ref}`);
-        reportLines.push(`    | GTIN: ${rData.gtin}`);
-        reportLines.push(`    | Total Quantity Reserved: ${rData.totalQty}`);
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in rData.lots) {
-          let lData = rData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        if (wType === "Picking & Packing") {
+          reportLines.push(`    | Price: ${rData.price}`);
+        } else {
+          reportLines.push(`    | GTIN: ${rData.gtin}`);
         }
-        reportLines.push(``);
-        count++;
-      }
-    }
-
-    if (Object.keys(packMap).length > 0) {
-      reportLines.push(`--- PACK & SHIP ---\n`);
-      let count = 1;
-      for (let rKey in packMap) {
-        let rData = packMap[rKey];
-        reportLines.push(`[${count}] REF: ${rData.ref}`);
-        reportLines.push(`    | Price: ${rData.price}`);
-        reportLines.push(`    | Total Quantity Packed: ${rData.totalQty}`);
+        reportLines.push(`    | ${qtyLabel}: ${rData.totalQty}`);
         reportLines.push(`    | Lot & Expiration Breakdowns:`);
         for (let lKey in rData.lots) {
           let lData = rData.lots[lKey];
