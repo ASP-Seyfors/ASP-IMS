@@ -49,6 +49,8 @@
       flex: 1;
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
     }
     input[type="text"], input[type="number"], select {
       flex: 1;
@@ -59,9 +61,9 @@
       font-size: 0.95rem;
       font-family: Arial, sans-serif;
       border-radius: 2px;
+      min-width: 160px;
     }
     .btn-confirm {
-      margin-left: 6px;
       padding: 8px 10px;
       background-color: #d9534f;
       color: #ffffff;
@@ -69,6 +71,17 @@
       font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
+    }
+    .gtin-diff-banner {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #c62828;
+      background-color: #ffebee;
+      border: 1px solid #ef9a9a;
+      padding: 4px 6px;
+      border-radius: 3px;
+      width: 100%;
+      margin-top: 4px;
     }
     .btn-action {
       width: 100%;
@@ -175,6 +188,15 @@
 </div>
 
 <div class="card">
+  <!-- Primary Product Anchor: REF / SKU Entry First -->
+  <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 12px;">
+    <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF or SKU (Item Lookup):</div>
+    <div class="input-wrapper">
+      <input type="text" id="refInput" placeholder="Enter REF/SKU First" onchange="lookupByRef(this.value)">
+      <button class="btn-confirm" id="btnConfirmRef" style="display:none;" onclick="confirmFieldUpdate('ref')">Update</button>
+    </div>
+  </div>
+
   <!-- Dynamic Raw Scanner Input Fields (Up to 4 Lines) -->
   <div class="raw-section">
     <h2>
@@ -218,27 +240,19 @@
     </div>
   </div>
 
-  <h2>Parsed Item Details</h2>
+  <h2>Parsed & Matched Item Details</h2>
 
-  <!-- Field 1: GTIN Barcode -->
+  <!-- Field 1: GTIN Barcode with Difference Comparison Banner -->
   <div class="form-row">
     <div class="form-label">GTIN Barcode:</div>
     <div class="input-wrapper">
       <input type="text" id="gtinInput" placeholder="GTIN Barcode" oninput="handleGtinScan(this.value)">
-      <button class="btn-confirm" id="btnConfirmGtin" style="display:none;" onclick="confirmFieldUpdate('gtin')">Update</button>
+      <button class="btn-confirm" id="btnConfirmGtin" style="display:none;" onclick="confirmFieldUpdate('gtin')">Update GTIN</button>
+      <div id="gtinDiffBanner" class="gtin-diff-banner" style="display:none;"></div>
     </div>
   </div>
 
-  <!-- Field 2: REF / SKU -->
-  <div class="form-row">
-    <div class="form-label">REF or SKU:</div>
-    <div class="input-wrapper">
-      <input type="text" id="refInput" placeholder="Enter REF/SKU" onchange="lookupByRef(this.value)">
-      <button class="btn-confirm" id="btnConfirmRef" style="display:none;" onclick="confirmFieldUpdate('ref')">Update</button>
-    </div>
-  </div>
-
-  <!-- Field 3: Lot Number -->
+  <!-- Field 2: Lot Number -->
   <div class="form-row">
     <div class="form-label">Lot Number:</div>
     <div class="input-wrapper">
@@ -246,7 +260,7 @@
     </div>
   </div>
 
-  <!-- Field 4: Expiration Date -->
+  <!-- Field 3: Expiration Date -->
   <div class="form-row">
     <div class="form-label">Expiration Date:</div>
     <div class="input-wrapper">
@@ -254,18 +268,18 @@
     </div>
   </div>
 
-  <!-- Field 5: Manufacturer / Vendor -->
+  <!-- Field 4: Manufacturer / Vendor -->
   <div class="form-row">
     <div class="form-label">Manufacturer:</div>
     <div class="input-wrapper">
       <select id="vendorSelect" onchange="handleVendorSelect(this.value)">
         <!-- Populated via JS -->
       </select>
-      <button class="btn-confirm" id="btnConfirmMfr" style="display:none;" onclick="confirmFieldUpdate('mfr')">Update</button>
+      <button class="btn-confirm" id="btnConfirmMfr" style="display:none;" onclick="confirmFieldUpdate('mfr')">Update MFR</button>
     </div>
   </div>
 
-  <!-- Field 6: Quantity Scanned -->
+  <!-- Field 5: Quantity Scanned -->
   <div class="form-row">
     <div class="form-label">Quantity Scanned:</div>
     <div class="input-wrapper">
@@ -434,7 +448,7 @@
     { gtin: "", ref: "R647H", desc: "ETHICON 3-0 Mersilene White 1X18\" FS-1 (BX/36) R647H", price: "$175.00", mfr: "ETHICON" },
     { gtin: "", ref: "RR750", desc: "SMITH & NEPHEW Rapid Rhino Epistaxis Nasal Pac 7.5 cm Ant/Posterior RR750", price: "$25.00", mfr: "SMITH & NEPHEW" },
     { gtin: "", ref: "SIG45AMT", desc: "COVIDIEN Tri-Staple 2.0 Reload, 45 mm Medium/Thick Tissue, Purple SIG45AMT", price: "$110.00", mfr: "COVIDIEN" },
-    { gtin: "", ref: "SIG45AVM", desc: "Covidien Tri-Staple 2.0 Intelligent Reload Vascular/Medium 45mm SIG45AVM", price: "$135.00", mfr: "COVIDIEN" },
+    { gtin: "", ref: "SIG45AVM", desc: "COVIDIEN Covidien Endo Gia Reload W/Tri-Staple Technology - Vascular/Medium; 45 mm (Each) EGIA45AVM", price: "$135.00", mfr: "COVIDIEN" },
     { gtin: "", ref: "SIG45AXT", desc: "Covidien Signia Tri-staple 2.0 Extra Thick Reload 45.0mm Black SIG45AXT", price: "$125.00", mfr: "COVIDIEN" },
     { gtin: "", ref: "SIG45CTAMT", desc: "COVIDIEN Covidien Tri-Staple 2.0 Curved Tip Medium/Thick Reload 45 mm Purple SIG45CTAMT", price: "$92.00", mfr: "COVIDIEN" },
     { gtin: "", ref: "SIG45CTAVM", desc: "Covidien Signia Tri-staple 2.0 Curved Tip Vascular Medium Reload 45.0mm Gold", price: "$92.00", mfr: "COVIDIEN" },
@@ -856,11 +870,13 @@
     document.getElementById('lotInput').value = '';
     document.getElementById('expInput').value = '';
     document.getElementById('qtyInput').value = '1';
+    document.getElementById('gtinDiffBanner').style.display = 'none';
+    document.getElementById('gtinDiffBanner').textContent = '';
     currentMatchedItem = null;
     pendingUpdates = {};
     hideAllConfirmButtons();
     clearDisplay();
-    document.getElementById('rawScan1').focus();
+    document.getElementById('refInput').focus();
   }
 
   // Robust Sequential GS1 Parser
@@ -934,6 +950,7 @@
       currentMatchedItem = match;
       populateDisplay(match);
       hideAllConfirmButtons();
+      document.getElementById('gtinDiffBanner').style.display = 'none';
     } else {
       let currentRef = document.getElementById('refInput').value.trim();
       let refMatch = db.find(i => i.ref.toLowerCase() === currentRef.toLowerCase());
@@ -941,11 +958,20 @@
       if (refMatch) {
         currentMatchedItem = refMatch;
         pendingUpdates['gtin'] = cleanGtin;
+        
+        let diffBanner = document.getElementById('gtinDiffBanner');
+        if (refMatch.gtin) {
+          diffBanner.textContent = `⚠️ Replace Saved GTIN (${refMatch.gtin}) with Scanned GTIN (${cleanGtin})?`;
+        } else {
+          diffBanner.textContent = `[Link New GTIN: ${cleanGtin}]`;
+        }
+        diffBanner.style.display = 'block';
+
         document.getElementById('btnConfirmGtin').style.display = 'inline-block';
         populateDisplay(refMatch);
       } else {
         currentMatchedItem = null;
-        clearDisplay("GTIN not in database. Enter REF to associate.");
+        clearDisplay("Navigate to vendor website for item description.");
       }
     }
     updateInfoPanel();
@@ -962,6 +988,13 @@
     if (match) {
       if (currentGtin && match.gtin !== currentGtin) {
         pendingUpdates['gtin'] = currentGtin;
+        let diffBanner = document.getElementById('gtinDiffBanner');
+        if (match.gtin) {
+          diffBanner.textContent = `⚠️ Replace Saved GTIN (${match.gtin}) with Scanned GTIN (${currentGtin})?`;
+        } else {
+          diffBanner.textContent = `[Link New GTIN: ${currentGtin}]`;
+        }
+        diffBanner.style.display = 'block';
         document.getElementById('btnConfirmGtin').style.display = 'inline-block';
       }
       currentMatchedItem = match;
@@ -969,7 +1002,7 @@
     } else {
       currentMatchedItem = null;
       hideAllConfirmButtons();
-      clearDisplay("New REF/SKU. Enter details to register.");
+      clearDisplay("Navigate to vendor website for item description.");
     }
     updateInfoPanel();
   }
@@ -979,6 +1012,7 @@
     if (field === 'gtin' && pendingUpdates['gtin']) {
       currentMatchedItem.gtin = pendingUpdates['gtin'];
       document.getElementById('btnConfirmGtin').style.display = 'none';
+      document.getElementById('gtinDiffBanner').style.display = 'none';
       alert(`Database updated: GTIN ${pendingUpdates['gtin']} linked to REF ${currentMatchedItem.ref}!`);
     } else if (field === 'mfr') {
       currentMatchedItem.mfr = document.getElementById('vendorSelect').value;
@@ -1002,6 +1036,7 @@
     document.getElementById('btnConfirmGtin').style.display = 'none';
     document.getElementById('btnConfirmRef').style.display = 'none';
     document.getElementById('btnConfirmMfr').style.display = 'none';
+    document.getElementById('gtinDiffBanner').style.display = 'none';
   }
 
   function populateDisplay(item) {
@@ -1015,9 +1050,9 @@
   }
 
   function clearDisplay(msg) {
-    document.getElementById('infoRef').textContent = '--';
-    document.getElementById('infoMfr').textContent = '--';
-    document.getElementById('infoDesc').textContent = msg || '--';
+    document.getElementById('infoRef').textContent = document.getElementById('refInput').value.trim() || '--';
+    document.getElementById('infoMfr').textContent = document.getElementById('vendorSelect').value || '--';
+    document.getElementById('infoDesc').textContent = msg || 'Navigate to vendor website for item description.';
     document.getElementById('infoPrice').textContent = '--';
     updateInfoPanel();
   }
@@ -1144,7 +1179,7 @@
     const time = new Date().toLocaleTimeString();
 
     let isNewRef = false;
-    const desc = currentMatchedItem ? currentMatchedItem.desc : "Unregistered Item";
+    const desc = currentMatchedItem ? currentMatchedItem.desc : "Navigate to vendor website for item description.";
     const price = currentMatchedItem ? currentMatchedItem.price : "$0.00";
 
     let rawBarcodesGathered = [];
@@ -1155,7 +1190,7 @@
 
     if (!currentMatchedItem && ref) {
       isNewRef = true;
-      let newItem = { gtin: gtin, ref: ref, desc: "New Item", price: "$0.00", mfr: vendor };
+      let newItem = { gtin: gtin, ref: ref, desc: desc, price: "$0.00", mfr: vendor };
       db.push(newItem);
       localStorage.setItem('asp_wh_db', JSON.stringify(db));
 
@@ -1373,12 +1408,10 @@
     let excelFilename = generateExactFilename(false, "xlsx");
     let wb = XLSX.utils.book_new();
 
-    // 1. Build Received Inventory Aggregated Data Array
     let refMap = {};
     sessionScannedObjects.forEach(item => {
       let rKey = item.ref;
       let cleanGtin = cleanGtinValue(item.gtin);
-
       let lotKey = `${item.lot}_${item.exp}`;
 
       if (!refMap[rKey]) {
@@ -1423,7 +1456,6 @@
       XLSX.utils.book_append_sheet(wb, wsSummary, "Scanned Items Summary");
     }
 
-    // 2. Build New Items Sheet
     if (pendingNewItems.length > 0) {
       let newRows = pendingNewItems.map(nItem => ({
         "REF": nItem.ref,
@@ -1435,7 +1467,6 @@
       XLSX.utils.book_append_sheet(wb, wsNew, "New Items Created");
     }
 
-    // 3. Build Existing Updates Sheet
     if (pendingFieldUpdates.length > 0) {
       let updateRows = pendingFieldUpdates.map(upd => ({
         "REF": upd.ref,
@@ -1449,7 +1480,6 @@
 
     XLSX.writeFile(wb, excelFilename);
     
-    // Clear tracked database updates after Excel export
     pendingNewItems = [];
     pendingFieldUpdates = [];
     localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
