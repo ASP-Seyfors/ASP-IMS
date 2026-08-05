@@ -41,7 +41,7 @@
       margin-bottom: 10px;
     }
     .form-label {
-      width: 210px;
+      width: 170px;
       font-weight: bold;
       font-size: 0.85rem;
     }
@@ -50,19 +50,40 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 6px;
     }
     input[type="text"], input[type="number"], select {
       flex: 1;
-      background-color: #ffffff; /* Blank white */
-      border: 1px solid #000000;  /* Thin black border */
+      background-color: #ffffff;
+      border: 1px solid #000000;
       color: #000000;
       padding: 8px;
       font-size: 0.95rem;
       font-family: Arial, sans-serif;
       border-radius: 2px;
-      min-width: 160px;
+      min-width: 140px;
     }
+    .action-selector {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-align: center;
+      border: 1px solid #000000;
+      background-color: #ffffff;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .action-btn.selected-inv { background-color: #2e7d32; color: #ffffff; }
+    .action-btn.selected-res { background-color: #0277bd; color: #ffffff; }
+    .action-btn.selected-pack { background-color: #e65100; color: #ffffff; }
+
     .btn-confirm {
       padding: 8px 10px;
       background-color: #d9534f;
@@ -109,13 +130,8 @@
       cursor: pointer;
       border-radius: 3px;
     }
-    .btn-cam {
-      background-color: #e65100;
-    }
-    .btn-clear {
-      background-color: #757575;
-      color: #ffffff;
-    }
+    .btn-cam { background-color: #e65100; }
+    .btn-clear { background-color: #757575; color: #ffffff; }
     .btn-start { background-color: #4caf50; color: #ffffff; }
     .btn-stop { background-color: #f44336; color: #ffffff; }
     .btn-resume { background-color: #ff9800; color: #ffffff; }
@@ -155,28 +171,26 @@
 
 <div class="card">
   <div class="form-row" style="margin-bottom: 6px;">
-    <div class="form-label" style="width: 160px;">Session Name:</div>
+    <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
       <input type="text" id="sessionNameInput" placeholder="e.g. Medline Shipment">
     </div>
   </div>
 
   <div class="form-row" style="margin-bottom: 6px;">
-    <div class="form-label" style="width: 160px;">Order Number:</div>
+    <div class="form-label">Order Number:</div>
     <div class="input-wrapper">
       <input type="text" id="orderNumInput" placeholder="e.g. PO-99482 or Invoice #">
     </div>
   </div>
 
   <div class="form-row" style="margin-bottom: 6px;">
-    <div class="form-label" style="width: 160px;">Workflow Process:</div>
+    <div class="form-label">Workflow Process:</div>
     <div class="input-wrapper">
       <select id="workflowTypeSelect">
-        <option value="Receiving">Receiving (Adding items to inventory shelves)</option>
-        <option value="Receiving & Picking">Receiving & Picking (Receiving items for immediate customer orders)</option>
-        <option value="Picking">Picking (Pulling items from inventory shelves)</option>
-        <option value="Picking & Packing">Picking & Packing (Shipment fulfillment)</option>
-        <option value="Picking & Reserving">Picking & Reserving</option>
+        <option value="Receiving">Receiving</option>
+        <option value="Reserving">Reserving</option>
+        <option value="Packing">Packing</option>
       </select>
     </div>
   </div>
@@ -190,7 +204,7 @@
 <div class="card">
   <!-- Primary Product Anchor: REF / SKU Entry First -->
   <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 12px;">
-    <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF or SKU (Item Lookup):</div>
+    <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
     <div class="input-wrapper">
       <input type="text" id="refInput" placeholder="Enter REF/SKU First" onchange="lookupByRef(this.value)">
       <button class="btn-confirm" id="btnConfirmRef" style="display:none;" onclick="confirmFieldUpdate('ref')">Update</button>
@@ -208,41 +222,52 @@
       </div>
     </h2>
 
-    <!-- Camera Feed Container -->
     <div id="cameraViewfinder"></div>
 
     <div class="form-row" id="rowScan1">
-      <div class="form-label">Full Barcode Scan (Line 1):</div>
+      <div class="form-label">Barcode Line 1:</div>
       <div class="input-wrapper">
         <input type="text" id="rawScan1" placeholder="Scan Primary 1D or 2D Barcode" oninput="processAllScans()">
       </div>
     </div>
 
     <div class="form-row" id="rowScan2" style="display: none;">
-      <div class="form-label">Full Barcode Scan (Line 2):</div>
+      <div class="form-label">Barcode Line 2:</div>
       <div class="input-wrapper">
         <input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()">
       </div>
     </div>
 
     <div class="form-row" id="rowScan3" style="display: none;">
-      <div class="form-label">Full Barcode Scan (Line 3):</div>
+      <div class="form-label">Barcode Line 3:</div>
       <div class="input-wrapper">
         <input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()">
       </div>
     </div>
 
     <div class="form-row" id="rowScan4" style="display: none;">
-      <div class="form-label">Full Barcode Scan (Line 4):</div>
+      <div class="form-label">Barcode Line 4:</div>
       <div class="input-wrapper">
         <input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()">
       </div>
     </div>
   </div>
 
-  <h2>Parsed & Matched Item Details</h2>
+  <h2>Item Details & Item Destination</h2>
 
-  <!-- Field 1: GTIN Barcode with Difference Comparison Banner -->
+  <!-- Item Destination Toggle -->
+  <div class="form-row">
+    <div class="form-label">Item Destination:</div>
+    <div class="input-wrapper">
+      <div class="action-selector">
+        <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
+        <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
+        <div id="actBtnPack" class="action-btn" onclick="setItemAction('Pack & Ship')">Pack & Ship</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Field 1: GTIN Barcode -->
   <div class="form-row">
     <div class="form-label">GTIN Barcode:</div>
     <div class="input-wrapper">
@@ -273,7 +298,7 @@
     <div class="form-label">Manufacturer:</div>
     <div class="input-wrapper">
       <select id="vendorSelect" onchange="handleVendorSelect(this.value)">
-        <!-- Populated via JS -->
+        <!-- Populated via JS / JSON -->
       </select>
       <button class="btn-confirm" id="btnConfirmMfr" style="display:none;" onclick="confirmFieldUpdate('mfr')">Update MFR</button>
     </div>
@@ -292,6 +317,7 @@
 <div class="card">
   <h2>Database Item Info (Session Output Preview)</h2>
   <div class="info-box">
+    <div class="info-line"><span class="info-title">Destination Action:</span> <span id="infoAction" style="font-weight:bold; color:#2e7d32;">Inventory</span></div>
     <div class="info-line"><span class="info-title">GTIN Barcode:</span> <span id="infoGtin">--</span></div>
     <div class="info-line"><span class="info-title">REF/SKU:</span> <span id="infoRef">--</span></div>
     <div class="info-line"><span class="info-title">Manufacturer:</span> <span id="infoMfr">--</span></div>
@@ -306,32 +332,44 @@
 <button class="btn-action btn-save" onclick="saveItemLog()">Save Scanned Item</button>
 
 <script>
-  // =========================================================================
-  // 1. MASTER PRODUCT DATABASE (328 UNIQUE ITEMS)
-  // =========================================================================
-  const defaultDatabase = [
-    
-  ];
-
-  // =========================================================================
-  // 2. MASTER VENDOR LIST
-  // =========================================================================
+  // Default fallback vendors if JSON is unavailable
   const defaultVendors = [
     "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
     "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
     "+ Create New Vendor"
   ];
 
-  let db = JSON.parse(localStorage.getItem('asp_wh_db')) || defaultDatabase;
+  let db = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
   let vendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors;
 
-  // Change tracking logs
+  // Fetch external database.json on load
+  async function loadMasterDatabase() {
+    try {
+      const response = await fetch('database.json');
+      if (response.ok) {
+        const jsonContent = await response.json();
+        
+        if (Array.isArray(jsonContent)) {
+          if (db.length === 0) db = jsonContent;
+        } else if (jsonContent.items) {
+          if (db.length === 0) db = jsonContent.items;
+          if (jsonContent.vendors) vendors = jsonContent.vendors;
+        }
+        
+        localStorage.setItem('asp_wh_db', JSON.stringify(db));
+        localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
+        populateVendors();
+      }
+    } catch (err) {
+      console.warn("Notice: External database.json not found or parsing locally stored items.");
+    }
+  }
+
   let pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
   let pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
-
-  // Active Session Scanned Objects Storage for Receiving Summaries
   let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
 
+  let currentItemAction = "Inventory";
   let visibleScanLines = 1;
   let isSessionActive = false;
   let sessionLogs = JSON.parse(localStorage.getItem('asp_active_session_logs')) || [];
@@ -343,9 +381,16 @@
   let currentMatchedItem = null;
   let pendingUpdates = {};
 
-  // Camera Scanner Variables
   let html5QrCode = null;
   let isCameraActive = false;
+
+  function setItemAction(act) {
+    currentItemAction = act;
+    document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
+    document.getElementById('actBtnRes').className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
+    document.getElementById('actBtnPack').className = 'action-btn' + (act === 'Pack & Ship' ? ' selected-pack' : '');
+    document.getElementById('infoAction').textContent = act;
+  }
 
   function populateVendors() {
     const sel = document.getElementById('vendorSelect');
@@ -357,8 +402,8 @@
     });
   }
   populateVendors();
+  loadMasterDatabase();
 
-  // Helper function to generate standardized export filenames with date increment
   function generateExactFilename(isFullLog, extension = "txt") {
     const nowObj = new Date();
     let datePart = nowObj.toISOString().slice(0, 10);
@@ -376,13 +421,7 @@
     let trackerKey = `asp_export_count_${baseFilename}`;
     let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
 
-    let finalName = "";
-    if (count === 0) {
-      finalName = `${baseFilename}.${extension}`;
-    } else {
-      finalName = `${baseFilename} ${count}.${extension}`;
-    }
-
+    let finalName = count === 0 ? `${baseFilename}.${extension}` : `${baseFilename} ${count}.${extension}`;
     localStorage.setItem(trackerKey, count + 1);
     return finalName;
   }
@@ -396,7 +435,6 @@
     excelBtn.disabled = !hasData;
   }
 
-  // Restore session recovery state upon tab refresh/re-entry
   function checkSessionRecoveryState() {
     let storedActiveState = localStorage.getItem('asp_session_is_active');
     const btn = document.getElementById('sessionBtn');
@@ -421,13 +459,11 @@
   }
   checkSessionRecoveryState();
 
-  // Helper function to strip AIM symbology prefixes AND (01) GS1 prefixes
   function cleanGtinValue(val) {
     if (!val) return 'N/A';
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
-  // CAMERA SCANNER ENGINE
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraViewfinder');
     const camBtn = document.getElementById('btnToggleCam');
@@ -509,7 +545,6 @@
     }
   }
 
-  // Collapsible Scan Line Interface Logic
   function addScanLine() {
     if (visibleScanLines < 4) {
       visibleScanLines++;
@@ -534,7 +569,6 @@
     document.getElementById('btnAddLine').style.display = 'inline-block';
   }
 
-  // Reset/Clear All Fields Button Command
   function resetScanLinesAndFields() {
     resetScanLines();
     document.getElementById('gtinInput').value = '';
@@ -551,7 +585,6 @@
     document.getElementById('refInput').focus();
   }
 
-  // Robust Sequential GS1 Parser
   function processAllScans() {
     let lines = [
       document.getElementById('rawScan1').value,
@@ -827,7 +860,7 @@
     updateExportButtonState();
   }
 
-  // Save Item Log Function
+  // Save Item Log Function (Registers in both Destination Section & NEW ITEMS)
   function saveItemLog() {
     if (!isSessionActive) {
       alert("Please start or resume a scanning session first!");
@@ -871,6 +904,7 @@
     }
 
     sessionScannedObjects.push({
+      actionTag: currentItemAction,
       gtin: gtin || (currentMatchedItem ? currentMatchedItem.gtin : ''),
       ref: ref || 'UNREGISTERED',
       lot: lot || 'NO_LOT',
@@ -885,7 +919,7 @@
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
     let blockLines = [
-      `[${time}] GTIN: ${cleanGtinValue(gtin)}`,
+      `[${time}] [DESTINATION: ${currentItemAction}] GTIN: ${cleanGtinValue(gtin)}`,
       ` | REF: ${ref || 'N/A'}`,
       ` | MFR: ${vendor}`,
       ` | DESC: ${desc}`,
@@ -905,7 +939,7 @@
     sessionLogs.push(blockLines.join('\n') + '\n');
     localStorage.setItem('asp_active_session_logs', JSON.stringify(sessionLogs));
 
-    alert("Item logged to scanning session!");
+    alert(`Item logged as [${currentItemAction}]!`);
 
     if (isCameraActive) toggleCameraScanner();
 
@@ -922,42 +956,37 @@
 
     let summaryFilename = generateExactFilename(false, "txt");
 
-    let refMap = {};
-    let newRefsCreated = [];
+    let invMap = {}, resMap = {}, packMap = {};
 
     sessionScannedObjects.forEach(item => {
       let rKey = item.ref;
       let cleanGtin = cleanGtinValue(item.gtin);
+      let targetMap = item.actionTag === 'Reserved' ? resMap : (item.actionTag === 'Pack & Ship' ? packMap : invMap);
 
-      if (!refMap[rKey]) {
-        refMap[rKey] = {
+      if (!targetMap[rKey]) {
+        targetMap[rKey] = {
           ref: item.ref,
           gtin: cleanGtin,
           mfr: item.mfr,
           price: item.price,
           totalQty: 0,
-          lots: {},
-          isNew: item.isNew
+          lots: {}
         };
-      } else if ((!refMap[rKey].gtin || refMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        refMap[rKey].gtin = cleanGtin;
+      } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+        targetMap[rKey].gtin = cleanGtin;
       }
 
-      refMap[rKey].totalQty += item.qty;
+      targetMap[rKey].totalQty += item.qty;
 
       let lotKey = `${item.lot}_${item.exp}`;
-      if (!refMap[rKey].lots[lotKey]) {
-        refMap[rKey].lots[lotKey] = {
+      if (!targetMap[rKey].lots[lotKey]) {
+        targetMap[rKey].lots[lotKey] = {
           lot: item.lot,
           exp: item.exp,
           qty: 0
         };
       }
-      refMap[rKey].lots[lotKey].qty += item.qty;
-
-      if (item.isNew && !newRefsCreated.some(n => n.ref === item.ref)) {
-        newRefsCreated.push(refMap[rKey]);
-      }
+      targetMap[rKey].lots[lotKey].qty += item.qty;
     });
 
     let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
@@ -971,34 +1000,70 @@
     let datePartStr = nowObj.toISOString().slice(0, 10);
     let timeEndStr = nowObj.toLocaleTimeString();
 
+    let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
+
     let reportLines = [
       `================================================================================`,
       `ASP SCANNER APP SUMMARY EXPORT - ${sessionTitleHeader}`,
       ``,
-      `          Total Unique REFs Scanned: ${Object.keys(refMap).length}`,
+      `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
       ``,
       `          Workflow Process:    ${wType}`,
       `          Scanned Date:        ${datePartStr}`,
       `          Session Start:       ${sessionStartStr || 'N/A'}`,
       `          Session End:         ${timeEndStr}`,
-      `================================================================================\n`,
-      `--- SCANNED ITEMS ---\n`
+      `================================================================================\n`
     ];
 
-    let count = 1;
-    for (let rKey in refMap) {
-      let rData = refMap[rKey];
-      reportLines.push(`[${count}] REF: ${rData.ref}`);
-      reportLines.push(`    | GTIN: ${rData.gtin}`);
-      reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
-      reportLines.push(`    | Lot & Expiration Breakdowns:`);
-
-      for (let lKey in rData.lots) {
-        let lData = rData.lots[lKey];
-        reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+    if (Object.keys(invMap).length > 0) {
+      reportLines.push(`--- INVENTORY ADDITIONS (Warehouse Shelves) ---\n`);
+      let count = 1;
+      for (let rKey in invMap) {
+        let rData = invMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}`);
+        reportLines.push(`    | GTIN: ${rData.gtin}`);
+        reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
+        reportLines.push(`    | Lot & Expiration Breakdowns:`);
+        for (let lKey in rData.lots) {
+          let lData = rData.lots[lKey];
+          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        }
+        reportLines.push(``);
+        count++;
       }
-      reportLines.push(``);
-      count++;
+    }
+
+    if (Object.keys(resMap).length > 0) {
+      reportLines.push(`--- RESERVED FOR CUSTOMERS (Outgoing Bins) ---\n`);
+      let count = 1;
+      for (let rKey in resMap) {
+        let rData = resMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}`);
+        reportLines.push(`    | GTIN: ${rData.gtin}`);
+        reportLines.push(`    | Total Quantity Reserved: ${rData.totalQty}`);
+        reportLines.push(`    | Lot & Expiration Breakdowns:`);
+        for (let lKey in rData.lots) {
+          let lData = rData.lots[lKey];
+          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        }
+        reportLines.push(``);
+        count++;
+      }
+    }
+
+    if (Object.keys(packMap).length > 0) {
+      reportLines.push(`--- PACK & SHIP (Outbound Shipping) ---\n`);
+      let count = 1;
+      for (let rKey in packMap) {
+        let rData = packMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref} | Price: ${rData.price} | Total Qty: ${rData.totalQty}`);
+        for (let lKey in rData.lots) {
+          let lData = rData.lots[lKey];
+          reportLines.push(`    | Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        }
+        reportLines.push(``);
+        count++;
+      }
     }
 
     if (pendingNewItems.length > 0) {
@@ -1080,52 +1145,40 @@
     let excelFilename = generateExactFilename(false, "xlsx");
     let wb = XLSX.utils.book_new();
 
-    let refMap = {};
+    let invRows = [], resRows = [], packRows = [];
+
     sessionScannedObjects.forEach(item => {
-      let rKey = item.ref;
-      let cleanGtin = cleanGtinValue(item.gtin);
-      let lotKey = `${item.lot}_${item.exp}`;
+      let rowObj = {
+        "REF": item.ref,
+        "Manufacturer": item.mfr,
+        "GTIN Barcode": cleanGtinValue(item.gtin),
+        "Lot Number": item.lot,
+        "Expiration Date": item.exp,
+        "Qty": item.qty
+      };
 
-      if (!refMap[rKey]) {
-        refMap[rKey] = {
-          ref: item.ref,
-          mfr: item.mfr,
-          gtin: cleanGtin,
-          lots: {}
-        };
-      } else if ((!refMap[rKey].gtin || refMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        refMap[rKey].gtin = cleanGtin;
+      if (item.actionTag === 'Reserved') {
+        resRows.push(rowObj);
+      } else if (item.actionTag === 'Pack & Ship') {
+        packRows.push(rowObj);
+      } else {
+        invRows.push(rowObj);
       }
-
-      if (!refMap[rKey].lots[lotKey]) {
-        refMap[rKey].lots[lotKey] = {
-          lot: item.lot,
-          exp: item.exp,
-          qty: 0
-        };
-      }
-      refMap[rKey].lots[lotKey].qty += item.qty;
     });
 
-    let summaryRows = [];
-    for (let rKey in refMap) {
-      let rData = refMap[rKey];
-      for (let lKey in rData.lots) {
-        let lData = rData.lots[lKey];
-        summaryRows.push({
-          "REF": rData.ref,
-          "Manufacturer": rData.mfr,
-          "GTIN Barcode": rData.gtin,
-          "Lot Number": lData.lot,
-          "Expiration Date": lData.exp,
-          "Qty Received": lData.qty
-        });
-      }
+    if (invRows.length > 0) {
+      let wsInv = XLSX.utils.json_to_sheet(invRows);
+      XLSX.utils.book_append_sheet(wb, wsInv, "Inventory Additions");
     }
 
-    if (summaryRows.length > 0) {
-      let wsSummary = XLSX.utils.json_to_sheet(summaryRows);
-      XLSX.utils.book_append_sheet(wb, wsSummary, "Scanned Items Summary");
+    if (resRows.length > 0) {
+      let wsRes = XLSX.utils.json_to_sheet(resRows);
+      XLSX.utils.book_append_sheet(wb, wsRes, "Reserved Bins");
+    }
+
+    if (packRows.length > 0) {
+      let wsPack = XLSX.utils.json_to_sheet(packRows);
+      XLSX.utils.book_append_sheet(wb, wsPack, "Pack & Ship");
     }
 
     if (pendingNewItems.length > 0) {
