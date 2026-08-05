@@ -6,6 +6,8 @@
   <title>ASP-Android Scanner App</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <!-- SheetJS Library for Native Excel (.xlsx) Exports -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" type="text/javascript"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -167,7 +169,8 @@
   </div>
 
   <button id="sessionBtn" class="btn-action btn-start" onclick="toggleSession()">Start Scanning Session</button>
-  <button id="exportSummaryBtn" class="btn-action" style="background-color: #00897b; color: #ffffff;" onclick="exportUnifiedSummary()" disabled>📦 Export ASP Scanner Summary</button>
+  <button id="exportSummaryBtn" class="btn-action" style="background-color: #00897b; color: #ffffff;" onclick="exportUnifiedSummary()" disabled>📦 Export ASP Scanner Summary (.txt)</button>
+  <button id="exportExcelBtn" class="btn-action" style="background-color: #1b5e20; color: #ffffff;" onclick="exportExcelWorkbook()" disabled>📊 Export Excel Sheet (.xlsx)</button>
   <div id="statusBanner" class="status-banner" style="background-color: #e0e0e0;">Session Inactive</div>
 </div>
 
@@ -670,7 +673,7 @@
   populateVendors();
 
   // Helper function to generate standardized export filenames with date increment
-  function generateExactFilename(isFullLog) {
+  function generateExactFilename(isFullLog, extension = "txt") {
     const nowObj = new Date();
     let datePart = nowObj.toISOString().slice(0, 10);
     
@@ -684,29 +687,27 @@
     let logTypeLabel = isFullLog ? " Full Session Log" : "";
     let baseFilename = `${prefix} - ${wType}${logTypeLabel} (${datePart})`;
 
-    // Track daily export counts per filename base to increment (e.g. " (2026-08-04) 1.txt")
     let trackerKey = `asp_export_count_${baseFilename}`;
     let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
 
     let finalName = "";
     if (count === 0) {
-      finalName = `${baseFilename}.txt`;
+      finalName = `${baseFilename}.${extension}`;
     } else {
-      finalName = `${baseFilename} ${count}.txt`;
+      finalName = `${baseFilename} ${count}.${extension}`;
     }
 
-    // Advance count for subsequent exports on the same day
     localStorage.setItem(trackerKey, count + 1);
     return finalName;
   }
 
   function updateExportButtonState() {
-    const btn = document.getElementById('exportSummaryBtn');
-    if (sessionScannedObjects.length > 0 || pendingNewItems.length > 0 || pendingFieldUpdates.length > 0) {
-      btn.disabled = false;
-    } else {
-      btn.disabled = true;
-    }
+    const summaryBtn = document.getElementById('exportSummaryBtn');
+    const excelBtn = document.getElementById('exportExcelBtn');
+    const hasData = sessionScannedObjects.length > 0 || pendingNewItems.length > 0 || pendingFieldUpdates.length > 0;
+    
+    summaryBtn.disabled = !hasData;
+    excelBtn.disabled = !hasData;
   }
 
   // Restore session recovery state upon tab refresh/re-entry
@@ -1146,6 +1147,12 @@
     const desc = currentMatchedItem ? currentMatchedItem.desc : "Unregistered Item";
     const price = currentMatchedItem ? currentMatchedItem.price : "$0.00";
 
+    let rawBarcodesGathered = [];
+    for (let i = 1; i <= 4; i++) {
+      let val = document.getElementById(`rawScan${i}`).value.trim();
+      if (val) rawBarcodesGathered.push(val);
+    }
+
     if (!currentMatchedItem && ref) {
       isNewRef = true;
       let newItem = { gtin: gtin, ref: ref, desc: "New Item", price: "$0.00", mfr: vendor };
@@ -1165,6 +1172,7 @@
       desc: desc,
       price: price,
       qty: qty,
+      rawScanString: rawBarcodesGathered.join(' | '),
       isNew: isNewRef
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
@@ -1198,14 +1206,14 @@
     updateExportButtonState();
   }
 
-  // Unified Export Engine
+  // Unified Export Engine (.txt)
   async function exportUnifiedSummary() {
     if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
       alert("No data available in current session to export!");
       return;
     }
 
-    let summaryFilename = generateExactFilename(false);
+    let summaryFilename = generateExactFilename(false, "txt");
 
     let refMap = {};
     let newRefsCreated = [];
@@ -1336,7 +1344,7 @@
         localStorage.setItem('asp_pending_updates', JSON.stringify([]));
         updateExportButtonState();
 
-        alert("ASP Scanner Summary successfully exported to chosen location!");
+        alert("ASP Scanner Summary successfully exported!");
       } catch (err) {
         if (err.name === 'AbortError') return;
       }
@@ -1355,10 +1363,106 @@
     }
   }
 
-  // Save Raw Full Session Audit Log
+  // Native Excel (.xlsx) Export Engine
+  function exportExcelWorkbook() {
+    if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
+      alert("No scanned data available to export to Excel!");
+      return;
+    }
+
+    let excelFilename = generateExactFilename(false, "xlsx");
+    let wb = XLSX.utils.book_new();
+
+    // 1. Build Received Inventory Aggregated Data Array
+    let refMap = {};
+    sessionScannedObjects.forEach(item => {
+      let rKey = item.ref;
+      let cleanGtin = cleanGtinValue(item.gtin);
+
+      let lotKey = `${item.lot}_${item.exp}`;
+
+      if (!refMap[rKey]) {
+        refMap[rKey] = {
+          ref: item.ref,
+          mfr: item.mfr,
+          gtin: cleanGtin,
+          lots: {}
+        };
+      } else if ((!refMap[rKey].gtin || refMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+        refMap[rKey].gtin = cleanGtin;
+      }
+
+      if (!refMap[rKey].lots[lotKey]) {
+        refMap[rKey].lots[lotKey] = {
+          lot: item.lot,
+          exp: item.exp,
+          qty: 0
+        };
+      }
+      refMap[rKey].lots[lotKey].qty += item.qty;
+    });
+
+    let summaryRows = [];
+    for (let rKey in refMap) {
+      let rData = refMap[rKey];
+      for (let lKey in rData.lots) {
+        let lData = rData.lots[lKey];
+        summaryRows.push({
+          "REF": rData.ref,
+          "Manufacturer": rData.mfr,
+          "GTIN Barcode": rData.gtin,
+          "Lot Number": lData.lot,
+          "Expiration Date": lData.exp,
+          "Qty Received": lData.qty
+        });
+      }
+    }
+
+    if (summaryRows.length > 0) {
+      let wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+      XLSX.utils.book_append_sheet(wb, wsSummary, "Scanned Items Summary");
+    }
+
+    // 2. Build New Items Sheet
+    if (pendingNewItems.length > 0) {
+      let newRows = pendingNewItems.map(nItem => ({
+        "REF": nItem.ref,
+        "GTIN": cleanGtinValue(nItem.gtin),
+        "Manufacturer": nItem.mfr,
+        "Price": nItem.price
+      }));
+      let wsNew = XLSX.utils.json_to_sheet(newRows);
+      XLSX.utils.book_append_sheet(wb, wsNew, "New Items Created");
+    }
+
+    // 3. Build Existing Updates Sheet
+    if (pendingFieldUpdates.length > 0) {
+      let updateRows = pendingFieldUpdates.map(upd => ({
+        "REF": upd.ref,
+        "Field Updated": upd.field,
+        "New Value": cleanGtinValue(upd.newValue),
+        "Timestamp": upd.timestamp
+      }));
+      let wsUpdates = XLSX.utils.json_to_sheet(updateRows);
+      XLSX.utils.book_append_sheet(wb, wsUpdates, "Database Updates");
+    }
+
+    XLSX.writeFile(wb, excelFilename);
+    
+    // Clear tracked database updates after Excel export
+    pendingNewItems = [];
+    pendingFieldUpdates = [];
+    localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
+    localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+    updateExportButtonState();
+
+    alert("Excel workbook successfully exported!");
+  }
+
+  // Save Raw Full Session Audit Log (.txt)
   async function exportSessionLog() {
     let fileContent = sessionLogs.join('\n');
-    let fullLogFilename = generateExactFilename(true);
+    let fullLogFilename = generateExactFilename(true, "txt");
     
     if ('showSaveFilePicker' in window) {
       try {
