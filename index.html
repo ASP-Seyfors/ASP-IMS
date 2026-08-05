@@ -156,14 +156,25 @@
   <div class="form-row" style="margin-bottom: 6px;">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
-      <input type="text" id="sessionNameInput" placeholder="e.g. Medline Shipment">
+      <input type="text" id="sessionNameInput" placeholder="e.g. Medline Order">
     </div>
   </div>
 
   <div class="form-row" style="margin-bottom: 6px;">
     <div class="form-label">Order Number:</div>
     <div class="input-wrapper">
-      <input type="text" id="orderNumInput" placeholder="e.g. PO-99482 or Invoice #">
+      <input type="text" id="orderNumInput" placeholder="e.g. 795037269 or PO #">
+    </div>
+  </div>
+
+  <div class="form-row" style="margin-bottom: 6px;">
+    <div class="form-label">Workflow Process:</div>
+    <div class="input-wrapper">
+      <select id="workflowTypeSelect">
+        <option value="Receiving">Receiving</option>
+        <option value="Picking & Reserving">Picking & Reserving</option>
+        <option value="Picking & Packing">Picking & Packing</option>
+      </select>
     </div>
   </div>
 
@@ -345,6 +356,7 @@
   let sessionLogs = JSON.parse(localStorage.getItem('asp_active_session_logs')) || [];
   let currentSessionName = localStorage.getItem('asp_session_name') || "";
   let currentOrderNum = localStorage.getItem('asp_order_num') || "";
+  let currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
   let sessionStartStr = localStorage.getItem('asp_session_start_str') || "";
 
   let currentMatchedItem = null;
@@ -375,15 +387,21 @@
 
   function generateExactFilename(extension = "txt") {
     const nowObj = new Date();
-    let datePart = nowObj.toISOString().slice(0, 10);
     
+    // YYYY.MM.DD Date Format
+    let yyyy = nowObj.getFullYear();
+    let mm = String(nowObj.getMonth() + 1).padStart(2, '0');
+    let dd = String(nowObj.getDate()).padStart(2, '0');
+    let datePartDots = `${yyyy}.${mm}.${dd}`;
+
     let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
     let oNum = document.getElementById('orderNumInput').value.trim() || currentOrderNum;
+    let wType = document.getElementById('workflowTypeSelect').value || currentWorkflowType || "Receiving";
 
     let prefix = sName;
     if (oNum) prefix += ` (${oNum})`;
 
-    let baseFilename = `${prefix} (${datePart})`;
+    let baseFilename = `${datePartDots} - ${prefix} - ${wType}`;
 
     let trackerKey = `asp_export_count_${baseFilename}`;
     let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
@@ -411,6 +429,7 @@
       
       if (currentSessionName) document.getElementById('sessionNameInput').value = currentSessionName;
       if (currentOrderNum) document.getElementById('orderNumInput').value = currentOrderNum;
+      if (currentWorkflowType) document.getElementById('workflowTypeSelect').value = currentWorkflowType;
     }
   }
   checkSessionRecoveryState();
@@ -745,7 +764,7 @@
     updateInfoPanel();
   }
 
-  // Session Management (Auto-Exports on End Session)
+  // Session Management
   function toggleSession() {
     const btn = document.getElementById('sessionBtn');
     const status = document.getElementById('statusBanner');
@@ -761,10 +780,12 @@
 
       currentSessionName = document.getElementById('sessionNameInput').value.trim();
       currentOrderNum = document.getElementById('orderNumInput').value.trim();
+      currentWorkflowType = document.getElementById('workflowTypeSelect').value;
       sessionStartStr = nowStr;
 
       localStorage.setItem('asp_session_name', currentSessionName);
       localStorage.setItem('asp_order_num', currentOrderNum);
+      localStorage.setItem('asp_workflow_type', currentWorkflowType);
       localStorage.setItem('asp_session_start_str', sessionStartStr);
 
       let sessionTitle = currentSessionName;
@@ -830,7 +851,6 @@
     for (let i = 1; i <= 4; i++) {
       let val = document.getElementById(`rawScan${i}`).value.trim();
       if (val) {
-        // Aggressively strip AIM symbology prefixes (e.g. ]C1, ]d2)
         let cleanedRaw = val.replace(/^\][a-zA-Z0-9]{2}/, '');
         rawBarcodesGathered.push(cleanedRaw);
       }
@@ -868,7 +888,7 @@
     resetScanLinesAndFields();
   }
 
-  // Unified Export Engine (Exports Single File)
+  // Unified Export Engine
   async function exportUnifiedSummary() {
     if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
       alert("No data was scanned in this session.");
@@ -912,6 +932,7 @@
 
     let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
     let oNum = document.getElementById('orderNumInput').value.trim() || currentOrderNum;
+    let wType = document.getElementById('workflowTypeSelect').value || currentWorkflowType || "Receiving";
 
     let sessionTitleHeader = sName;
     if (oNum) sessionTitleHeader += ` (${oNum})`;
@@ -928,6 +949,7 @@
       ``,
       `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
       ``,
+      `          Workflow Process:    ${wType}`,
       `          Scanned Date:        ${datePartStr}`,
       `          Session Start:       ${sessionStartStr || 'N/A'}`,
       `          Session End:         ${timeEndStr}`,
