@@ -78,6 +78,12 @@
       cursor: pointer;
       margin-top: 6px;
     }
+    .btn-action:disabled {
+      background-color: #cccccc !important;
+      color: #666666 !important;
+      cursor: not-allowed;
+      border: 1px solid #999999;
+    }
     .btn-small {
       background-color: #2e7d32;
       color: #ffffff;
@@ -91,8 +97,13 @@
     .btn-cam {
       background-color: #e65100;
     }
+    .btn-clear {
+      background-color: #757575;
+      color: #ffffff;
+    }
     .btn-start { background-color: #4caf50; color: #ffffff; }
     .btn-stop { background-color: #f44336; color: #ffffff; }
+    .btn-resume { background-color: #ff9800; color: #ffffff; }
     .btn-save { background-color: #2196f3; color: #ffffff; }
     .info-box {
       background-color: #ffffff;
@@ -131,12 +142,32 @@
   <div class="form-row" style="margin-bottom: 6px;">
     <div class="form-label" style="width: 160px;">Session Name:</div>
     <div class="input-wrapper">
-      <input type="text" id="sessionNameInput" placeholder="e.g. Medline Shipment, Inventory Receiving">
+      <input type="text" id="sessionNameInput" placeholder="e.g. Medline Shipment">
     </div>
   </div>
+
+  <div class="form-row" style="margin-bottom: 6px;">
+    <div class="form-label" style="width: 160px;">Order Number:</div>
+    <div class="input-wrapper">
+      <input type="text" id="orderNumInput" placeholder="e.g. PO-99482 or Invoice #">
+    </div>
+  </div>
+
+  <div class="form-row" style="margin-bottom: 6px;">
+    <div class="form-label" style="width: 160px;">Workflow Process:</div>
+    <div class="input-wrapper">
+      <select id="workflowTypeSelect">
+        <option value="Receiving">Receiving (Adding items to inventory shelves)</option>
+        <option value="Receiving & Picking">Receiving & Picking (Receiving items for immediate customer orders)</option>
+        <option value="Picking">Picking (Pulling items from inventory shelves)</option>
+        <option value="Picking & Packing">Picking & Packing (Shipment fulfillment)</option>
+        <option value="Picking & Reserving">Picking & Reserving</option>
+      </select>
+    </div>
+  </div>
+
   <button id="sessionBtn" class="btn-action btn-start" onclick="toggleSession()">Start Scanning Session</button>
-  <button class="btn-action" style="background-color: #00897b; color: #ffffff;" onclick="exportReceivingSummary()">📦 Export Receiving Summary</button>
-  <button class="btn-action" style="background-color: #673ab7; color: #ffffff;" onclick="exportDatabaseUpdates()">📤 Export Database Updates</button>
+  <button id="exportSummaryBtn" class="btn-action" style="background-color: #00897b; color: #ffffff;" onclick="exportUnifiedSummary()" disabled>📦 Export ASP Scanner Summary</button>
   <div id="statusBanner" class="status-banner" style="background-color: #e0e0e0;">Session Inactive</div>
 </div>
 
@@ -146,6 +177,7 @@
     <h2>
       <span>Raw Barcode Scans</span>
       <div>
+        <button class="btn-small btn-clear" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
         <button class="btn-small btn-cam" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera Scanner</button>
         <button class="btn-small" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
       </div>
@@ -258,7 +290,7 @@
 
 <script>
   // =========================================================================
-  // 1. MASTER PRODUCT DATABASE (328 UNIQUE ITEMS) - EDIT OR PASTE NEW ITEMS HERE
+  // 1. MASTER PRODUCT DATABASE (328 UNIQUE ITEMS)
   // =========================================================================
   const defaultDatabase = [
     { gtin: "30705031038619", ref: "J304H", desc: "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H", price: "$0.00", mfr: "ETHICON" },
@@ -609,13 +641,16 @@
   let pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
 
   // Active Session Scanned Objects Storage for Receiving Summaries
-  let sessionScannedObjects = [];
+  let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
 
   let visibleScanLines = 1;
   let isSessionActive = false;
-  let sessionLogs = [];
-  let currentSessionFilename = "";
-  let currentSessionName = "";
+  let sessionLogs = JSON.parse(localStorage.getItem('asp_active_session_logs')) || [];
+  let currentSessionName = localStorage.getItem('asp_session_name') || "";
+  let currentOrderNum = localStorage.getItem('asp_order_num') || "";
+  let currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
+  let sessionStartStr = localStorage.getItem('asp_session_start_str') || "";
+
   let currentMatchedItem = null;
   let pendingUpdates = {};
 
@@ -634,22 +669,70 @@
   }
   populateVendors();
 
-  // Helper function to generate clean custom filenames
-  function generateExportFilename(fileType, extension) {
+  // Helper function to generate standardized export filenames with date increment
+  function generateExactFilename(isFullLog) {
     const nowObj = new Date();
     let datePart = nowObj.toISOString().slice(0, 10);
-    let timePart = nowObj.toTimeString().slice(0, 8).replace(/:/g, '');
-    let timestamp = `${datePart}_${timePart}`;
     
-    let userSessionName = document.getElementById('sessionNameInput').value.trim();
-    if (!userSessionName && currentSessionName) userSessionName = currentSessionName;
+    let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
+    let oNum = document.getElementById('orderNumInput').value.trim() || currentOrderNum;
+    let wType = document.getElementById('workflowTypeSelect').value || currentWorkflowType || "Receiving";
 
-    if (userSessionName) {
-      return `${userSessionName} - ${fileType} ${timestamp}.${extension}`;
+    let prefix = sName;
+    if (oNum) prefix += ` (${oNum})`;
+
+    let logTypeLabel = isFullLog ? " Full Session Log" : "";
+    let baseFilename = `${prefix} - ${wType}${logTypeLabel} (${datePart})`;
+
+    // Track daily export counts per filename base to increment (e.g. " (2026-08-04) 1.txt")
+    let trackerKey = `asp_export_count_${baseFilename}`;
+    let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
+
+    let finalName = "";
+    if (count === 0) {
+      finalName = `${baseFilename}.txt`;
     } else {
-      return `${fileType} ${timestamp}.${extension}`;
+      finalName = `${baseFilename} ${count}.txt`;
+    }
+
+    // Advance count for subsequent exports on the same day
+    localStorage.setItem(trackerKey, count + 1);
+    return finalName;
+  }
+
+  function updateExportButtonState() {
+    const btn = document.getElementById('exportSummaryBtn');
+    if (sessionScannedObjects.length > 0 || pendingNewItems.length > 0 || pendingFieldUpdates.length > 0) {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
     }
   }
+
+  // Restore session recovery state upon tab refresh/re-entry
+  function checkSessionRecoveryState() {
+    let storedActiveState = localStorage.getItem('asp_session_is_active');
+    const btn = document.getElementById('sessionBtn');
+    const status = document.getElementById('statusBanner');
+
+    if (storedActiveState === 'true') {
+      isSessionActive = true;
+      btn.textContent = "▶️ Resume Active Session";
+      btn.className = "btn-action btn-resume";
+      
+      let sessionTitle = currentSessionName;
+      if (currentOrderNum) sessionTitle += ` (${currentOrderNum})`;
+      
+      status.textContent = `Session Resting: ${sessionTitle ? sessionTitle : 'Active Session'}`;
+      status.style.backgroundColor = "#ffe0b2";
+      
+      if (currentSessionName) document.getElementById('sessionNameInput').value = currentSessionName;
+      if (currentOrderNum) document.getElementById('orderNumInput').value = currentOrderNum;
+      if (currentWorkflowType) document.getElementById('workflowTypeSelect').value = currentWorkflowType;
+    }
+    updateExportButtonState();
+  }
+  checkSessionRecoveryState();
 
   // Helper function to strip AIM symbology prefixes AND (01) GS1 prefixes
   function cleanGtinValue(val) {
@@ -657,7 +740,7 @@
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
-  // CAMERA SCANNER ENGINE (With Duplicate Prevention Shield & Rapid-Fire)
+  // CAMERA SCANNER ENGINE
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraViewfinder');
     const camBtn = document.getElementById('btnToggleCam');
@@ -668,29 +751,22 @@
       camBtn.style.backgroundColor = '#c62828';
       isCameraActive = true;
 
-      let isProcessingScan = false; // Cooldown lock flag
+      let isProcessingScan = false;
 
       html5QrCode = new Html5Qrcode("cameraViewfinder");
       html5QrCode.start(
         { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 150 }
-        },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
         (decodedText, decodedResult) => {
-          if (isProcessingScan) return; // Ignore frames during cooldown lock
+          if (isProcessingScan) return;
 
           let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
 
-          // 1. DUPLICATE SHIELD: Check if this barcode was ALREADY scanned into Line 1, 2, 3, or 4
           for (let i = 1; i <= 4; i++) {
             let existingVal = document.getElementById(`rawScan${i}`).value.trim();
-            if (existingVal === cleanText) {
-              return; // Silently ignore duplicate scans of the exact same code!
-            }
+            if (existingVal === cleanText) return;
           }
 
-          // 2. Find the first empty scan line
           let targetLine = 0;
           for (let i = 1; i <= 4; i++) {
             if (!document.getElementById(`rawScan${i}`).value.trim()) {
@@ -699,34 +775,27 @@
             }
           }
 
-          // Expand lines dynamically if under 4
           if (targetLine === 0 && visibleScanLines < 4) {
             addScanLine();
             targetLine = visibleScanLines;
           }
 
           if (targetLine > 0) {
-            // Lock processor for 1 second to prevent accidental double-fires
             isProcessingScan = true;
-
             document.getElementById(`rawScan${targetLine}`).value = cleanText;
             processAllScans();
 
-            // Check if all essential item details are gathered
             let currentGtin = document.getElementById('gtinInput').value.trim();
             let currentLot = document.getElementById('lotInput').value.trim();
             let currentExp = document.getElementById('expInput').value.trim();
 
             if (currentGtin && currentLot && currentExp) {
-              toggleCameraScanner(); // Complete! Close camera.
+              toggleCameraScanner();
             } else if (visibleScanLines < 4) {
-              addScanLine(); // Prepare line for the next unique barcode
+              addScanLine();
             }
 
-            // Unlock after 1 second cooldown
-            setTimeout(() => {
-              isProcessingScan = false;
-            }, 1000);
+            setTimeout(() => { isProcessingScan = false; }, 1000);
           }
         },
         (errorMessage) => {}
@@ -778,7 +847,22 @@
     document.getElementById('btnAddLine').style.display = 'inline-block';
   }
 
-  // Robust Sequential GS1 Parser (Includes AIM Symbology Identifier Stripping)
+  // Reset/Clear All Fields Button Command
+  function resetScanLinesAndFields() {
+    resetScanLines();
+    document.getElementById('gtinInput').value = '';
+    document.getElementById('refInput').value = '';
+    document.getElementById('lotInput').value = '';
+    document.getElementById('expInput').value = '';
+    document.getElementById('qtyInput').value = '1';
+    currentMatchedItem = null;
+    pendingUpdates = {};
+    hideAllConfirmButtons();
+    clearDisplay();
+    document.getElementById('rawScan1').focus();
+  }
+
+  // Robust Sequential GS1 Parser
   function processAllScans() {
     let lines = [
       document.getElementById('rawScan1').value,
@@ -792,12 +876,10 @@
     lines.forEach(rawLine => {
       if (!rawLine.trim()) return;
       
-      // Strip AIM Symbology Identifiers (e.g., ]C1, ]d2) and parentheses
       let clean = rawLine.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').trim();
       let idx = 0;
 
       while (idx < clean.length) {
-        // AI 17: Expiration Date (STRICT 6 digits: YYMMDD)
         if (clean.substring(idx, idx + 2) === "17" && clean.length - idx >= 8 && /^\d{6}$/.test(clean.substring(idx + 2, idx + 8))) {
           if (!exp) {
             let rawExp = clean.substring(idx + 2, idx + 8);
@@ -809,19 +891,16 @@
           }
           idx += 8;
         }
-        // AI 01: GTIN (14 digits)
         else if (clean.substring(idx, idx + 2) === "01" && clean.length - idx >= 16 && /^\d{14}$/.test(clean.substring(idx + 2, idx + 16))) {
           if (!gtin) gtin = clean.substring(idx + 2, idx + 16);
           idx += 16;
         }
-        // AI 10: Lot Number (Takes ENTIRE remaining string on this line as literal Lot Value!)
         else if (clean.substring(idx, idx + 2) === "10") {
           if (!lot) {
             lot = clean.substring(idx + 2);
           }
           break;
         }
-        // Standalone 1D GTIN without 01 prefix
         else if (/^\d{12,14}$/.test(clean)) {
           if (!gtin) gtin = clean;
           break;
@@ -848,7 +927,6 @@
       return;
     }
     let cleanGtin = val.replace(/^(01|\(01\))/, '').trim();
-    
     let match = db.find(i => i.gtin === cleanGtin || (i.gtin && i.gtin.replace(/^0+/, '') === cleanGtin.replace(/^0+/, '')));
     
     if (match) {
@@ -907,7 +985,6 @@
       alert(`Database updated: Manufacturer updated for REF ${currentMatchedItem.ref}!`);
     }
 
-    // Record update audit entry
     pendingFieldUpdates.push({
       ref: currentMatchedItem.ref,
       field: field === 'gtin' ? 'GTIN' : 'Manufacturer',
@@ -915,8 +992,8 @@
       timestamp: new Date().toLocaleString()
     });
     localStorage.setItem('asp_pending_updates', JSON.stringify(pendingFieldUpdates));
-
     localStorage.setItem('asp_wh_db', JSON.stringify(db));
+    updateExportButtonState();
     updateInfoPanel();
   }
 
@@ -972,38 +1049,66 @@
     updateInfoPanel();
   }
 
-  // Session Logging
+  // Session Management
   function toggleSession() {
     const btn = document.getElementById('sessionBtn');
     const status = document.getElementById('statusBanner');
     const nowObj = new Date();
-    const nowStr = nowObj.toLocaleString();
+    const nowStr = nowObj.toLocaleTimeString();
 
     if (!isSessionActive) {
       isSessionActive = true;
-      sessionScannedObjects = []; // Reset active session receiving objects
-      currentSessionName = document.getElementById('sessionNameInput').value.trim();
+      localStorage.setItem('asp_session_is_active', 'true');
       
-      currentSessionFilename = generateExportFilename("Session", "txt");
+      sessionScannedObjects = [];
+      localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+
+      currentSessionName = document.getElementById('sessionNameInput').value.trim();
+      currentOrderNum = document.getElementById('orderNumInput').value.trim();
+      currentWorkflowType = document.getElementById('workflowTypeSelect').value;
+      sessionStartStr = nowStr;
+
+      localStorage.setItem('asp_session_name', currentSessionName);
+      localStorage.setItem('asp_order_num', currentOrderNum);
+      localStorage.setItem('asp_workflow_type', currentWorkflowType);
+      localStorage.setItem('asp_session_start_str', sessionStartStr);
+
+      let sessionTitle = currentSessionName;
+      if (currentOrderNum) sessionTitle += ` (${currentOrderNum})`;
 
       sessionLogs = [
         `================================================================================`,
-        `ASP-ANDROID SCANNER APP - SESSION LOG`,
-        `SESSION NAME: ${currentSessionName || 'N/A'}`,
+        `ASP-ANDROID SCANNER APP - FULL SESSION AUDIT LOG`,
+        `SESSION NAME: ${sessionTitle || 'N/A'}`,
+        `WORKFLOW PROCESS: ${currentWorkflowType}`,
         `SESSION STARTED: ${nowStr}`,
         `================================================================================\n`
       ];
+      localStorage.setItem('asp_active_session_logs', JSON.stringify(sessionLogs));
 
       btn.textContent = "Stop Scanning Session";
       btn.className = "btn-action btn-stop";
-      status.textContent = `Session Active: ${currentSessionName ? currentSessionName : 'Logging Session'}`;
+      status.textContent = `Session Active: ${sessionTitle ? sessionTitle : 'Logging Session'}`;
       status.style.backgroundColor = "#c8e6c9";
     } else {
+      if (btn.classList.contains('btn-resume')) {
+        btn.textContent = "Stop Scanning Session";
+        btn.className = "btn-action btn-stop";
+        let sessionTitle = currentSessionName;
+        if (currentOrderNum) sessionTitle += ` (${currentOrderNum})`;
+        status.textContent = `Session Active: ${sessionTitle ? sessionTitle : 'Logging Session'}`;
+        status.style.backgroundColor = "#c8e6c9";
+        return;
+      }
+
       isSessionActive = false;
+      localStorage.setItem('asp_session_is_active', 'false');
+
       sessionLogs.push(`================================================================================`);
       sessionLogs.push(`SESSION ENDED: ${nowStr}`);
       sessionLogs.push(`================================================================================`);
-      
+      localStorage.setItem('asp_active_session_logs', JSON.stringify(sessionLogs));
+
       btn.textContent = "Start Scanning Session";
       btn.className = "btn-action btn-start";
       status.textContent = "Session Inactive";
@@ -1011,14 +1116,24 @@
       
       exportSessionLog();
     }
+    updateExportButtonState();
   }
 
   // Save Item Log Function
   function saveItemLog() {
     if (!isSessionActive) {
-      alert("Please start a scanning session first!");
+      alert("Please start or resume a scanning session first!");
       return;
     }
+
+    let hasUnconfirmedGTIN = document.getElementById('btnConfirmGtin').style.display !== 'none';
+    let hasUnconfirmedMfr = document.getElementById('btnConfirmMfr').style.display !== 'none';
+
+    if (hasUnconfirmedGTIN || hasUnconfirmedMfr) {
+      let confirmDiscard = confirm("You have unsaved field updates (such as GTIN or Manufacturer). Do you want to continue saving the scanned item WITHOUT saving the database updates?\n\nClick 'Cancel' to go back and click the red Update button.");
+      if (!confirmDiscard) return;
+    }
+
     const gtin = document.getElementById('gtinInput').value.trim();
     const ref = document.getElementById('refInput').value.trim();
     const lot = document.getElementById('lotInput').value.trim();
@@ -1037,12 +1152,10 @@
       db.push(newItem);
       localStorage.setItem('asp_wh_db', JSON.stringify(db));
 
-      // Track new item addition for audit export
       pendingNewItems.push(newItem);
       localStorage.setItem('asp_pending_new_items', JSON.stringify(pendingNewItems));
     }
 
-    // Save structured object for receiving summary calculation
     sessionScannedObjects.push({
       gtin: gtin || (currentMatchedItem ? currentMatchedItem.gtin : ''),
       ref: ref || 'UNREGISTERED',
@@ -1054,6 +1167,7 @@
       qty: qty,
       isNew: isNewRef
     });
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
     let blockLines = [
       `[${time}] GTIN: ${cleanGtinValue(gtin)}`,
@@ -1074,30 +1188,24 @@
     }
 
     sessionLogs.push(blockLines.join('\n') + '\n');
+    localStorage.setItem('asp_active_session_logs', JSON.stringify(sessionLogs));
+
     alert("Item logged to scanning session!");
 
     if (isCameraActive) toggleCameraScanner();
 
-    // Clear inputs and reset scan line view for next item
-    resetScanLines();
-    document.getElementById('gtinInput').value = '';
-    document.getElementById('refInput').value = '';
-    document.getElementById('lotInput').value = '';
-    document.getElementById('expInput').value = '';
-    document.getElementById('qtyInput').value = '1';
-    hideAllConfirmButtons();
-    clearDisplay();
-    document.getElementById('rawScan1').focus();
+    resetScanLinesAndFields();
+    updateExportButtonState();
   }
 
-  // Export Receiving Summary Engine (Clean Header & GTIN Value Included)
-  async function exportReceivingSummary() {
-    if (sessionScannedObjects.length === 0) {
-      alert("No items have been scanned in the current or recent session to summarize!");
+  // Unified Export Engine
+  async function exportUnifiedSummary() {
+    if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
+      alert("No data available in current session to export!");
       return;
     }
 
-    let filename = generateExportFilename("ASP Scanner Inventory Received Summary", "txt");
+    let summaryFilename = generateExactFilename(false);
 
     let refMap = {};
     let newRefsCreated = [];
@@ -1137,16 +1245,29 @@
       }
     });
 
-    let userSessionName = document.getElementById('sessionNameInput').value.trim() || currentSessionName;
+    let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
+    let oNum = document.getElementById('orderNumInput').value.trim() || currentOrderNum;
+    let wType = document.getElementById('workflowTypeSelect').value || currentWorkflowType || "Receiving";
+
+    let sessionTitleHeader = sName;
+    if (oNum) sessionTitleHeader += ` (${oNum})`;
+
+    const nowObj = new Date();
+    let datePartStr = nowObj.toISOString().slice(0, 10);
+    let timeEndStr = nowObj.toLocaleTimeString();
 
     let reportLines = [
       `================================================================================`,
-      `ASP SCANNER INVENTORY RECEIVED SUMMARY (THRIVE IMPORT LOG)`,
-      `SESSION NAME: ${userSessionName || 'N/A'}`,
-      `EXPORT DATE: ${new Date().toLocaleString()}`,
-      `TOTAL UNIQUE REFS RECEIVED: ${Object.keys(refMap).length}`,
+      `ASP SCANNER APP SUMMARY EXPORT - ${sessionTitleHeader}`,
+      ``,
+      `          Total Unique REFs Scanned: ${Object.keys(refMap).length}`,
+      ``,
+      `          Workflow Process:    ${wType}`,
+      `          Scanned Date:        ${datePartStr}`,
+      `          Session Start:       ${sessionStartStr || 'N/A'}`,
+      `          Session End:         ${timeEndStr}`,
       `================================================================================\n`,
-      `--- ITEMIZED INVENTORY RECEIVED BY REF ---\n`
+      `--- SCANNED ITEMS ---\n`
     ];
 
     let count = 1;
@@ -1165,22 +1286,32 @@
       count++;
     }
 
-    if (newRefsCreated.length > 0) {
+    if (pendingNewItems.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------`);
-      reportLines.push(`--- NEW / UNREGISTERED REFS CREATED THIS SESSION (${newRefsCreated.length}) ---`);
+      reportLines.push(`--- NEW ITEMS (${pendingNewItems.length}) ---`);
       reportLines.push(`--------------------------------------------------------------------------------`);
-      newRefsCreated.forEach(nItem => {
-        reportLines.push(`[+] REF: ${nItem.ref}`);
-        reportLines.push(`    | GTIN: ${nItem.gtin}`);
-        reportLines.push(`    | Manufacturer: ${nItem.mfr}`);
-        reportLines.push(`    | Price: ${nItem.price}`);
-        reportLines.push(`    | Received in Session:`);
-        for (let lKey in nItem.lots) {
-          let lData = nItem.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
-        }
-        reportLines.push(``);
+      let nIdx = 1;
+      pendingNewItems.forEach(nItem => {
+        reportLines.push(`[ ${nIdx} ] REF: ${nItem.ref}`);
+        reportLines.push(`          | GTIN: ${cleanGtinValue(nItem.gtin)}`);
+        reportLines.push(`          | Manufacturer: ${nItem.mfr}`);
+        reportLines.push(`          | Price: ${nItem.price}`);
+        nIdx++;
       });
+      reportLines.push(``);
+    }
+
+    if (pendingFieldUpdates.length > 0) {
+      reportLines.push(`--------------------------------------------------------------------------------`);
+      reportLines.push(`--- EXISTING ITEM UPDATES (${pendingFieldUpdates.length}) ---`);
+      reportLines.push(`--------------------------------------------------------------------------------`);
+      let uIdx = 1;
+      pendingFieldUpdates.forEach(upd => {
+        reportLines.push(`[ ${uIdx} ] REF: ${upd.ref}`);
+        reportLines.push(`          | GTIN: ${cleanGtinValue(upd.newValue)}`);
+        uIdx++;
+      });
+      reportLines.push(``);
     }
 
     reportLines.push(`================================================================================`);
@@ -1189,89 +1320,23 @@
 
     let fileContent = reportLines.join('\n');
 
-    // Prompt user where to save file (Google Drive folder)
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({
-          suggestedName: filename,
-          types: [{ description: 'Text Files', accept: { 'text/plain': ['.txt'] } }]
-        });
-        const writable = await handle.createWritable();
-        await writable.write(fileContent);
-        await writable.close();
-        alert("Inventory Received Summary successfully saved to chosen location!");
-      } catch (err) {
-        if (err.name === 'AbortError') return;
-      }
-    } else {
-      let blob = new Blob([fileContent], { type: 'text/plain' });
-      let a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    }
-  }
-
-  // Export Database Updates Engine
-  async function exportDatabaseUpdates() {
-    if (pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
-      alert("No database updates or new items have been recorded to export!");
-      return;
-    }
-
-    let filename = generateExportFilename("Scanner App Updates and Additions Export", "txt");
-
-    let reportLines = [
-      `================================================================================`,
-      `SCANNER APP UPDATES AND ADDITIONS EXPORT`,
-      `EXPORT DATE: ${new Date().toLocaleString()}`,
-      `================================================================================\n`
-    ];
-
-    if (pendingNewItems.length > 0) {
-      reportLines.push(`--- NEW ITEMS ADDED (${pendingNewItems.length}) ---`);
-      pendingNewItems.forEach(item => {
-        reportLines.push(`[+] REF: ${item.ref}`);
-        reportLines.push(`    | GTIN: ${cleanGtinValue(item.gtin)}`);
-        reportLines.push(`    | Manufacturer: ${item.mfr}`);
-        reportLines.push(`    | Price: ${item.price}\n`);
-      });
-    }
-
-    if (pendingFieldUpdates.length > 0) {
-      reportLines.push(`--- EXISTING ITEMS UPDATED (${pendingFieldUpdates.length}) ---`);
-      pendingFieldUpdates.forEach(upd => {
-        reportLines.push(`[*] REF: ${upd.ref}`);
-        reportLines.push(`    | Field Updated: ${upd.field}`);
-        reportLines.push(`    | New Value: ${cleanGtinValue(upd.newValue)}`);
-        reportLines.push(`    | Timestamp: ${upd.timestamp}\n`);
-      });
-    }
-
-    reportLines.push(`================================================================================`);
-    reportLines.push(`END OF EXPORT REPORT`);
-    reportLines.push(`================================================================================`);
-
-    let fileContent = reportLines.join('\n');
-
-    // Prompt user where to save file (Google Drive folder)
-    if ('showSaveFilePicker' in window) {
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: filename,
+          suggestedName: summaryFilename,
           types: [{ description: 'Text Files', accept: { 'text/plain': ['.txt'] } }]
         });
         const writable = await handle.createWritable();
         await writable.write(fileContent);
         await writable.close();
         
-        // Clear tracked updates after successful export
         pendingNewItems = [];
         pendingFieldUpdates = [];
         localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
         localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-        
-        alert("Updates export log successfully saved to chosen location!");
+        updateExportButtonState();
+
+        alert("ASP Scanner Summary successfully exported to chosen location!");
       } catch (err) {
         if (err.name === 'AbortError') return;
       }
@@ -1279,26 +1344,26 @@
       let blob = new Blob([fileContent], { type: 'text/plain' });
       let a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = filename;
+      a.download = summaryFilename;
       a.click();
-      
-      // Clear tracked updates after successful export
+
       pendingNewItems = [];
       pendingFieldUpdates = [];
       localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
       localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+      updateExportButtonState();
     }
   }
 
-  // File Save Export Engine with Interactive Folder Picker & Automatic Fallback
+  // Save Raw Full Session Audit Log
   async function exportSessionLog() {
     let fileContent = sessionLogs.join('\n');
+    let fullLogFilename = generateExactFilename(true);
     
-    // 1. Try Modern File System Access API (Pops up "Save As" Folder Picker)
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({
-          suggestedName: currentSessionFilename || generateExportFilename("Session", "txt"),
+          suggestedName: fullLogFilename,
           types: [{
             description: 'Text Files',
             accept: { 'text/plain': ['.txt'] },
@@ -1307,18 +1372,17 @@
         const writable = await handle.createWritable();
         await writable.write(fileContent);
         await writable.close();
-        alert("Session log successfully saved to chosen location!");
+        alert("Full Session Audit Log successfully saved!");
         return;
       } catch (err) {
-        if (err.name === 'AbortError') return; // User closed picker
+        if (err.name === 'AbortError') return;
       }
     }
 
-    // 2. Standard Fallback (Saves automatically to default Downloads folder)
     let blob = new Blob([fileContent], { type: 'text/plain' });
     let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = currentSessionFilename || generateExportFilename("Session", "txt");
+    a.download = fullLogFilename;
     a.click();
   }
 </script>
