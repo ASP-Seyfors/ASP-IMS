@@ -60,7 +60,16 @@
       font-family: Arial, sans-serif;
       border-radius: 2px;
       min-width: 140px;
+      box-sizing: border-box;
+      transition: background-color 0.2s, border-color 0.2s;
     }
+
+    /* Attention Highlighting for Unpopulated / Missing Fields */
+    input.needs-attention, select.needs-attention {
+      background-color: #fff59d !important; /* Soft yellow fill */
+      border: 2px solid #f57f17 !important; /* Amber border */
+    }
+
     .action-selector {
       display: flex;
       gap: 8px;
@@ -245,7 +254,7 @@
     <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 0;">
       <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
       <div class="input-wrapper">
-        <input type="text" id="refInput" placeholder="Enter REF/SKU First" onchange="lookupByRef(this.value)">
+        <input type="text" id="refInput" placeholder="Enter REF/SKU First" oninput="lookupByRef(this.value)">
       </div>
     </div>
   </div>
@@ -313,7 +322,7 @@
     <div class="form-row">
       <div class="form-label">GTIN Barcode:</div>
       <div class="input-wrapper">
-        <input type="text" id="gtinInput" placeholder="GTIN Barcode" oninput="handleGtinScan(this.value)">
+        <input type="text" id="gtinInput" class="needs-attention" placeholder="GTIN Barcode" oninput="handleGtinScan(this.value); evaluateFieldAttention();">
       </div>
     </div>
 
@@ -321,7 +330,7 @@
     <div class="form-row">
       <div class="form-label">Lot Number:</div>
       <div class="input-wrapper">
-        <input type="text" id="lotInput" placeholder="Lot Number">
+        <input type="text" id="lotInput" class="needs-attention" placeholder="Lot Number" oninput="evaluateFieldAttention();">
       </div>
     </div>
 
@@ -329,7 +338,7 @@
     <div class="form-row">
       <div class="form-label">Expiration Date:</div>
       <div class="input-wrapper">
-        <input type="text" id="expInput" placeholder="YYYY-MM-DD">
+        <input type="text" id="expInput" class="needs-attention" placeholder="YYYY-MM-DD" oninput="evaluateFieldAttention();">
       </div>
     </div>
 
@@ -337,7 +346,7 @@
     <div class="form-row">
       <div class="form-label">Manufacturer:</div>
       <div class="input-wrapper">
-        <select id="vendorSelect" onchange="handleVendorSelect(this.value)">
+        <select id="vendorSelect" class="needs-attention" onchange="handleVendorSelect(this.value); evaluateFieldAttention();">
           <!-- Populated via JS / JSON -->
         </select>
       </div>
@@ -452,9 +461,9 @@
         const jsonContent = await response.json();
         
         if (Array.isArray(jsonContent)) {
-          if (db.length === 0) db = jsonContent;
+          db = jsonContent;
         } else if (jsonContent.items) {
-          if (db.length === 0) db = jsonContent.items;
+          db = jsonContent.items;
           if (jsonContent.vendors) vendors = jsonContent.vendors;
         }
         
@@ -487,6 +496,25 @@
   let html5QrCode = null;
   let isCameraActive = false;
 
+  function evaluateFieldAttention() {
+    const fields = [
+      document.getElementById('gtinInput'),
+      document.getElementById('lotInput'),
+      document.getElementById('expInput'),
+      document.getElementById('refInput'),
+      document.getElementById('vendorSelect')
+    ];
+
+    fields.forEach(el => {
+      if (!el) return;
+      if (!el.value.trim()) {
+        el.classList.add('needs-attention');
+      } else {
+        el.classList.remove('needs-attention');
+      }
+    });
+  }
+
   function setItemAction(act) {
     currentItemAction = act;
     document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
@@ -501,6 +529,7 @@
       opt.value = v; opt.textContent = v;
       sel.appendChild(opt);
     });
+    evaluateFieldAttention();
   }
   populateVendors();
   loadMasterDatabase();
@@ -622,7 +651,6 @@
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
-  // Camera Scanning with Duplicate and Noise Filtering
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraViewfinder');
     const camBtn = document.getElementById('btnToggleCam');
@@ -644,10 +672,8 @@
 
           let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
 
-          // Ignore noise/short characters (< 4 chars)
           if (cleanText.length < 4) return;
 
-          // Check if already present in any raw scan field
           for (let i = 1; i <= 4; i++) {
             let existingVal = document.getElementById(`rawScan${i}`).value.trim();
             if (existingVal === cleanText) return;
@@ -742,6 +768,7 @@
     currentMatchedItem = null;
     pendingUpdates = {};
     hideAllConfirmButtons();
+    evaluateFieldAttention();
     document.getElementById('refInput').focus();
   }
 
@@ -799,6 +826,8 @@
     }
     if (lot) document.getElementById('lotInput').value = lot;
     if (exp) document.getElementById('expInput').value = exp;
+
+    evaluateFieldAttention();
   }
 
   function handleGtinScan(val) {
@@ -822,10 +851,14 @@
         currentMatchedItem = null;
       }
     }
+    evaluateFieldAttention();
   }
 
   function lookupByRef(refVal) {
-    if (!refVal) return;
+    if (!refVal) {
+      evaluateFieldAttention();
+      return;
+    }
     let match = db.find(i => i.ref.toLowerCase() === refVal.trim().toLowerCase());
     let currentGtin = document.getElementById('gtinInput').value.trim();
 
@@ -839,6 +872,7 @@
       currentMatchedItem = null;
       hideAllConfirmButtons();
     }
+    evaluateFieldAttention();
   }
 
   function confirmFieldUpdate(field) {
@@ -874,6 +908,7 @@
   function populateDisplay(item) {
     document.getElementById('refInput').value = item.ref || '';
     if (item.mfr) document.getElementById('vendorSelect').value = item.mfr;
+    evaluateFieldAttention();
   }
 
   function handleVendorSelect(val) {
@@ -888,9 +923,9 @@
     } else if (currentMatchedItem && currentMatchedItem.mfr !== val) {
       document.getElementById('btnConfirmMfr').style.display = 'inline-block';
     }
+    evaluateFieldAttention();
   }
 
-  // Transit from Scanning Screen (Screen 2) to Verification Screen (Screen 3)
   function goToReviewStage() {
     const ref = document.getElementById('refInput').value.trim();
     if (!ref) {
@@ -923,7 +958,6 @@
       document.getElementById('revActionRow').style.display = 'none';
     }
 
-    // Check for GTIN Update prompt
     let diffBanner = document.getElementById('gtinDiffBanner');
     let btnGtin = document.getElementById('btnConfirmGtin');
 
@@ -941,7 +975,6 @@
       diffBanner.style.display = 'none';
     }
 
-    // Check for Manufacturer Update prompt
     let btnMfr = document.getElementById('btnConfirmMfr');
     if (currentMatchedItem && currentMatchedItem.mfr !== vendor) {
       btnMfr.style.display = 'inline-block';
@@ -958,7 +991,6 @@
     document.getElementById('screenScanning').style.display = 'block';
   }
 
-  // Save Item Log Function (Commits and Returns to Screen 2)
   function saveItemLog() {
     const gtin = document.getElementById('gtinInput').value.trim();
     const ref = document.getElementById('refInput').value.trim();
@@ -1038,7 +1070,6 @@
     return finalName;
   }
 
-  // Unified Export Engine
   async function exportUnifiedSummary() {
     if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
       alert("No data was scanned in this session.");
