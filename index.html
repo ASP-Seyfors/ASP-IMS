@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.2.3 | UPDATED: 2026.08.06                   -->
-<!-- CHANGELOG: Added auto-uppercase transformation to REF/SKU input field   -->
+<!-- ASP SCANNER APP - VERSION 1.2.4 | UPDATED: 2026.08.06                   -->
+<!-- CHANGELOG: Fixed DB async load overwrite & MFR/desc matching persistence -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.2.3</title>
+  <title>ASP-Android Scanner App v1.2.4</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -262,7 +262,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.3)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.4)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -532,22 +532,27 @@
       if (response.ok) {
         const jsonContent = await response.json();
         
-        if (Array.isArray(jsonContent)) {
-          db = jsonContent;
-        } else if (jsonContent.items) {
-          db = jsonContent.items;
-          if (jsonContent.vendors) vendors = jsonContent.vendors;
+        let loadedItems = Array.isArray(jsonContent) ? jsonContent : (jsonContent.items || []);
+        let loadedVendors = jsonContent.vendors || defaultVendors;
+
+        if (loadedItems.length > 0) {
+          db = loadedItems;
+          localStorage.setItem('asp_wh_db', JSON.stringify(db));
         }
-        
-        localStorage.setItem('asp_wh_db', JSON.stringify(db));
-        localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
-        populateVendors();
+
+        if (loadedVendors.length > 0) {
+          vendors = loadedVendors;
+          localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
+          populateVendors();
+        }
 
         let curRef = document.getElementById('refInput').value.trim();
+        let curGtin = document.getElementById('gtinInput').value.trim();
         if (curRef) lookupByRef(curRef);
+        else if (curGtin) handleGtinScan(curGtin);
       }
     } catch (err) {
-      console.warn("Notice: External database.json not found or parsing locally stored items.");
+      console.warn("Notice: External database.json not found or parsing locally stored items.", err);
     }
   }
 
@@ -957,14 +962,12 @@
       hideAllConfirmButtons();
     } else {
       let currentRef = document.getElementById('refInput').value.trim().toUpperCase();
-      let refMatch = db.find(i => getItemSku(i) === currentRef);
+      let refMatch = currentMatchedItem || db.find(i => getItemSku(i) === currentRef);
       
       if (refMatch) {
         currentMatchedItem = refMatch;
         pendingUpdates['gtin'] = cleanGtin;
         populateDisplay(refMatch);
-      } else {
-        currentMatchedItem = null;
       }
     }
     evaluateFieldAttention();
@@ -972,6 +975,7 @@
 
   function lookupByRef(refVal) {
     if (!refVal) {
+      currentMatchedItem = null;
       evaluateFieldAttention();
       return;
     }
@@ -980,10 +984,10 @@
     let currentGtin = document.getElementById('gtinInput').value.trim();
 
     if (match) {
-      if (currentGtin && match.gtin !== currentGtin) {
+      currentMatchedItem = match;
+      if (currentGtin && match.gtin && match.gtin !== currentGtin) {
         pendingUpdates['gtin'] = currentGtin;
       }
-      currentMatchedItem = match;
       populateDisplay(match);
     } else {
       currentMatchedItem = null;
@@ -1033,16 +1037,22 @@
 
     document.getElementById('refInput').value = itemSku || '';
 
+    if (item.gtin && !document.getElementById('gtinInput').value.trim()) {
+      document.getElementById('gtinInput').value = item.gtin;
+    }
+
     if (itemVendor) {
       let vendorSelect = document.getElementById('vendorSelect');
-      let exists = Array.from(vendorSelect.options).some(opt => opt.value.toLowerCase() === itemVendor.toLowerCase());
+      let targetOption = Array.from(vendorSelect.options).find(opt => opt.value.trim().toLowerCase() === itemVendor.trim().toLowerCase());
       
-      if (!exists) {
+      if (targetOption) {
+        vendorSelect.value = targetOption.value;
+      } else {
         vendors.splice(vendors.length - 1, 0, itemVendor);
         localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
         populateVendors();
+        vendorSelect.value = itemVendor;
       }
-      vendorSelect.value = itemVendor;
     }
 
     evaluateFieldAttention();
