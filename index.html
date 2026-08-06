@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.2.4 | UPDATED: 2026.08.06                   -->
-<!-- CHANGELOG: Fixed DB async load overwrite & MFR/desc matching persistence -->
+<!-- ASP SCANNER APP - VERSION 1.2.5 | UPDATED: 2026.08.06                   -->
+<!-- CHANGELOG: Tiered fuzzy DB matching, raw scan fallback, Screen 2 preview -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.2.4</title>
+  <title>ASP-Android Scanner App v1.2.5</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -71,7 +71,6 @@
       transition: background-color 0.2s, border-color 0.2s;
     }
 
-    /* Enforce uppercase styling on REF field */
     #refInput {
       text-transform: uppercase;
     }
@@ -256,13 +255,22 @@
     .review-line:last-child {
       border-bottom: none;
     }
+
+    .match-preview-box {
+      background-color: #e8f5e9;
+      border: 1px solid #4caf50;
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.4)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.5)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -308,12 +316,12 @@
     </div>
   </div>
 
-  <!-- REF / SKU Input First (With Auto-Uppercase Conversion) -->
+  <!-- REF / SKU Input First -->
   <div class="card">
     <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 0;">
       <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
       <div class="input-wrapper">
-        <input type="text" id="refInput" placeholder="Enter REF/SKU First" oninput="this.value = this.value.toUpperCase(); lookupByRef(this.value);">
+        <input type="text" id="refInput" placeholder="Enter REF/SKU First" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
       </div>
     </div>
   </div>
@@ -373,6 +381,12 @@
 
     <h2 id="parsedSectionHeader">Parsed & Captured Item Details</h2>
 
+    <!-- Live On-Screen Database Match Indicator -->
+    <div id="liveMatchPreview" class="match-preview-box" style="display: none;">
+      <div style="font-weight: bold; color: #2e7d32;">✓ Database Match Found</div>
+      <div id="prevDescText" style="margin-top: 2px;">--</div>
+    </div>
+
     <!-- Item Destination Selector -->
     <div class="form-row" id="rowItemDestination" style="display: none;">
       <div class="form-label">Item Destination:</div>
@@ -388,7 +402,7 @@
     <div class="form-row">
       <div class="form-label">GTIN Barcode:</div>
       <div class="input-wrapper">
-        <input type="text" id="gtinInput" class="needs-attention" placeholder="GTIN Barcode" oninput="handleGtinScan(this.value); evaluateFieldAttention();">
+        <input type="text" id="gtinInput" class="needs-attention" placeholder="GTIN Barcode" oninput="runMasterLookup(); evaluateFieldAttention();">
       </div>
     </div>
 
@@ -526,6 +540,11 @@
     return (item.mfr || item.vendor || item.manufacturer || '').toString().trim();
   }
 
+  function getItemDesc(item) {
+    if (!item) return '';
+    return (item.desc || item.description || '').toString().trim();
+  }
+
   async function loadMasterDatabase() {
     try {
       const response = await fetch('database.json');
@@ -546,10 +565,7 @@
           populateVendors();
         }
 
-        let curRef = document.getElementById('refInput').value.trim();
-        let curGtin = document.getElementById('gtinInput').value.trim();
-        if (curRef) lookupByRef(curRef);
-        else if (curGtin) handleGtinScan(curGtin);
+        runMasterLookup();
       }
     } catch (err) {
       console.warn("Notice: External database.json not found or parsing locally stored items.", err);
@@ -576,6 +592,83 @@
   let html5QrCode = null;
   let isCameraActive = false;
   let scanCooldown = false;
+
+  // Multi-Tier Database Search Engine
+  function findDatabaseMatch(gtinVal, refVal, rawLines) {
+    if (!db || db.length === 0) return null;
+
+    let cleanGtin = (gtinVal || '').replace(/^(01|\(01\))/, '').trim();
+    let cleanRef = (refVal || '').trim().toUpperCase();
+    let normRef = cleanRef.replace(/[\s\-_"']/g, '');
+
+    // Tier 1: GTIN match
+    if (cleanGtin) {
+      let match = db.find(i => {
+        let dbGtin = (i.gtin || '').toString().trim();
+        return dbGtin && (dbGtin === cleanGtin || dbGtin.replace(/^0+/, '') === cleanGtin.replace(/^0+/, ''));
+      });
+      if (match) return match;
+    }
+
+    // Tier 2: Exact SKU/REF match
+    if (cleanRef) {
+      let match = db.find(i => getItemSku(i) === cleanRef);
+      if (match) return match;
+    }
+
+    // Tier 3: Normalized SKU/REF match (ignores hyphens and spaces)
+    if (normRef) {
+      let match = db.find(i => getItemSku(i).replace(/[\s\-_"']/g, '') === normRef);
+      if (match) return match;
+    }
+
+    // Tier 4: Search inside raw barcode strings for DB SKUs
+    if (rawLines && rawLines.length > 0) {
+      for (let raw of rawLines) {
+        if (!raw) continue;
+        let upperRaw = raw.toUpperCase();
+        let match = db.find(i => {
+          let sku = getItemSku(i);
+          return sku.length >= 3 && upperRaw.includes(sku);
+        });
+        if (match) return match;
+      }
+    }
+
+    return null;
+  }
+
+  // Unified Master Lookup Routine
+  function runMasterLookup() {
+    let curRef = document.getElementById('refInput').value.trim();
+    let curGtin = document.getElementById('gtinInput').value.trim();
+
+    let rawLines = [
+      document.getElementById('rawScan1').value,
+      document.getElementById('rawScan2').value,
+      document.getElementById('rawScan3').value,
+      document.getElementById('rawScan4').value
+    ];
+
+    let match = findDatabaseMatch(curGtin, curRef, rawLines);
+
+    if (match) {
+      currentMatchedItem = match;
+      populateDisplay(match);
+
+      let prevBox = document.getElementById('liveMatchPreview');
+      let prevText = document.getElementById('prevDescText');
+      if (prevBox && prevText) {
+        prevText.textContent = `${getItemSku(match)} - ${getItemDesc(match)}`;
+        prevBox.style.display = 'block';
+      }
+    } else {
+      let prevBox = document.getElementById('liveMatchPreview');
+      if (prevBox) prevBox.style.display = 'none';
+    }
+
+    evaluateFieldAttention();
+  }
 
   function updateCameraOverlayStatus() {
     const hasGtin = document.getElementById('gtinInput').value.trim() !== '';
@@ -889,6 +982,10 @@
     currentMatchedItem = null;
     pendingUpdates = {};
     hideAllConfirmButtons();
+    
+    let prevBox = document.getElementById('liveMatchPreview');
+    if (prevBox) prevBox.style.display = 'none';
+
     evaluateFieldAttention();
     document.getElementById('refInput').focus();
   }
@@ -943,57 +1040,11 @@
 
     if (gtin) {
       document.getElementById('gtinInput').value = gtin;
-      handleGtinScan(gtin);
     }
     if (lot) document.getElementById('lotInput').value = lot;
     if (exp) document.getElementById('expInput').value = exp;
 
-    evaluateFieldAttention();
-  }
-
-  function handleGtinScan(val) {
-    if (!val) return;
-    let cleanGtin = val.replace(/^(01|\(01\))/, '').trim();
-    let match = db.find(i => i.gtin === cleanGtin || (i.gtin && i.gtin.replace(/^0+/, '') === cleanGtin.replace(/^0+/, '')));
-    
-    if (match) {
-      currentMatchedItem = match;
-      populateDisplay(match);
-      hideAllConfirmButtons();
-    } else {
-      let currentRef = document.getElementById('refInput').value.trim().toUpperCase();
-      let refMatch = currentMatchedItem || db.find(i => getItemSku(i) === currentRef);
-      
-      if (refMatch) {
-        currentMatchedItem = refMatch;
-        pendingUpdates['gtin'] = cleanGtin;
-        populateDisplay(refMatch);
-      }
-    }
-    evaluateFieldAttention();
-  }
-
-  function lookupByRef(refVal) {
-    if (!refVal) {
-      currentMatchedItem = null;
-      evaluateFieldAttention();
-      return;
-    }
-    let cleanVal = refVal.trim().toUpperCase();
-    let match = db.find(i => getItemSku(i) === cleanVal);
-    let currentGtin = document.getElementById('gtinInput').value.trim();
-
-    if (match) {
-      currentMatchedItem = match;
-      if (currentGtin && match.gtin && match.gtin !== currentGtin) {
-        pendingUpdates['gtin'] = currentGtin;
-      }
-      populateDisplay(match);
-    } else {
-      currentMatchedItem = null;
-      hideAllConfirmButtons();
-    }
-    evaluateFieldAttention();
+    runMasterLookup();
   }
 
   function confirmFieldUpdate(field) {
@@ -1035,7 +1086,7 @@
     let itemSku = getItemSku(item);
     let itemVendor = getItemVendor(item);
 
-    document.getElementById('refInput').value = itemSku || '';
+    if (itemSku) document.getElementById('refInput').value = itemSku;
 
     if (item.gtin && !document.getElementById('gtinInput').value.trim()) {
       document.getElementById('gtinInput').value = item.gtin;
@@ -1094,10 +1145,7 @@
     document.getElementById('revMfr').textContent = vendor;
     document.getElementById('revQty').textContent = qty;
 
-    const desc = (currentMatchedItem && (currentMatchedItem.desc || currentMatchedItem.description))
-      ? (currentMatchedItem.desc || currentMatchedItem.description)
-      : "Navigate to vendor website for item description.";
-
+    const desc = getItemDesc(currentMatchedItem) || "Navigate to vendor website for item description.";
     const price = (currentMatchedItem && currentMatchedItem.price) ? currentMatchedItem.price : "$0.00";
 
     document.getElementById('revDesc').textContent = desc;
@@ -1159,10 +1207,7 @@
       const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
 
       let isNewRef = false;
-      const desc = (currentMatchedItem && (currentMatchedItem.desc || currentMatchedItem.description))
-        ? (currentMatchedItem.desc || currentMatchedItem.description)
-        : "Navigate to vendor website for item description.";
-
+      const desc = getItemDesc(currentMatchedItem) || "Navigate to vendor website for item description.";
       const price = (currentMatchedItem && currentMatchedItem.price) ? currentMatchedItem.price : "$0.00";
 
       let rawBarcodesGathered = [];
