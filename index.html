@@ -1,9 +1,13 @@
+<!-- ======================================================================= -->
+<!-- ASP SCANNER APP - VERSION 1.2.1 | UPDATED: 2026.08.06                   -->
+<!-- CHANGELOG: Guarded DOM null checks in saveItemLog routine                -->
+<!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App</title>
+  <title>ASP-Android Scanner App v1.2.1</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -253,7 +257,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session</h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.1)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -555,9 +559,13 @@
     const hasLot = document.getElementById('lotInput').value.trim() !== '';
     const hasExp = document.getElementById('expInput').value.trim() !== '';
 
-    document.getElementById('tagGtin').classList.toggle('captured', hasGtin);
-    document.getElementById('tagLot').classList.toggle('captured', hasLot);
-    document.getElementById('tagExp').classList.toggle('captured', hasExp);
+    let tagGtin = document.getElementById('tagGtin');
+    let tagLot = document.getElementById('tagLot');
+    let tagExp = document.getElementById('tagExp');
+
+    if (tagGtin) tagGtin.classList.toggle('captured', hasGtin);
+    if (tagLot) tagLot.classList.toggle('captured', hasLot);
+    if (tagExp) tagExp.classList.toggle('captured', hasExp);
   }
 
   function evaluateFieldAttention() {
@@ -583,12 +591,15 @@
 
   function setItemAction(act) {
     currentItemAction = act;
-    document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
-    document.getElementById('actBtnRes').className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
+    let invBtn = document.getElementById('actBtnInv');
+    let resBtn = document.getElementById('actBtnRes');
+    if (invBtn) invBtn.className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
+    if (resBtn) resBtn.className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
   }
 
   function populateVendors() {
     const sel = document.getElementById('vendorSelect');
+    if (!sel) return;
     sel.innerHTML = '';
     vendors.forEach(v => {
       let opt = document.createElement('option');
@@ -641,10 +652,9 @@
     document.getElementById('screenScanning').style.display = 'block';
     document.getElementById('screenReview').style.display = 'none';
 
-    if (currentWorkflowType.includes('Receiving & Reserving')) {
-      document.getElementById('rowItemDestination').style.display = 'flex';
-    } else {
-      document.getElementById('rowItemDestination').style.display = 'none';
+    let destRow = document.getElementById('rowItemDestination');
+    if (destRow) {
+      destRow.style.display = currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
     }
 
     resetScanLinesAndFields();
@@ -674,8 +684,9 @@
       document.getElementById('screenScanning').style.display = 'block';
       document.getElementById('screenReview').style.display = 'none';
 
-      if (currentWorkflowType.includes('Receiving & Reserving')) {
-        document.getElementById('rowItemDestination').style.display = 'flex';
+      let destRow = document.getElementById('rowItemDestination');
+      if (destRow) {
+        destRow.style.display = currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
       }
     }
   }
@@ -717,7 +728,6 @@
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
-  // Camera Scanner initialization with DOM visibility delay
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraContainer');
     const camBtn = document.getElementById('btnToggleCam');
@@ -987,10 +997,13 @@
   }
 
   function hideAllConfirmButtons() {
-    document.getElementById('btnConfirmGtin').style.display = 'none';
-    document.getElementById('btnConfirmRef').style.display = 'none';
-    document.getElementById('btnConfirmMfr').style.display = 'none';
-    document.getElementById('gtinDiffBanner').style.display = 'none';
+    let btnGtin = document.getElementById('btnConfirmGtin');
+    let btnMfr = document.getElementById('btnConfirmMfr');
+    let diffBanner = document.getElementById('gtinDiffBanner');
+
+    if (btnGtin) btnGtin.style.display = 'none';
+    if (btnMfr) btnMfr.style.display = 'none';
+    if (diffBanner) diffBanner.style.display = 'none';
   }
 
   function populateDisplay(item) {
@@ -1011,7 +1024,8 @@
         document.getElementById('vendorSelect').value = newV;
       }
     } else if (currentMatchedItem && currentMatchedItem.mfr !== val) {
-      document.getElementById('btnConfirmMfr').style.display = 'inline-block';
+      let btnMfr = document.getElementById('btnConfirmMfr');
+      if (btnMfr) btnMfr.style.display = 'inline-block';
     }
     evaluateFieldAttention();
   }
@@ -1041,11 +1055,14 @@
     document.getElementById('revDesc').textContent = desc;
     document.getElementById('revPrice').textContent = price;
 
-    if (currentWorkflowType.includes('Receiving & Reserving')) {
-      document.getElementById('revActionRow').style.display = 'flex';
-      document.getElementById('revAction').textContent = currentItemAction;
-    } else {
-      document.getElementById('revActionRow').style.display = 'none';
+    let revActionRow = document.getElementById('revActionRow');
+    if (revActionRow) {
+      if (currentWorkflowType.includes('Receiving & Reserving')) {
+        revActionRow.style.display = 'flex';
+        document.getElementById('revAction').textContent = currentItemAction;
+      } else {
+        revActionRow.style.display = 'none';
+      }
     }
 
     let diffBanner = document.getElementById('gtinDiffBanner');
@@ -1053,23 +1070,21 @@
 
     if (currentMatchedItem && gtin && currentMatchedItem.gtin !== gtin) {
       pendingUpdates['gtin'] = gtin;
-      btnGtin.style.display = 'inline-block';
-      if (currentMatchedItem.gtin) {
-        diffBanner.textContent = `⚠️ Replace Saved GTIN (${currentMatchedItem.gtin}) with Scanned GTIN (${gtin})?`;
-      } else {
-        diffBanner.textContent = `[Link New GTIN: ${gtin}]`;
+      if (btnGtin) btnGtin.style.display = 'inline-block';
+      if (diffBanner) {
+        diffBanner.textContent = currentMatchedItem.gtin 
+          ? `⚠️ Replace Saved GTIN (${currentMatchedItem.gtin}) with Scanned GTIN (${gtin})?` 
+          : `[Link New GTIN: ${gtin}]`;
+        diffBanner.style.display = 'block';
       }
-      diffBanner.style.display = 'block';
     } else {
-      btnGtin.style.display = 'none';
-      diffBanner.style.display = 'none';
+      if (btnGtin) btnGtin.style.display = 'none';
+      if (diffBanner) diffBanner.style.display = 'none';
     }
 
     let btnMfr = document.getElementById('btnConfirmMfr');
-    if (currentMatchedItem && currentMatchedItem.mfr !== vendor) {
-      btnMfr.style.display = 'inline-block';
-    } else {
-      btnMfr.style.display = 'none';
+    if (btnMfr) {
+      btnMfr.style.display = (currentMatchedItem && currentMatchedItem.mfr !== vendor) ? 'inline-block' : 'none';
     }
 
     document.getElementById('screenScanning').style.display = 'none';
@@ -1085,7 +1100,6 @@
     }
   }
 
-  // Robust Save Routine
   function saveItemLog() {
     try {
       const gtin = document.getElementById('gtinInput').value.trim();
@@ -1140,10 +1154,8 @@
       });
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
-      // Pop-up confirmation alert
       alert(`Item ${ref} successfully saved to session!`);
 
-      // Reset fields and return smoothly to scanning screen
       resetScanLinesAndFields();
       document.getElementById('screenReview').style.display = 'none';
       document.getElementById('screenScanning').style.display = 'block';
