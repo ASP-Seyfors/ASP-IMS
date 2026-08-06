@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.2.1 | UPDATED: 2026.08.06                   -->
-<!-- CHANGELOG: Guarded DOM null checks in saveItemLog routine                -->
+<!-- ASP SCANNER APP - VERSION 1.2.2 | UPDATED: 2026.08.06                   -->
+<!-- CHANGELOG: Dual key SKU/REF database matching & MFR auto-select fix      -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.2.1</title>
+  <title>ASP-Android Scanner App v1.2.2</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -257,7 +257,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.1)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.2)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -511,6 +511,18 @@
   let db = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
   let vendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors;
 
+  // Helper to extract SKU or REF regardless of JSON schema
+  function getItemSku(item) {
+    if (!item) return '';
+    return (item.sku || item.ref || '').toString().trim();
+  }
+
+  // Helper to extract Vendor / Manufacturer regardless of JSON schema
+  function getItemVendor(item) {
+    if (!item) return '';
+    return (item.mfr || item.vendor || item.manufacturer || '').toString().trim();
+  }
+
   async function loadMasterDatabase() {
     try {
       const response = await fetch('database.json');
@@ -527,6 +539,10 @@
         localStorage.setItem('asp_wh_db', JSON.stringify(db));
         localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
         populateVendors();
+
+        // Re-evaluate lookup if user already typed REF before DB loaded
+        let curRef = document.getElementById('refInput').value.trim();
+        if (curRef) lookupByRef(curRef);
       }
     } catch (err) {
       console.warn("Notice: External database.json not found or parsing locally stored items.");
@@ -938,8 +954,8 @@
       populateDisplay(match);
       hideAllConfirmButtons();
     } else {
-      let currentRef = document.getElementById('refInput').value.trim();
-      let refMatch = db.find(i => i.ref.toLowerCase() === currentRef.toLowerCase());
+      let currentRef = document.getElementById('refInput').value.trim().toLowerCase();
+      let refMatch = db.find(i => getItemSku(i).toLowerCase() === currentRef);
       
       if (refMatch) {
         currentMatchedItem = refMatch;
@@ -957,7 +973,8 @@
       evaluateFieldAttention();
       return;
     }
-    let match = db.find(i => i.ref.toLowerCase() === refVal.trim().toLowerCase());
+    let cleanVal = refVal.trim().toLowerCase();
+    let match = db.find(i => getItemSku(i).toLowerCase() === cleanVal);
     let currentGtin = document.getElementById('gtinInput').value.trim();
 
     if (match) {
@@ -979,15 +996,17 @@
       currentMatchedItem.gtin = pendingUpdates['gtin'];
       document.getElementById('btnConfirmGtin').style.display = 'none';
       document.getElementById('gtinDiffBanner').style.display = 'none';
-      alert(`Database updated: GTIN ${pendingUpdates['gtin']} linked to REF ${currentMatchedItem.ref}!`);
+      alert(`Database updated: GTIN ${pendingUpdates['gtin']} linked to REF ${getItemSku(currentMatchedItem)}!`);
     } else if (field === 'mfr') {
-      currentMatchedItem.mfr = document.getElementById('vendorSelect').value;
+      let selectedMfr = document.getElementById('vendorSelect').value;
+      currentMatchedItem.mfr = selectedMfr;
+      currentMatchedItem.manufacturer = selectedMfr;
       document.getElementById('btnConfirmMfr').style.display = 'none';
-      alert(`Database updated: Manufacturer updated for REF ${currentMatchedItem.ref}!`);
+      alert(`Database updated: Manufacturer updated for REF ${getItemSku(currentMatchedItem)}!`);
     }
 
     pendingFieldUpdates.push({
-      ref: currentMatchedItem.ref,
+      ref: getItemSku(currentMatchedItem),
       field: field === 'gtin' ? 'GTIN' : 'Manufacturer',
       newValue: field === 'gtin' ? pendingUpdates['gtin'] : document.getElementById('vendorSelect').value,
       timestamp: new Date().toLocaleString()
@@ -1007,10 +1026,23 @@
   }
 
   function populateDisplay(item) {
-    document.getElementById('refInput').value = item.ref || '';
-    if (item.mfr) {
-      document.getElementById('vendorSelect').value = item.mfr;
+    let itemSku = getItemSku(item);
+    let itemVendor = getItemVendor(item);
+
+    document.getElementById('refInput').value = itemSku || '';
+
+    if (itemVendor) {
+      let vendorSelect = document.getElementById('vendorSelect');
+      let exists = Array.from(vendorSelect.options).some(opt => opt.value.toLowerCase() === itemVendor.toLowerCase());
+      
+      if (!exists) {
+        vendors.splice(vendors.length - 1, 0, itemVendor);
+        localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
+        populateVendors();
+      }
+      vendorSelect.value = itemVendor;
     }
+
     evaluateFieldAttention();
   }
 
@@ -1023,7 +1055,7 @@
         populateVendors();
         document.getElementById('vendorSelect').value = newV;
       }
-    } else if (currentMatchedItem && currentMatchedItem.mfr !== val) {
+    } else if (currentMatchedItem && getItemVendor(currentMatchedItem).toLowerCase() !== val.toLowerCase()) {
       let btnMfr = document.getElementById('btnConfirmMfr');
       if (btnMfr) btnMfr.style.display = 'inline-block';
     }
@@ -1050,8 +1082,12 @@
     document.getElementById('revMfr').textContent = vendor;
     document.getElementById('revQty').textContent = qty;
 
-    const desc = currentMatchedItem ? currentMatchedItem.desc : "Navigate to vendor website for item description.";
-    const price = currentMatchedItem ? currentMatchedItem.price : "$0.00";
+    const desc = (currentMatchedItem && (currentMatchedItem.desc || currentMatchedItem.description))
+      ? (currentMatchedItem.desc || currentMatchedItem.description)
+      : "Navigate to vendor website for item description.";
+
+    const price = (currentMatchedItem && currentMatchedItem.price) ? currentMatchedItem.price : "$0.00";
+
     document.getElementById('revDesc').textContent = desc;
     document.getElementById('revPrice').textContent = price;
 
@@ -1084,7 +1120,8 @@
 
     let btnMfr = document.getElementById('btnConfirmMfr');
     if (btnMfr) {
-      btnMfr.style.display = (currentMatchedItem && currentMatchedItem.mfr !== vendor) ? 'inline-block' : 'none';
+      let matchedVendor = getItemVendor(currentMatchedItem);
+      btnMfr.style.display = (currentMatchedItem && matchedVendor.toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
     }
 
     document.getElementById('screenScanning').style.display = 'none';
@@ -1110,8 +1147,11 @@
       const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
 
       let isNewRef = false;
-      const desc = currentMatchedItem ? currentMatchedItem.desc : "Navigate to vendor website for item description.";
-      const price = currentMatchedItem ? currentMatchedItem.price : "$0.00";
+      const desc = (currentMatchedItem && (currentMatchedItem.desc || currentMatchedItem.description))
+        ? (currentMatchedItem.desc || currentMatchedItem.description)
+        : "Navigate to vendor website for item description.";
+
+      const price = (currentMatchedItem && currentMatchedItem.price) ? currentMatchedItem.price : "$0.00";
 
       let rawBarcodesGathered = [];
       for (let i = 1; i <= 4; i++) {
@@ -1124,7 +1164,7 @@
 
       if (!currentMatchedItem && ref) {
         isNewRef = true;
-        let newItem = { gtin: gtin, ref: ref, desc: desc, price: "$0.00", mfr: vendor };
+        let newItem = { gtin: gtin, sku: ref, ref: ref, desc: desc, price: "$0.00", mfr: vendor };
         db.push(newItem);
         localStorage.setItem('asp_wh_db', JSON.stringify(db));
 
