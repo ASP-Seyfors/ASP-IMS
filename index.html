@@ -50,6 +50,7 @@
       flex-wrap: wrap;
       gap: 6px;
     }
+    /* Centered Inputs & Dropdowns */
     input[type="text"], input[type="number"], select {
       flex: 1;
       background-color: #ffffff;
@@ -61,7 +62,13 @@
       border-radius: 2px;
       min-width: 140px;
       box-sizing: border-box;
+      text-align: center; /* Center-align text */
+      text-align-last: center; /* Center-align select options on mobile */
       transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    option {
+      text-align: center;
     }
 
     /* Attention Highlighting for Unpopulated / Missing Fields */
@@ -110,6 +117,7 @@
       border-radius: 3px;
       width: 100%;
       margin-top: 6px;
+      text-align: center;
     }
     .btn-action {
       width: 100%;
@@ -154,6 +162,7 @@
       padding: 10px;
       margin-bottom: 12px;
       border-radius: 4px;
+      text-align: center;
     }
     .header-banner h3 {
       margin: 0 0 4px 0;
@@ -164,6 +173,7 @@
       font-size: 0.85rem;
       color: #333333;
       display: flex;
+      justify-content: center;
       flex-wrap: wrap;
       gap: 12px;
     }
@@ -263,9 +273,9 @@
     <div class="input-wrapper">
       <select id="workflowTypeSelect">
         <option value="Receiving">📦 Receiving</option>
-        <option value="Receiving & Reserving">📦📍 Receiving & Reserving</option>
-        <option value="Picking & Reserving">🖐️📍 Picking & Reserving</option>
-        <option value="Picking & Packing">🖐️📦 Picking & Packing</option>
+        <option value="Reserving">🚩 Reserving</option>
+        <option value="Picking & Packing">🖐️ Picking & Packing</option>
+        <option value="Receiving & Reserving">📦 Receiving & Reserving 🚩</option>
       </select>
     </div>
   </div>
@@ -631,7 +641,7 @@
     document.getElementById('screenScanning').style.display = 'block';
     document.getElementById('screenReview').style.display = 'none';
 
-    if (currentWorkflowType === 'Receiving & Reserving') {
+    if (currentWorkflowType.includes('Receiving & Reserving')) {
       document.getElementById('rowItemDestination').style.display = 'flex';
     } else {
       document.getElementById('rowItemDestination').style.display = 'none';
@@ -664,7 +674,7 @@
       document.getElementById('screenScanning').style.display = 'block';
       document.getElementById('screenReview').style.display = 'none';
 
-      if (currentWorkflowType === 'Receiving & Reserving') {
+      if (currentWorkflowType.includes('Receiving & Reserving')) {
         document.getElementById('rowItemDestination').style.display = 'flex';
       }
     }
@@ -707,7 +717,6 @@
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
-  // Camera Scanner with Heads-Up Transparent Overlay & Duplicate Filtering
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraContainer');
     const camBtn = document.getElementById('btnToggleCam');
@@ -736,7 +745,6 @@
           let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
           if (cleanText.length < 4) return;
 
-          // SKIPPING DUPLICATES: Check if this exact barcode is already in Line 1-4
           for (let i = 1; i <= 4; i++) {
             let existingVal = document.getElementById(`rawScan${i}`).value.trim();
             if (existingVal === cleanText) return;
@@ -758,20 +766,17 @@
           if (targetLine > 0) {
             scanCooldown = true;
 
-            // Flash camera border light green for instant feedback
             camBox.classList.add('scan-success');
             setTimeout(() => { camBox.classList.remove('scan-success'); }, 450);
 
             document.getElementById(`rawScan${targetLine}`).value = cleanText;
             
-            // Execute deep parse across all filled barcode lines
             processAllScans();
 
             let currentGtin = document.getElementById('gtinInput').value.trim();
             let currentLot = document.getElementById('lotInput').value.trim();
             let currentExp = document.getElementById('expInput').value.trim();
 
-            // Auto-close camera & scroll down ONLY when all 3 primary data points are captured
             if (currentGtin && currentLot && currentExp) {
               setTimeout(() => {
                 toggleCameraScanner();
@@ -1026,7 +1031,7 @@
     document.getElementById('revDesc').textContent = desc;
     document.getElementById('revPrice').textContent = price;
 
-    if (currentWorkflowType === 'Receiving & Reserving') {
+    if (currentWorkflowType.includes('Receiving & Reserving')) {
       document.getElementById('revActionRow').style.display = 'flex';
       document.getElementById('revAction').textContent = currentItemAction;
     } else {
@@ -1102,9 +1107,9 @@
     }
 
     let effectiveTag = currentItemAction;
-    if (currentWorkflowType !== 'Receiving & Reserving') {
-      if (currentWorkflowType === 'Picking & Reserving') effectiveTag = 'Reserved';
-      else if (currentWorkflowType === 'Picking & Packing') effectiveTag = 'Pack & Ship';
+    if (!currentWorkflowType.includes('Receiving & Reserving')) {
+      if (currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
+      else if (currentWorkflowType.includes('Packing')) effectiveTag = 'Pack & Ship';
       else effectiveTag = 'Inventory';
     }
 
