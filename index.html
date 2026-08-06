@@ -82,24 +82,25 @@
     .action-btn.selected-res { background-color: #0277bd; color: #ffffff; }
 
     .btn-confirm {
-      padding: 8px 10px;
+      padding: 6px 10px;
       background-color: #d9534f;
       color: #ffffff;
       border: 1px solid #000000;
       font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
+      border-radius: 3px;
     }
     .gtin-diff-banner {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: bold;
       color: #c62828;
       background-color: #ffebee;
       border: 1px solid #ef9a9a;
-      padding: 4px 6px;
+      padding: 6px;
       border-radius: 3px;
       width: 100%;
-      margin-top: 4px;
+      margin-top: 6px;
     }
     .btn-action {
       width: 100%;
@@ -110,6 +111,15 @@
       border: 1px solid #000000;
       cursor: pointer;
       margin-top: 6px;
+      border-radius: 4px;
+    }
+    .btn-flex-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-flex-row .btn-action {
+      margin-top: 0;
     }
     .btn-small {
       background-color: #2e7d32;
@@ -125,13 +135,28 @@
     .btn-clear { background-color: #757575; color: #ffffff; }
     .btn-start { background-color: #4caf50; color: #ffffff; }
     .btn-stop { background-color: #f44336; color: #ffffff; }
-    .btn-resume { background-color: #ff9800; color: #ffffff; }
-    .status-banner {
-      padding: 6px;
-      text-align: center;
-      font-weight: bold;
-      border: 1px solid #000000;
-      margin-top: 6px;
+    .btn-cancel { background-color: #d32f2f; color: #ffffff; }
+    .btn-continue { background-color: #1976d2; color: #ffffff; }
+    .btn-save { background-color: #2e7d32; color: #ffffff; }
+
+    .header-banner {
+      background-color: #ffffff;
+      border: 2px solid #000000;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+    .header-banner h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.1rem;
+      color: #000000;
+    }
+    .header-sub {
+      font-size: 0.85rem;
+      color: #333333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .raw-section {
       background-color: #e6dfb8;
@@ -147,29 +172,44 @@
       display: none;
       background: #000;
     }
+    .review-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #cccccc;
+      font-size: 0.95rem;
+    }
+    .review-line:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="form-row" style="margin-bottom: 6px;">
+<!-- ======================================================================= -->
+<!-- SCREEN 1: SESSION SETUP PHASE -->
+<!-- ======================================================================= -->
+<div id="screenSetup" class="card">
+  <h2>Start New Scanning Session</h2>
+  <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
       <input type="text" id="sessionNameInput" placeholder="e.g. Medline Order">
     </div>
   </div>
 
-  <div class="form-row" style="margin-bottom: 6px;">
+  <div class="form-row">
     <div class="form-label">Order Number:</div>
     <div class="input-wrapper">
       <input type="text" id="orderNumInput" placeholder="e.g. 795037269 or PO #">
     </div>
   </div>
 
-  <div class="form-row" style="margin-bottom: 6px;">
+  <div class="form-row">
     <div class="form-label">Workflow Process:</div>
     <div class="input-wrapper">
-      <select id="workflowTypeSelect" onchange="handleWorkflowChange(this.value)">
+      <select id="workflowTypeSelect">
         <option value="Receiving">Receiving</option>
         <option value="Receiving & Reserving">Receiving & Reserving</option>
         <option value="Picking & Reserving">Picking & Reserving</option>
@@ -178,142 +218,222 @@
     </div>
   </div>
 
-  <button id="sessionBtn" class="btn-action btn-start" onclick="toggleSession()">Start Scanning Session</button>
-  <div id="statusBanner" class="status-banner" style="background-color: #e0e0e0;">Session Inactive</div>
+  <button class="btn-action btn-start" onclick="startSession()">Start Scanning Session</button>
 </div>
 
-<div class="card">
-  <!-- Primary Product Anchor: REF / SKU Entry First -->
-  <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 12px;">
-    <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
-    <div class="input-wrapper">
-      <input type="text" id="refInput" placeholder="Enter REF/SKU First" onchange="lookupByRef(this.value)">
-      <button class="btn-confirm" id="btnConfirmRef" style="display:none;" onclick="confirmFieldUpdate('ref')">Update</button>
+<!-- ======================================================================= -->
+<!-- SCREEN 2: ACTIVE SCANNING & ENTRY PHASE -->
+<!-- ======================================================================= -->
+<div id="screenScanning" style="display: none;">
+  
+  <!-- Persistent Active Session Header -->
+  <div class="header-banner">
+    <h3 id="hdrTitle">Session Name (Order #)</h3>
+    <div class="header-sub">
+      <span><strong>Date:</strong> <span id="hdrDate">--</span></span>
+      <span><strong>Start Time:</strong> <span id="hdrTime">--</span></span>
+      <span><strong>Workflow:</strong> <span id="hdrWorkflow">--</span></span>
+    </div>
+    <div class="btn-flex-row" style="margin-top: 8px;">
+      <button class="btn-action btn-stop" style="flex: 1;" onclick="endSession()">End Current Session</button>
+      <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelSession()">Cancel Current Session</button>
     </div>
   </div>
 
-  <!-- Dynamic Raw Scanner Input Fields (Up to 4 Lines) -->
-  <div class="raw-section">
-    <h2>
-      <span>Raw Barcode Scans</span>
+  <!-- REF / SKU Input First -->
+  <div class="card">
+    <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 0;">
+      <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
+      <div class="input-wrapper">
+        <input type="text" id="refInput" placeholder="Enter REF/SKU First" onchange="lookupByRef(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw Barcode Scans Card -->
+  <div class="card">
+    <div class="raw-section">
+      <h2>
+        <span>Raw Barcode Scans</span>
+        <div>
+          <button class="btn-small btn-clear" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
+          <button class="btn-small btn-cam" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera Scanner</button>
+        </div>
+      </h2>
+
+      <div id="cameraViewfinder"></div>
+
+      <div class="form-row" id="rowScan1">
+        <div class="form-label">Barcode Line 1:</div>
+        <div class="input-wrapper">
+          <input type="text" id="rawScan1" placeholder="Scan Primary 1D or 2D Barcode" oninput="processAllScans()">
+        </div>
+      </div>
+
+      <div class="form-row" id="rowScan2" style="display: none;">
+        <div class="form-label">Barcode Line 2:</div>
+        <div class="input-wrapper">
+          <input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()">
+        </div>
+      </div>
+
+      <div class="form-row" id="rowScan3" style="display: none;">
+        <div class="form-label">Barcode Line 3:</div>
+        <div class="input-wrapper">
+          <input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()">
+        </div>
+      </div>
+
+      <div class="form-row" id="rowScan4" style="display: none;">
+        <div class="form-label">Barcode Line 4:</div>
+        <div class="input-wrapper">
+          <input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()">
+        </div>
+      </div>
+
+      <div style="margin-top: 8px;">
+        <button class="btn-small" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
+      </div>
+    </div>
+
+    <h2>Parsed & Captured Item Details</h2>
+
+    <!-- Item Destination Selector (Appears for Receiving & Reserving) -->
+    <div class="form-row" id="rowItemDestination" style="display: none;">
+      <div class="form-label">Item Destination:</div>
+      <div class="input-wrapper">
+        <div class="action-selector">
+          <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
+          <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GTIN Field -->
+    <div class="form-row">
+      <div class="form-label">GTIN Barcode:</div>
+      <div class="input-wrapper">
+        <input type="text" id="gtinInput" placeholder="GTIN Barcode" oninput="handleGtinScan(this.value)">
+      </div>
+    </div>
+
+    <!-- Lot Number -->
+    <div class="form-row">
+      <div class="form-label">Lot Number:</div>
+      <div class="input-wrapper">
+        <input type="text" id="lotInput" placeholder="Lot Number">
+      </div>
+    </div>
+
+    <!-- Expiration Date -->
+    <div class="form-row">
+      <div class="form-label">Expiration Date:</div>
+      <div class="input-wrapper">
+        <input type="text" id="expInput" placeholder="YYYY-MM-DD">
+      </div>
+    </div>
+
+    <!-- Manufacturer -->
+    <div class="form-row">
+      <div class="form-label">Manufacturer:</div>
+      <div class="input-wrapper">
+        <select id="vendorSelect" onchange="handleVendorSelect(this.value)">
+          <!-- Populated via JS / JSON -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Quantity -->
+    <div class="form-row">
+      <div class="form-label">Quantity Scanned:</div>
+      <div class="input-wrapper">
+        <input type="number" id="qtyInput" value="1" min="1">
+      </div>
+    </div>
+
+    <div class="btn-flex-row">
+      <button class="btn-action btn-clear" style="flex: 1;" onclick="resetScanLinesAndFields()">Clear Fields</button>
+      <button class="btn-action btn-continue" style="flex: 2;" onclick="goToReviewStage()">Continue to Verification ➔</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- SCREEN 3: VERIFICATION & REVIEW PHASE -->
+<!-- ======================================================================= -->
+<div id="screenReview" style="display: none;">
+  
+  <!-- Persistent Active Session Header -->
+  <div class="header-banner">
+    <h3 id="hdrTitleRev">Session Name (Order #)</h3>
+    <div class="header-sub">
+      <span><strong>Date:</strong> <span id="hdrDateRev">--</span></span>
+      <span><strong>Start Time:</strong> <span id="hdrTimeRev">--</span></span>
+      <span><strong>Workflow:</strong> <span id="hdrWorkflowRev">--</span></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Verify Scanned Item Details</h2>
+
+    <div class="review-line">
+      <span><strong>REF / SKU:</strong></span>
+      <span id="revRef" style="font-weight:bold;">--</span>
+    </div>
+
+    <div class="review-line">
+      <span><strong>GTIN Barcode:</strong></span>
       <div>
-        <button class="btn-small btn-clear" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
-        <button class="btn-small btn-cam" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera Scanner</button>
-      </div>
-    </h2>
-
-    <div id="cameraViewfinder"></div>
-
-    <div class="form-row" id="rowScan1">
-      <div class="form-label">Barcode Line 1:</div>
-      <div class="input-wrapper">
-        <input type="text" id="rawScan1" placeholder="Scan Primary 1D or 2D Barcode" oninput="processAllScans()">
+        <span id="revGtin">--</span>
+        <button class="btn-confirm" id="btnConfirmGtin" style="display:none; margin-left: 6px;" onclick="confirmFieldUpdate('gtin')">Update GTIN</button>
       </div>
     </div>
+    <div id="gtinDiffBanner" class="gtin-diff-banner" style="display:none;"></div>
 
-    <div class="form-row" id="rowScan2" style="display: none;">
-      <div class="form-label">Barcode Line 2:</div>
-      <div class="input-wrapper">
-        <input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()">
-      </div>
+    <div class="review-line">
+      <span><strong>Lot Number:</strong></span>
+      <span id="revLot">--</span>
     </div>
 
-    <div class="form-row" id="rowScan3" style="display: none;">
-      <div class="form-label">Barcode Line 3:</div>
-      <div class="input-wrapper">
-        <input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()">
+    <div class="review-line">
+      <span><strong>Expiration Date:</strong></span>
+      <span id="revExp">--</span>
+    </div>
+
+    <div class="review-line">
+      <span><strong>Manufacturer:</strong></span>
+      <div>
+        <span id="revMfr">--</span>
+        <button class="btn-confirm" id="btnConfirmMfr" style="display:none; margin-left: 6px;" onclick="confirmFieldUpdate('mfr')">Update MFR</button>
       </div>
     </div>
 
-    <div class="form-row" id="rowScan4" style="display: none;">
-      <div class="form-label">Barcode Line 4:</div>
-      <div class="input-wrapper">
-        <input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()">
-      </div>
+    <div class="review-line">
+      <span><strong>Description:</strong></span>
+      <span id="revDesc" style="font-size: 0.85rem; max-width: 60%; text-align: right;">--</span>
     </div>
 
-    <!-- Clean Add Line Button Placement Below Lines -->
-    <div style="margin-top: 8px;">
-      <button class="btn-small" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
+    <div class="review-line">
+      <span><strong>Default Price:</strong></span>
+      <span id="revPrice">--</span>
     </div>
-  </div>
 
-  <h2>Item Details</h2>
-
-  <!-- Item Destination Selector (Appears for Receiving & Reserving) -->
-  <div class="form-row" id="rowItemDestination" style="display: none;">
-    <div class="form-label">Item Destination:</div>
-    <div class="input-wrapper">
-      <div class="action-selector">
-        <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
-        <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
-      </div>
+    <div class="review-line">
+      <span><strong>Quantity Scanned:</strong></span>
+      <span id="revQty" style="font-weight:bold; font-size: 1.1rem;">1</span>
     </div>
-  </div>
 
-  <!-- Field 1: GTIN Barcode -->
-  <div class="form-row">
-    <div class="form-label">GTIN Barcode:</div>
-    <div class="input-wrapper">
-      <input type="text" id="gtinInput" placeholder="GTIN Barcode" oninput="handleGtinScan(this.value)">
-      <button class="btn-confirm" id="btnConfirmGtin" style="display:none;" onclick="confirmFieldUpdate('gtin')">Update GTIN</button>
-      <div id="gtinDiffBanner" class="gtin-diff-banner" style="display:none;"></div>
+    <div class="review-line" id="revActionRow" style="display:none;">
+      <span><strong>Item Destination:</strong></span>
+      <span id="revAction" style="font-weight:bold; color:#2e7d32;">Inventory</span>
     </div>
-  </div>
 
-  <!-- Field 2: Lot Number -->
-  <div class="form-row">
-    <div class="form-label">Lot Number:</div>
-    <div class="input-wrapper">
-      <input type="text" id="lotInput" placeholder="Lot Number" oninput="updateInfoPanel()">
-    </div>
-  </div>
-
-  <!-- Field 3: Expiration Date -->
-  <div class="form-row">
-    <div class="form-label">Expiration Date:</div>
-    <div class="input-wrapper">
-      <input type="text" id="expInput" placeholder="YYYY-MM-DD" oninput="updateInfoPanel()">
-    </div>
-  </div>
-
-  <!-- Field 4: Manufacturer / Vendor -->
-  <div class="form-row">
-    <div class="form-label">Manufacturer:</div>
-    <div class="input-wrapper">
-      <select id="vendorSelect" onchange="handleVendorSelect(this.value)">
-        <!-- Populated via JS / JSON -->
-      </select>
-      <button class="btn-confirm" id="btnConfirmMfr" style="display:none;" onclick="confirmFieldUpdate('mfr')">Update MFR</button>
-    </div>
-  </div>
-
-  <!-- Field 5: Quantity Scanned -->
-  <div class="form-row">
-    <div class="form-label">Quantity Scanned:</div>
-    <div class="input-wrapper">
-      <input type="number" id="qtyInput" value="1" min="1" oninput="updateInfoPanel()">
+    <div class="btn-flex-row" style="margin-top: 14px;">
+      <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelScannedItem()">❌ Cancel Item</button>
+      <button class="btn-action btn-save" style="flex: 2;" onclick="saveItemLog()">✅ Save Scanned Item</button>
     </div>
   </div>
 </div>
-
-<!-- Database Display Information -->
-<div class="card">
-  <h2>Database Item Info (Session Output Preview)</h2>
-  <div class="info-box">
-    <div class="info-line" id="infoActionLine" style="display:none;"><span class="info-title">Destination Action:</span> <span id="infoAction" style="font-weight:bold; color:#2e7d32;">Inventory</span></div>
-    <div class="info-line"><span class="info-title">GTIN Barcode:</span> <span id="infoGtin">--</span></div>
-    <div class="info-line"><span class="info-title">REF/SKU:</span> <span id="infoRef">--</span></div>
-    <div class="info-line"><span class="info-title">Manufacturer:</span> <span id="infoMfr">--</span></div>
-    <div class="info-line"><span class="info-title">Description:</span> <span id="infoDesc">--</span></div>
-    <div class="info-line"><span class="info-title">Default Price:</span> <span id="infoPrice">--</span></div>
-    <div class="info-line"><span class="info-title">Lot Number:</span> <span id="infoLot">--</span></div>
-    <div class="info-line"><span class="info-title">Expiration Date:</span> <span id="infoExp">--</span></div>
-    <div class="info-line"><span class="info-title">Quantity Scanned:</span> <span id="infoQty">1</span></div>
-  </div>
-</div>
-
-<button class="btn-action btn-save" onclick="saveItemLog()">Save Scanned Item</button>
 
 <script>
   const defaultVendors = [
@@ -359,6 +479,7 @@
   let currentOrderNum = localStorage.getItem('asp_order_num') || "";
   let currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
   let sessionStartStr = localStorage.getItem('asp_session_start_str') || "";
+  let sessionDateStr = localStorage.getItem('asp_session_date_str') || "";
 
   let currentMatchedItem = null;
   let pendingUpdates = {};
@@ -366,27 +487,10 @@
   let html5QrCode = null;
   let isCameraActive = false;
 
-  function handleWorkflowChange(val) {
-    currentWorkflowType = val;
-    localStorage.setItem('asp_workflow_type', val);
-
-    const destRow = document.getElementById('rowItemDestination');
-    const infoActionLine = document.getElementById('infoActionLine');
-
-    if (val === 'Receiving & Reserving') {
-      destRow.style.display = 'flex';
-      infoActionLine.style.display = 'block';
-    } else {
-      destRow.style.display = 'none';
-      infoActionLine.style.display = 'none';
-    }
-  }
-
   function setItemAction(act) {
     currentItemAction = act;
     document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
     document.getElementById('actBtnRes').className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
-    document.getElementById('infoAction').textContent = act;
   }
 
   function populateVendors() {
@@ -401,62 +505,124 @@
   populateVendors();
   loadMasterDatabase();
 
-  function generateExactFilename(extension = "txt") {
+  function startSession() {
+    const sName = document.getElementById('sessionNameInput').value.trim();
+    const oNum = document.getElementById('orderNumInput').value.trim();
+    const wType = document.getElementById('workflowTypeSelect').value;
+
+    if (!sName) {
+      alert("Please enter a Session Name before starting.");
+      return;
+    }
+
+    isSessionActive = true;
+    localStorage.setItem('asp_session_is_active', 'true');
+
     const nowObj = new Date();
-    
     let yyyy = nowObj.getFullYear();
     let mm = String(nowObj.getMonth() + 1).padStart(2, '0');
     let dd = String(nowObj.getDate()).padStart(2, '0');
-    let datePartDots = `${yyyy}.${mm}.${dd}`;
+    sessionDateStr = `${yyyy}.${mm}.${dd}`;
+    sessionStartStr = nowObj.toLocaleTimeString();
 
-    let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
-    let oNum = document.getElementById('orderNumInput').value.trim() || currentOrderNum;
-    let wType = document.getElementById('workflowTypeSelect').value || currentWorkflowType || "Receiving";
+    currentSessionName = sName;
+    currentOrderNum = oNum;
+    currentWorkflowType = wType;
 
-    let prefix = sName;
-    if (oNum) prefix += ` (${oNum})`;
+    localStorage.setItem('asp_session_name', currentSessionName);
+    localStorage.setItem('asp_order_num', currentOrderNum);
+    localStorage.setItem('asp_workflow_type', currentWorkflowType);
+    localStorage.setItem('asp_session_start_str', sessionStartStr);
+    localStorage.setItem('asp_session_date_str', sessionDateStr);
 
-    let baseFilename = `${datePartDots} - ${prefix} - ${wType}`;
+    sessionScannedObjects = [];
+    sessionLogs = [];
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+    localStorage.setItem('asp_active_session_logs', JSON.stringify([]));
 
-    let trackerKey = `asp_export_count_${baseFilename}`;
-    let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
+    updateHeaderBanners();
 
-    let finalName = count === 0 ? `${baseFilename}.${extension}` : `${baseFilename} ${count}.${extension}`;
-    localStorage.setItem(trackerKey, count + 1);
-    return finalName;
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenScanning').style.display = 'block';
+    document.getElementById('screenReview').style.display = 'none';
+
+    if (currentWorkflowType === 'Receiving & Reserving') {
+      document.getElementById('rowItemDestination').style.display = 'flex';
+    } else {
+      document.getElementById('rowItemDestination').style.display = 'none';
+    }
+
+    resetScanLinesAndFields();
+  }
+
+  function updateHeaderBanners() {
+    let titleStr = currentSessionName;
+    if (currentOrderNum) titleStr += ` (${currentOrderNum})`;
+
+    document.getElementById('hdrTitle').textContent = titleStr;
+    document.getElementById('hdrDate').textContent = sessionDateStr;
+    document.getElementById('hdrTime').textContent = sessionStartStr;
+    document.getElementById('hdrWorkflow').textContent = currentWorkflowType;
+
+    document.getElementById('hdrTitleRev').textContent = titleStr;
+    document.getElementById('hdrDateRev').textContent = sessionDateStr;
+    document.getElementById('hdrTimeRev').textContent = sessionStartStr;
+    document.getElementById('hdrWorkflowRev').textContent = currentWorkflowType;
   }
 
   function checkSessionRecoveryState() {
     let storedActiveState = localStorage.getItem('asp_session_is_active');
-    const btn = document.getElementById('sessionBtn');
-    const status = document.getElementById('statusBanner');
-
     if (storedActiveState === 'true') {
       isSessionActive = true;
-      btn.textContent = "▶️ Resume Active Session";
-      btn.className = "btn-action btn-resume";
-      
-      let sessionTitle = currentSessionName;
-      if (currentOrderNum) sessionTitle += ` (${currentOrderNum})`;
-      
-      status.textContent = `Session Resting: ${sessionTitle ? sessionTitle : 'Active Session'}`;
-      status.style.backgroundColor = "#ffe0b2";
-      
-      if (currentSessionName) document.getElementById('sessionNameInput').value = currentSessionName;
-      if (currentOrderNum) document.getElementById('orderNumInput').value = currentOrderNum;
-      if (currentWorkflowType) {
-        document.getElementById('workflowTypeSelect').value = currentWorkflowType;
-        handleWorkflowChange(currentWorkflowType);
+      updateHeaderBanners();
+      document.getElementById('screenSetup').style.display = 'none';
+      document.getElementById('screenScanning').style.display = 'block';
+      document.getElementById('screenReview').style.display = 'none';
+
+      if (currentWorkflowType === 'Receiving & Reserving') {
+        document.getElementById('rowItemDestination').style.display = 'flex';
       }
     }
   }
   checkSessionRecoveryState();
+
+  function cancelSession() {
+    let confirmCancel = confirm("Are you sure you want to CANCEL this entire scanning session?\n\nAll items scanned during this session will be discarded.");
+    if (!confirmCancel) return;
+
+    isSessionActive = false;
+    localStorage.setItem('asp_session_is_active', 'false');
+    sessionScannedObjects = [];
+    sessionLogs = [];
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+    localStorage.setItem('asp_active_session_logs', JSON.stringify([]));
+
+    if (isCameraActive) toggleCameraScanner();
+
+    document.getElementById('screenScanning').style.display = 'none';
+    document.getElementById('screenReview').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+  }
+
+  function endSession() {
+    isSessionActive = false;
+    localStorage.setItem('asp_session_is_active', 'false');
+
+    if (isCameraActive) toggleCameraScanner();
+
+    exportUnifiedSummary();
+
+    document.getElementById('screenScanning').style.display = 'none';
+    document.getElementById('screenReview').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+  }
 
   function cleanGtinValue(val) {
     if (!val) return 'N/A';
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
+  // Camera Scanning with Duplicate and Noise Filtering
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraViewfinder');
     const camBtn = document.getElementById('btnToggleCam');
@@ -478,6 +644,10 @@
 
           let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
 
+          // Ignore noise/short characters (< 4 chars)
+          if (cleanText.length < 4) return;
+
+          // Check if already present in any raw scan field
           for (let i = 1; i <= 4; i++) {
             let existingVal = document.getElementById(`rawScan${i}`).value.trim();
             if (existingVal === cleanText) return;
@@ -569,12 +739,9 @@
     document.getElementById('lotInput').value = '';
     document.getElementById('expInput').value = '';
     document.getElementById('qtyInput').value = '1';
-    document.getElementById('gtinDiffBanner').style.display = 'none';
-    document.getElementById('gtinDiffBanner').textContent = '';
     currentMatchedItem = null;
     pendingUpdates = {};
     hideAllConfirmButtons();
-    clearDisplay();
     document.getElementById('refInput').focus();
   }
 
@@ -632,15 +799,10 @@
     }
     if (lot) document.getElementById('lotInput').value = lot;
     if (exp) document.getElementById('expInput').value = exp;
-
-    updateInfoPanel();
   }
 
   function handleGtinScan(val) {
-    if (!val) {
-      updateInfoPanel();
-      return;
-    }
+    if (!val) return;
     let cleanGtin = val.replace(/^(01|\(01\))/, '').trim();
     let match = db.find(i => i.gtin === cleanGtin || (i.gtin && i.gtin.replace(/^0+/, '') === cleanGtin.replace(/^0+/, '')));
     
@@ -648,7 +810,6 @@
       currentMatchedItem = match;
       populateDisplay(match);
       hideAllConfirmButtons();
-      document.getElementById('gtinDiffBanner').style.display = 'none';
     } else {
       let currentRef = document.getElementById('refInput').value.trim();
       let refMatch = db.find(i => i.ref.toLowerCase() === currentRef.toLowerCase());
@@ -656,53 +817,28 @@
       if (refMatch) {
         currentMatchedItem = refMatch;
         pendingUpdates['gtin'] = cleanGtin;
-        
-        let diffBanner = document.getElementById('gtinDiffBanner');
-        if (refMatch.gtin) {
-          diffBanner.textContent = `⚠️ Replace Saved GTIN (${refMatch.gtin}) with Scanned GTIN (${cleanGtin})?`;
-        } else {
-          diffBanner.textContent = `[Link New GTIN: ${cleanGtin}]`;
-        }
-        diffBanner.style.display = 'block';
-
-        document.getElementById('btnConfirmGtin').style.display = 'inline-block';
         populateDisplay(refMatch);
       } else {
         currentMatchedItem = null;
-        clearDisplay("Navigate to vendor website for item description.");
       }
     }
-    updateInfoPanel();
   }
 
   function lookupByRef(refVal) {
-    if (!refVal) {
-      updateInfoPanel();
-      return;
-    }
+    if (!refVal) return;
     let match = db.find(i => i.ref.toLowerCase() === refVal.trim().toLowerCase());
     let currentGtin = document.getElementById('gtinInput').value.trim();
 
     if (match) {
       if (currentGtin && match.gtin !== currentGtin) {
         pendingUpdates['gtin'] = currentGtin;
-        let diffBanner = document.getElementById('gtinDiffBanner');
-        if (match.gtin) {
-          diffBanner.textContent = `⚠️ Replace Saved GTIN (${match.gtin}) with Scanned GTIN (${currentGtin})?`;
-        } else {
-          diffBanner.textContent = `[Link New GTIN: ${currentGtin}]`;
-        }
-        diffBanner.style.display = 'block';
-        document.getElementById('btnConfirmGtin').style.display = 'inline-block';
       }
       currentMatchedItem = match;
       populateDisplay(match);
     } else {
       currentMatchedItem = null;
       hideAllConfirmButtons();
-      clearDisplay("Navigate to vendor website for item description.");
     }
-    updateInfoPanel();
   }
 
   function confirmFieldUpdate(field) {
@@ -726,7 +862,6 @@
     });
     localStorage.setItem('asp_pending_updates', JSON.stringify(pendingFieldUpdates));
     localStorage.setItem('asp_wh_db', JSON.stringify(db));
-    updateInfoPanel();
   }
 
   function hideAllConfirmButtons() {
@@ -738,33 +873,7 @@
 
   function populateDisplay(item) {
     document.getElementById('refInput').value = item.ref || '';
-    document.getElementById('infoRef').textContent = item.ref || '--';
-    document.getElementById('infoMfr').textContent = item.mfr || '--';
-    document.getElementById('infoDesc').textContent = item.desc || '--';
-    document.getElementById('infoPrice').textContent = item.price || '--';
     if (item.mfr) document.getElementById('vendorSelect').value = item.mfr;
-    updateInfoPanel();
-  }
-
-  function clearDisplay(msg) {
-    document.getElementById('infoRef').textContent = document.getElementById('refInput').value.trim() || '--';
-    document.getElementById('infoMfr').textContent = document.getElementById('vendorSelect').value || '--';
-    document.getElementById('infoDesc').textContent = msg || 'Navigate to vendor website for item description.';
-    document.getElementById('infoPrice').textContent = '--';
-    updateInfoPanel();
-  }
-
-  function updateInfoPanel() {
-    document.getElementById('infoGtin').textContent = document.getElementById('gtinInput').value.trim() || '--';
-    document.getElementById('infoLot').textContent = document.getElementById('lotInput').value.trim() || '--';
-    document.getElementById('infoExp').textContent = document.getElementById('expInput').value.trim() || '--';
-    document.getElementById('infoQty').textContent = document.getElementById('qtyInput').value || '1';
-    if (currentMatchedItem) {
-      document.getElementById('infoRef').textContent = currentMatchedItem.ref || '--';
-      document.getElementById('infoMfr').textContent = currentMatchedItem.mfr || document.getElementById('vendorSelect').value;
-      document.getElementById('infoDesc').textContent = currentMatchedItem.desc || '--';
-      document.getElementById('infoPrice').textContent = currentMatchedItem.price || '--';
-    }
   }
 
   function handleVendorSelect(val) {
@@ -779,81 +888,78 @@
     } else if (currentMatchedItem && currentMatchedItem.mfr !== val) {
       document.getElementById('btnConfirmMfr').style.display = 'inline-block';
     }
-    updateInfoPanel();
   }
 
-  // Session Management
-  function toggleSession() {
-    const btn = document.getElementById('sessionBtn');
-    const status = document.getElementById('statusBanner');
-    const nowObj = new Date();
-    const nowStr = nowObj.toLocaleTimeString();
-
-    if (!isSessionActive) {
-      isSessionActive = true;
-      localStorage.setItem('asp_session_is_active', 'true');
-      
-      sessionScannedObjects = [];
-      localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
-
-      currentSessionName = document.getElementById('sessionNameInput').value.trim();
-      currentOrderNum = document.getElementById('orderNumInput').value.trim();
-      currentWorkflowType = document.getElementById('workflowTypeSelect').value;
-      sessionStartStr = nowStr;
-
-      localStorage.setItem('asp_session_name', currentSessionName);
-      localStorage.setItem('asp_order_num', currentOrderNum);
-      localStorage.setItem('asp_workflow_type', currentWorkflowType);
-      localStorage.setItem('asp_session_start_str', sessionStartStr);
-
-      let sessionTitle = currentSessionName;
-      if (currentOrderNum) sessionTitle += ` (${currentOrderNum})`;
-
-      sessionLogs = [];
-      localStorage.setItem('asp_active_session_logs', JSON.stringify(sessionLogs));
-
-      btn.textContent = "Stop Scanning Session";
-      btn.className = "btn-action btn-stop";
-      status.textContent = `Session Active: ${sessionTitle ? sessionTitle : 'Logging Session'}`;
-      status.style.backgroundColor = "#c8e6c9";
-    } else {
-      if (btn.classList.contains('btn-resume')) {
-        btn.textContent = "Stop Scanning Session";
-        btn.className = "btn-action btn-stop";
-        let sessionTitle = currentSessionName;
-        if (currentOrderNum) sessionTitle += ` (${currentOrderNum})`;
-        status.textContent = `Session Active: ${sessionTitle ? sessionTitle : 'Logging Session'}`;
-        status.style.backgroundColor = "#c8e6c9";
-        return;
-      }
-
-      isSessionActive = false;
-      localStorage.setItem('asp_session_is_active', 'false');
-
-      btn.textContent = "Start Scanning Session";
-      btn.className = "btn-action btn-start";
-      status.textContent = "Session Inactive";
-      status.style.backgroundColor = "#e0e0e0";
-      
-      exportUnifiedSummary();
-    }
-  }
-
-  // Save Item Log Function
-  function saveItemLog() {
-    if (!isSessionActive) {
-      alert("Please start or resume a scanning session first!");
+  // Transit from Scanning Screen (Screen 2) to Verification Screen (Screen 3)
+  function goToReviewStage() {
+    const ref = document.getElementById('refInput').value.trim();
+    if (!ref) {
+      alert("Please enter or scan a REF/SKU before continuing.");
       return;
     }
 
-    let hasUnconfirmedGTIN = document.getElementById('btnConfirmGtin').style.display !== 'none';
-    let hasUnconfirmedMfr = document.getElementById('btnConfirmMfr').style.display !== 'none';
+    const gtin = document.getElementById('gtinInput').value.trim();
+    const lot = document.getElementById('lotInput').value.trim();
+    const exp = document.getElementById('expInput').value.trim();
+    const vendor = document.getElementById('vendorSelect').value;
+    const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
 
-    if (hasUnconfirmedGTIN || hasUnconfirmedMfr) {
-      let confirmDiscard = confirm("You have unsaved field updates (such as GTIN or Manufacturer). Do you want to continue saving the scanned item WITHOUT saving the database updates?\n\nClick 'Cancel' to go back and click the red Update button.");
-      if (!confirmDiscard) return;
+    document.getElementById('revRef').textContent = ref;
+    document.getElementById('revGtin').textContent = gtin || '--';
+    document.getElementById('revLot').textContent = lot || '--';
+    document.getElementById('revExp').textContent = exp || '--';
+    document.getElementById('revMfr').textContent = vendor;
+    document.getElementById('revQty').textContent = qty;
+
+    const desc = currentMatchedItem ? currentMatchedItem.desc : "Navigate to vendor website for item description.";
+    const price = currentMatchedItem ? currentMatchedItem.price : "$0.00";
+    document.getElementById('revDesc').textContent = desc;
+    document.getElementById('revPrice').textContent = price;
+
+    if (currentWorkflowType === 'Receiving & Reserving') {
+      document.getElementById('revActionRow').style.display = 'flex';
+      document.getElementById('revAction').textContent = currentItemAction;
+    } else {
+      document.getElementById('revActionRow').style.display = 'none';
     }
 
+    // Check for GTIN Update prompt
+    let diffBanner = document.getElementById('gtinDiffBanner');
+    let btnGtin = document.getElementById('btnConfirmGtin');
+
+    if (currentMatchedItem && gtin && currentMatchedItem.gtin !== gtin) {
+      pendingUpdates['gtin'] = gtin;
+      btnGtin.style.display = 'inline-block';
+      if (currentMatchedItem.gtin) {
+        diffBanner.textContent = `⚠️ Replace Saved GTIN (${currentMatchedItem.gtin}) with Scanned GTIN (${gtin})?`;
+      } else {
+        diffBanner.textContent = `[Link New GTIN: ${gtin}]`;
+      }
+      diffBanner.style.display = 'block';
+    } else {
+      btnGtin.style.display = 'none';
+      diffBanner.style.display = 'none';
+    }
+
+    // Check for Manufacturer Update prompt
+    let btnMfr = document.getElementById('btnConfirmMfr');
+    if (currentMatchedItem && currentMatchedItem.mfr !== vendor) {
+      btnMfr.style.display = 'inline-block';
+    } else {
+      btnMfr.style.display = 'none';
+    }
+
+    document.getElementById('screenScanning').style.display = 'none';
+    document.getElementById('screenReview').style.display = 'block';
+  }
+
+  function cancelScannedItem() {
+    document.getElementById('screenReview').style.display = 'none';
+    document.getElementById('screenScanning').style.display = 'block';
+  }
+
+  // Save Item Log Function (Commits and Returns to Screen 2)
+  function saveItemLog() {
     const gtin = document.getElementById('gtinInput').value.trim();
     const ref = document.getElementById('refInput').value.trim();
     const lot = document.getElementById('lotInput').value.trim();
@@ -884,7 +990,6 @@
       localStorage.setItem('asp_pending_new_items', JSON.stringify(pendingNewItems));
     }
 
-    // Determine target tag automatically if not in hybrid workflow mode
     let effectiveTag = currentItemAction;
     if (currentWorkflowType !== 'Receiving & Reserving') {
       if (currentWorkflowType === 'Picking & Reserving') effectiveTag = 'Reserved';
@@ -907,11 +1012,30 @@
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
-    alert(`Item logged!`);
-
-    if (isCameraActive) toggleCameraScanner();
+    alert(`Item ${ref} successfully saved to session!`);
 
     resetScanLinesAndFields();
+
+    document.getElementById('screenReview').style.display = 'none';
+    document.getElementById('screenScanning').style.display = 'block';
+  }
+
+  function generateExactFilename(extension = "txt") {
+    let sName = currentSessionName || "Session";
+    let oNum = currentOrderNum;
+    let wType = currentWorkflowType || "Receiving";
+
+    let prefix = sName;
+    if (oNum) prefix += ` (${oNum})`;
+
+    let baseFilename = `${sessionDateStr} - ${prefix} - ${wType}`;
+
+    let trackerKey = `asp_export_count_${baseFilename}`;
+    let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
+
+    let finalName = count === 0 ? `${baseFilename}.${extension}` : `${baseFilename} ${count}.${extension}`;
+    localStorage.setItem(trackerKey, count + 1);
+    return finalName;
   }
 
   // Unified Export Engine
@@ -922,7 +1046,6 @@
     }
 
     let summaryFilename = generateExactFilename("txt");
-
     let invMap = {}, resMap = {}, packMap = {};
 
     sessionScannedObjects.forEach(item => {
@@ -959,20 +1082,10 @@
       targetMap[rKey].lots[lotKey].qty += item.qty;
     });
 
-    let sName = document.getElementById('sessionNameInput').value.trim() || currentSessionName || "Session";
-    let oNum = document.getElementById('orderNumInput').value.trim() || currentOrderNum;
-    let wType = document.getElementById('workflowTypeSelect').value || currentWorkflowType || "Receiving";
-
-    let sessionTitleHeader = sName;
-    if (oNum) sessionTitleHeader += ` (${oNum})`;
+    let sessionTitleHeader = currentSessionName;
+    if (currentOrderNum) sessionTitleHeader += ` (${currentOrderNum})`;
 
     const nowObj = new Date();
-    
-    let yyyy = nowObj.getFullYear();
-    let mm = String(nowObj.getMonth() + 1).padStart(2, '0');
-    let dd = String(nowObj.getDate()).padStart(2, '0');
-    let datePartDots = `${yyyy}.${mm}.${dd}`;
-
     let timeEndStr = nowObj.toLocaleTimeString();
 
     let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
@@ -983,8 +1096,8 @@
       ``,
       `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
       ``,
-      `          Workflow Process:    ${wType}`,
-      `          Scanned Date:        ${datePartDots}`,
+      `          Workflow Process:    ${currentWorkflowType}`,
+      `          Scanned Date:        ${sessionDateStr}`,
       `          Session Start:       ${sessionStartStr || 'N/A'}`,
       `          Session End:         ${timeEndStr}`,
       `================================================================================\n`
