@@ -171,7 +171,7 @@
     { "gtin": "", "ref": "VCP311H", "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" SH-1 (BX/36) VCP311H", "price": "$131.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "VCP316H", "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" SH (BX/36) VCP316H", "price": "$120.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "VCP329H", "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-3 (BX/36) VCP329H", "price": "$25.00", "mfr": "ETHICON" },
-    { "gtin": "", "ref": "VCP332H", "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP332H", "price": "$117.00", mfr": "ETHICON" },
+    { "gtin": "", "ref": "VCP332H", "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP332H", "price": "$117.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "VCP334H", "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP334H", "price": "$112.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "VCP340H", "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-1 (BX/36) VCP340H", "price": "$153.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "VCP341H", "desc": "ETHICON 1 Coated Vicryl Plus Violet 1X27\" CT-1 (BX/36) VCP341H", "price": "$123.00", "mfr": "ETHICON" },
