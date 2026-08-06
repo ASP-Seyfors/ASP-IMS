@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.2.2 | UPDATED: 2026.08.06                   -->
-<!-- CHANGELOG: Dual key SKU/REF database matching & MFR auto-select fix      -->
+<!-- ASP SCANNER APP - VERSION 1.2.3 | UPDATED: 2026.08.06                   -->
+<!-- CHANGELOG: Added auto-uppercase transformation to REF/SKU input field   -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.2.2</title>
+  <title>ASP-Android Scanner App v1.2.3</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -69,6 +69,11 @@
       text-align: center;
       text-align-last: center;
       transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    /* Enforce uppercase styling on REF field */
+    #refInput {
+      text-transform: uppercase;
     }
 
     option {
@@ -257,7 +262,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.2)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.3)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -303,12 +308,12 @@
     </div>
   </div>
 
-  <!-- REF / SKU Input First -->
+  <!-- REF / SKU Input First (With Auto-Uppercase Conversion) -->
   <div class="card">
     <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 0;">
       <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
       <div class="input-wrapper">
-        <input type="text" id="refInput" placeholder="Enter REF/SKU First" oninput="lookupByRef(this.value)">
+        <input type="text" id="refInput" placeholder="Enter REF/SKU First" oninput="this.value = this.value.toUpperCase(); lookupByRef(this.value);">
       </div>
     </div>
   </div>
@@ -511,13 +516,11 @@
   let db = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
   let vendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors;
 
-  // Helper to extract SKU or REF regardless of JSON schema
   function getItemSku(item) {
     if (!item) return '';
-    return (item.sku || item.ref || '').toString().trim();
+    return (item.sku || item.ref || '').toString().trim().toUpperCase();
   }
 
-  // Helper to extract Vendor / Manufacturer regardless of JSON schema
   function getItemVendor(item) {
     if (!item) return '';
     return (item.mfr || item.vendor || item.manufacturer || '').toString().trim();
@@ -540,7 +543,6 @@
         localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
         populateVendors();
 
-        // Re-evaluate lookup if user already typed REF before DB loaded
         let curRef = document.getElementById('refInput').value.trim();
         if (curRef) lookupByRef(curRef);
       }
@@ -954,8 +956,8 @@
       populateDisplay(match);
       hideAllConfirmButtons();
     } else {
-      let currentRef = document.getElementById('refInput').value.trim().toLowerCase();
-      let refMatch = db.find(i => getItemSku(i).toLowerCase() === currentRef);
+      let currentRef = document.getElementById('refInput').value.trim().toUpperCase();
+      let refMatch = db.find(i => getItemSku(i) === currentRef);
       
       if (refMatch) {
         currentMatchedItem = refMatch;
@@ -973,8 +975,8 @@
       evaluateFieldAttention();
       return;
     }
-    let cleanVal = refVal.trim().toLowerCase();
-    let match = db.find(i => getItemSku(i).toLowerCase() === cleanVal);
+    let cleanVal = refVal.trim().toUpperCase();
+    let match = db.find(i => getItemSku(i) === cleanVal);
     let currentGtin = document.getElementById('gtinInput').value.trim();
 
     if (match) {
@@ -1063,7 +1065,7 @@
   }
 
   function goToReviewStage() {
-    const ref = document.getElementById('refInput').value.trim();
+    const ref = document.getElementById('refInput').value.trim().toUpperCase();
     if (!ref) {
       alert("Please enter or scan a REF/SKU before continuing.");
       return;
@@ -1140,7 +1142,7 @@
   function saveItemLog() {
     try {
       const gtin = document.getElementById('gtinInput').value.trim();
-      const ref = document.getElementById('refInput').value.trim();
+      const ref = document.getElementById('refInput').value.trim().toUpperCase();
       const lot = document.getElementById('lotInput').value.trim();
       const exp = document.getElementById('expInput').value.trim();
       const vendor = document.getElementById('vendorSelect').value;
