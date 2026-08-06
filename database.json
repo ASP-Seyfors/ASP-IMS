@@ -64,7 +64,7 @@
     { "gtin": "", "ref": "678G", "desc": "ETHICON 0 Perma Hand Black 1X18\" FSL (BX/12) 678G", "price": "$85.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "680H", "desc": "ETHICON 0 Perma Hand Black 1X30\" FSL (BX/36) 680H", "price": "$142.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "682G", "desc": "ETHICON 5-0 Perma Hand Black 1X18\" FS-2 (BX/12) 682G", "price": "$40.00", "mfr": "ETHICON" },
-    { "gtin": "", "ref": "685G", "desc": "ETHICON 2-0 Perma Hand Black 1X18\" FS (BX/12) 685G", "price": "$52.00", "mfr: "ETHICON" },
+    { "gtin": "", "ref": "685G", "desc": "ETHICON 2-0 Perma Hand Black 1X18\" FS (BX/12) 685G", "price": "$52.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "687G", "desc": "ETHICON 5-0 Chromic Gut 1X18\" P-3 (BX/12) 687G", "price": "$115.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "689G", "desc": "ETHICON 6-0 Ethilon Undyed 1X18\" P-1 (BX/12) 689G", "price": "$95.00", "mfr": "ETHICON" },
     { "gtin": "30705031008582", "ref": "698G", "desc": "ETHICON 5-0 Ethilon Black 1X18\" P-3 (BX/12) 698G", "price": "$98.00", "mfr": "ETHICON" },
