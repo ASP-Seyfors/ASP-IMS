@@ -173,14 +173,18 @@
       border: 1px dashed #000000;
       margin-bottom: 12px;
     }
+    
+    /* Enlarged Camera Viewfinder & Target Box */
     #cameraViewfinder {
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
+      min-height: 280px;
       margin: 10px auto;
       border: 2px solid #000000;
       display: none;
       background: #000;
     }
+
     .review-line {
       display: flex;
       justify-content: space-between;
@@ -305,7 +309,7 @@
       </div>
     </div>
 
-    <h2>Parsed & Captured Item Details</h2>
+    <h2 id="parsedSectionHeader">Parsed & Captured Item Details</h2>
 
     <!-- Item Destination Selector (Appears for Receiving & Reserving) -->
     <div class="form-row" id="rowItemDestination" style="display: none;">
@@ -651,6 +655,7 @@
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
+  // Expanded Viewfinder Camera Scanner
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraViewfinder');
     const camBtn = document.getElementById('btnToggleCam');
@@ -664,14 +669,19 @@
       let isProcessingScan = false;
 
       html5QrCode = new Html5Qrcode("cameraViewfinder");
+      
+      // Enlarge camera target box to 320x250 for long 1D & DataMatrix barcodes
       html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
+        { 
+          fps: 15, 
+          qrbox: { width: 320, height: 250 },
+          aspectRatio: 1.333333
+        },
         (decodedText, decodedResult) => {
           if (isProcessingScan) return;
 
           let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
-
           if (cleanText.length < 4) return;
 
           for (let i = 1; i <= 4; i++) {
@@ -695,19 +705,23 @@
           if (targetLine > 0) {
             isProcessingScan = true;
             document.getElementById(`rawScan${targetLine}`).value = cleanText;
+            
+            // Execute deep parsing and database lookup
             processAllScans();
 
             let currentGtin = document.getElementById('gtinInput').value.trim();
             let currentLot = document.getElementById('lotInput').value.trim();
             let currentExp = document.getElementById('expInput').value.trim();
 
+            // Auto-close camera & scroll down when all 3 primary data points are captured
             if (currentGtin && currentLot && currentExp) {
               toggleCameraScanner();
+              document.getElementById('parsedSectionHeader').scrollIntoView({ behavior: 'smooth' });
             } else if (visibleScanLines < 4) {
               addScanLine();
             }
 
-            setTimeout(() => { isProcessingScan = false; }, 1000);
+            setTimeout(() => { isProcessingScan = false; }, 800);
           }
         },
         (errorMessage) => {}
@@ -907,7 +921,9 @@
 
   function populateDisplay(item) {
     document.getElementById('refInput').value = item.ref || '';
-    if (item.mfr) document.getElementById('vendorSelect').value = item.mfr;
+    if (item.mfr) {
+      document.getElementById('vendorSelect').value = item.mfr;
+    }
     evaluateFieldAttention();
   }
 
