@@ -174,7 +174,6 @@
       margin-bottom: 12px;
     }
     
-    /* Viewfinder Container & Green Scan Flash */
     #cameraContainer {
       position: relative;
       width: 100%;
@@ -193,11 +192,10 @@
     }
 
     #cameraViewfinder.scan-success {
-      border: 4px solid #2e7d32 !important; /* Light green success flash */
+      border: 4px solid #2e7d32 !important;
       box-shadow: 0 0 12px #2e7d32;
     }
 
-    /* Transparent Status Overlay at Top of Camera Frame */
     .cam-status-overlay {
       position: absolute;
       top: 8px;
@@ -213,7 +211,7 @@
     .status-tag {
       font-size: 0.85rem;
       font-weight: bold;
-      color: rgba(255, 255, 255, 0.4); /* Uncaptured: dim white */
+      color: rgba(255, 255, 255, 0.4);
       background: rgba(0, 0, 0, 0.3);
       padding: 3px 10px;
       border-radius: 4px;
@@ -221,7 +219,6 @@
       transition: all 0.2s ease;
     }
 
-    /* Captured State: Solid Black Font with Translucent Fill */
     .status-tag.captured {
       color: #000000 !important;
       background: rgba(255, 255, 255, 0.65) !important;
@@ -265,10 +262,10 @@
     <div class="form-label">Workflow Process:</div>
     <div class="input-wrapper">
       <select id="workflowTypeSelect">
-        <option value="Receiving">Receiving</option>
-        <option value="Receiving & Reserving">Receiving & Reserving</option>
-        <option value="Picking & Reserving">Picking & Reserving</option>
-        <option value="Picking & Packing">Picking & Packing</option>
+        <option value="Receiving">📦 Receiving</option>
+        <option value="Receiving & Reserving">📦📍 Receiving & Reserving</option>
+        <option value="Picking & Reserving">🖐️📍 Picking & Reserving</option>
+        <option value="Picking & Packing">🖐️📦 Picking & Packing</option>
       </select>
     </div>
   </div>
@@ -313,7 +310,6 @@
         </div>
       </h2>
 
-      <!-- Camera Box with Translucent Heads-Up Overlay -->
       <div id="cameraContainer">
         <div class="cam-status-overlay">
           <span id="tagGtin" class="status-tag">GTIN</span>
@@ -1066,8 +1062,12 @@
   }
 
   function cancelScannedItem() {
-    document.getElementById('screenReview').style.display = 'none';
-    document.getElementById('screenScanning').style.display = 'block';
+    let confirmDiscard = confirm("Are you sure you want to discard this scanned item?");
+    if (confirmDiscard) {
+      resetScanLinesAndFields();
+      document.getElementById('screenReview').style.display = 'none';
+      document.getElementById('screenScanning').style.display = 'block';
+    }
   }
 
   function saveItemLog() {
@@ -1123,10 +1123,8 @@
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
-    alert(`Item ${ref} successfully saved to session!`);
-
+    // Instantly return to scanning screen without alert pop-up
     resetScanLinesAndFields();
-
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
   }
