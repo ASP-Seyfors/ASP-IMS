@@ -62,8 +62,8 @@
       border-radius: 2px;
       min-width: 140px;
       box-sizing: border-box;
-      text-align: center; /* Center-align text */
-      text-align-last: center; /* Center-align select options on mobile */
+      text-align: center;
+      text-align-last: center;
       transition: background-color 0.2s, border-color 0.2s;
     }
 
@@ -717,6 +717,7 @@
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
   }
 
+  // Camera Scanner initialization with DOM visibility delay
   function toggleCameraScanner() {
     const camContainer = document.getElementById('cameraContainer');
     const camBtn = document.getElementById('btnToggleCam');
@@ -730,16 +731,19 @@
 
       updateCameraOverlayStatus();
 
-      html5QrCode = new Html5Qrcode("cameraViewfinder");
-      
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { 
+      // DOM Visibility Delay to allow browser rendering before starting camera
+      setTimeout(() => {
+        if (!isCameraActive) return;
+
+        html5QrCode = new Html5Qrcode("cameraViewfinder");
+        
+        const qrConfig = { 
           fps: 15, 
           qrbox: { width: 320, height: 250 },
           aspectRatio: 1.333333
-        },
-        (decodedText, decodedResult) => {
+        };
+
+        const onScanSuccess = (decodedText, decodedResult) => {
           if (scanCooldown) return;
 
           let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
@@ -788,12 +792,20 @@
 
             setTimeout(() => { scanCooldown = false; }, 600);
           }
-        },
-        (errorMessage) => {}
-      ).catch(err => {
-        alert("Unable to access camera: " + err);
-        toggleCameraScanner();
-      });
+        };
+
+        // Camera startup with environment fallback
+        html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
+          .catch(err => {
+            console.warn("Environment camera failed, attempting standard camera fallback...", err);
+            html5QrCode.start({ facingMode: "user" }, qrConfig, onScanSuccess)
+              .catch(fallbackErr => {
+                alert("Unable to access camera: " + fallbackErr);
+                toggleCameraScanner();
+              });
+          });
+      }, 50);
+
     } else {
       if (html5QrCode) {
         html5QrCode.stop().then(() => {
@@ -1128,7 +1140,6 @@
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
-    // Instantly return to scanning screen without alert pop-up
     resetScanLinesAndFields();
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
