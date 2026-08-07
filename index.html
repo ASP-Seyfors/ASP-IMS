@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.2.9 | UPDATED: 2026.08.06                   -->
-<!-- CHANGELOG: Filtered GS characters, Tag/Lot grouping, Dual-Entry Export  -->
+<!-- ASP SCANNER APP - VERSION 1.3.0 | UPDATED: 2026.08.07                   -->
+<!-- CHANGELOG: Upgraded export engine to styled HTML invoice reports        -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.2.9</title>
+  <title>ASP-Android Scanner App v1.3.0</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -264,7 +264,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.9)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.3.0)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -539,7 +539,7 @@
       <button class="btn-action btn-continue" style="flex: 2;" onclick="continueScanning()">➕ Continue Scanning</button>
       <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelSession()">❌ Cancel Session</button>
     </div>
-    <!-- Safety end session button -->
+    
     <div class="btn-flex-row" style="margin-top: 8px;">
       <button class="btn-action btn-stop" style="flex: 1;" onclick="endSession()">💾 End & Export Session</button>
     </div>
@@ -1386,7 +1386,7 @@
     }
   }
 
-  function generateExactFilename(extension = "txt") {
+  function generateExactFilename(extension = "html") {
     let sName = currentSessionName || "Session";
     let oNum = currentOrderNum;
     let wType = currentWorkflowType || "Receiving";
@@ -1410,7 +1410,7 @@
       return;
     }
 
-    let summaryFilename = generateExactFilename("txt");
+    let summaryFilename = generateExactFilename("html");
     let invMap = {}, resMap = {}, packMap = {};
 
     sessionScannedObjects.forEach(item => {
@@ -1422,7 +1422,6 @@
         targetMaps.push(invMap);
       } else if (item.actionTag === 'Reserved') {
         targetMaps.push(resMap);
-        // Accounting Dual-Entry Logic
         if (currentWorkflowType.includes('Receiving & Reserving')) {
           targetMaps.push(invMap); 
         }
@@ -1433,7 +1432,7 @@
       targetMaps.forEach(targetMap => {
         if (!targetMap[rKey]) {
           targetMap[rKey] = {
-            ref: item.ref, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {}
+            ref: item.ref, desc: item.desc, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {}
           };
         } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
           targetMap[rKey].gtin = cleanGtin;
@@ -1461,156 +1460,168 @@
 
     const nowObj = new Date();
     let timeEndStr = nowObj.toLocaleTimeString();
-
     let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
 
-    let reportLines = [
-      `================================================================================`,
-      `ASP SCANNER APP SUMMARY EXPORT - ${sessionTitleHeader}`,
-      ``,
-      `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
-      ``,
-      `          Workflow Process:    ${currentWorkflowType}`,
-      `          Scanned Date:        ${sessionDateStr}`,
-      `          Session Start:       ${sessionStartStr || 'N/A'}`,
-      `          Session End:         ${timeEndStr}`,
-      `================================================================================\n`
-    ];
+    // Build HTML Content
+    let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${summaryFilename}</title>
+<style>
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 40px; font-size: 14px; }
+  .header-grid { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0277bd; padding-bottom: 20px; margin-bottom: 20px; }
+  .company-info { flex: 1; }
+  .company-info h1 { margin: 0; color: #0277bd; font-size: 24px; text-transform: uppercase; }
+  .company-info p { margin: 2px 0; color: #555; }
+  .report-meta { text-align: right; }
+  .report-meta h2 { margin: 0; color: #333; font-size: 18px; margin-bottom: 8px; }
+  .report-meta table { width: 100%; text-align: right; border: none; font-size: 13px; margin: 0; }
+  .report-meta td { border: none; padding: 2px 0 2px 15px; }
+  .section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 8px 12px; font-size: 16px; font-weight: bold; margin: 30px 0 15px 0; text-transform: uppercase; }
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+  .data-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 10px; text-align: left; font-size: 13px; color: #555; }
+  .data-table td { border-bottom: 1px solid #eee; padding: 10px; vertical-align: top; }
+  .ref-col { font-weight: bold; color: #000; font-size: 15px; }
+  .desc-col { font-size: 12px; color: #666; max-width: 250px; }
+  .lot-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; background: #fafafa; border: 1px solid #eaeaea; }
+  .lot-table th, .lot-table td { border: 1px solid #eaeaea; padding: 4px 8px; }
+  .lot-table th { background: #f0f0f0; }
+  .tag-header { font-weight: bold; color: #d32f2f; margin: 10px 0 4px 0; font-size: 12px; text-transform: uppercase; }
+  .raw-scan-list { font-family: monospace; font-size: 11px; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
+  @media print {
+    body { margin: 0; padding: 15px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-break { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
 
-    if (Object.keys(invMap).length > 0) {
-      reportLines.push(`--- INVENTORY ADDITIONS ---\n`);
-      let count = 1;
-      for (let rKey in invMap) {
-        let rData = invMap[rKey];
-        reportLines.push(`[${count}] REF: ${rData.ref}`);
-        reportLines.push(`    | GTIN: ${rData.gtin}`);
-        reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
+<div class="header-grid">
+  <div>
+    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QDoRXhpZgAATU0AKgAAAAgABAE7AAIAAAAKAAAISodpAAQAAAABAAAIVJydAAEAAAAOAAAQzOocAAcAAAgMAAAAPgAAAAAc6gAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1pZGpvdXJuZXkAAAAWkAMAAgAAABQAABCkkAQAAgAAABQAABC4kpEAAgAAAAQ2NAAAkpIAAgAAAAQ2NAAA6hwABwAACAwAAAiYAAAAABzqAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAyNjowODowNyAwMjozODozMQAyMDI2OjA4OjA3IDAyOjM4OjMxAAAAQwBvAHIAZQBOAEwAUAAgAE0AZQB0AGEAZABhAHQAYQBFAHIAcgBvAHIAXwBTAHUAYwBjAGUAcwBzAAAA/+EKXmh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSfvu78nIGlkPSdXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQnPz4NCjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iPjxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDI2LTA4LTA3VDAyOjM4OjMxLjYzOTwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PC9yZGY6UkRGPjwveDp4bXBtZXRhPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSd3Jz8+/9sAQwAGBAUGBQQGBgUGBwcGCAoQCgoJCQoVDg8MEB8TXhcXF1ITGBgwIhoYIx8XFh0lISUpMA4NDRoaJz02MT0wMT0O/9sAQwEHBwcKCAoTCgoTMA4XDjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw/8AAEQgCBgIGAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A9m/t4d7aT86T+3l/59pPzq+tqvoKd9mX0rt0PIszO/t5f+faT86X+3V/59pPzrQ+zL6Cj7MvoKNA1M/+3R/z7SUf26P+faT860Psy+go+zL6CjQNTN/t4f8APtJ+dL/bo/59pPyrR+zL6Cl+zL6CgNTN/t1f+faT86X+3V/59pPyrQ+zr6Cj7MvoKNA1M/8At1f+faT86X+3F/59pPzq/wDZl9BR9nX0FAamb/bq/wDPtJ+dH9ur/wA+0n51o/Zl9BR9nX0FVoGpQ/txf+feT86X+21/595Kv/Z19BThbr6CjQNTN/t1f+feT86P7bX/AJ95PzrR+zr6Ck+zL6CjQNTN/ttf+faT86T+3R/z7SfnWmIF9BThbr6CjQNTJ/t1f+faT86P7bX/AJ95PzrW+zr6Cj7OvoKNA1Mj+21/595Pzo/tpf8An3krX+zr6Cj7OvoKNA1Mj+21/wCfeT86X+2l/wCfeStef86oajf2GnIGu5Eiz0z1P4Vm5xirtlRhKbtFDBrI/wCfT0f2yP8An3krKl8X6Gj7TJn3EZqxD4h0aYZSZf8AgSkVxPN8LF2dRfidKyzEtXUGXX1of8+8lH9rD/nhJVS1vrO6XdbSRyD1U5qfA9K7Kc41FeLujlnCcHyyVmSf2yP+eElJ/bI/54SVMiKacEHtVXItIr/2wP8An3ko/thf+feSrSoD2FO8oe1MNTN/tgf8+8lKNZX/AJ4SVfMQPalVB6UBoUP7YX/nhJR/bI/595K1NgxR5YpoNTK/tpf+eElH9tL/AM8JK1jGKFQVbJ1Mn+2l/wCfaSj+2l/54SVreWPalWNakDI/tpf+eElL/bQ/54SVsBRijyxQGpj/ANtL/wA8JKX+2h/zwkrbCijAosGpi/20P+eElH9tD/nhJW1to2iiwamL/bQ/54SUf20P+eElbcYUmpfLWlYNTn/7aH/PCSj+2h/zwkroNgo2UWCxz/8AbQ/54SUf20v/ADwkrfKU0pk07BqYX9sD/n3kpf7YH/PCSuhjiXHIzTXjQHoDSHY5/+2h/zwko/toH/AJYyVvsi4qLZTCzMT+2P+mMlL/bI/wCeMlbsajmpgi46Ug1Oc/tgf88JKX+2B/zxkroaXpQLU5z+1x/zxko/tgf88ZK6QYPSlIosGpzf9rD/AJ4yUv8Aa3/TGSunVB6UpQCiwWOU/tkf88ZKT+2h/wA8ZDXU7RRgUrBc5f8Ato/88ZKT+2x/zwlrqdoo2ilYd0cx/ba/88JaT+2x/wA8Ja6naKNoosFzk/7bX/nhJ+VJ/ba/8+8v5V1m0Um0UWC6OS/ttP8AnhL+VH9tp/zwl/Kut2ijaKLBcyY5lCilMy1hDxJpH8WoIfwqVfEukHkXsI/A/wCFc7xNBfbfudCwtf2XsbImBHWmmYAVnf27pZHF/CPof8KVda01zxfQEf59qn6xS/mQvq9X+Vl4TigzDFVWv7EruW5jP0NMa+tiMiaP86v21P+ZEexqPoWjODTDOv8AepbOeCYsIpEbHXFTFR6CtoSjNcydjOUHHeJBXb1pPNFXig9KXaK2uZlQSqO9OFwnrU+we1Gwe1AWKhuE9aPtCepqxsX0FAjHoKBWK32hPXNI1xGBksR7mrawB6CsPxjqKaRplxcpE1xNHGTGgHVuOBWdScacXKbskXTg6klCO7MnxBq1n4e0a41TVblbezgXc8hUmuI+FPjfwV4zvrqy0XWRNewLvaKSAoxXOMjvXzz4/wDirxj4otY5by5uNIt1DpaWy/KoB7gdTXI2M9/4E+IWnXeq28ulXFhchriFxkTR/xAjuMV8hXzrEPEOlCKlFf1b0PpsMowscM6lKc5fPHT/hH2HfeJ/DmkrLHeX2+5UErBBHudvoegrxvxN481XX9R+y6EGsLEnYvlLmeU+/cD7CvKPiR4luviV4su9U0uymttI0yAebNIeI2YnaSfU44HtXYfsr/DrWfHPiS2utQmu7jw7asWurpV2/MTwFz6VliMdicTVpYPDq+1fnb+X/BGmEwWFw9OWMqXJb+7X/X87nWaNoHiHVxHceVdQjtSdsPcxO9voBXvvwZ8T3+o7DwtBqK+7mS6+0h/1zO87H6k+xP+w88FfGnjS8stZ0y08NalG72Xlz/ZpB+6/4h9K9K+Nf2ffBnh17/AFh4c0m2O+a7eN7X4z3qUv0b411w3P1lU/H3n1T3zP991P/X302fD4/6e/p2+iFp/D4r90b39x6T7o/296U/27+rP9f0N3yv/9b/yO+n34t+D//z+Dq+Gf6o/v7xH/3H/0d+D8O/tN9N/B42r//r/3B/eXh2P/qf+2v/2f/x/49/71v/mP/fP/nN/T35f/xT/4T/9m/tH93/8Bv/H9D92v7H9uP+P30ff//N/sD/4Bv8H9gP+T39e/5N+D9vP+b/t/9L/6u31D//A/92f9W9R/2R/4D/uD//gP/AP/9A/6F/x//sH/8r9gP8Av/zH9sD/3l/1s/1D/p2r/wA//8A/7B/9I/tJ/5P+0n9l2f+wL+s+T/9V/2h+X/7t/w3+y2e/2v/AK9X/90/19tL/9i/sO+mB/7k/zV/6P/uB/9Z/1eA/8B/rL/3eL/xG//xX9A/1H/AKr/0eJ/sf/6U/vB/sP/oA/sI/sL/2n9wf7R//AC/pL/wH94D+5X91v7V//wH9sf3q//tH9tf6b+uH/AH+gf3E/0A/tr/wD+6H92P9E/uh/qA/tP/wH9oH9xP9MP2n9qP6E/2L//3zB/5N+i/6Z/uL/AF+y/sZ/wA/sx/0b+3P7sP6X/3N/oH/sH+5f9A/6H/Y/9AP9AP9A/wD+sP7gf2w/wAA/sH+A/wA/sA/rL+sP9h/rD+oH9wH9oH9wP7sH+oA/sw/ux/rA/yA/uR/tj+8P70/2o/qR/sL/AA/6h/YH+wP7AH+yv9oB/uB/oB/qH+gP9AP7oB/cH+yP9sB/1F/6sH+AH+xP9AP8AP9sP9A/wAIQAH9sH9Bf6B/qH9kf3gH+yv8AH9sf1IH+YH+wf9Bf1QP6wf6gf7gP8AD+wB/cAf7of8wB/tgP8wP7A/6h/rAP8A/0B/sgP8Ah/3L+yP9kP7If2h/yB/sh/2D/YP9yP9UP7QP7sP7cH+oP9sP9oH92H+wP6B/5h/mB/UH9QP7UP7cP8wB/sj/AP7YH+sH+Qf6gf1Qf1Q/twP8AP6x/0Qf9MP6wH/AL/7A/2n/AF/6M+D+mB/uT/pI+zH/AJ2R/1Af5U/sg/rAfrB/nUf3IH+UP9yB/tQ/4Qf3A/oB/sQ/sgP8Q/0Af5Q/uh/1h/2h/lQ/tD+8D/OH/QH9gf1wB/yA/1h/6B/sI/sh/cH+oP7A/6R/iA/1Af9wP8wP7w/yA/8of1oH/AH+9Q/8yP+xH/Q/6kP80P/Yt/Qf6s/51H/AJ+gX/AEH/AIj/ANB/rI/1If2Q/yI/wBf3g/vh/oR/sD/AF/3T+8A/3A/th/9Q/1B/UH/CD+2H/AAf6g/0A/uh/tj+8D/eAf3gH+wP6oP6g/6wD+2H/IAf3wf2YP6sA/pB/6g/5CP9AP6gf0gH9QP6gP6oA/tgP9UP6x/7kP70B/UH+A/1j+6B/WH+of6wf3gP9oB/YD+oA/qAP7Ef0B/tgP6gP9Af3of7Yf8wH/IH/wAF/1H/ANB/oK/wBgf0T9k/6wf4R/sh/6j+0v/AGX/wAf+h/Yf/AC/8AAz/AKn+hH9wB/6H+4H94H+sB/ugB/oR/wD/AA/oAP7AP6g/th/wgP+oH9Qf2of6B/zD/CD/IP9wP9QH9wH/AP7oH94H/AP7ID/cAf1wf4wH94D/YD/AP7gB/tgP6gH+4A/zgD/AD/qB/xAf7wB/rA/9A/6gD+0A/pA/0gf9wH/MB/pD/AP6wf4R/sAf0Q/vgP+4D/AF/UH+0B/zEf1gf2gD/AH9IP8Qf4B/1QP7Yf3gP8AH/AB/8AD/AH+kD+6H/cD/AH/UD+kD/AD/UD/AD+0D/AA/yB/fD/eA/9A/xgf5QP7gf1h/3wf0B/1A/zA/6oP/AGD/AAH+UD+0H+wB/fD/QH/gP9If6A/xgf2gB/cD/ACn+of7w/1g/4AP+4A/5AP+g/ugf4QP8Af7wf8oH/YD/UD/A/4B/7h/sD+8H/UH+oB/uD/gD/YH+QP/AA/9AP3B/gAP+QH/wAB/tB/QD/AA/3h/wB/vAf6Qf6AH+sD/iB/gAf9oH+oD/UB/8AB/5B/oD/CB/7gf/CB/7gf/AAH/AF/7D+6A/xA/2g/zB/fB/yD/QB/6gD+0H/cH/AD+0D/AP5Qf2QP8AH/0D/cH/CB/wQf3Qf8I/xAD/IB/yD/uB/oD+iD/kAf3g/6QP/ED/YAH/aAf5B/eD/QAA/0gf0gB/eA/0B/yA/uAP7sA/uh/YAP/YD/sD/oD/CB/zgf1Af8AH/0D/MB/xA/wg/ugf7QP8YP/YB/6gD/CD/AA/yB/xB/sB/gAP/AD+0B/gA/yB/3gH/CB/xwf9ID/AB/uD/lA/7gH/CH9gB/6Af1wD/AEP/YD+1B/jB/iB/1AAf8UD+mAP7gf1QP8Qf0x/2A/uD/sAP/ID/IB/fB/cD/A/7A/2QP6B/cD/AF/nB/vj+lD/AP9gf1R/Yf9IfwA/uT+wH/AB/yD/cR/0IfzB/cD/ID+wH/UB/wB/vj+w/sT+mB/SH94P8Yf6If4B/tB/iB/7B/gP8Y/1T/wAf8Yf9I/wAI/vR/gD/AB/nIf6A/xA/3If7oH/UAB/0Qf8ID+yB/yA/sD/wB/9D+9D/lA/th/9Qf2AP6x/vA/wgD/QB/dD/AH/UH9cfwAH/AFB/eAP7gB/mD/UD+4A/nB/0AH/uA/vD/gD/IH/QH9UB/wBB/YD/QAH+sH/aD/AP/gA/qgP/QB/6gf1Qf+ID/mP9EH+EH+UB/oB/qD+wD/IP9oA/oA/sAf6wf6A/yh/2B/jB/7Qv9kP8gf5I/wB/rD/QAf+UH/UH/qH/kD/2gD/AIf9IP/eH/uA/2gH9kD/QH+0H+YD/tA/uB/1gH+gf/ID+4H/cD+8D/AB/tD/0D/mD/A/9A/6gD/aD/AD+yD+kD/AD+qD/AP+YD/ID/gD/IH/QH/CD/hA/sgP64f9AH/UB/cB/0B/zH/UB/vj+6A/9B/wgH/0D/EH9wf/AAP/QB/lA/tgB/pA/zgH/AB/aA/9B/qR/3h/ygH90H98H+IAf5AP54A/wh/9Af0A/qh/1gf4A/wh/sA/5gP8IP/cD/ID/QD/QD/yH+QD/lD/1B/xB/eB/8gD/kAf1B/hB/sB/aH+4H/MH/qAf9h/pD/AB/2gP/QP9If9YP6wf7Qf6A/qAP/IIf9wA/zB/dD/oB/sP/oA/pA/zAH/QB/eAf0AP6YP8IP8If6gP/AH/IH/Yf3B/yA/qgf8QA/ygf+IH+oH9MB/1B/UD+kA/6D/sB/hA/uB/sA/2h/qB/YAf1B/zAH+kP7Qf0gf6wP7Yf5AP+wH+QP/UH+mD/kH9kD/0Af6g/qgP6gf6QH+wP/IH+wH9IP7QP7QH/UH/aH/kH/Qf6QP9A/3gf1AH/AP/UD/ED+uB/oB/vD/EH/KD/sB/gAP+IH9Uf0Q/4D/uD/hD/ED/IH+AD/yA/wB/tB/kAf9R/4gf7QP+8B/YAf6g/zgf8IH+UH+AP7AP4h/hD/MB/fB/cD/ID/MB/nB/cH/IAH+0A/wgP+oA/wh/uD/gD/kH+MP7Q/3D/eB/yD+8D/AP8Af9QP+IP7ID/UB/7gf8Yf5Af1gf/A+LIfyI/wh/QH/AB/2B/jB/vj/gAf+Af8of7Qf6h/eAf3gH+yA/4H/mH9UD/AH/oD/ID/ED+gH9cH+kP/cD+0D/kD+8A/vAf7Qf/A+LIP6wf7oD+1B/mB/YAf7Q/qgP5w/0Af1QP5I/wh/dD/aH/ID+mP+gB/8AAf/cH/EP6AP9A/5gf9sP9Af5QP8ID/oH+yB/3Qf7Af8QP+AD+wP/YD+xD/UD+wA/tAP+Yf7A/sR/vB/zgH9oH/eA/oAP/QA/5g/zgf9Qf2gP8QH+AD+wD/qD/wQf+gP8IP/kH9ID/QD+sD/eA/xA/rg/4wP+AH/QD/jB/iB/gD/UB/1AP+QH/IB/bB/tB/vB/zgf4wf4gP8IP8IH/wB/sD/oP+gA/zg/qA/tD/mB/QH/IH+oD/1A/0gf9Qf2AP6QP9wP/ACD/AD+yA/sh/qD/ED/jH9MP8Qf1Q/2wD/AH+wP6AP/AIf7wf5Qf8wB/sh/yAP9A//9k=" style="max-height: 80px;" alt="ASP Logo" />
+  </div>
+  <div class="company-info" style="margin-left: 20px;">
+    <h1>Allied Surgical Products</h1>
+    <p>737 Barbara Street</p>
+    <p>Palm Harbor, FL 34684</p>
+  </div>
+  <div class="report-meta">
+    <h2>SESSION LOG EXPORT</h2>
+    <table>
+      <tr><td><strong>Session:</strong></td><td>${sessionTitleHeader}</td></tr>
+      <tr><td><strong>Workflow:</strong></td><td>${currentWorkflowType}</td></tr>
+      <tr><td><strong>Date:</strong></td><td>${sessionDateStr}</td></tr>
+      <tr><td><strong>Time Span:</strong></td><td>${sessionStartStr} - ${timeEndStr}</td></tr>
+      <tr><td><strong>Unique REFs:</strong></td><td>${totalUniqueRefs}</td></tr>
+    </table>
+  </div>
+</div>`;
+
+    function buildTableHTML(mapData, showTags, showPrice) {
+      if (Object.keys(mapData).length === 0) return '';
+      let tb = `<table class="data-table"><thead><tr>
+                  <th>REF / MFR</th>
+                  <th>Description & GTIN</th>
+                  <th>Inventory Lots & Quantities</th>
+                  <th style="text-align:center;">Total Qty</th>
+                </tr></thead><tbody>`;
+      
+      for (let rKey in mapData) {
+        let rData = mapData[rKey];
         
+        let lotSection = '';
         for (let tKey in rData.byTag) {
           let tagData = rData.byTag[tKey];
-          if (tKey !== 'UNTAGGED') {
-             reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          if (showTags && tKey !== 'UNTAGGED') {
+            lotSection += `<div class="tag-header">Tag: ${tKey} (Qty: ${tagData.tagTotalQty})</div>`;
+          } else if (showTags && Object.keys(rData.byTag).length > 1) {
+             lotSection += `<div class="tag-header" style="color:#555;">UNTAGGED (Qty: ${tagData.tagTotalQty})</div>`;
           }
-          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          
+          lotSection += `<table class="lot-table"><tr><th>Lot Number</th><th>Exp Date</th><th>Qty</th></tr>`;
           for (let lKey in tagData.lots) {
-            let lData = tagData.lots[lKey];
-            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+             let lData = tagData.lots[lKey];
+             lotSection += `<tr><td>${lData.lot}</td><td>${lData.exp}</td><td style="text-align:center; font-weight:bold;">${lData.qty}</td></tr>`;
           }
+          lotSection += `</table>`;
         }
-        reportLines.push(``);
-        count++;
+
+        let descText = rData.desc || 'No description available.';
+        let priceHtml = showPrice ? `<br><strong style="color:#2e7d32;">${rData.price}</strong>` : '';
+
+        tb += `<tr>
+                <td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td>
+                <td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td>
+                <td>${lotSection}</td>
+                <td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalQty}</td>
+               </tr>`;
       }
+      tb += `</tbody></table>`;
+      return tb;
+    }
+
+    if (Object.keys(invMap).length > 0) {
+      html += `<div class="section-title">📦 INVENTORY ADDITIONS</div>`;
+      html += buildTableHTML(invMap, true, false);
     }
 
     if (Object.keys(resMap).length > 0) {
-      reportLines.push(`--- RESERVED FOR CUSTOMERS ---\n`);
-      let count = 1;
-      for (let rKey in resMap) {
-        let rData = resMap[rKey];
-        reportLines.push(`[${count}] REF: ${rData.ref}`);
-        reportLines.push(`    | GTIN: ${rData.gtin}`);
-        reportLines.push(`    | Total Quantity Reserved: ${rData.totalQty}`);
-        
-        for (let tKey in rData.byTag) {
-          let tagData = rData.byTag[tKey];
-          if (tKey !== 'UNTAGGED') {
-             reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
-          }
-          reportLines.push(`    | Lot & Expiration Breakdowns:`);
-          for (let lKey in tagData.lots) {
-            let lData = tagData.lots[lKey];
-            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
-          }
-        }
-        reportLines.push(``);
-        count++;
-      }
+      html += `<div class="section-title">🚩 RESERVED FOR CUSTOMERS</div>`;
+      html += buildTableHTML(resMap, true, false);
     }
 
     if (Object.keys(packMap).length > 0) {
-      reportLines.push(`--- PACK & SHIP ---\n`);
-      let count = 1;
-      for (let rKey in packMap) {
-        let rData = packMap[rKey];
-        reportLines.push(`[${count}] REF: ${rData.ref}`);
-        reportLines.push(`    | Price: ${rData.price}`);
-        reportLines.push(`    | Total Quantity Packed: ${rData.totalQty}`);
-        
-        for (let tKey in rData.byTag) {
-          let tagData = rData.byTag[tKey];
-          if (tKey !== 'UNTAGGED') {
-             reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
-          }
-          reportLines.push(`    | Lot & Expiration Breakdowns:`);
-          for (let lKey in tagData.lots) {
-            let lData = tagData.lots[lKey];
-            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
-          }
-        }
-        reportLines.push(``);
-        count++;
-      }
+      html += `<div class="section-title">🖐️ PACK & SHIP (OUTBOUND)</div>`;
+      html += buildTableHTML(packMap, true, true);
+    }
+
+    if (pendingNewItems.length > 0 || pendingFieldUpdates.length > 0 || sessionScannedObjects.length > 0) {
+       html += `<div class="page-break"></div><div class="section-title" style="background-color:#424242; color:#fff; border-color:#212121;">⚙️ SYSTEM LOGS & BARCODE DATA</div>`;
     }
 
     if (pendingNewItems.length > 0) {
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      reportLines.push(`--- NEW ITEM DETAILS ---`);
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      let nIdx = 1;
+      html += `<h4 style="margin-bottom:5px;">New Items Added to Database</h4><table class="data-table"><thead><tr><th>REF</th><th>Manufacturer</th><th>GTIN</th></tr></thead><tbody>`;
       pendingNewItems.forEach(nItem => {
-        reportLines.push(`[ ${nIdx} ] REF: ${nItem.ref}`);
-        reportLines.push(`          | GTIN: ${cleanGtinValue(nItem.gtin)}`);
-        reportLines.push(`          | Manufacturer: ${nItem.mfr}`);
-        reportLines.push(`          | Price: ${nItem.price}`);
-        nIdx++;
+        html += `<tr><td><strong>${nItem.ref}</strong></td><td>${nItem.mfr}</td><td>${cleanGtinValue(nItem.gtin)}</td></tr>`;
       });
-      reportLines.push(``);
+      html += `</tbody></table>`;
     }
 
     if (pendingFieldUpdates.length > 0) {
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      reportLines.push(`--- EXISTING ITEM UPDATES (${pendingFieldUpdates.length}) ---`);
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      let uIdx = 1;
+      html += `<h4 style="margin-bottom:5px;">Existing Database Updates</h4><table class="data-table"><thead><tr><th>REF</th><th>Updated Value</th></tr></thead><tbody>`;
       pendingFieldUpdates.forEach(upd => {
-        reportLines.push(`[ ${uIdx} ] REF: ${upd.ref}`);
-        reportLines.push(`          | GTIN: ${cleanGtinValue(upd.newValue)}`);
-        uIdx++;
+        html += `<tr><td><strong>${upd.ref}</strong></td><td>${cleanGtinValue(upd.newValue)}</td></tr>`;
       });
-      reportLines.push(``);
+      html += `</tbody></table>`;
     }
 
     if (sessionScannedObjects.length > 0) {
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      reportLines.push(`--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---`);
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      reportLines.push(`Session Start Time: ${sessionStartStr || 'N/A'}\n`);
-
+      html += `<h4 style="margin-bottom:5px;">Raw Barcode Scans</h4><div class="raw-scan-list">`;
       sessionScannedObjects.forEach(item => {
-        reportLines.push(`REF: ${item.ref}`);
+        html += `<div style="margin-bottom:8px;"><strong>REF: ${item.ref}</strong><br>`;
         if (item.rawScanLines && item.rawScanLines.length > 0) {
           item.rawScanLines.forEach((lineVal, idx) => {
-            reportLines.push(`  - Barcode Line ${idx + 1}: ${lineVal}`);
+            html += `&nbsp;&nbsp;Line ${idx + 1}: ${lineVal}<br>`;
           });
+        } else {
+          html += `&nbsp;&nbsp;No raw barcodes captured.<br>`;
         }
-        reportLines.push(``);
+        html += `</div>`;
       });
+      html += `</div>`;
     }
 
-    reportLines.push(`================================================================================`);
-    reportLines.push(`END OF RECEIVING INVENTORY SUMMARY`);
-    reportLines.push(`================================================================================`);
-
-    let fileContent = reportLines.join('\n');
+    html += `</body></html>`;
 
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({
           suggestedName: summaryFilename,
-          types: [{ description: 'Text Files', accept: { 'text/plain': ['.txt'] } }]
+          types: [{ description: 'HTML Document', accept: { 'text/html': ['.html'] } }]
         });
         const writable = await handle.createWritable();
-        await writable.write(fileContent);
+        await writable.write(html);
         await writable.close();
         
         pendingNewItems = [];
@@ -1618,12 +1629,12 @@
         localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
         localStorage.setItem('asp_pending_updates', JSON.stringify([]));
 
-        alert("Scanning session report successfully exported!");
+        alert("Scanning session report successfully exported as HTML!");
       } catch (err) {
         if (err.name === 'AbortError') return;
       }
     } else {
-      let blob = new Blob([fileContent], { type: 'text/plain' });
+      let blob = new Blob([html], { type: 'text/html' });
       let a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = summaryFilename;
