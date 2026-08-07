@@ -16,7 +16,8 @@
     "STRYKER",
     "+ Create New Vendor"
   ],
-  
+
+    
   "items": [
     { "gtin": "30705031038619", "ref": "J304H", "desc": "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H", "price": "$0.00", "mfr": "ETHICON" },
     { "gtin": "", "ref": "1200710", "desc": "Bard Phasix St Mesh Rectangle 3.0in X 4.0in 1200710", "price": "$700.00", "mfr": "BARD" },
