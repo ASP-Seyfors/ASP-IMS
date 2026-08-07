@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.3.0 | UPDATED: 2026.08.07                   -->
-<!-- CHANGELOG: Upgraded export engine to styled HTML invoice reports        -->
+<!-- ASP SCANNER APP - VERSION 1.3.1 | UPDATED: 2026.08.07                   -->
+<!-- CHANGELOG: Added Multi-Export (TXT, HTML, PDF) & fixed logo rendering   -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.3.0</title>
+  <title>ASP-Android Scanner App v1.3.1</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -131,6 +131,15 @@
       cursor: pointer;
       margin-top: 6px;
       border-radius: 4px;
+    }
+    .btn-export {
+      background-color: #ffffff;
+      color: #000000;
+      border: 2px solid #000000;
+      transition: all 0.2s;
+    }
+    .btn-export:hover {
+      background-color: #e0e0e0;
     }
     .btn-flex-row {
       display: flex;
@@ -258,13 +267,25 @@
       padding: 10px;
       margin-bottom: 8px;
     }
+    .export-panel {
+      background-color: #e3f2fd;
+      border: 2px solid #0277bd;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 14px;
+    }
+    .export-panel h4 {
+      margin: 0 0 10px 0;
+      text-align: center;
+      color: #0277bd;
+    }
   </style>
 </head>
 <body>
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.3.0)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.3.1)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -295,7 +316,7 @@
     <button class="btn-action btn-start" style="flex: 2;" onclick="startSession()">Start Scanning Session</button>
   </div>
   <div class="btn-flex-row" style="margin-top: 8px;">
-    <button class="btn-action" style="background-color: #f57f17; color: #ffffff; font-size: 0.85rem;" onclick="rescueLastSession()">Rescue Last Export</button>
+    <button class="btn-action" style="background-color: #f57f17; color: #ffffff; font-size: 0.85rem;" onclick="rescueLastSession()">Rescue Last Session (Cache)</button>
   </div>
 </div>
 
@@ -310,8 +331,7 @@
       <span><strong>Workflow:</strong> <span id="hdrWorkflow">--</span></span>
     </div>
     <div class="btn-flex-row" style="margin-top: 8px;">
-      <button class="btn-action btn-stop" style="flex: 1;" onclick="endSession()">End Current Session</button>
-      <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelSession()">Cancel Current Session</button>
+      <button class="btn-action btn-stop" style="flex: 1;" onclick="goToSummaryScreen()">Review & Export Session</button>
     </div>
   </div>
 
@@ -537,11 +557,7 @@
     
     <div class="btn-flex-row" style="margin-top: 8px;">
       <button class="btn-action btn-continue" style="flex: 2;" onclick="continueScanning()">➕ Continue Scanning</button>
-      <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelSession()">❌ Cancel Session</button>
-    </div>
-    
-    <div class="btn-flex-row" style="margin-top: 8px;">
-      <button class="btn-action btn-stop" style="flex: 1;" onclick="endSession()">💾 End & Export Session</button>
+      <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelSession()">❌ Discard Entire Session</button>
     </div>
   </div>
 
@@ -550,6 +566,13 @@
     <div id="summaryListContainer">
       <!-- Injected via JavaScript -->
     </div>
+  </div>
+
+  <div class="export-panel">
+    <h4>Select Export Format</h4>
+    <button class="btn-action btn-export" onclick="exportData('txt')">📄 Save as .TXT Data Log</button>
+    <button class="btn-action btn-export" onclick="exportData('html')">🌐 Save as .HTML Web Invoice</button>
+    <button class="btn-action btn-export" style="background-color: #0277bd; color: #ffffff; border-color: #01579b;" onclick="exportData('pdf')">🖨️ Print / Save as PDF</button>
   </div>
 </div>
 
@@ -873,21 +896,15 @@
     document.getElementById('screenSetup').style.display = 'block';
   }
 
-  async function endSession() {
-    isSessionActive = false;
-    localStorage.setItem('asp_session_is_active', 'false');
-
+  function goToSummaryScreen() {
     if (isCameraActive) toggleCameraScanner();
-
-    await exportUnifiedSummary();
-
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'none';
-    document.getElementById('screenSummary').style.display = 'none';
-    document.getElementById('screenSetup').style.display = 'block';
+    updateSessionSummaryView();
+    document.getElementById('screenSummary').style.display = 'block';
   }
 
-  async function rescueLastSession() {
+  function rescueLastSession() {
     let saved = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
     if (saved.length === 0) {
       alert("No scanned items found in memory to rescue.");
@@ -898,7 +915,8 @@
     pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
     pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
     
-    await exportUnifiedSummary();
+    checkSessionRecoveryState();
+    goToSummaryScreen();
   }
 
   function cleanGtinValue(val) {
@@ -1386,7 +1404,7 @@
     }
   }
 
-  function generateExactFilename(extension = "html") {
+  function generateExactFilename(extension = "txt") {
     let sName = currentSessionName || "Session";
     let oNum = currentOrderNum;
     let wType = currentWorkflowType || "Receiving";
@@ -1404,13 +1422,7 @@
     return finalName;
   }
 
-  async function exportUnifiedSummary() {
-    if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
-      alert("No data was scanned in this session.");
-      return;
-    }
-
-    let summaryFilename = generateExactFilename("html");
+  function buildTXTReportString() {
     let invMap = {}, resMap = {}, packMap = {};
 
     sessionScannedObjects.forEach(item => {
@@ -1422,18 +1434,14 @@
         targetMaps.push(invMap);
       } else if (item.actionTag === 'Reserved') {
         targetMaps.push(resMap);
-        if (currentWorkflowType.includes('Receiving & Reserving')) {
-          targetMaps.push(invMap); 
-        }
+        if (currentWorkflowType.includes('Receiving & Reserving')) targetMaps.push(invMap); 
       } else if (item.actionTag === 'Pack & Ship') {
         targetMaps.push(packMap);
       }
 
       targetMaps.forEach(targetMap => {
         if (!targetMap[rKey]) {
-          targetMap[rKey] = {
-            ref: item.ref, desc: item.desc, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {}
-          };
+          targetMap[rKey] = { ref: item.ref, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {} };
         } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
           targetMap[rKey].gtin = cleanGtin;
         }
@@ -1444,7 +1452,6 @@
         if (!targetMap[rKey].byTag[tKey]) {
           targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
         }
-        
         targetMap[rKey].byTag[tKey].tagTotalQty += item.qty;
 
         let lotKey = `${item.lot}_${item.exp}`;
@@ -1457,17 +1464,157 @@
 
     let sessionTitleHeader = currentSessionName;
     if (currentOrderNum) sessionTitleHeader += ` (${currentOrderNum})`;
-
     const nowObj = new Date();
     let timeEndStr = nowObj.toLocaleTimeString();
     let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
 
-    // Build HTML Content
+    let reportLines = [
+      `================================================================================`,
+      `ASP SCANNER APP SUMMARY EXPORT - ${sessionTitleHeader}`,
+      ``,
+      `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
+      ``,
+      `          Workflow Process:    ${currentWorkflowType}`,
+      `          Scanned Date:        ${sessionDateStr}`,
+      `          Session Start:       ${sessionStartStr || 'N/A'}`,
+      `          Session End:         ${timeEndStr}`,
+      `================================================================================\n`
+    ];
+
+    if (Object.keys(invMap).length > 0) {
+      reportLines.push(`--- INVENTORY ADDITIONS ---\n`);
+      let count = 1;
+      for (let rKey in invMap) {
+        let rData = invMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}\n    | GTIN: ${rData.gtin}\n    | Total Quantity Received: ${rData.totalQty}`);
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+          }
+        }
+        reportLines.push(``); count++;
+      }
+    }
+
+    if (Object.keys(resMap).length > 0) {
+      reportLines.push(`--- RESERVED FOR CUSTOMERS ---\n`);
+      let count = 1;
+      for (let rKey in resMap) {
+        let rData = resMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}\n    | GTIN: ${rData.gtin}\n    | Total Quantity Reserved: ${rData.totalQty}`);
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+          }
+        }
+        reportLines.push(``); count++;
+      }
+    }
+
+    if (Object.keys(packMap).length > 0) {
+      reportLines.push(`--- PACK & SHIP ---\n`);
+      let count = 1;
+      for (let rKey in packMap) {
+        let rData = packMap[rKey];
+        reportLines.push(`[${count}] REF: ${rData.ref}\n    | Price: ${rData.price}\n    | Total Quantity Packed: ${rData.totalQty}`);
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+          }
+        }
+        reportLines.push(``); count++;
+      }
+    }
+
+    if (pendingNewItems.length > 0) {
+      reportLines.push(`--------------------------------------------------------------------------------\n--- NEW ITEM DETAILS ---\n--------------------------------------------------------------------------------`);
+      let nIdx = 1;
+      pendingNewItems.forEach(nItem => {
+        reportLines.push(`[ ${nIdx} ] REF: ${nItem.ref}\n          | GTIN: ${cleanGtinValue(nItem.gtin)}\n          | Manufacturer: ${nItem.mfr}\n          | Price: ${nItem.price}`); nIdx++;
+      }); reportLines.push(``);
+    }
+
+    if (pendingFieldUpdates.length > 0) {
+      reportLines.push(`--------------------------------------------------------------------------------\n--- EXISTING ITEM UPDATES (${pendingFieldUpdates.length}) ---\n--------------------------------------------------------------------------------`);
+      let uIdx = 1;
+      pendingFieldUpdates.forEach(upd => {
+        reportLines.push(`[ ${uIdx} ] REF: ${upd.ref}\n          | GTIN: ${cleanGtinValue(upd.newValue)}`); uIdx++;
+      }); reportLines.push(``);
+    }
+
+    if (sessionScannedObjects.length > 0) {
+      reportLines.push(`--------------------------------------------------------------------------------\n--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---\n--------------------------------------------------------------------------------\nSession Start Time: ${sessionStartStr || 'N/A'}\n`);
+      sessionScannedObjects.forEach(item => {
+        reportLines.push(`REF: ${item.ref}`);
+        if (item.rawScanLines && item.rawScanLines.length > 0) {
+          item.rawScanLines.forEach((lineVal, idx) => { reportLines.push(`  - Barcode Line ${idx + 1}: ${lineVal}`); });
+        }
+        reportLines.push(``);
+      });
+    }
+
+    reportLines.push(`================================================================================\nEND OF RECEIVING INVENTORY SUMMARY\n================================================================================`);
+    return reportLines.join('\n');
+  }
+
+  function buildHTMLReportString(filename) {
+    let invMap = {}, resMap = {}, packMap = {};
+
+    sessionScannedObjects.forEach(item => {
+      let rKey = item.ref;
+      let cleanGtin = cleanGtinValue(item.gtin);
+      
+      let targetMaps = [];
+      if (item.actionTag === 'Inventory') {
+        targetMaps.push(invMap);
+      } else if (item.actionTag === 'Reserved') {
+        targetMaps.push(resMap);
+        if (currentWorkflowType.includes('Receiving & Reserving')) targetMaps.push(invMap); 
+      } else if (item.actionTag === 'Pack & Ship') {
+        targetMaps.push(packMap);
+      }
+
+      targetMaps.forEach(targetMap => {
+        if (!targetMap[rKey]) {
+          targetMap[rKey] = { ref: item.ref, desc: item.desc, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {} };
+        } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+          targetMap[rKey].gtin = cleanGtin;
+        }
+        targetMap[rKey].totalQty += item.qty;
+
+        let tKey = item.customerTag || 'UNTAGGED';
+        if (!targetMap[rKey].byTag[tKey]) targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+        targetMap[rKey].byTag[tKey].tagTotalQty += item.qty;
+
+        let lotKey = `${item.lot}_${item.exp}`;
+        if (!targetMap[rKey].byTag[tKey].lots[lotKey]) targetMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0 };
+        targetMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
+      });
+    });
+
+    let sessionTitleHeader = currentSessionName;
+    if (currentOrderNum) sessionTitleHeader += ` (${currentOrderNum})`;
+    const nowObj = new Date();
+    let timeEndStr = nowObj.toLocaleTimeString();
+    let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
+
     let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>${summaryFilename}</title>
+<title>${filename}</title>
 <style>
   body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 40px; font-size: 14px; }
   .header-grid { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0277bd; padding-bottom: 20px; margin-bottom: 20px; }
@@ -1499,7 +1646,7 @@
 
 <div class="header-grid">
   <div>
-    <img src="https://github.com/ASP-Seyfors/ASP-Scanner-App/blob/main/ASP_Box_Web_RGB.png" style="max-height: 80px;" alt="ASP Logo" />
+    <img src="ASP_Box_Web_RGB.png" style="max-height: 80px;" alt="ASP Logo" />
   </div>
   <div class="company-info" style="margin-left: 20px;">
     <h1>Allied Surgical Products</h1>
@@ -1520,24 +1667,14 @@
 
     function buildTableHTML(mapData, showTags, showPrice) {
       if (Object.keys(mapData).length === 0) return '';
-      let tb = `<table class="data-table"><thead><tr>
-                  <th>REF / MFR</th>
-                  <th>Description & GTIN</th>
-                  <th>Inventory Lots & Quantities</th>
-                  <th style="text-align:center;">Total Qty</th>
-                </tr></thead><tbody>`;
-      
+      let tb = `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
       for (let rKey in mapData) {
         let rData = mapData[rKey];
-        
         let lotSection = '';
         for (let tKey in rData.byTag) {
           let tagData = rData.byTag[tKey];
-          if (showTags && tKey !== 'UNTAGGED') {
-            lotSection += `<div class="tag-header">Tag: ${tKey} (Qty: ${tagData.tagTotalQty})</div>`;
-          } else if (showTags && Object.keys(rData.byTag).length > 1) {
-             lotSection += `<div class="tag-header" style="color:#555;">UNTAGGED (Qty: ${tagData.tagTotalQty})</div>`;
-          }
+          if (showTags && tKey !== 'UNTAGGED') lotSection += `<div class="tag-header">Tag: ${tKey} (Qty: ${tagData.tagTotalQty})</div>`;
+          else if (showTags && Object.keys(rData.byTag).length > 1) lotSection += `<div class="tag-header" style="color:#555;">UNTAGGED (Qty: ${tagData.tagTotalQty})</div>`;
           
           lotSection += `<table class="lot-table"><tr><th>Lot Number</th><th>Exp Date</th><th>Qty</th></tr>`;
           for (let lKey in tagData.lots) {
@@ -1546,35 +1683,16 @@
           }
           lotSection += `</table>`;
         }
-
         let descText = rData.desc || 'No description available.';
         let priceHtml = showPrice ? `<br><strong style="color:#2e7d32;">${rData.price}</strong>` : '';
-
-        tb += `<tr>
-                <td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td>
-                <td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td>
-                <td>${lotSection}</td>
-                <td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalQty}</td>
-               </tr>`;
+        tb += `<tr><td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td><td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td><td>${lotSection}</td><td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalQty}</td></tr>`;
       }
-      tb += `</tbody></table>`;
-      return tb;
+      tb += `</tbody></table>`; return tb;
     }
 
-    if (Object.keys(invMap).length > 0) {
-      html += `<div class="section-title">📦 INVENTORY ADDITIONS</div>`;
-      html += buildTableHTML(invMap, true, false);
-    }
-
-    if (Object.keys(resMap).length > 0) {
-      html += `<div class="section-title">🚩 RESERVED FOR CUSTOMERS</div>`;
-      html += buildTableHTML(resMap, true, false);
-    }
-
-    if (Object.keys(packMap).length > 0) {
-      html += `<div class="section-title">🖐️ PACK & SHIP (OUTBOUND)</div>`;
-      html += buildTableHTML(packMap, true, true);
-    }
+    if (Object.keys(invMap).length > 0) { html += `<div class="section-title">📦 INVENTORY ADDITIONS</div>`; html += buildTableHTML(invMap, true, false); }
+    if (Object.keys(resMap).length > 0) { html += `<div class="section-title">🚩 RESERVED FOR CUSTOMERS</div>`; html += buildTableHTML(resMap, true, false); }
+    if (Object.keys(packMap).length > 0) { html += `<div class="section-title">🖐️ PACK & SHIP (OUTBOUND)</div>`; html += buildTableHTML(packMap, true, true); }
 
     if (pendingNewItems.length > 0 || pendingFieldUpdates.length > 0 || sessionScannedObjects.length > 0) {
        html += `<div class="page-break"></div><div class="section-title" style="background-color:#424242; color:#fff; border-color:#212121;">⚙️ SYSTEM LOGS & BARCODE DATA</div>`;
@@ -1582,17 +1700,13 @@
 
     if (pendingNewItems.length > 0) {
       html += `<h4 style="margin-bottom:5px;">New Items Added to Database</h4><table class="data-table"><thead><tr><th>REF</th><th>Manufacturer</th><th>GTIN</th></tr></thead><tbody>`;
-      pendingNewItems.forEach(nItem => {
-        html += `<tr><td><strong>${nItem.ref}</strong></td><td>${nItem.mfr}</td><td>${cleanGtinValue(nItem.gtin)}</td></tr>`;
-      });
+      pendingNewItems.forEach(nItem => { html += `<tr><td><strong>${nItem.ref}</strong></td><td>${nItem.mfr}</td><td>${cleanGtinValue(nItem.gtin)}</td></tr>`; });
       html += `</tbody></table>`;
     }
 
     if (pendingFieldUpdates.length > 0) {
       html += `<h4 style="margin-bottom:5px;">Existing Database Updates</h4><table class="data-table"><thead><tr><th>REF</th><th>Updated Value</th></tr></thead><tbody>`;
-      pendingFieldUpdates.forEach(upd => {
-        html += `<tr><td><strong>${upd.ref}</strong></td><td>${cleanGtinValue(upd.newValue)}</td></tr>`;
-      });
+      pendingFieldUpdates.forEach(upd => { html += `<tr><td><strong>${upd.ref}</strong></td><td>${cleanGtinValue(upd.newValue)}</td></tr>`; });
       html += `</tbody></table>`;
     }
 
@@ -1601,53 +1715,71 @@
       sessionScannedObjects.forEach(item => {
         html += `<div style="margin-bottom:8px;"><strong>REF: ${item.ref}</strong><br>`;
         if (item.rawScanLines && item.rawScanLines.length > 0) {
-          item.rawScanLines.forEach((lineVal, idx) => {
-            html += `&nbsp;&nbsp;Line ${idx + 1}: ${lineVal}<br>`;
-          });
-        } else {
-          html += `&nbsp;&nbsp;No raw barcodes captured.<br>`;
-        }
+          item.rawScanLines.forEach((lineVal, idx) => { html += `&nbsp;&nbsp;Line ${idx + 1}: ${lineVal}<br>`; });
+        } else html += `&nbsp;&nbsp;No raw barcodes captured.<br>`;
         html += `</div>`;
-      });
-      html += `</div>`;
+      }); html += `</div>`;
+    }
+    html += `</body></html>`; return html;
+  }
+
+  async function exportData(formatType) {
+    if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
+      alert("No data was scanned in this session."); return;
     }
 
-    html += `</body></html>`;
+    let filename = generateExactFilename(formatType === 'txt' ? 'txt' : 'html');
+    let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
+    if (formatType === 'pdf') {
+      let printWin = window.open('', '_blank');
+      if (printWin) {
+        printWin.document.open();
+        printWin.document.write(fileContent);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(() => {
+          printWin.print();
+          if (!/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) printWin.close();
+          clearSessionCache();
+        }, 500);
+      } else {
+        alert("Pop-up blocked! Please allow pop-ups to print/save as PDF.");
+      }
+      return;
+    }
+
+    // Handle standard TXT / HTML download
+    let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({
-          suggestedName: summaryFilename,
-          types: [{ description: 'HTML Document', accept: { 'text/html': ['.html'] } }]
+          suggestedName: filename,
+          types: [{ description: formatType.toUpperCase() + ' Document', accept: { [mime]: ['.' + formatType] } }]
         });
         const writable = await handle.createWritable();
-        await writable.write(html);
+        await writable.write(fileContent);
         await writable.close();
-        
-        pendingNewItems = [];
-        pendingFieldUpdates = [];
-        localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
-        localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-
-        alert("Scanning session report successfully exported as HTML!");
-      } catch (err) {
-        if (err.name === 'AbortError') return;
-      }
+        clearSessionCache(); alert("Session successfully exported!");
+      } catch (err) { if (err.name === 'AbortError') return; }
     } else {
-      let blob = new Blob([html], { type: 'text/html' });
+      let blob = new Blob([fileContent], { type: mime });
       let a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = summaryFilename;
-      
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      pendingNewItems = [];
-      pendingFieldUpdates = [];
-      localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
-      localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+      a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      clearSessionCache();
     }
+  }
+
+  function clearSessionCache() {
+    pendingNewItems = []; pendingFieldUpdates = [];
+    localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
+    localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+    
+    document.getElementById('screenSummary').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+    isSessionActive = false; localStorage.setItem('asp_session_is_active', 'false');
   }
 </script>
 
