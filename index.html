@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.2.8 | UPDATED: 2026.08.06                   -->
-<!-- CHANGELOG: Added Customer Tag field & Screen 4 Session Summary List     -->
+<!-- ASP SCANNER APP - VERSION 1.2.9 | UPDATED: 2026.08.06                   -->
+<!-- CHANGELOG: Filtered GS characters, Tag/Lot grouping, Dual-Entry Export  -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.2.8</title>
+  <title>ASP-Android Scanner App v1.2.9</title>
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -264,7 +264,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.8)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.2.9)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -903,7 +903,7 @@
 
   function cleanGtinValue(val) {
     if (!val) return 'N/A';
-    return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/^(01|\(01\))/, '').trim() || 'N/A';
+    return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim() || 'N/A';
   }
 
   function toggleCameraScanner() {
@@ -933,7 +933,7 @@
         const onScanSuccess = (decodedText, decodedResult) => {
           if (scanCooldown) return;
 
-          let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').trim();
+          let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
           if (cleanText.length < 4) return;
 
           for (let i = 1; i <= 4; i++) {
@@ -1068,7 +1068,7 @@
     lines.forEach(rawLine => {
       if (!rawLine.trim()) return;
       
-      let clean = rawLine.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').trim();
+      let clean = rawLine.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
       let idx = 0;
 
       while (idx < clean.length) {
@@ -1339,7 +1339,7 @@
       for (let i = 1; i <= 4; i++) {
         let val = document.getElementById(`rawScan${i}`).value.trim();
         if (val) {
-          let cleanedRaw = val.replace(/^\][a-zA-Z0-9]{2}/, '');
+          let cleanedRaw = val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '');
           rawBarcodesGathered.push(cleanedRaw);
         }
       }
@@ -1417,40 +1417,43 @@
       let rKey = item.ref;
       let cleanGtin = cleanGtinValue(item.gtin);
       
-      let targetMap = invMap;
-      if (item.actionTag === 'Reserved') targetMap = resMap;
-      else if (item.actionTag === 'Pack & Ship') targetMap = packMap;
-
-      if (!targetMap[rKey]) {
-        targetMap[rKey] = {
-          ref: item.ref,
-          gtin: cleanGtin,
-          mfr: item.mfr,
-          price: item.price,
-          totalQty: 0,
-          lots: {},
-          tags: []
-        };
-      } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        targetMap[rKey].gtin = cleanGtin;
+      let targetMaps = [];
+      if (item.actionTag === 'Inventory') {
+        targetMaps.push(invMap);
+      } else if (item.actionTag === 'Reserved') {
+        targetMaps.push(resMap);
+        // Accounting Dual-Entry Logic
+        if (currentWorkflowType.includes('Receiving & Reserving')) {
+          targetMaps.push(invMap); 
+        }
+      } else if (item.actionTag === 'Pack & Ship') {
+        targetMaps.push(packMap);
       }
 
-      targetMap[rKey].totalQty += item.qty;
+      targetMaps.forEach(targetMap => {
+        if (!targetMap[rKey]) {
+          targetMap[rKey] = {
+            ref: item.ref, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {}
+          };
+        } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
+          targetMap[rKey].gtin = cleanGtin;
+        }
 
-      if (item.customerTag) {
-        if (!targetMap[rKey].tags) targetMap[rKey].tags = [];
-        targetMap[rKey].tags.push(item.customerTag);
-      }
+        targetMap[rKey].totalQty += item.qty;
 
-      let lotKey = `${item.lot}_${item.exp}`;
-      if (!targetMap[rKey].lots[lotKey]) {
-        targetMap[rKey].lots[lotKey] = {
-          lot: item.lot,
-          exp: item.exp,
-          qty: 0
-        };
-      }
-      targetMap[rKey].lots[lotKey].qty += item.qty;
+        let tKey = item.customerTag || 'UNTAGGED';
+        if (!targetMap[rKey].byTag[tKey]) {
+          targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+        }
+        
+        targetMap[rKey].byTag[tKey].tagTotalQty += item.qty;
+
+        let lotKey = `${item.lot}_${item.exp}`;
+        if (!targetMap[rKey].byTag[tKey].lots[lotKey]) {
+          targetMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0 };
+        }
+        targetMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
+      });
     });
 
     let sessionTitleHeader = currentSessionName;
@@ -1482,14 +1485,17 @@
         reportLines.push(`[${count}] REF: ${rData.ref}`);
         reportLines.push(`    | GTIN: ${rData.gtin}`);
         reportLines.push(`    | Total Quantity Received: ${rData.totalQty}`);
-        if (rData.tags && rData.tags.length > 0) {
-          let uniqueTags = [...new Set(rData.tags)];
-          reportLines.push(`    | Customer Tags: ${uniqueTags.join(', ')}`);
-        }
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in rData.lots) {
-          let lData = rData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') {
+             reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          }
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+          }
         }
         reportLines.push(``);
         count++;
@@ -1504,14 +1510,17 @@
         reportLines.push(`[${count}] REF: ${rData.ref}`);
         reportLines.push(`    | GTIN: ${rData.gtin}`);
         reportLines.push(`    | Total Quantity Reserved: ${rData.totalQty}`);
-        if (rData.tags && rData.tags.length > 0) {
-          let uniqueTags = [...new Set(rData.tags)];
-          reportLines.push(`    | Customer Tags: ${uniqueTags.join(', ')}`);
-        }
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in rData.lots) {
-          let lData = rData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') {
+             reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          }
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+          }
         }
         reportLines.push(``);
         count++;
@@ -1526,14 +1535,17 @@
         reportLines.push(`[${count}] REF: ${rData.ref}`);
         reportLines.push(`    | Price: ${rData.price}`);
         reportLines.push(`    | Total Quantity Packed: ${rData.totalQty}`);
-        if (rData.tags && rData.tags.length > 0) {
-          let uniqueTags = [...new Set(rData.tags)];
-          reportLines.push(`    | Customer Tags: ${uniqueTags.join(', ')}`);
-        }
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in rData.lots) {
-          let lData = rData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') {
+             reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          }
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+          }
         }
         reportLines.push(``);
         count++;
