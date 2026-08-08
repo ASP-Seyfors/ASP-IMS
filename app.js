@@ -1253,27 +1253,29 @@ async function exportData(formatType) {
     alert("No data was scanned in this session."); return;
   }
 
-  let filename = generateExactFilename(formatType === 'txt' ? 'txt' : 'html');
+  // Ensure the correct file extension is generated
+  let filename = generateExactFilename(formatType);
   let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
   if (formatType === 'pdf') {
-    let printWin = window.open('', '_blank');
-    if (printWin) {
-      printWin.document.open();
-      printWin.document.write(fileContent);
-      printWin.document.close();
-      printWin.focus();
-      setTimeout(() => {
-        printWin.print();
-        if (!/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) printWin.close();
-      }, 500);
-    } else {
-      alert("Pop-up blocked! Please allow pop-ups to print/save as PDF.");
-    }
+    // Configure the PDF formatting options
+    let opt = {
+      margin:       0.5,
+      filename:     filename,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    // Convert the HTML string directly to a PDF and force the download
+    html2pdf().set(opt).from(fileContent).save().then(() => {
+      clearSessionCache();
+      alert("Session successfully exported as PDF!");
+    });
     return;
   }
 
-  // Handle standard TXT / HTML download
+  // Handle standard TXT / HTML downloads
   let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
   if ('showSaveFilePicker' in window) {
     try {
@@ -1284,7 +1286,7 @@ async function exportData(formatType) {
       const writable = await handle.createWritable();
       await writable.write(fileContent);
       await writable.close();
-      alert("Session successfully exported!");
+      clearSessionCache(); alert("Session successfully exported!");
     } catch (err) { if (err.name === 'AbortError') return; }
   } else {
     let blob = new Blob([fileContent], { type: mime });
@@ -1292,6 +1294,7 @@ async function exportData(formatType) {
     a.href = URL.createObjectURL(blob);
     a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    clearSessionCache();
   }
 }
 
