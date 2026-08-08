@@ -950,9 +950,14 @@ function generateExactFilename(extension = "txt") {
   return finalName;
 }
 
-window.handleExportAction = function(selectEl) {
+window.executeAction = function() {
+    const selectEl = document.getElementById('exportDropdown');
     const val = selectEl.value;
-    selectEl.value = ""; // Reset dropdown immediately so it can be re-used
+
+    if (!val) {
+        alert("Please select an action from the dropdown first.");
+        return;
+    }
 
     if (val === 'continue') {
         continueScanning();
@@ -967,6 +972,9 @@ window.handleExportAction = function(selectEl) {
     } else if (val === 'complete') {
         completeSession();
     }
+
+    // Reset dropdown after a short delay so the export has time to trigger using the user gesture
+    setTimeout(() => { selectEl.value = ""; }, 500);
 };
 
 function buildTXTReportString() {
