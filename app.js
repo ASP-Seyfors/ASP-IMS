@@ -408,6 +408,32 @@ function cancelSession() {
   document.getElementById('screenSetup').style.display = 'block';
 }
 
+function completeSession() {
+  let confirmClear = confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.");
+  if (!confirmClear) return;
+  
+  pendingNewItems = []; pendingFieldUpdates = [];
+  localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
+  localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+  
+  let sNoteInput = document.getElementById('sessionNoteInput');
+  if(sNoteInput) sNoteInput.value = "";
+  let chkSNote = document.getElementById('chkSessionNote');
+  if(chkSNote) chkSNote.checked = false;
+  toggleSessionNote();
+
+  document.getElementById('screenSummary').style.display = 'none';
+  document.getElementById('screenSetup').style.display = 'block';
+  isSessionActive = false; 
+  localStorage.setItem('asp_session_is_active', 'false');
+}
+
+window.continueScanning = function() {
+  resetScanLinesAndFields();
+  document.getElementById('screenSummary').style.display = 'none';
+  document.getElementById('screenScanning').style.display = 'block';
+}
+
 function goToSummaryScreen() {
   if (isCameraActive) toggleCameraScanner();
   document.getElementById('screenScanning').style.display = 'none';
@@ -481,7 +507,7 @@ function handleSuccessfulScan(decodedText) {
   }
 }
 
-function scanImageFile(event) {
+window.scanImageFile = function(event) {
     if (event.target.files.length == 0) return;
     const file = event.target.files[0];
     
@@ -924,15 +950,24 @@ function generateExactFilename(extension = "txt") {
   return finalName;
 }
 
-function handleExportAction(selectEl) {
+window.handleExportAction = function(selectEl) {
     const val = selectEl.value;
-    if(val === 'txt' || val === 'html' || val === 'pdf') {
-        exportData(val);
+    selectEl.value = ""; // Reset dropdown immediately so it can be re-used
+
+    if (val === 'continue') {
+        continueScanning();
+    } else if (val === 'cancel') {
+        cancelSession();
+    } else if (val === 'html') {
+        exportData('html');
+    } else if (val === 'pdf') {
+        exportData('pdf');
+    } else if (val === 'txt') {
+        exportData('txt');
     } else if (val === 'complete') {
-        clearSessionCache();
+        completeSession();
     }
-    selectEl.value = ""; // Reset dropdown
-}
+};
 
 function buildTXTReportString() {
   let invMap = {}, resMap = {}, packMap = {};
@@ -1250,23 +1285,6 @@ async function exportData(formatType) {
     a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
-}
-
-function clearSessionCache() {
-  let confirmClear = confirm("Are you sure you are completely finished with this session?\n\nThis will clear the active cache and return you to the main screen.");
-  if (!confirmClear) return;
-  
-  pendingNewItems = []; pendingFieldUpdates = [];
-  localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
-  localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-  
-  document.getElementById('sessionNoteInput').value = "";
-  document.getElementById('chkSessionNote').checked = false;
-  toggleSessionNote();
-
-  document.getElementById('screenSummary').style.display = 'none';
-  document.getElementById('screenSetup').style.display = 'block';
-  isSessionActive = false; localStorage.setItem('asp_session_is_active', 'false');
 }
 
 window.onload = function() {
