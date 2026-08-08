@@ -988,12 +988,8 @@ function generateExactFilename(extension = "txt") {
   let wType = currentWorkflowType || "Receiving";
   let prefix = sName;
   if (oNum) prefix += ` (${oNum})`;
-  let baseFilename = `${sessionDateStr} - ${prefix} - ${wType}`;
-  let trackerKey = `asp_export_count_${baseFilename}`;
-  let count = parseInt(localStorage.getItem(trackerKey), 10) || 0;
-  let finalName = count === 0 ? `${baseFilename}.${extension}` : `${baseFilename} ${count}.${extension}`;
-  localStorage.setItem(trackerKey, count + 1);
-  return finalName;
+
+  return `${sessionDateStr} - ${prefix} - ${wType}.${extension}`;
 }
 
 window.cleanGtinValue = function(val) {
