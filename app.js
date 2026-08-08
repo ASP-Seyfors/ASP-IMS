@@ -33,22 +33,22 @@ let scanCooldown = false;
 
 /* --- DATABASE INITIALIZATION & PREDICTIVE TEXT --- */
 
-function getItemSku(item) {
+window.getItemSku = function(item) {
   if (!item) return '';
   return (item.sku || item.ref || '').toString().trim().toUpperCase();
 }
 
-function getItemVendor(item) {
+window.getItemVendor = function(item) {
   if (!item) return '';
   return (item.mfr || item.vendor || item.manufacturer || '').toString().trim();
 }
 
-function getItemDesc(item) {
+window.getItemDesc = function(item) {
   if (!item) return '';
   return (item.desc || item.description || '').toString().trim();
 }
 
-function populateRefDatalist() {
+window.populateRefDatalist = function() {
   const datalist = document.getElementById('dbRefs');
   if (!datalist) return;
   datalist.innerHTML = '';
@@ -59,7 +59,7 @@ function populateRefDatalist() {
   });
 }
 
-function populateVendors() {
+window.populateVendors = function() {
   const sel = document.getElementById('vendorSelect');
   if (!sel) return;
   sel.innerHTML = '';
@@ -71,7 +71,7 @@ function populateVendors() {
   evaluateFieldAttention();
 }
 
-async function loadMasterDatabase() {
+window.loadMasterDatabase = async function() {
   try {
     const response = await fetch('database.json');
     if (response.ok) {
@@ -96,14 +96,13 @@ async function loadMasterDatabase() {
       populateRefDatalist();
     }
   } catch (err) {
-    alert("⚠️ Error loading database.json!\n\nError Details: " + err.message);
     console.error("Database parsing error:", err);
   }
 }
 
 /* --- LOOKUP & MATCHING LOGIC --- */
 
-function findDatabaseMatch(gtinVal, refVal) {
+window.findDatabaseMatch = function(gtinVal, refVal) {
   if (!db || db.length === 0) return null;
   let cleanGtin = (gtinVal || '').replace(/^(01|\(01\))/, '').trim();
   let cleanRef = (refVal || '').trim().toUpperCase();
@@ -122,7 +121,7 @@ function findDatabaseMatch(gtinVal, refVal) {
   return null;
 }
 
-function runMasterLookup() {
+window.runMasterLookup = function() {
   let curRef = document.getElementById('refInput').value.trim().toUpperCase();
   let curGtin = document.getElementById('gtinInput').value.trim();
   let match = findDatabaseMatch(curGtin, curRef);
@@ -148,7 +147,7 @@ function runMasterLookup() {
   evaluateFieldAttention();
 }
 
-function populateDisplay(item) {
+window.populateDisplay = function(item) {
   let itemSku = getItemSku(item);
   let itemVendor = getItemVendor(item);
 
@@ -198,7 +197,7 @@ window.formatExpDate = function(inputEl) {
     evaluateFieldAttention();
 };
 
-function toggleNA(fieldId, chkId) {
+window.toggleNA = function(fieldId, chkId) {
   let field = document.getElementById(fieldId);
   let chk = document.getElementById(chkId);
   if (!field || !chk) return;
@@ -215,7 +214,7 @@ function toggleNA(fieldId, chkId) {
   evaluateFieldAttention();
 }
 
-function toggleItemNote() {
+window.toggleItemNote = function() {
   let chk = document.getElementById('chkItemNote');
   let row = document.getElementById('rowItemNote');
   if (chk && row) {
@@ -224,7 +223,7 @@ function toggleItemNote() {
   }
 }
 
-function toggleSessionNote() {
+window.toggleSessionNote = function() {
   let chk = document.getElementById('chkSessionNote');
   let row = document.getElementById('rowSessionNote');
   if (chk && row) {
@@ -233,7 +232,7 @@ function toggleSessionNote() {
   }
 }
 
-function evaluateFieldAttention() {
+window.evaluateFieldAttention = function() {
   const fields = [
     { el: document.getElementById('gtinInput'), chk: document.getElementById('chkNaGtin') },
     { el: document.getElementById('lotInput'), chk: document.getElementById('chkNaLot') },
@@ -255,7 +254,7 @@ function evaluateFieldAttention() {
   updateCameraOverlayStatus();
 }
 
-function updateCameraOverlayStatus() {
+window.updateCameraOverlayStatus = function() {
   const hasGtin = document.getElementById('gtinInput').value.trim() !== '' || document.getElementById('chkNaGtin').checked;
   const hasLot = document.getElementById('lotInput').value.trim() !== '' || document.getElementById('chkNaLot').checked;
   const hasExp = document.getElementById('expInput').value.trim() !== '' || document.getElementById('chkNaExp').checked;
@@ -269,7 +268,7 @@ function updateCameraOverlayStatus() {
   if (tagExp) tagExp.classList.toggle('captured', hasExp);
 }
 
-function setItemAction(act) {
+window.setItemAction = function(act) {
   currentItemAction = act;
   let invBtn = document.getElementById('actBtnInv');
   let resBtn = document.getElementById('actBtnRes');
@@ -282,7 +281,7 @@ function setItemAction(act) {
   }
 }
 
-function handleVendorSelect(val) {
+window.handleVendorSelect = function(val) {
   if (val === "+ Create New Vendor") {
     let newV = prompt("Enter new Manufacturer/Vendor name:");
     if (newV) {
@@ -300,7 +299,7 @@ function handleVendorSelect(val) {
 
 /* --- SESSION MANAGEMENT --- */
 
-function startSession() {
+window.startSession = function() {
   const sName = document.getElementById('sessionNameInput').value.trim();
   const oNum = document.getElementById('orderNumInput').value.trim();
   const wType = document.getElementById('workflowTypeSelect').value;
@@ -363,7 +362,7 @@ function startSession() {
   resetScanLinesAndFields();
 }
 
-function updateHeaderBanners() {
+window.updateHeaderBanners = function() {
   let titleStr = currentSessionName;
   if (currentOrderNum) titleStr += ` (${currentOrderNum})`;
 
@@ -372,10 +371,13 @@ function updateHeaderBanners() {
   document.getElementById('hdrTime').textContent = sessionStartStr;
   document.getElementById('hdrWorkflow').textContent = currentWorkflowType;
 
-  document.getElementById('hdrTitleRev').textContent = titleStr;
-  document.getElementById('hdrDateRev').textContent = sessionDateStr;
-  document.getElementById('hdrTimeRev').textContent = sessionStartStr;
-  document.getElementById('hdrWorkflowRev').textContent = currentWorkflowType;
+  let hdrTitleRev = document.getElementById('hdrTitleRev');
+  if (hdrTitleRev) {
+      hdrTitleRev.textContent = titleStr;
+      document.getElementById('hdrDateRev').textContent = sessionDateStr;
+      document.getElementById('hdrTimeRev').textContent = sessionStartStr;
+      document.getElementById('hdrWorkflowRev').textContent = currentWorkflowType;
+  }
 
   let hdrTitleSum = document.getElementById('hdrTitleSum');
   if (hdrTitleSum) {
@@ -386,7 +388,7 @@ function updateHeaderBanners() {
   }
 }
 
-function checkSessionRecoveryState() {
+window.checkSessionRecoveryState = function() {
   let storedActiveState = localStorage.getItem('asp_session_is_active');
   if (storedActiveState === 'true') {
     isSessionActive = true;
@@ -410,7 +412,7 @@ function checkSessionRecoveryState() {
   }
 }
 
-function cancelSession() {
+window.cancelSession = function() {
   let confirmCancel = confirm("Are you sure you want to CANCEL this entire scanning session?\n\nAll items scanned during this session will be discarded.");
   if (!confirmCancel) return;
 
@@ -431,7 +433,7 @@ function cancelSession() {
   document.getElementById('screenSetup').style.display = 'block';
 }
 
-function completeSession() {
+window.completeSession = function() {
   let confirmClear = confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.");
   if (!confirmClear) return;
   
@@ -452,12 +454,16 @@ function completeSession() {
 }
 
 window.continueScanning = function() {
-  resetScanLinesAndFields();
-  document.getElementById('screenSummary').style.display = 'none';
-  document.getElementById('screenScanning').style.display = 'block';
+  try {
+      resetScanLinesAndFields();
+      document.getElementById('screenSummary').style.display = 'none';
+      document.getElementById('screenScanning').style.display = 'block';
+  } catch(e) {
+      console.error(e);
+  }
 }
 
-function goToSummaryScreen() {
+window.goToSummaryScreen = function() {
   if (isCameraActive) toggleCameraScanner();
   document.getElementById('screenScanning').style.display = 'none';
   document.getElementById('screenReview').style.display = 'none';
@@ -465,7 +471,7 @@ function goToSummaryScreen() {
   document.getElementById('screenSummary').style.display = 'block';
 }
 
-function rescueLastSession() {
+window.rescueLastSession = function() {
   let saved = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
   if (saved.length === 0) {
     alert("No scanned items found in memory to rescue.");
@@ -488,7 +494,7 @@ function rescueLastSession() {
 
 /* --- BARCODE SCANNING & PARSING --- */
 
-function handleSuccessfulScan(decodedText) {
+window.handleSuccessfulScan = function(decodedText) {
   if (scanCooldown) return;
   
   let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
@@ -553,7 +559,7 @@ window.scanImageFile = function(event) {
         });
 }
 
-function toggleCameraScanner() {
+window.toggleCameraScanner = function() {
   const camContainer = document.getElementById('cameraContainer');
   const camBtn = document.getElementById('btnToggleCam');
 
@@ -603,7 +609,7 @@ function toggleCameraScanner() {
   }
 }
 
-function addScanLine() {
+window.addScanLine = function() {
   if (visibleScanLines < 4) {
     visibleScanLines++;
     document.getElementById(`rowScan${visibleScanLines}`).style.display = 'flex';
@@ -613,7 +619,7 @@ function addScanLine() {
   }
 }
 
-function resetScanLines() {
+window.resetScanLines = function() {
   visibleScanLines = 1;
   document.getElementById('rawScan1').value = '';
   document.getElementById('rawScan2').value = '';
@@ -626,43 +632,47 @@ function resetScanLines() {
   document.getElementById('btnAddLine').style.display = 'inline-block';
 }
 
-function resetScanLinesAndFields() {
-  resetScanLines();
-  
-  ['gtin', 'lot', 'exp'].forEach(prefix => {
-    let chk = document.getElementById(`chkNa${prefix.charAt(0).toUpperCase() + prefix.slice(1)}`);
-    if(chk) chk.checked = false;
-    let field = document.getElementById(`${prefix}Input`);
-    if(field) {
-        field.value = '';
-        field.readOnly = false;
-    }
-  });
+window.resetScanLinesAndFields = function() {
+  try {
+      resetScanLines();
+      
+      ['gtin', 'lot', 'exp'].forEach(prefix => {
+        let chk = document.getElementById(`chkNa${prefix.charAt(0).toUpperCase() + prefix.slice(1)}`);
+        if(chk) chk.checked = false;
+        let field = document.getElementById(`${prefix}Input`);
+        if(field) {
+            field.value = '';
+            field.readOnly = false;
+        }
+      });
 
-  document.getElementById('refInput').value = '';
-  document.getElementById('qtyInput').value = '1';
-  
-  let tagInput = document.getElementById('customerTagInput');
-  if (tagInput) tagInput.value = '';
+      document.getElementById('refInput').value = '';
+      document.getElementById('qtyInput').value = '1';
+      
+      let tagInput = document.getElementById('customerTagInput');
+      if (tagInput) tagInput.value = '';
 
-  let chkNote = document.getElementById('chkItemNote');
-  if (chkNote) {
-      chkNote.checked = false;
-      toggleItemNote();
+      let chkNote = document.getElementById('chkItemNote');
+      if (chkNote) {
+          chkNote.checked = false;
+          toggleItemNote();
+      }
+
+      currentMatchedItem = null;
+      pendingUpdates = {};
+      hideAllConfirmButtons();
+      
+      let prevBox = document.getElementById('liveMatchPreview');
+      if (prevBox) prevBox.style.display = 'none';
+
+      evaluateFieldAttention();
+      document.getElementById('refInput').focus();
+  } catch(e) {
+      console.error(e);
   }
-
-  currentMatchedItem = null;
-  pendingUpdates = {};
-  hideAllConfirmButtons();
-  
-  let prevBox = document.getElementById('liveMatchPreview');
-  if (prevBox) prevBox.style.display = 'none';
-
-  evaluateFieldAttention();
-  document.getElementById('refInput').focus();
 }
 
-function processAllScans() {
+window.processAllScans = function() {
   let lines = [
     document.getElementById('rawScan1').value,
     document.getElementById('rawScan2').value,
@@ -716,7 +726,7 @@ function processAllScans() {
 
 /* --- REVIEW & SAVE ITEM --- */
 
-function confirmFieldUpdate(field) {
+window.confirmFieldUpdate = function(field) {
   if (!currentMatchedItem) return;
   if (field === 'gtin' && pendingUpdates['gtin']) {
     currentMatchedItem.gtin = pendingUpdates['gtin'];
@@ -750,7 +760,7 @@ function hideAllConfirmButtons() {
   if (diffBanner) diffBanner.style.display = 'none';
 }
 
-function goToReviewStage() {
+window.goToReviewStage = function() {
   
   let expField = document.getElementById('expInput');
   if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) {
@@ -764,7 +774,7 @@ function goToReviewStage() {
   }
 
   const gtin = document.getElementById('gtinInput').value.trim();
-  const lot = document.getElementById('lotInput').value.trim();
+  const lot = document.getElementById('lotInput').value.trim().toUpperCase();
   const exp = document.getElementById('expInput').value.trim();
   const vendor = document.getElementById('vendorSelect').value;
   const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
@@ -840,12 +850,12 @@ function goToReviewStage() {
   document.getElementById('screenReview').style.display = 'block';
 }
 
-function returnToEdit() {
+window.returnToEdit = function() {
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
 }
 
-function cancelScannedItem() {
+window.cancelScannedItem = function() {
   let confirmDiscard = confirm("Are you sure you want to discard this scanned item?");
   if (confirmDiscard) {
     resetScanLinesAndFields();
@@ -854,11 +864,11 @@ function cancelScannedItem() {
   }
 }
 
-function saveItemLog() {
+window.saveItemLog = function() {
   try {
     const gtin = document.getElementById('gtinInput').value.trim();
     const ref = document.getElementById('refInput').value.trim().toUpperCase();
-    const lot = document.getElementById('lotInput').value.trim();
+    const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
@@ -1009,7 +1019,6 @@ window.executeAction = function() {
         completeSession();
     }
 
-    // Reset dropdown after a short delay
     setTimeout(() => { selectEl.value = ""; }, 500);
 };
 
@@ -1169,6 +1178,8 @@ function buildHTMLReportString(filename) {
   let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
   let sNote = document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : '';
 
+  // IMPORTANT: For true offline PDF rendering via html2canvas without CORS blocking, 
+  // the Base64 image string is embedded directly into the HTML generator.
   let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1206,7 +1217,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 <body>
 <div class="header-grid">
 <div>
-  <img src="ASP_Box_Web_RGB.png" style="max-height: 80px;" alt="ASP Logo" />
+  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QDoRXhpZgAATU0AKgAAAAgABAE7AAIAAAAKAAAISodpAAQAAAABAAAIVJydAAEAAAAOAAAQzOocAAcAAAgMAAAAPgAAAAAc6gAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1pZGpvdXJuZXkAAAAWkAMAAgAAABQAABCkkAQAAgAAABQAABC4kpEAAgAAAAQ2NAAAkpIAAgAAAAQ2NAAA6hwABwAACAwAAAiYAAAAABzqAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAyNjowODowNyAwMjozODozMQAyMDI2OjA4OjA3IDAyOjM4OjMxAAAAQwBvAHIAZQBOAEwAUAAgAE0AZQB0AGEAZABhAHQAYQBFAHIAcgBvAHIAXwBTAHUAYwBjAGUAcwBzAAAA/+EKXmh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSfvu78nIGlkPSdXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQnPz4NCjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iPjxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDI2LTA4LTA3VDAyOjM4OjMxLjYzOTwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PC9yZGY6UkRGPjwveDp4bXBtZXRhPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSd3Jz8+/9sAQwAGBAUGBQQGBgUGBwcGCAoQCgoJCQoVDg8MEB8TXhcXF1ITGBgwIhoYIx8XFh0lISUpMA4NDRoaJz02MT0wMT0O/9sAQwEHBwcKCAoTCgoTMA4XDjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw/8AAEQgCBgIGAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfI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" style="max-height: 80px;" alt="ASP Logo" />
 </div>
 <div class="company-info" style="margin-left: 20px;">
   <h1>Allied Surgical Products</h1>
@@ -1288,17 +1299,47 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   html += `</body></html>`; return html;
 }
 
+// Guaranteed Universal Download Function
 function triggerStandardDownload(content, filename, mimeType) {
-  let blob = new Blob([content], { type: mimeType });
-  let a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a); 
-  a.click(); 
-  document.body.removeChild(a);
+  try {
+      let blob = new Blob([content], { type: mimeType });
+      let a = document.createElement('a');
+      let url = window.URL.createObjectURL(blob);
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a); 
+      a.click(); 
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      alert("Export successful!");
+  } catch (e) {
+      alert("Export failed: " + e.message);
+  }
 }
 
-async function exportData(formatType) {
+// Fallback Print Function for mobile PDF generation
+function triggerNativePrint(htmlContent) {
+    let printIframe = document.createElement('iframe');
+    printIframe.style.position = 'absolute';
+    printIframe.style.width = '0px';
+    printIframe.style.height = '0px';
+    printIframe.style.border = 'none';
+    document.body.appendChild(printIframe);
+    
+    let doc = printIframe.contentWindow.document;
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    
+    setTimeout(() => {
+        printIframe.contentWindow.focus();
+        printIframe.contentWindow.print();
+        setTimeout(() => { document.body.removeChild(printIframe); }, 1000);
+    }, 500);
+}
+
+window.exportData = async function(formatType) {
   if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
     alert("No data was scanned in this session."); return;
   }
@@ -1307,42 +1348,39 @@ async function exportData(formatType) {
   let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
   if (formatType === 'pdf') {
-    let printWin = window.open('', '_blank');
-    if (printWin) {
-      printWin.document.open();
-      printWin.document.write(fileContent);
-      printWin.document.close();
-      printWin.focus();
-      setTimeout(() => {
-        printWin.print();
-        if (!/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) printWin.close();
-      }, 500);
-    } else {
-      alert("Pop-up blocked! Please allow pop-ups to print/save as PDF.");
-    }
-    return;
+      if (typeof html2pdf === 'undefined') {
+          alert("Direct PDF generator unavailable (no internet). Falling back to Print -> Save as PDF.");
+          triggerNativePrint(fileContent);
+          return;
+      }
+      
+      try {
+          let opt = {
+            margin:       0.5,
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+          };
+          
+          let tempDiv = document.createElement('div');
+          tempDiv.innerHTML = fileContent;
+          document.body.appendChild(tempDiv);
+          
+          await html2pdf().set(opt).from(tempDiv).save();
+          document.body.removeChild(tempDiv);
+          alert("Session successfully exported as PDF!");
+      } catch (e) {
+          alert("Direct PDF export failed. Falling back to Print -> Save as PDF.\nError: " + e.message);
+          triggerNativePrint(fileContent);
+      }
+      return;
   }
 
   let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
-  
-  if (window.showSaveFilePicker) {
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [{ description: formatType.toUpperCase() + ' Document', accept: { [mime]: ['.' + formatType] } }]
-      });
-      const writable = await handle.createWritable();
-      await writable.write(fileContent);
-      await writable.close();
-      alert("Session successfully exported!");
-    } catch (err) { 
-      // If the browser blocks the modern API for security reasons, we use the guaranteed fallback.
-      if (err.name !== 'AbortError') {
-         triggerStandardDownload(fileContent, filename, mime);
-      }
-    }
-  } else {
-    // Standard guaranteed download for older/mobile browsers
-    triggerStandardDownload(fileContent, filename, mime);
-  }
+  triggerStandardDownload(fileContent, filename, mime);
 }
+
+window.onload = function() {
+    loadMasterDatabase();
+};
