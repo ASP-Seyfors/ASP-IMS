@@ -1,28 +1,23 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.4.0 | UPDATED: 2026.08.08                   -->
-<!-- CHANGELOG: Modularized files, Datalist, Image Upload, N/A Toggles       -->
+<!-- ASP SCANNER APP - VERSION 1.4.1 | UPDATED: 2026.08.08                   -->
+<!-- CHANGELOG: Reordered layout, Actions Dropdown, Fixed Export Auto-Clear  -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.4.0</title>
+  <title>ASP-Android Scanner App v1.4.1</title>
   
-  <!-- Link to External Stylesheet -->
   <link rel="stylesheet" href="styles.css">
-  
-  <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  
-  <!-- Link to External JavaScript Logic -->
   <script src="app.js" defer></script>
 </head>
 <body>
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.4.0)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.4.1)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -72,16 +67,7 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 0;">
-      <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
-      <div class="input-wrapper">
-        <input list="dbRefs" type="text" id="refInput" placeholder="Type to search or Scan REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
-        <datalist id="dbRefs"></datalist>
-      </div>
-    </div>
-  </div>
-
+  <!-- RAW BARCODES SECTION -->
   <div class="card">
     <div class="raw-section">
       <h2>
@@ -89,8 +75,6 @@
         <div>
           <button class="btn-small btn-clear" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
           <button class="btn-small btn-cam" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera</button>
-          
-          <!-- Hidden File Upload Input -->
           <input type="file" id="imgUpload" accept="image/*" style="display:none;" onchange="scanImageFile(event)">
           <button class="btn-small btn-upload" onclick="document.getElementById('imgUpload').click()">📁 Upload Image</button>
         </div>
@@ -133,11 +117,25 @@
         </div>
       </div>
 
-      <div style="margin-top: 8px;">
+      <div style="text-align: center; margin-top: 8px;">
         <button class="btn-small" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
       </div>
     </div>
+  </div>
 
+  <!-- REF / SKU LOOKUP SECTION -->
+  <div class="card">
+    <div class="form-row" style="background-color: #ffffff; padding: 8px; border: 1px solid #000000; margin-bottom: 0;">
+      <div class="form-label" style="color: #000000; font-size: 0.95rem;">REF / SKU Lookup:</div>
+      <div class="input-wrapper">
+        <input list="dbRefs" type="text" id="refInput" placeholder="Type to search or Scan REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
+        <datalist id="dbRefs"></datalist>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARSED DETAILS SECTION -->
+  <div class="card">
     <h2>Parsed & Captured Item Details</h2>
 
     <div id="liveMatchPreview" class="match-preview-box" style="display: none;">
@@ -145,7 +143,35 @@
       <div id="prevDescText" style="margin-top: 2px;">--</div>
     </div>
 
-    <div style="width:100%; text-align:right; margin-bottom:10px;">
+    <!-- 1. Item Destination -->
+    <div class="form-row" id="rowItemDestination" style="display: none;">
+      <div class="form-label">Item Destination:</div>
+      <div class="input-wrapper">
+        <div class="action-selector">
+          <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
+          <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Customer Tag -->
+    <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
+      <div class="form-label" style="color: #0277bd;">Customer / Order Tag:</div>
+      <div class="input-wrapper">
+        <input type="text" id="customerTagInput" placeholder="e.g. John Doe #12345">
+      </div>
+    </div>
+
+    <!-- 3. Quantity -->
+    <div class="form-row">
+      <div class="form-label">Quantity Scanned:</div>
+      <div class="input-wrapper">
+        <input type="number" id="qtyInput" value="1" min="1">
+      </div>
+    </div>
+
+    <!-- 4. Add Item Issue / Note Checkbox (Centered) -->
+    <div style="text-align: center; width: 100%; margin-bottom: 10px; margin-top: 10px;">
       <label style="font-size:0.85rem; font-weight:bold; color:#d32f2f; cursor:pointer;">
         <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()"> ⚠️ Add Item Issue / Note
       </label>
@@ -158,47 +184,7 @@
       </div>
     </div>
 
-    <div class="form-row" id="rowItemDestination" style="display: none;">
-      <div class="form-label">Item Destination:</div>
-      <div class="input-wrapper">
-        <div class="action-selector">
-          <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
-          <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
-      <div class="form-label" style="color: #0277bd;">Customer / Order Tag:</div>
-      <div class="input-wrapper">
-        <input type="text" id="customerTagInput" placeholder="e.g. John Doe #12345">
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-label">GTIN Barcode:</div>
-      <div class="input-wrapper">
-        <input type="text" id="gtinInput" class="needs-attention" placeholder="GTIN Barcode" oninput="runMasterLookup(); evaluateFieldAttention();">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-label">Lot Number:</div>
-      <div class="input-wrapper">
-        <input type="text" id="lotInput" class="needs-attention" placeholder="Lot Number" oninput="evaluateFieldAttention();">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-label">Expiration Date:</div>
-      <div class="input-wrapper">
-        <input type="text" id="expInput" class="needs-attention" placeholder="YYYY-MM-DD" oninput="evaluateFieldAttention();">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
-      </div>
-    </div>
-
+    <!-- 5. Manufacturer -->
     <div class="form-row">
       <div class="form-label">Manufacturer:</div>
       <div class="input-wrapper">
@@ -207,10 +193,30 @@
       </div>
     </div>
 
+    <!-- 6. GTIN Barcode -->
     <div class="form-row">
-      <div class="form-label">Quantity Scanned:</div>
+      <div class="form-label">GTIN Barcode:</div>
       <div class="input-wrapper">
-        <input type="number" id="qtyInput" value="1" min="1">
+        <input type="text" id="gtinInput" class="needs-attention" placeholder="GTIN Barcode" oninput="runMasterLookup(); evaluateFieldAttention();">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
+      </div>
+    </div>
+
+    <!-- 7. Lot Number -->
+    <div class="form-row">
+      <div class="form-label">Lot Number:</div>
+      <div class="input-wrapper">
+        <input type="text" id="lotInput" class="needs-attention" placeholder="Lot Number" oninput="evaluateFieldAttention();">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
+      </div>
+    </div>
+
+    <!-- 8. Expiration Date -->
+    <div class="form-row">
+      <div class="form-label">Expiration Date:</div>
+      <div class="input-wrapper">
+        <input type="text" id="expInput" class="needs-attention" placeholder="YYYY-MM-DD" oninput="evaluateFieldAttention();">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
       </div>
     </div>
 
@@ -318,22 +324,19 @@
       <span><strong>Start Time:</strong> <span id="hdrTimeSum">--</span></span>
       <span><strong>Workflow:</strong> <span id="hdrWorkflowSum">--</span></span>
     </div>
-    
-    <div class="btn-flex-row" style="margin-top: 8px;">
-      <button class="btn-action btn-continue" style="flex: 2;" onclick="continueScanning()">➕ Continue Scanning</button>
-      <button class="btn-action btn-cancel" style="flex: 1;" onclick="cancelSession()">❌ Discard Entire Session</button>
-    </div>
   </div>
 
   <div class="export-panel">
-    <h4>Select Export Action</h4>
+    <h4>Actions</h4>
     <div class="input-wrapper">
-      <select id="exportDropdown" style="width:100%; padding:10px; font-weight:bold;" onchange="handleExportAction(this)">
+      <select id="exportDropdown" style="width:100%; padding:10px; font-weight:bold; text-align:center;" onchange="handleExportAction(this)">
         <option value="" disabled selected>-- Choose Action --</option>
-        <option value="txt">📄 Save as .TXT Data Log</option>
-        <option value="html">🌐 Save as .HTML Web Invoice</option>
-        <option value="pdf">🖨️ Print / Save as PDF</option>
-        <option value="complete">✅ Session Completed (Clear Cache & Return to Start)</option>
+        <option value="continue">➕ Continue Scanning</option>
+        <option value="cancel">❌ Cancel Scanning Session</option>
+        <option value="html">🌐 Save Session as Web Report (HTML)</option>
+        <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
+        <option value="txt">📄 Save Data Log (TXT)</option>
+        <option value="complete">✅ Session Complete (Return Home)</option>
       </select>
     </div>
   </div>
