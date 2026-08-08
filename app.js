@@ -932,6 +932,11 @@ window.saveItemLog = function() {
 
 /* --- EXPORT & SUMMARY LOGIC --- */
 
+window.cleanGtinValue = function(val) {
+  if (!val) return 'N/A';
+  return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim() || 'N/A';
+};
+
 function updateSessionSummaryView() {
   let container = document.getElementById('summaryListContainer');
   container.innerHTML = '';
