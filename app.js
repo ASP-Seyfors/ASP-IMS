@@ -1354,25 +1354,55 @@ window.triggerShareOrDownload = async function(content, filename, mimeType) {
   }
 };
 
-// Fallback Print Function for flawless PDF layout
-window.triggerNativePrint = function(htmlContent) {
-    let printIframe = document.createElement('iframe');
-    printIframe.style.position = 'absolute';
-    printIframe.style.width = '0px';
-    printIframe.style.height = '0px';
-    printIframe.style.border = 'none';
-    document.body.appendChild(printIframe);
-    
-    let doc = printIframe.contentWindow.document;
-    doc.open();
-    doc.write(htmlContent);
-    doc.close();
-    
-    setTimeout(() => {
-        printIframe.contentWindow.focus();
-        printIframe.contentWindow.print();
-        setTimeout(() => { document.body.removeChild(printIframe); }, 1000);
-    }, 500);
+// Share or Download Function (Provides direct Google Drive selection on mobile)
+window.triggerShareOrDownload = async function(content, filename, mimeType) {
+  // 1. Try modern File System Access API (usually desktop Chrome)
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: 'Export Document', accept: { [mimeType]: [filename.substring(filename.lastIndexOf('.'))] } }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      alert("Export successful!");
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; 
+    }
+  }
+
+  // 2. Try Native Mobile Share Sheet (allows direct Save to Google Drive)
+  let file = new File([content], filename, { type: mimeType });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: filename
+      });
+      return; 
+    } catch (e) {
+      console.warn("Share cancelled or failed, falling back to download.");
+    }
+  }
+
+  // 3. Guaranteed Fallback to standard Downloads folder
+  try {
+      let blob = new Blob([content], { type: mimeType });
+      let a = document.createElement('a');
+      let url = window.URL.createObjectURL(blob);
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a); 
+      a.click(); 
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      alert("Export successfully saved to Downloads!");
+  } catch (e) {
+      alert("Export failed: " + e.message);
+  }
 };
 
 window.exportData = async function(formatType) {
@@ -1381,14 +1411,29 @@ window.exportData = async function(formatType) {
   }
 
   let filename = generateExactFilename(formatType);
-  let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
+  // --- NATIVE TAB PRINT ENGINE (Fixes Mobile UI Screenshot & Filename Bug) ---
   if (formatType === 'pdf') {
-      // Reverted to native print to guarantee formatting, selectable text, and Save to Drive capability
-      triggerNativePrint(fileContent);
+      let printWin = window.open('', '_blank');
+      if (!printWin) {
+          alert("Pop-up blocked! Please allow pop-ups for this site to generate the PDF.");
+          return;
+      }
+      
+      let fileContent = buildHTMLReportString(filename);
+      printWin.document.open();
+      printWin.document.write(fileContent);
+      printWin.document.close();
+      
+      setTimeout(() => {
+          printWin.focus();
+          printWin.print();
+      }, 500);
       return;
   }
 
+  // --- TXT / HTML SHARE ENGINE ---
+  let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
   let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
   await triggerShareOrDownload(fileContent, filename, mime);
 };
