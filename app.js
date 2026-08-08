@@ -432,10 +432,74 @@ function rescueLastSession() {
 
 /* --- BARCODE SCANNING & PARSING --- */
 
+function handleSuccessfulScan(decodedText) {
+  if (scanCooldown) return;
+  
+  let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
+  if (cleanText.length < 4) return;
+
+  for (let i = 1; i <= 4; i++) {
+    let existingVal = document.getElementById(`rawScan${i}`).value.trim();
+    if (existingVal === cleanText) return;
+  }
+
+  let targetLine = 0;
+  for (let i = 1; i <= 4; i++) {
+    if (!document.getElementById(`rawScan${i}`).value.trim()) {
+      targetLine = i;
+      break;
+    }
+  }
+
+  if (targetLine === 0 && visibleScanLines < 4) {
+    addScanLine();
+    targetLine = visibleScanLines;
+  }
+
+  if (targetLine > 0) {
+    scanCooldown = true;
+    
+    let camBox = document.getElementById('cameraViewfinder');
+    if (camBox) {
+        camBox.classList.add('scan-success');
+        setTimeout(() => { camBox.classList.remove('scan-success'); }, 450);
+    }
+
+    document.getElementById(`rawScan${targetLine}`).value = cleanText;
+    processAllScans();
+
+    let currentGtin = document.getElementById('gtinInput').value.trim() !== '' || document.getElementById('chkNaGtin').checked;
+    let currentLot = document.getElementById('lotInput').value.trim() !== '' || document.getElementById('chkNaLot').checked;
+    let currentExp = document.getElementById('expInput').value.trim() !== '' || document.getElementById('chkNaExp').checked;
+
+    if (currentGtin && currentLot && currentExp) {
+      if (isCameraActive) { setTimeout(() => { toggleCameraScanner(); }, 300); }
+    } else if (visibleScanLines < 4) {
+      addScanLine();
+    }
+    setTimeout(() => { scanCooldown = false; }, 600);
+  }
+}
+
+function scanImageFile(event) {
+    if (event.target.files.length == 0) return;
+    const file = event.target.files[0];
+    
+    const html5QrCode = new Html5Qrcode("cameraViewfinder");
+    html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+            handleSuccessfulScan(decodedText);
+            event.target.value = ''; 
+        })
+        .catch(err => {
+            alert("No barcode could be detected in this image. Please ensure the barcode is clear and in focus.");
+            event.target.value = '';
+        });
+}
+
 function toggleCameraScanner() {
   const camContainer = document.getElementById('cameraContainer');
   const camBtn = document.getElementById('btnToggleCam');
-  const camBox = document.getElementById('cameraViewfinder');
 
   if (!isCameraActive) {
     camContainer.style.display = 'block';
@@ -450,47 +514,7 @@ function toggleCameraScanner() {
       const qrConfig = { fps: 15, qrbox: { width: 320, height: 250 }, aspectRatio: 1.333333 };
 
       const onScanSuccess = (decodedText, decodedResult) => {
-        if (scanCooldown) return;
-        let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
-        if (cleanText.length < 4) return;
-
-        for (let i = 1; i <= 4; i++) {
-          let existingVal = document.getElementById(`rawScan${i}`).value.trim();
-          if (existingVal === cleanText) return;
-        }
-
-        let targetLine = 0;
-        for (let i = 1; i <= 4; i++) {
-          if (!document.getElementById(`rawScan${i}`).value.trim()) {
-            targetLine = i;
-            break;
-          }
-        }
-
-        if (targetLine === 0 && visibleScanLines < 4) {
-          addScanLine();
-          targetLine = visibleScanLines;
-        }
-
-        if (targetLine > 0) {
-          scanCooldown = true;
-          camBox.classList.add('scan-success');
-          setTimeout(() => { camBox.classList.remove('scan-success'); }, 450);
-
-          document.getElementById(`rawScan${targetLine}`).value = cleanText;
-          processAllScans();
-
-          let currentGtin = document.getElementById('gtinInput').value.trim() !== '' || document.getElementById('chkNaGtin').checked;
-          let currentLot = document.getElementById('lotInput').value.trim() !== '' || document.getElementById('chkNaLot').checked;
-          let currentExp = document.getElementById('expInput').value.trim() !== '' || document.getElementById('chkNaExp').checked;
-
-          if (currentGtin && currentLot && currentExp) {
-            setTimeout(() => { toggleCameraScanner(); }, 300);
-          } else if (visibleScanLines < 4) {
-            addScanLine();
-          }
-          setTimeout(() => { scanCooldown = false; }, 600);
-        }
+        handleSuccessfulScan(decodedText);
       };
 
       html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
@@ -549,7 +573,6 @@ function resetScanLines() {
 function resetScanLinesAndFields() {
   resetScanLines();
   
-  // Uncheck NA toggles and reset fields
   ['gtin', 'lot', 'exp'].forEach(prefix => {
     let chk = document.getElementById(`chkNa${prefix.charAt(0).toUpperCase() + prefix.slice(1)}`);
     if(chk) chk.checked = false;
@@ -885,11 +908,6 @@ function updateSessionSummaryView() {
     }
     container.appendChild(div);
   });
-}
-
-function cleanGtinValue(val) {
-  if (!val) return 'N/A';
-  return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim() || 'N/A';
 }
 
 function generateExactFilename(extension = "txt") {
