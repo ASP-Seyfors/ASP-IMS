@@ -173,7 +173,34 @@ function populateDisplay(item) {
   evaluateFieldAttention();
 }
 
-/* --- UI FIELD MANAGEMENT --- */
+/* --- UI FIELD MANAGEMENT & AUTO-FORMATTING --- */
+
+// Format Expiration Date consistently
+function formatExpDate(inputEl) {
+    let val = inputEl.value.replace(/\D/g, ''); 
+    if(val.length >= 8) {
+        // Assume MMDDYYYY
+        let mm = val.substring(0,2);
+        let dd = val.substring(2,4);
+        let yyyy = val.substring(4,8);
+        
+        // Quick check: if the first 4 are a year (e.g. 2026), swap assumption to YYYYMMDD
+        if (parseInt(val.substring(0,4)) > 1900) {
+            yyyy = val.substring(0,4);
+            mm = val.substring(4,6);
+            dd = val.substring(6,8);
+        }
+        inputEl.value = `${yyyy}-${mm}-${dd}`;
+    } else if (val.length === 6) {
+        // Assume MMDDYY
+        let mm = val.substring(0,2);
+        let dd = val.substring(2,4);
+        let yy = val.substring(4,6);
+        let year = parseInt(yy) < 50 ? (2000 + parseInt(yy)) : (1900 + parseInt(yy));
+        inputEl.value = `${year}-${mm}-${dd}`;
+    }
+    evaluateFieldAttention();
+}
 
 function toggleNA(fieldId, chkId) {
   let field = document.getElementById(fieldId);
@@ -211,9 +238,15 @@ function toggleSessionNote() {
 }
 
 function evaluateFieldAttention() {
+  // Format Lot Number to uppercase while we evaluate
+  let lotEl = document.getElementById('lotInput');
+  if(lotEl && !document.getElementById('chkNaLot').checked) {
+      lotEl.value = lotEl.value.toUpperCase();
+  }
+
   const fields = [
     { el: document.getElementById('gtinInput'), chk: document.getElementById('chkNaGtin') },
-    { el: document.getElementById('lotInput'), chk: document.getElementById('chkNaLot') },
+    { el: lotEl, chk: document.getElementById('chkNaLot') },
     { el: document.getElementById('expInput'), chk: document.getElementById('chkNaExp') },
     { el: document.getElementById('refInput'), chk: null },
     { el: document.getElementById('vendorSelect'), chk: null }
@@ -721,6 +754,13 @@ function hideAllConfirmButtons() {
 }
 
 function goToReviewStage() {
+  
+  // Format Expiration Date on submission just in case
+  let expField = document.getElementById('expInput');
+  if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) {
+      formatExpDate(expField);
+  }
+
   const ref = document.getElementById('refInput').value.trim().toUpperCase();
   if (!ref) {
     alert("Please enter or scan a REF/SKU before continuing.");
@@ -1000,11 +1040,15 @@ function buildTXTReportString() {
       targetMap[rKey].totalQty += item.qty;
 
       let tKey = item.customerTag || 'UNTAGGED';
-      if (!targetMap[rKey].byTag[tKey]) targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+      if (!targetMap[rKey].byTag[tKey]) {
+        targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+      }
       targetMap[rKey].byTag[tKey].tagTotalQty += item.qty;
 
       let lotKey = `${item.lot}_${item.exp}`;
-      if (!targetMap[rKey].byTag[tKey].lots[lotKey]) targetMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes: [] };
+      if (!targetMap[rKey].byTag[tKey].lots[lotKey]) {
+        targetMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes: [] };
+      }
       targetMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
       if (item.itemNote) targetMap[rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
     });
@@ -1269,7 +1313,6 @@ async function exportData(formatType) {
 
     // Convert the HTML string directly to a PDF and force the download
     html2pdf().set(opt).from(fileContent).save().then(() => {
-      clearSessionCache();
       alert("Session successfully exported as PDF!");
     });
     return;
@@ -1286,7 +1329,7 @@ async function exportData(formatType) {
       const writable = await handle.createWritable();
       await writable.write(fileContent);
       await writable.close();
-      clearSessionCache(); alert("Session successfully exported!");
+      alert("Session successfully exported!");
     } catch (err) { if (err.name === 'AbortError') return; }
   } else {
     let blob = new Blob([fileContent], { type: mime });
@@ -1294,7 +1337,6 @@ async function exportData(formatType) {
     a.href = URL.createObjectURL(blob);
     a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    clearSessionCache();
   }
 }
 
