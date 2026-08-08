@@ -1,13 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.4.1 | UPDATED: 2026.08.08                   -->
-<!-- CHANGELOG: Reordered layout, Actions Dropdown, Fixed Export Auto-Clear  -->
+<!-- ASP SCANNER APP - VERSION 1.4.2 | UPDATED: 2026.08.08                   -->
+<!-- CHANGELOG: Fixed Export Security Block with Inline Action Button        -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.4.1</title>
+  <title>ASP-Android Scanner App v1.4.2</title>
   
   <link rel="stylesheet" href="styles.css">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -17,7 +17,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.4.1)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.4.2)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -328,16 +328,19 @@
 
   <div class="export-panel">
     <h4>Actions</h4>
-    <div class="input-wrapper">
-      <select id="exportDropdown" style="width:100%; padding:10px; font-weight:bold; text-align:center;" onchange="handleExportAction(this)">
-        <option value="" disabled selected>-- Choose Action --</option>
-        <option value="continue">➕ Continue Scanning</option>
-        <option value="cancel">❌ Cancel Scanning Session</option>
-        <option value="html">🌐 Save Session as Web Report (HTML)</option>
-        <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
-        <option value="txt">📄 Save Data Log (TXT)</option>
-        <option value="complete">✅ Session Complete (Return Home)</option>
-      </select>
+    <div class="form-row" style="margin-bottom: 0;">
+      <div class="input-wrapper" style="display: flex; flex-direction: row; gap: 8px;">
+        <select id="exportDropdown" style="flex: 3; padding: 10px; font-weight: bold; text-align: left;">
+          <option value="" disabled selected>-- Choose Action --</option>
+          <option value="continue">➕ Continue Scanning</option>
+          <option value="html">🌐 Save Session as Web Report (HTML)</option>
+          <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
+          <option value="txt">📄 Save Data Log (TXT)</option>
+          <option value="cancel">❌ Cancel Scanning Session</option>
+          <option value="complete">✅ Session Complete (Return Home)</option>
+        </select>
+        <button class="btn-action btn-start" style="flex: 1; margin: 0; padding: 10px;" onclick="executeAction()">Go ➔</button>
+      </div>
     </div>
   </div>
 
