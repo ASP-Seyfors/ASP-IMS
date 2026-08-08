@@ -96,7 +96,7 @@ async function loadMasterDatabase() {
       populateRefDatalist();
     }
   } catch (err) {
-    alert("⚠️ Error loading database.json!\n\nPlease check the file for syntax errors like missing quotes or commas.\n\nError Details: " + err.message);
+    alert("⚠️ Error loading database.json!\n\nError Details: " + err.message);
     console.error("Database parsing error:", err);
   }
 }
@@ -175,16 +175,13 @@ function populateDisplay(item) {
 
 /* --- UI FIELD MANAGEMENT & AUTO-FORMATTING --- */
 
-// Format Expiration Date consistently
-function formatExpDate(inputEl) {
+window.formatExpDate = function(inputEl) {
     let val = inputEl.value.replace(/\D/g, ''); 
+    if (!val) return;
     if(val.length >= 8) {
-        // Assume MMDDYYYY
         let mm = val.substring(0,2);
         let dd = val.substring(2,4);
         let yyyy = val.substring(4,8);
-        
-        // Quick check: if the first 4 are a year (e.g. 2026), swap assumption to YYYYMMDD
         if (parseInt(val.substring(0,4)) > 1900) {
             yyyy = val.substring(0,4);
             mm = val.substring(4,6);
@@ -192,7 +189,6 @@ function formatExpDate(inputEl) {
         }
         inputEl.value = `${yyyy}-${mm}-${dd}`;
     } else if (val.length === 6) {
-        // Assume MMDDYY
         let mm = val.substring(0,2);
         let dd = val.substring(2,4);
         let yy = val.substring(4,6);
@@ -200,7 +196,7 @@ function formatExpDate(inputEl) {
         inputEl.value = `${year}-${mm}-${dd}`;
     }
     evaluateFieldAttention();
-}
+};
 
 function toggleNA(fieldId, chkId) {
   let field = document.getElementById(fieldId);
@@ -238,15 +234,9 @@ function toggleSessionNote() {
 }
 
 function evaluateFieldAttention() {
-  // Format Lot Number to uppercase while we evaluate
-  let lotEl = document.getElementById('lotInput');
-  if(lotEl && !document.getElementById('chkNaLot').checked) {
-      lotEl.value = lotEl.value.toUpperCase();
-  }
-
   const fields = [
     { el: document.getElementById('gtinInput'), chk: document.getElementById('chkNaGtin') },
-    { el: lotEl, chk: document.getElementById('chkNaLot') },
+    { el: document.getElementById('lotInput'), chk: document.getElementById('chkNaLot') },
     { el: document.getElementById('expInput'), chk: document.getElementById('chkNaExp') },
     { el: document.getElementById('refInput'), chk: null },
     { el: document.getElementById('vendorSelect'), chk: null }
@@ -485,7 +475,14 @@ function rescueLastSession() {
   pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
   pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
   
-  checkSessionRecoveryState();
+  // Reload Headers to Ensure UI reflects Rescued Session
+  currentSessionName = localStorage.getItem('asp_session_name') || "Rescued Session";
+  currentOrderNum = localStorage.getItem('asp_order_num') || "";
+  currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
+  sessionStartStr = localStorage.getItem('asp_session_start_str') || "";
+  sessionDateStr = localStorage.getItem('asp_session_date_str') || "";
+
+  updateHeaderBanners();
   goToSummaryScreen();
 }
 
@@ -755,7 +752,6 @@ function hideAllConfirmButtons() {
 
 function goToReviewStage() {
   
-  // Format Expiration Date on submission just in case
   let expField = document.getElementById('expInput');
   if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) {
       formatExpDate(expField);
@@ -1013,7 +1009,7 @@ window.executeAction = function() {
         completeSession();
     }
 
-    // Reset dropdown after a short delay so the export has time to trigger using the user gesture
+    // Reset dropdown after a short delay
     setTimeout(() => { selectEl.value = ""; }, 500);
 };
 
@@ -1292,35 +1288,44 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   html += `</body></html>`; return html;
 }
 
+function triggerStandardDownload(content, filename, mimeType) {
+  let blob = new Blob([content], { type: mimeType });
+  let a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); 
+  a.click(); 
+  document.body.removeChild(a);
+}
+
 async function exportData(formatType) {
   if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
     alert("No data was scanned in this session."); return;
   }
 
-  // Ensure the correct file extension is generated
   let filename = generateExactFilename(formatType);
   let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
   if (formatType === 'pdf') {
-    // Configure the PDF formatting options
-    let opt = {
-      margin:       0.5,
-      filename:     filename,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    // Convert the HTML string directly to a PDF and force the download
-    html2pdf().set(opt).from(fileContent).save().then(() => {
-      alert("Session successfully exported as PDF!");
-    });
+    let printWin = window.open('', '_blank');
+    if (printWin) {
+      printWin.document.open();
+      printWin.document.write(fileContent);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => {
+        printWin.print();
+        if (!/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) printWin.close();
+      }, 500);
+    } else {
+      alert("Pop-up blocked! Please allow pop-ups to print/save as PDF.");
+    }
     return;
   }
 
-  // Handle standard TXT / HTML downloads
   let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
-  if ('showSaveFilePicker' in window) {
+  
+  if (window.showSaveFilePicker) {
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName: filename,
@@ -1330,16 +1335,14 @@ async function exportData(formatType) {
       await writable.write(fileContent);
       await writable.close();
       alert("Session successfully exported!");
-    } catch (err) { if (err.name === 'AbortError') return; }
+    } catch (err) { 
+      // If the browser blocks the modern API for security reasons, we use the guaranteed fallback.
+      if (err.name !== 'AbortError') {
+         triggerStandardDownload(fileContent, filename, mime);
+      }
+    }
   } else {
-    let blob = new Blob([fileContent], { type: mime });
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    // Standard guaranteed download for older/mobile browsers
+    triggerStandardDownload(fileContent, filename, mime);
   }
 }
-
-window.onload = function() {
-    loadMasterDatabase();
-};
