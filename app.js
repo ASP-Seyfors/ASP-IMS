@@ -481,7 +481,6 @@ window.rescueLastSession = function() {
   pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
   pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
   
-  // Reload Headers to Ensure UI reflects Rescued Session
   currentSessionName = localStorage.getItem('asp_session_name') || "Rescued Session";
   currentOrderNum = localStorage.getItem('asp_order_num') || "";
   currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
@@ -1010,8 +1009,6 @@ window.executeAction = function() {
         continueScanning();
     } else if (val === 'cancel') {
         cancelSession();
-    } else if (val === 'html') {
-        exportData('html');
     } else if (val === 'pdf') {
         exportData('pdf');
     } else if (val === 'txt') {
@@ -1020,7 +1017,6 @@ window.executeAction = function() {
         completeSession();
     }
 
-    // Reset dropdown after a short delay
     setTimeout(() => { selectEl.value = ""; }, 500);
 };
 
@@ -1066,6 +1062,7 @@ function buildTXTReportString() {
   const nowObj = new Date();
   let timeEndStr = nowObj.toLocaleTimeString();
   let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
+  let totalItemsScanned = sessionScannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
   let sNote = document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : '';
 
   let reportLines = [
@@ -1073,6 +1070,7 @@ function buildTXTReportString() {
     `ASP SCANNER APP SUMMARY EXPORT - ${sessionTitleHeader}`,
     ``,
     `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
+    `          Total Items Scanned:       ${totalItemsScanned}`,
     ``,
     `          Workflow Process:    ${currentWorkflowType}`,
     `          Scanned Date:        ${sessionDateStr}`,
@@ -1178,6 +1176,7 @@ function buildHTMLReportString(filename) {
   const nowObj = new Date();
   let timeEndStr = nowObj.toLocaleTimeString();
   let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
+  let totalItemsScanned = sessionScannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
   let sNote = document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : '';
 
   let html = `<!DOCTYPE html>
@@ -1232,6 +1231,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     <tr><td><strong>Date:</strong></td><td>${sessionDateStr}</td></tr>
     <tr><td><strong>Time Span:</strong></td><td>${sessionStartStr} - ${timeEndStr}</td></tr>
     <tr><td><strong>Unique REFs:</strong></td><td>${totalUniqueRefs}</td></tr>
+    <tr><td><strong>Total Items:</strong></td><td>${totalItemsScanned}</td></tr>
   </table>
 </div>
 </div>`;
@@ -1299,9 +1299,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   html += `</body></html>`; return html;
 }
 
-// Share or Download Function (Provides direct Google Drive selection on mobile)
 window.triggerShareOrDownload = async function(content, filename, mimeType) {
-  // 1. Try modern File System Access API (usually desktop Chrome)
   if (window.showSaveFilePicker) {
     try {
       const handle = await window.showSaveFilePicker({
@@ -1318,7 +1316,6 @@ window.triggerShareOrDownload = async function(content, filename, mimeType) {
     }
   }
 
-  // 2. Try Native Mobile Share Sheet (allows direct Save to Google Drive)
   let file = new File([content], filename, { type: mimeType });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -1332,7 +1329,6 @@ window.triggerShareOrDownload = async function(content, filename, mimeType) {
     }
   }
 
-  // 3. Guaranteed Fallback to standard Downloads folder
   try {
       let blob = new Blob([content], { type: mimeType });
       let a = document.createElement('a');
@@ -1350,55 +1346,24 @@ window.triggerShareOrDownload = async function(content, filename, mimeType) {
   }
 };
 
-// Share or Download Function (Provides direct Google Drive selection on mobile)
-window.triggerShareOrDownload = async function(content, filename, mimeType) {
-  // 1. Try modern File System Access API (usually desktop Chrome)
-  if (window.showSaveFilePicker) {
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [{ description: 'Export Document', accept: { [mimeType]: [filename.substring(filename.lastIndexOf('.'))] } }]
-      });
-      const writable = await handle.createWritable();
-      await writable.write(content);
-      await writable.close();
-      alert("Export successful!");
-      return;
-    } catch (err) {
-      if (err.name === 'AbortError') return; 
-    }
-  }
-
-  // 2. Try Native Mobile Share Sheet (allows direct Save to Google Drive)
-  let file = new File([content], filename, { type: mimeType });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: filename
-      });
-      return; 
-    } catch (e) {
-      console.warn("Share cancelled or failed, falling back to download.");
-    }
-  }
-
-  // 3. Guaranteed Fallback to standard Downloads folder
-  try {
-      let blob = new Blob([content], { type: mimeType });
-      let a = document.createElement('a');
-      let url = window.URL.createObjectURL(blob);
-      a.style.display = 'none';
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a); 
-      a.click(); 
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      alert("Export successfully saved to Downloads!");
-  } catch (e) {
-      alert("Export failed: " + e.message);
-  }
+window.triggerNativePrint = function(htmlContent) {
+    let printIframe = document.createElement('iframe');
+    printIframe.style.position = 'absolute';
+    printIframe.style.width = '0px';
+    printIframe.style.height = '0px';
+    printIframe.style.border = 'none';
+    document.body.appendChild(printIframe);
+    
+    let doc = printIframe.contentWindow.document;
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    
+    setTimeout(() => {
+        printIframe.contentWindow.focus();
+        printIframe.contentWindow.print();
+        setTimeout(() => { document.body.removeChild(printIframe); }, 1000);
+    }, 500);
 };
 
 window.exportData = async function(formatType) {
@@ -1407,29 +1372,13 @@ window.exportData = async function(formatType) {
   }
 
   let filename = generateExactFilename(formatType);
+  let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
-  // --- NATIVE TAB PRINT ENGINE (Fixes Mobile UI Screenshot & Filename Bug) ---
   if (formatType === 'pdf') {
-      let printWin = window.open('', '_blank');
-      if (!printWin) {
-          alert("Pop-up blocked! Please allow pop-ups for this site to generate the PDF.");
-          return;
-      }
-      
-      let fileContent = buildHTMLReportString(filename);
-      printWin.document.open();
-      printWin.document.write(fileContent);
-      printWin.document.close();
-      
-      setTimeout(() => {
-          printWin.focus();
-          printWin.print();
-      }, 500);
+      triggerNativePrint(fileContent);
       return;
   }
 
-  // --- TXT / HTML SHARE ENGINE ---
-  let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
   let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
   await triggerShareOrDownload(fileContent, filename, mime);
 };
