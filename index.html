@@ -1,23 +1,20 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.5.0 | UPDATED: 2026.08.08                   -->
-<!-- CHANGELOG: Bulletproof Exports, Restructured UI, Auto-Formatters        -->
+<!-- ASP SCANNER APP - VERSION 1.5.1 | UPDATED: 2026.08.09                   -->
+<!-- CHANGELOG: Added Total Item Count Metric, Removed HTML Export Option    -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.5.0</title>
+  <title>ASP-Android Scanner App v1.5.1</title>
   
   <link rel="stylesheet" href="styles.css">
   
   <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <!-- Direct PDF Generation Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
-    /* Force Uppercase purely via CSS to prevent scanner cursor jumping */
     #refInput, #lotInput {
       text-transform: uppercase;
     }
@@ -27,7 +24,7 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.5.0)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.5.1)</span></h2>
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -221,7 +218,7 @@
       </div>
     </div>
 
-    <!-- 8. Expiration Date (AUTO FORMAT) -->
+    <!-- 8. Expiration Date -->
     <div class="form-row">
       <div class="form-label">Expiration Date:</div>
       <div class="input-wrapper">
@@ -343,10 +340,9 @@
         <select id="exportDropdown" style="flex: 3; padding: 10px; font-weight: bold; text-align: left;">
           <option value="" disabled selected>-- Choose Action --</option>
           <option value="continue">➕ Continue Scanning</option>
-          <option value="cancel">❌ Discard & Cancel Scanning Session</option>
-          <option value="html">🌐 Save Session as Web Report (HTML)</option>
           <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
           <option value="txt">📄 Save Data Log (TXT)</option>
+          <option value="cancel">❌ Discard & Cancel Scanning Session</option>
           <option value="complete">✅ Session Complete (Return Home)</option>
         </select>
         <button class="btn-action btn-start" style="flex: 1; margin: 0; padding: 10px;" onclick="executeAction()">Go ➔</button>
@@ -372,7 +368,6 @@
 
 </div>
 
-<!-- Main Application Script linked at the bottom to ensure DOM is fully loaded -->
 <script src="app.js"></script>
 </body>
 </html>
