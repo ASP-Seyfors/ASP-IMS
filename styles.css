@@ -1,6 +1,8 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - STYLESHEET (styles.css)                               */
+/* VERSION 1.5.1 | RESPONSIVE DESKTOP & MOBILE OPTIMIZED                   */
 /* ======================================================================= */
+
 body {
   font-family: Arial, sans-serif;
   background-color: #f0e68c;
@@ -8,6 +10,8 @@ body {
   margin: 12px;
   padding: 0;
 }
+
+/* Base Card Layout */
 .card {
   background-color: #f5f5dc;
   border: 1px solid #8b8589;
@@ -15,6 +19,7 @@ body {
   padding: 14px;
   margin-bottom: 12px;
 }
+
 h2 {
   margin-top: 0;
   font-size: 1.1rem;
@@ -27,16 +32,19 @@ h2 {
   flex-wrap: wrap;
   gap: 6px;
 }
+
 .form-row {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
+
 .form-label {
   width: 170px;
   font-weight: bold;
   font-size: 0.85rem;
 }
+
 .input-wrapper {
   flex: 1;
   display: flex;
@@ -44,6 +52,7 @@ h2 {
   flex-wrap: wrap;
   gap: 6px;
 }
+
 input[type="text"], input[type="number"], select, textarea {
   flex: 1;
   background-color: #ffffff;
@@ -56,27 +65,33 @@ input[type="text"], input[type="number"], select, textarea {
   min-width: 140px;
   box-sizing: border-box;
 }
+
 input[type="text"], input[type="number"], select {
   text-align: center;
   text-align-last: center;
   transition: background-color 0.2s, border-color 0.2s;
 }
+
 #refInput {
   text-transform: uppercase;
 }
+
 option {
   text-align: center;
 }
+
 input.needs-attention, select.needs-attention {
   background-color: #fff59d !important;
   border: 2px solid #f57f17 !important;
 }
+
 .action-selector {
   display: flex;
   gap: 8px;
   width: 100%;
   margin-top: 4px;
 }
+
 .action-btn {
   flex: 1;
   padding: 8px 4px;
@@ -88,6 +103,7 @@ input.needs-attention, select.needs-attention {
   cursor: pointer;
   border-radius: 3px;
 }
+
 .action-btn.selected-inv { background-color: #2e7d32; color: #ffffff; }
 .action-btn.selected-res { background-color: #0277bd; color: #ffffff; }
 
@@ -101,6 +117,7 @@ input.needs-attention, select.needs-attention {
   cursor: pointer;
   border-radius: 3px;
 }
+
 .gtin-diff-banner {
   font-size: 0.85rem;
   font-weight: bold;
@@ -113,6 +130,7 @@ input.needs-attention, select.needs-attention {
   margin-top: 6px;
   text-align: center;
 }
+
 .btn-action {
   width: 100%;
   padding: 12px;
@@ -124,23 +142,28 @@ input.needs-attention, select.needs-attention {
   margin-top: 6px;
   border-radius: 4px;
 }
+
 .btn-export {
   background-color: #ffffff;
   color: #000000;
   border: 2px solid #000000;
   transition: all 0.2s;
 }
+
 .btn-export:hover {
   background-color: #e0e0e0;
 }
+
 .btn-flex-row {
   display: flex;
   gap: 8px;
   margin-top: 10px;
 }
+
 .btn-flex-row .btn-action {
   margin-top: 0;
 }
+
 .btn-small {
   background-color: #2e7d32;
   color: #ffffff;
@@ -151,6 +174,7 @@ input.needs-attention, select.needs-attention {
   cursor: pointer;
   border-radius: 3px;
 }
+
 .btn-cam { background-color: #e65100; }
 .btn-upload { background-color: #1976d2; }
 .btn-clear { background-color: #757575; color: #ffffff; }
@@ -169,11 +193,13 @@ input.needs-attention, select.needs-attention {
   border-radius: 4px;
   text-align: center;
 }
+
 .header-banner h3 {
   margin: 0 0 4px 0;
   font-size: 1.1rem;
   color: #000000;
 }
+
 .header-sub {
   font-size: 0.85rem;
   color: #333333;
@@ -182,6 +208,7 @@ input.needs-attention, select.needs-attention {
   flex-wrap: wrap;
   gap: 12px;
 }
+
 .raw-section {
   background-color: #e6dfb8;
   padding: 10px;
@@ -196,6 +223,7 @@ input.needs-attention, select.needs-attention {
   margin: 10px auto;
   display: none;
 }
+
 #cameraViewfinder {
   width: 100%;
   min-height: 280px;
@@ -204,10 +232,12 @@ input.needs-attention, select.needs-attention {
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+
 #cameraViewfinder.scan-success {
   border: 4px solid #2e7d32 !important;
   box-shadow: 0 0 12px #2e7d32;
 }
+
 .cam-status-overlay {
   position: absolute;
   top: 8px;
@@ -219,6 +249,7 @@ input.needs-attention, select.needs-attention {
   gap: 12px;
   pointer-events: none;
 }
+
 .status-tag {
   font-size: 0.85rem;
   font-weight: bold;
@@ -229,12 +260,14 @@ input.needs-attention, select.needs-attention {
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.2s ease;
 }
+
 .status-tag.captured {
   color: #000000 !important;
   background: rgba(255, 255, 255, 0.65) !important;
   border: 2px solid #000000 !important;
   font-weight: 900;
 }
+
 .review-line {
   display: flex;
   justify-content: space-between;
@@ -243,9 +276,11 @@ input.needs-attention, select.needs-attention {
   border-bottom: 1px solid #cccccc;
   font-size: 0.95rem;
 }
+
 .review-line:last-child {
   border-bottom: none;
 }
+
 .match-preview-box {
   background-color: #e8f5e9;
   border: 1px solid #4caf50;
@@ -254,6 +289,7 @@ input.needs-attention, select.needs-attention {
   margin-bottom: 10px;
   font-size: 0.85rem;
 }
+
 .summary-item-card {
   background-color: #ffffff;
   border: 1px solid #8b8589;
@@ -261,6 +297,7 @@ input.needs-attention, select.needs-attention {
   padding: 10px;
   margin-bottom: 8px;
 }
+
 .export-panel {
   background-color: #e3f2fd;
   border: 2px solid #0277bd;
@@ -268,8 +305,44 @@ input.needs-attention, select.needs-attention {
   border-radius: 6px;
   margin-bottom: 12px;
 }
+
 .export-panel h4 {
   margin: 0 0 10px 0;
   text-align: center;
   color: #0277bd;
+}
+
+/* ======================================================================= */
+/* DESKTOP / WORKSTATION MEDIA QUERY (Screens wider than 800px)            */
+/* ======================================================================= */
+@media (min-width: 800px) {
+  body {
+    max-width: 800px;
+    margin: 30px auto;
+    background-color: #e2d9a3; /* Slightly darker background contrast for desktop */
+  }
+
+  .card, .header-banner, .export-panel {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .form-label {
+    width: 200px;
+    font-size: 0.9rem;
+  }
+
+  input[type="text"], input[type="number"], select, textarea {
+    padding: 10px;
+    font-size: 1rem;
+  }
+
+  .btn-action {
+    padding: 14px;
+    font-size: 1.05rem;
+  }
+
+  .review-line {
+    padding: 10px 0;
+    font-size: 1rem;
+  }
 }
