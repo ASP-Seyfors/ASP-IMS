@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - LOGIC & SCRIPTING (app.js)                            */
-/* VERSION 1.7.1 | EXECUTIVE AUDIT REPORTING & FORMAL PDF GENERATOR        */
+/* VERSION 1.7.2 | EXECUTIVE AUDIT TABLES & CHRONOLOGICAL TRACEABILITY     */
 /* ======================================================================= */
 
 const defaultVendors = [
@@ -278,6 +278,14 @@ window.closeAuditHub = function() {
   document.getElementById('screenSetup').style.display = 'block';
 };
 
+window.clearAuditSessions = function() {
+  parsedAuditSessions = [];
+  document.getElementById('auditResultsContainer').style.display = 'none';
+  document.getElementById('auditPreviewContent').innerHTML = '';
+  document.getElementById('auditFilesUpload').value = '';
+  alert("Audit session cache cleared! Ready to upload new logs.");
+};
+
 window.processAuditFiles = async function(event) {
   const files = event.target.files;
   if (files.length === 0) return;
@@ -308,7 +316,7 @@ window.processAuditFiles = async function(event) {
 
 function parseTXTExportContent(text, filename) {
   let sessionName = filename;
-  let workflow = "Unknown";
+  let workflow = "General";
   let date = "Unknown";
   let user = "N/A";
   let items = [];
@@ -316,6 +324,7 @@ function parseTXTExportContent(text, filename) {
   let lines = text.split('\n');
   let currentRef = "";
   let currentTag = "";
+  let currentItemNote = "";
 
   lines.forEach(line => {
     let trim = line.trim();
@@ -329,18 +338,33 @@ function parseTXTExportContent(text, filename) {
       date = trim.replace("Scanned Date:", "").trim();
     } else if (trim.startsWith("[") && trim.includes("REF:")) {
       currentRef = trim.substring(trim.indexOf("REF:") + 4).trim();
+      currentTag = ""; currentItemNote = "";
     } else if (trim.startsWith("| Customer Tag:")) {
-      currentTag = trim.substring(trim.indexOf("Customer Tag:") + 15).replace(/\(Qty: \d+\)/, '').trim();
+      // Fix string truncation: capture entire Tag string without dropping initial characters
+      let tagMatch = trim.match(/Customer Tag:\s*(.+?)(?:\s*\(Qty:|\s*$)/);
+      if (tagMatch) currentTag = tagMatch[1].trim();
+    } else if (trim.startsWith("* Notes:")) {
+      currentItemNote = trim.replace("* Notes:", "").trim();
     } else if (trim.startsWith("- Lot:")) {
       let lotMatch = trim.match(/- Lot:\s*([^|]+)\|\s*Exp:\s*([^|]+)\|\s*Qty:\s*(\d+)/);
       if (lotMatch && currentRef) {
+        
+        let effectiveWorkflow = workflow;
+        if (workflow === "Unknown" || workflow === "General") {
+          if (text.includes("--- PACK & SHIP ---")) effectiveWorkflow = "Picking & Packing";
+          else if (text.includes("--- RESERVED FOR CUSTOMERS ---") && text.includes("--- INVENTORY ADDITIONS ---")) effectiveWorkflow = "Receiving & Reserving";
+          else if (text.includes("--- RESERVED FOR CUSTOMERS ---")) effectiveWorkflow = "Reserving";
+          else if (text.includes("--- INVENTORY ADDITIONS ---")) effectiveWorkflow = "Receiving";
+        }
+
         items.push({
           ref: currentRef,
           lot: lotMatch[1].trim(),
           exp: lotMatch[2].trim(),
           qty: parseInt(lotMatch[3], 10) || 1,
           customerTag: currentTag,
-          workflow: workflow,
+          itemNote: currentItemNote,
+          workflow: effectiveWorkflow,
           sessionName: sessionName,
           date: date,
           user: user
@@ -359,13 +383,13 @@ function compileTraceabilityData() {
   let datesArray = [];
 
   parsedAuditSessions.forEach(session => {
-    if (session.date && session.date !== "Unknown") {
-      datesArray.push(session.date.replace(/\./g, '-'));
-    }
-
     session.items.forEach(item => {
       uniqueRefs.add(item.ref);
       totalItemsScanned += item.qty;
+
+      if (item.date && item.date !== "Unknown") {
+        datesArray.push(item.date.replace(/\./g, '-'));
+      }
 
       let key = `${item.ref}_${item.lot}`;
       if (!lotTraceMap[key]) {
@@ -376,14 +400,19 @@ function compileTraceabilityData() {
           exp: item.exp,
           desc: match ? getItemDesc(match) : 'No description available',
           mfr: match ? getItemVendor(match) : 'ETHICON',
+          gtin: match ? match.gtin : 'N/A',
+          price: match ? match.price : '$0.00',
           inboundQty: 0,
           reservedQty: 0,
           outboundQty: 0,
+          damagedQty: 0,
           receivedDate: 'N/A',
           reservedForTag: '',
           timeline: []
         };
       }
+
+      if (item.itemNote) lotTraceMap[key].damagedQty += item.qty;
 
       if (item.workflow.includes('Receiving')) {
         lotTraceMap[key].inboundQty += item.qty;
@@ -403,12 +432,13 @@ function compileTraceabilityData() {
         qty: item.qty,
         sessionName: item.sessionName,
         customerTag: item.customerTag,
+        itemNote: item.itemNote,
         user: item.user
       });
     });
   });
 
-  // Calculate Date Range for Filename
+  // Calculate Global Date Range for Filename
   datesArray.sort();
   let startDate = datesArray.length > 0 ? datesArray[0] : sessionDateStr;
   let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : sessionDateStr;
@@ -420,6 +450,15 @@ function compileTraceabilityData() {
     if (a.lot < b.lot) return -1;
     if (a.lot > b.lot) return 1;
     return 0;
+  });
+
+  // Sort Timeline History Chronologically (Oldest to Newest)
+  sortedTraceList.forEach(trace => {
+    trace.timeline.sort((a, b) => {
+      let dateA = new Date(a.date.replace(/\./g, '-'));
+      let dateB = new Date(b.date.replace(/\./g, '-'));
+      return dateA - dateB;
+    });
   });
 
   return {
@@ -443,20 +482,20 @@ function renderAuditPreviewUI() {
   `;
 
   sortedTraceList.forEach(trace => {
-    let isReconciled = (trace.inboundQty === trace.outboundQty && trace.inboundQty > 0);
-    let badgeClass = isReconciled ? 'badge-match' : 'badge-warn';
-    let statusText = isReconciled ? '✓ Reconciled' : '⚠️ Pending / Discrepancy';
+    let resHtml = trace.reservedQty > 0 ? `<div><strong>Reserved Qty:</strong> ${trace.reservedQty} &nbsp;|&nbsp; <strong>Reserved For:</strong> ${trace.reservedForTag}</div>` : '';
+    let dmgHtml = trace.damagedQty > 0 ? `<div style="color:#d32f2f;"><strong>Damaged Qty:</strong> ${trace.damagedQty}</div>` : '';
 
     html += `
       <div class="audit-card">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:4px; margin-bottom:6px;">
           <strong style="font-size:1rem; color:#0277bd;">Ref: ${trace.ref}</strong>
-          <span class="badge-info ${badgeClass}">${statusText}</span>
+          <span style="font-size:0.85rem; color:#555;">${trace.mfr}</span>
         </div>
         <div style="font-size:0.85rem; font-family:monospace; line-height:1.4;">
-          <div><strong>Lot:</strong> ${trace.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${trace.exp} &nbsp;|&nbsp; <strong>Total Qty:</strong> ${trace.inboundQty || trace.outboundQty || trace.reservedQty}</div>
+          <div><strong>Lot:</strong> ${trace.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${trace.exp} &nbsp;|&nbsp; <strong>Qty:</strong> ${trace.inboundQty || trace.outboundQty || trace.reservedQty}</div>
           <div><strong>Received Date:</strong> ${trace.receivedDate}</div>
-          <div><strong>Reserved Qty:</strong> ${trace.reservedQty} &nbsp;|&nbsp; <strong>Reserved for:</strong> ${trace.reservedForTag || 'N/A'}</div>
+          ${resHtml}
+          ${dmgHtml}
         </div>
       </div>
     `;
@@ -468,27 +507,45 @@ function renderAuditPreviewUI() {
 function buildHTMLAuditReportString(filename, startDate, endDate) {
   const { sortedTraceList, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
 
+  // Group Traceability Lifecycles logically
+  let inventoryStockList = [];
+  let customerGroupMap = {};
+  let generalOutboundList = [];
+
+  sortedTraceList.forEach(trace => {
+    if (trace.reservedForTag) {
+      let tag = trace.reservedForTag;
+      if (!customerGroupMap[tag]) customerGroupMap[tag] = [];
+      customerGroupMap[tag].push(trace);
+    } else if (trace.inboundQty > 0) {
+      inventoryStockList.push(trace);
+    } else if (trace.outboundQty > 0) {
+      generalOutboundList.push(trace);
+    }
+  });
+
   let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>${filename}</title>
 <style>
-body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 30px; font-size: 13px; }
-.header-grid { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0277bd; padding-bottom: 15px; margin-bottom: 20px; }
-.company-info h1 { margin: 0; color: #0277bd; font-size: 22px; text-transform: uppercase; }
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 30px; font-size: 12px; }
+.header-grid { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0277bd; padding-bottom: 15px; margin-bottom: 15px; }
+.company-info h1 { margin: 0; color: #0277bd; font-size: 20px; text-transform: uppercase; }
 .company-info p { margin: 2px 0; color: #555; }
 .report-meta { text-align: right; }
-.report-meta h2 { margin: 0; color: #333; font-size: 16px; margin-bottom: 6px; }
-.report-meta table { width: 100%; text-align: right; border: none; font-size: 12px; margin: 0; }
-.report-meta td { border: none; padding: 2px 0 2px 10px; }
-.section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 6px 10px; font-size: 14px; font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; }
-.audit-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; }
-.audit-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 8px; text-align: left; color: #555; }
-.audit-table td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
-.ref-title { font-size: 14px; font-weight: bold; color: #0277bd; }
-.sub-detail { font-size: 11px; color: #555; margin-top: 2px; }
-.timeline-list { background: #f9f9f9; padding: 6px; border-radius: 4px; border: 1px solid #eee; margin-top: 4px; font-size: 11px; font-family: monospace; }
+.report-meta h2 { margin: 0; color: #333; font-size: 15px; margin-bottom: 6px; }
+.report-meta table { width: 100%; text-align: right; border: none; font-size: 11px; margin: 0; }
+.report-meta td { border: none; padding: 1px 0 1px 10px; }
+.section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 6px 10px; font-size: 13px; font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; }
+.sub-section-title { background-color: #e3f2fd; border-left: 4px solid #0277bd; padding: 4px 8px; font-size: 12px; font-weight: bold; margin: 12px 0 6px 0; color: #0277bd; }
+.audit-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
+.audit-table th { background-color: #fafafa; border: 1px solid #ccc; padding: 6px; text-align: center; color: #333; font-size: 11px; }
+.audit-table td { border: 1px solid #eee; padding: 6px; vertical-align: middle; text-align: center; }
+.ref-col { font-weight: bold; color: #0277bd; text-align: left; }
+.desc-col { text-align: left; font-size: 10px; color: #555; }
+.timeline-text { font-family: monospace; font-size: 10px; text-align: left; background: #f9f9f9; padding: 4px; border-radius: 3px; }
 @media print {
   body { margin: 0; padding: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .page-break { page-break-before: always; }
@@ -498,7 +555,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 <body>
 <div class="header-grid">
 <div>
-  <img src="ASP_Box_Web_RGB.png" style="max-height: 70px;" alt="ASP Logo" />
+  <img src="ASP_Box_Web_RGB.png" style="max-height: 65px;" alt="ASP Logo" />
 </div>
 <div class="company-info" style="margin-left: 20px;">
   <h1>Allied Surgical Products</h1>
@@ -515,43 +572,127 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 </div>
 </div>
 
-<div class="section-title">📦 WEEKLY ITEM TRACEABILITY & CHAIN OF CUSTODY</div>
-<table class="data-table audit-table">
+<!-- TABLE 1: MASTER ITEM CATALOG -->
+<div class="section-title">1. MASTER CATALOG & INVENTORY ITEMS</div>
+<table class="audit-table">
 <thead>
   <tr>
-    <th style="width:25%;">Ref & Manufacturer</th>
-    <th style="width:40%;">Lot / Expiration / Status</th>
-    <th style="width:35%;">Chain of Custody Events</th>
+    <th>REF</th>
+    <th>Manufacturer</th>
+    <th>Description</th>
+    <th>Lot</th>
+    <th>Exp</th>
+    <th>Qty</th>
+    <th>Price</th>
+    <th>GTIN</th>
   </tr>
 </thead>
 <tbody>`;
 
-  sortedTraceList.forEach(trace => {
-    let timelineHtml = `<div class="timeline-list">`;
-    trace.timeline.forEach(ev => {
-      let tagStr = ev.customerTag ? ` [Tag: ${ev.customerTag}]` : '';
-      timelineHtml += `• <strong>${ev.date}</strong> - ${ev.workflow}: ${ev.qty} unit(s)${tagStr}<br>`;
-    });
-    timelineHtml += `</div>`;
-
+  sortedTraceList.forEach(t => {
     html += `
       <tr>
-        <td>
-          <div class="ref-title">Ref: ${trace.ref}</div>
-          <div class="sub-detail">${trace.mfr}</div>
-          <div class="sub-detail" style="font-style:italic;">${trace.desc}</div>
-        </td>
-        <td>
-          <div><strong>Lot:</strong> ${trace.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${trace.exp} &nbsp;|&nbsp; <strong>Qty:</strong> ${trace.inboundQty || trace.outboundQty || trace.reservedQty}</div>
-          <div class="sub-detail"><strong>Received Date:</strong> ${trace.receivedDate}</div>
-          <div class="sub-detail"><strong>Reserved Qty:</strong> ${trace.reservedQty} &nbsp;|&nbsp; <strong>Reserved for:</strong> ${trace.reservedForTag || 'N/A'}</div>
-        </td>
-        <td>${timelineHtml}</td>
+        <td class="ref-col">${t.ref}</td>
+        <td>${t.mfr}</td>
+        <td class="desc-col">${t.desc}</td>
+        <td>${t.lot}</td>
+        <td>${t.exp}</td>
+        <td><strong>${t.inboundQty || t.outboundQty || t.reservedQty}</strong></td>
+        <td>${t.price}</td>
+        <td style="font-family:monospace; font-size:10px;">${cleanGtinValue(t.gtin)}</td>
       </tr>
     `;
   });
 
-  html += `</tbody></table></body></html>`;
+  html += `</tbody></table>
+
+<!-- TABLE 2: RECEIVING & ALLOCATION STATUS -->
+<div class="section-title">2. RECEIVING & ALLOCATION STATUS</div>
+<table class="audit-table">
+<thead>
+  <tr>
+    <th>REF</th>
+    <th>Lot</th>
+    <th>Exp</th>
+    <th>Total Qty</th>
+    <th>Damaged Qty</th>
+    <th>Received Date</th>
+    <th>Reserved Qty</th>
+    <th>Reserved For</th>
+    <th>Packed Qty</th>
+  </tr>
+</thead>
+<tbody>`;
+
+  sortedTraceList.forEach(t => {
+    let dmgStr = t.damagedQty > 0 ? `<span style="color:#d32f2f; font-weight:bold;">${t.damagedQty}</span>` : '0';
+    let resQtyStr = t.reservedQty > 0 ? t.reservedQty : '--';
+    let resForStr = t.reservedForTag ? t.reservedForTag : '--';
+
+    html += `
+      <tr>
+        <td class="ref-col">${t.ref}</td>
+        <td>${t.lot}</td>
+        <td>${t.exp}</td>
+        <td><strong>${t.inboundQty || t.outboundQty || t.reservedQty}</strong></td>
+        <td>${dmgStr}</td>
+        <td>${t.receivedDate}</td>
+        <td>${resQtyStr}</td>
+        <td>${resForStr}</td>
+        <td>${t.outboundQty || '--'}</td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table>
+
+<!-- TABLE 3: LIFECYCLE TRACEABILITY FLOW -->
+<div class="page-break"></div>
+<div class="section-title">3. LIFECYCLE TRACEABILITY FLOW (CHRONOLOGICAL)</div>`;
+
+  // Group 3A: Received to Stock
+  if (inventoryStockList.length > 0) {
+    html += `<div class="sub-section-title">📦 Received to General Stock Inventory</div>
+    <table class="audit-table">
+    <thead><tr><th style="width:20%;">REF & Lot</th><th style="width:20%;">Received Date / Qty</th><th style="width:60%;">Chronological Lifecycle Timeline</th></tr></thead><tbody>`;
+    
+    inventoryStockList.forEach(t => {
+      let timelineStr = t.timeline.map(ev => `• <strong>${ev.date}</strong> - ${ev.workflow}: ${ev.qty} unit(s) [${ev.sessionName}]`).join('<br>');
+      html += `<tr><td class="ref-col">${t.ref}<br><span style="font-weight:normal; color:#555;">Lot: ${t.lot}</span></td><td>${t.receivedDate}<br><strong>Qty: ${t.inboundQty}</strong></td><td class="timeline-text">${timelineStr}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Group 3B: Customer Allocations
+  if (Object.keys(customerGroupMap).length > 0) {
+    html += `<div class="sub-section-title">🚩 Customer Allocations & Reserved Bins</div>`;
+    for (let custTag in customerGroupMap) {
+      html += `<div style="font-weight:bold; margin:6px 0 2px 0; color:#0277bd;">Customer Order: ${custTag}</div>
+      <table class="audit-table">
+      <thead><tr><th style="width:20%;">REF & Lot</th><th style="width:20%;">Reserved vs Packed</th><th style="width:60%;">Chronological Lifecycle Timeline</th></tr></thead><tbody>`;
+
+      customerGroupMap[custTag].forEach(t => {
+        let timelineStr = t.timeline.map(ev => `• <strong>${ev.date}</strong> - ${ev.workflow}: ${ev.qty} unit(s) [${ev.sessionName}]`).join('<br>');
+        html += `<tr><td class="ref-col">${t.ref}<br><span style="font-weight:normal; color:#555;">Lot: ${t.lot}</span></td><td>Reserved: <strong>${t.reservedQty}</strong><br>Packed: <strong>${t.outboundQty}</strong></td><td class="timeline-text">${timelineStr}</td></tr>`;
+      });
+      html += `</tbody></table>`;
+    }
+  }
+
+  // Group 3C: General Outbound
+  if (generalOutboundList.length > 0) {
+    html += `<div class="sub-section-title">🖐️ General Outbound Shipments</div>
+    <table class="audit-table">
+    <thead><tr><th style="width:20%;">REF & Lot</th><th style="width:20%;">Packed Qty</th><th style="width:60%;">Chronological Lifecycle Timeline</th></tr></thead><tbody>`;
+    
+    generalOutboundList.forEach(t => {
+      let timelineStr = t.timeline.map(ev => `• <strong>${ev.date}</strong> - ${ev.workflow}: ${ev.qty} unit(s) [${ev.sessionName}]`).join('<br>');
+      html += `<tr><td class="ref-col">${t.ref}<br><span style="font-weight:normal; color:#555;">Lot: ${t.lot}</span></td><td><strong>Qty: ${t.outboundQty}</strong></td><td class="timeline-text">${timelineStr}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  html += `</body></html>`;
   return html;
 }
 
@@ -593,15 +734,35 @@ window.executeAuditExport = function() {
     `Total Uploaded Sessions: ${parsedAuditSessions.length}`,
     `Total Unique REFs: ${uniqueRefsCount}`,
     `Total Units Handled: ${totalItemsScanned}`,
-    `================================================================================\n`
+    `================================================================================\n`,
+    `--- 1. MASTER ITEM CATALOG ---\n`
   ];
 
-  sortedTraceList.forEach(trace => {
-    reportText.push(`Ref: ${trace.ref}    |    Lot: ${trace.lot}    |    Exp: ${trace.exp}    |    Qty: ${trace.inboundQty || trace.outboundQty || trace.reservedQty}`);
-    reportText.push(`             |    Received: ${trace.receivedDate}`);
-    reportText.push(`             |    Reserved Qty: ${trace.reservedQty}    |    Reserved for: ${trace.reservedForTag || 'N/A'}`);
+  sortedTraceList.forEach(t => {
+    reportText.push(`Ref: ${t.ref} | Mfr: ${t.mfr} | Lot: ${t.lot} | Exp: ${t.exp} | Qty: ${t.inboundQty || t.outboundQty || t.reservedQty} | Price: ${t.price} | GTIN: ${cleanGtinValue(t.gtin)}`);
+  });
+
+  reportText.push(`\n--------------------------------------------------------------------------------`);
+  reportText.push(`--- 2. RECEIVING & ALLOCATION STATUS ---\n`);
+
+  sortedTraceList.forEach(t => {
+    let line = `Ref: ${t.ref} | Lot: ${t.lot} | Exp: ${t.exp} | Qty: ${t.inboundQty || t.outboundQty || t.reservedQty}`;
+    if (t.damagedQty > 0) line += ` | Damaged Qty: ${t.damagedQty}`;
+    if (t.receivedDate !== 'N/A') line += ` | Received Date: ${t.receivedDate}`;
+    if (t.reservedQty > 0) line += ` | Reserved Qty: ${t.reservedQty} | Reserved for: ${t.reservedForTag}`;
+    line += ` | Packed Qty: ${t.outboundQty}`;
+    reportText.push(line);
+  });
+
+  reportText.push(`\n--------------------------------------------------------------------------------`);
+  reportText.push(`--- 3. LIFECYCLE TRACEABILITY FLOW (CHRONOLOGICAL) ---\n`);
+
+  sortedTraceList.forEach(t => {
+    reportText.push(`Ref: ${t.ref}    |    Lot: ${t.lot}    |    Exp: ${t.exp}    |    Qty: ${t.inboundQty || t.outboundQty || t.reservedQty}`);
+    if (t.receivedDate !== 'N/A') reportText.push(`             |    Received: ${t.receivedDate}`);
+    if (t.reservedQty > 0) reportText.push(`             |    Reserved Qty: ${t.reservedQty}    |    Reserved for: ${t.reservedForTag}`);
     reportText.push(`             |    Timeline History:`);
-    trace.timeline.forEach(ev => {
+    t.timeline.forEach(ev => {
       let tagStr = ev.customerTag ? ` [Tag: ${ev.customerTag}]` : '';
       reportText.push(`                 - [${ev.date}] ${ev.workflow}: ${ev.qty} unit(s) via ${ev.sessionName}${tagStr}`);
     });
