@@ -1,14 +1,13 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.7.2 | UPDATED: 2026.08.10                   -->
-<!-- CHANGELOG: Formal Executive Tables, Chronological Lifecycles,           -->
-<!--            Top Navigation Controls & Clean Customer Groupings            -->
+<!-- ASP SCANNER APP - VERSION 1.8.0 | UPDATED: 2026.08.10                   -->
+<!-- CHANGELOG: Spreadsheet Data Parser, Dynamic Session Routing, UI Cleanup -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.7.2</title>
+  <title>ASP-Android Scanner App v1.8.0</title>
   
   <link rel="stylesheet" href="styles.css">
   
@@ -65,22 +64,18 @@
     }
   </style>
 </head>
-<body>
+<body class="theme-slate">
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
-<div class="form-row">
-    <div class="form-label">App Theme:</div>
-    <div class="input-wrapper">
-      <select id="themeSelect" onchange="changeAppTheme(this.value)">
-        <option value="sage">Sage & Khaki (Eye-Strain Relief)</option>
-        <option value="gold">Classic Gold & Khaki</option>
-        <option value="slate">Slate & Charcoal (Dark Mode)</option>
-      </select>
-    </div>
-  </div>
+<div id="screenSetup" class="card">
   
-  <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.7.2)</span></h2>
+  <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+    <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v1.8.0</span>
+    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
+      <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
+    </label>
+  </div>
+  <h2 style="margin-top: 4px; padding-bottom: 8px;">Start New Scanning Session</h2>
   
   <div class="form-row">
     <div class="form-label">User Name:</div>
@@ -90,58 +85,73 @@
   </div>
 
   <div class="form-row">
-    <div class="form-label">Session Name:</div>
+    <div class="form-label">Session Type:</div>
+    <div class="input-wrapper" style="justify-content: space-around;">
+      <label style="cursor:pointer; font-weight:bold;">
+        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> 📦 Shipment
+      </label>
+      <label style="cursor:pointer; font-weight:bold;">
+        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> 🛒 Order
+      </label>
+    </div>
+  </div>
+
+  <div class="form-row" id="rowSupplier">
+    <div class="form-label">Supplier / Vendor:</div>
     <div class="input-wrapper">
-      <input type="text" id="sessionNameInput" placeholder="e.g. Medline Order">
+      <select id="supplierSelect" onchange="handlePartnerSelect(this.value, 'supplier')"></select>
+    </div>
+  </div>
+
+  <div class="form-row" id="rowCustomer" style="display: none;">
+    <div class="form-label">Customer:</div>
+    <div class="input-wrapper">
+      <select id="customerSelect" onchange="handlePartnerSelect(this.value, 'customer')"></select>
     </div>
   </div>
 
   <div class="form-row">
-    <div class="form-label">Order Number:</div>
+    <div class="form-label">Order Details:</div>
     <div class="input-wrapper">
-      <input type="text" id="orderNumInput" placeholder="e.g. 795037269 or PO #">
+      <input type="text" id="orderDetailsInput" placeholder="e.g. PO# 795037269 or Invoice#">
     </div>
   </div>
 
-  <div class="form-row">
-    <div class="form-label">Workflow Process:</div>
+  <div class="form-row" id="rowProcess" style="display: none;">
+    <div class="form-label">Process:</div>
     <div class="input-wrapper">
       <select id="workflowTypeSelect">
-        <option value="Receiving">📦 Receiving</option>
         <option value="Reserving">🚩 Reserving</option>
         <option value="Picking & Packing">🖐️ Picking & Packing</option>
-        <option value="Receiving & Reserving">📦 Receiving & Reserving 🚩</option>
       </select>
     </div>
   </div>
 
-  <div style="text-align: center; width: 100%; margin: 12px 0;">
-    <label style="font-size:0.9rem; font-weight:bold; color:#0277bd; cursor:pointer;">
-      <input type="checkbox" id="chkPreloadManifest"> 📋 Pre-Load Expected Manifest (PO / Invoice Reconciliation)
-    </label>
+  <div class="btn-flex-row" style="margin-top: 16px;">
+    <button class="btn-action" style="background-color: #f57f17; color: #ffffff; flex: 1;" onclick="rescueLastSession()">Rescue Last Session</button>
+    <button class="btn-action btn-start" style="flex: 1;" onclick="startSession()">Start Scanning Session</button>
   </div>
 
-  <div class="btn-flex-row">
-    <button class="btn-action btn-start" style="flex: 2;" onclick="startSession()">Start Scanning Session</button>
-  </div>
-  <div class="btn-flex-row" style="margin-top: 8px;">
-    <button class="btn-action" style="background-color: #f57f17; color: #ffffff; font-size: 0.85rem;" onclick="rescueLastSession()">Rescue Last Session (Cache)</button>
+  <div style="margin-top: 10px;">
+    <button class="btn-action" style="background-color: #0277bd; color: #ffffff;" onclick="openAuditHub()">Generate Traceability Summary</button>
   </div>
 
-  <hr style="margin: 16px 0; border: 0; border-top: 1px solid #8b8589;">
-
-  <div style="text-align: center;">
-    <button class="btn-action" style="background-color: #0277bd; color: #ffffff; font-size: 0.95rem;" onclick="openAuditHub()">📊 Generate Multi-Session Traceability Summary</button>
+  <div style="text-align: right; margin-top: 20px;">
+    <select id="themeSelect" onchange="changeAppTheme(this.value)" style="width: auto; padding: 4px; font-size: 0.75rem; background: transparent; border: 1px solid #8b8589; border-radius: 4px; color: inherit;">
+      <option value="slate">Slate & Charcoal</option>
+      <option value="sage">Sage & Khaki</option>
+      <option value="gold">Classic Gold</option>
+    </select>
   </div>
 </div>
 
 <!-- SCREEN 1B: MANIFEST PRE-LOAD ENTRY -->
 <div id="screenManifestEntry" style="display: none;" class="card">
-  <h2>Pre-Load Expected Items (PO / Packing Slip)</h2>
+  <h2>Pre-Load Expected Items</h2>
   
-  <div style="text-align: right; margin-bottom: 10px;">
-    <input type="file" id="ocrDocUpload" accept="image/*" style="display:none;" onchange="scanDocumentOCR(event)">
-    <button class="btn-small btn-upload" onclick="document.getElementById('ocrDocUpload').click()">📁 Scan Order Sheet Photo (Beta OCR)</button>
+  <div style="margin-bottom: 15px; border-bottom: 1px dashed #8b8589; padding-bottom: 15px;">
+    <textarea id="pasteManifestArea" rows="4" placeholder="Paste directly from Google Sheets here... (Columns: Customer, PO, SKU, QTY)" style="width: 100%; font-size: 0.85rem; padding: 8px; resize: vertical;"></textarea>
+    <button class="btn-action" style="background-color: #1976d2; color: #ffffff; margin-top: 6px; padding: 8px;" onclick="processPastedSpreadsheet()">📋 Parse Pasted Data</button>
   </div>
 
   <div id="manifestRowsContainer">
@@ -149,7 +159,7 @@
   </div>
 
   <div style="text-align: center; margin-top: 10px;">
-    <button class="btn-small" onclick="addManifestRow()">+ Add Expected Item</button>
+    <button class="btn-small" onclick="addManifestRow()">+ Add Expected Item Line</button>
   </div>
 
   <div class="btn-flex-row" style="margin-top: 16px;">
