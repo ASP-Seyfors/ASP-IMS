@@ -133,43 +133,98 @@ const SessionManager = {
     if (chk && subrow) subrow.style.display = chk.checked ? 'flex' : 'none';
   },
 
+  clearManifestList() {
+    if (confirm("Are you sure you want to clear all currently loaded items?")) {
+      document.getElementById('manifestRowsContainer').innerHTML = '';
+    }
+  },
+
   processPastedSpreadsheet() {
     const text = document.getElementById('pasteManifestArea').value.trim();
     if (!text) { alert("Please paste spreadsheet data first."); return; }
-    const lines = text.split('\n'); if (lines.length === 0) return;
     
-    let headers = lines[0].toUpperCase().split('\t');
+    // Split text into lines, trim spaces, ignore completely blank lines
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) return;
+    
     let skuIdx = -1, qtyIdx = -1, custIdx = -1, poIdx = -1;
-    headers.forEach((h, i) => {
-      let cleanH = h.trim();
-      if (cleanH === 'SKU' || cleanH === 'REF') skuIdx = i;
-      if (cleanH === 'QTY' || cleanH === 'QUANTITY') qtyIdx = i;
-      if (cleanH === 'CUSTOMER' || cleanH === 'CUST') custIdx = i;
-      if (cleanH === 'PO' || cleanH === 'INVOICE') poIdx = i;
-    });
+    let dataStartIndex = 0;
     
-    let startIndex = (skuIdx === -1 && qtyIdx === -1) ? 0 : 1;
-    if (skuIdx === -1 && qtyIdx === -1) { custIdx = 0; poIdx = 1; skuIdx = 2; qtyIdx = 3; }
+    // SMART PARSER: Scan the first 3 lines to intelligently detect headers
+    for (let i = 0; i < Math.min(lines.length, 3); i++) {
+      let cols = lines[i].toUpperCase().split('\t').map(c => c.trim());
+      if (cols.includes('SKU') || cols.includes('REF')) {
+        skuIdx = cols.indexOf('SKU') > -1 ? cols.indexOf('SKU') : cols.indexOf('REF');
+        qtyIdx = cols.indexOf('QTY') > -1 ? cols.indexOf('QTY') : cols.indexOf('QUANTITY');
+        custIdx = cols.indexOf('CUSTOMER') > -1 ? cols.indexOf('CUSTOMER') : cols.indexOf('CUST');
+        poIdx = cols.indexOf('PO') > -1 ? cols.indexOf('PO') : cols.indexOf('INVOICE');
+        dataStartIndex = i + 1;
+        break; // Headers found, stop searching
+      }
+    }
+    
+    // Fallback: If no headers were detected, assume standard columns
+    if (skuIdx === -1 && qtyIdx === -1) {
+      let firstLineCols = lines[0].split('\t');
+      if (firstLineCols.length === 1 && lines.length > 1) {
+        // First line is likely a title (e.g. "MEDLINE ORDER 8-4"), so start data at line index 1
+        dataStartIndex = 1;
+      } else {
+        // No title, data starts immediately at 0
+        dataStartIndex = 0;
+      }
+      custIdx = 0; poIdx = 1; skuIdx = 2; qtyIdx = 3;
+    }
     
     let parsedCount = 0;
-    for (let i = startIndex; i < lines.length; i++) {
-      let cols = lines[i].split('\t'); if (cols.length < 2) continue; 
-      let ref = cols[skuIdx] ? cols[skuIdx].trim().toUpperCase() : '';
-      let qty = cols[qtyIdx] ? parseInt(cols[qtyIdx].replace(/\D/g, ''), 10) : 1;
+    let lastCustomer = '';
+    let lastPO = '';
+    
+    for (let i = dataStartIndex; i < lines.length; i++) {
+      let cols = lines[i].split('\t');
+      if (cols.length < 2 && cols[0].trim() === '') continue; // Skip bad/empty rows
+      
+      let rawCust = custIdx !== -1 && cols[custIdx] ? cols[custIdx].trim().toUpperCase() : '';
+      let rawPO = poIdx !== -1 && cols[poIdx] ? cols[poIdx].trim().toUpperCase() : '';
+      
+      // CASCADE LOGIC: If customer is provided, it sets a new baseline.
+      if (rawCust) {
+          lastCustomer = rawCust;
+          lastPO = rawPO; // Reset PO to current line's PO (even if blank)
+      }
+      
+      let activeCust = rawCust || lastCustomer;
+      let activePO = rawCust ? rawPO : (rawPO || lastPO);
+      
+      let ref = skuIdx !== -1 && cols[skuIdx] ? cols[skuIdx].trim().toUpperCase() : '';
+      
+      if (!ref) continue; // Must have a SKU to add a row
+      
+      let qtyRaw = qtyIdx !== -1 && cols[qtyIdx] ? cols[qtyIdx].replace(/\D/g, '') : '1';
+      let qty = parseInt(qtyRaw, 10);
       if (isNaN(qty) || qty < 1) qty = 1;
-      let customer = cols[custIdx] ? cols[custIdx].trim().toUpperCase() : '';
-      let po = cols[poIdx] ? cols[poIdx].trim().toUpperCase() : '';
-      if (!ref) continue;
       
       let isRes = false, tagVal = '', resQty = 0;
-      if (customer && customer !== 'SHELF' && customer !== 'NA' && customer !== 'N/A') {
-        isRes = true; tagVal = customer + ((po && po !== 'NA' && po !== 'N/A') ? ' - ' + po : ''); resQty = qty;
+      
+      if (activeCust && activeCust !== 'SHELF' && activeCust !== 'NA' && activeCust !== 'N/A') {
+        isRes = true;
+        tagVal = activeCust;
+        if (activePO && activePO !== 'NA' && activePO !== 'N/A') {
+          tagVal += ' - ' + activePO;
+        }
+        resQty = qty;
       }
+      
       this.addManifestRow(ref, qty, isRes, tagVal, resQty);
       parsedCount++;
     }
-    if (parsedCount > 0) { document.getElementById('pasteManifestArea').value = ''; alert(`Successfully parsed and added ${parsedCount} items!`); } 
-    else alert("Could not extract items.");
+    
+    if (parsedCount > 0) {
+      document.getElementById('pasteManifestArea').value = '';
+      alert(`Successfully parsed and added ${parsedCount} items!`);
+    } else {
+      alert("Could not extract items. Please ensure you are pasting directly from the spreadsheet columns.");
+    }
   },
 
   readManifestDataFromUI() {
