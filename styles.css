@@ -1,24 +1,47 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - STYLESHEET (styles.css)                               */
-/* VERSION 1.7.3 | FOREST & SAGE EYE-STRAIN REDUCTION PALETTE               */
+/* VERSION 1.7.4 | DYNAMIC COLOR THEME SWITCHER                           */
 /* ======================================================================= */
 
-body {
+/* Theme 1: Sage & Khaki (Default) */
+body, body.theme-sage {
+  --bg-color: #23332b;
+  --desktop-bg: #1a2720;
+  --card-bg: #f4eeda;
+  --raw-bg: #e6dfb8;
   font-family: Arial, sans-serif;
-  background-color: #23332b; /* Dark Sage Green for eye-strain reduction */
+  background-color: var(--bg-color);
   color: #000000;
   margin: 12px;
   padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+/* Theme 2: Classic Gold & Khaki */
+body.theme-gold {
+  --bg-color: #f0e68c;
+  --desktop-bg: #e2d9a3;
+  --card-bg: #f5f5dc;
+  --raw-bg: #e6dfb8;
+}
+
+/* Theme 3: Slate & Charcoal (Dark Mode) */
+body.theme-slate {
+  --bg-color: #1a1d20;
+  --desktop-bg: #121416;
+  --card-bg: #f0f2f5;
+  --raw-bg: #e2e4e8;
 }
 
 /* Base Card Layout */
 .card {
-  background-color: #f4eeda; /* Soft Khaki Card Container */
+  background-color: var(--card-bg);
   border: 1px solid #8b8589;
   border-radius: 6px;
   padding: 14px;
   margin-bottom: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.3s ease;
 }
 
 h2 {
@@ -212,10 +235,11 @@ input.needs-attention, select.needs-attention {
 }
 
 .raw-section {
-  background-color: #e6dfb8;
+  background-color: var(--raw-bg);
   padding: 10px;
   border: 1px dashed #000000;
   margin-bottom: 12px;
+  transition: background-color 0.3s ease;
 }
 
 #cameraContainer {
@@ -315,14 +339,12 @@ input.needs-attention, select.needs-attention {
   color: #0277bd;
 }
 
-/* ======================================================================= */
-/* DESKTOP / WORKSTATION MEDIA QUERY (Screens wider than 800px)            */
-/* ======================================================================= */
+/* DESKTOP / WORKSTATION MEDIA QUERY */
 @media (min-width: 800px) {
   body {
     max-width: 850px;
     margin: 30px auto;
-    background-color: #1a2720; /* Deepest Forest/Sage shade for desktop frame */
+    background-color: var(--desktop-bg);
   }
 
   .card, .header-banner, .export-panel {
