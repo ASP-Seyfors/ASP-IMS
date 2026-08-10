@@ -8,8 +8,8 @@ const defaultVendors = [
   "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
   "+ Create New Vendor"
 ];
-const defaultSuppliers = ["Medline", "GeoSurgical", "RevMed", "SPS", "+ Add Supplier"];
-const defaultCustomers = ["AHS", "RFP", "CASCADE", "REDHEAD", "SUNCOAST", "MAP", "PMCY", "EMMANUEL JR", "+ Add Customer"];
+const defaultSuppliers = ["Medline", "GeoSurgical", "RevMed", "SPS", "All Dats Medical", "Fast Surgical Solutions", "+ Add Supplier"];
+const defaultCustomers = ["AHS", "BL", "RFP", "CASCADE", "REDHEAD", "SUNCOAST", "MAP", "PMCY", "EMMANUEL JR", "+ Add Customer"];
 
 const DatabaseManager = {
   db: JSON.parse(localStorage.getItem('asp_wh_db')) || [],
