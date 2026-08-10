@@ -1,3 +1,8 @@
+/* ======================================================================= */
+/* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
+/* VERSION 1.9.2 | COMBINES CUSTOMER SELECTOR + ORDER # FIELD             */
+/* ======================================================================= */
+
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
   pendingNewItems: JSON.parse(localStorage.getItem('asp_pending_new_items')) || [],
@@ -143,14 +148,12 @@ const SessionManager = {
     const text = document.getElementById('pasteManifestArea').value.trim();
     if (!text) { alert("Please paste spreadsheet data first."); return; }
     
-    // Split text into lines, trim spaces, ignore completely blank lines
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     if (lines.length === 0) return;
     
     let skuIdx = -1, qtyIdx = -1, custIdx = -1, poIdx = -1;
     let dataStartIndex = 0;
     
-    // SMART PARSER: Scan the first 3 lines to intelligently detect headers
     for (let i = 0; i < Math.min(lines.length, 3); i++) {
       let cols = lines[i].toUpperCase().split('\t').map(c => c.trim());
       if (cols.includes('SKU') || cols.includes('REF')) {
@@ -159,72 +162,51 @@ const SessionManager = {
         custIdx = cols.indexOf('CUSTOMER') > -1 ? cols.indexOf('CUSTOMER') : cols.indexOf('CUST');
         poIdx = cols.indexOf('PO') > -1 ? cols.indexOf('PO') : cols.indexOf('INVOICE');
         dataStartIndex = i + 1;
-        break; // Headers found, stop searching
+        break;
       }
     }
     
-    // Fallback: If no headers were detected, assume standard columns
     if (skuIdx === -1 && qtyIdx === -1) {
       let firstLineCols = lines[0].split('\t');
-      if (firstLineCols.length === 1 && lines.length > 1) {
-        // First line is likely a title (e.g. "MEDLINE ORDER 8-4"), so start data at line index 1
-        dataStartIndex = 1;
-      } else {
-        // No title, data starts immediately at 0
-        dataStartIndex = 0;
-      }
+      dataStartIndex = (firstLineCols.length === 1 && lines.length > 1) ? 1 : 0;
       custIdx = 0; poIdx = 1; skuIdx = 2; qtyIdx = 3;
     }
     
     let parsedCount = 0;
-    let lastCustomer = '';
-    let lastPO = '';
+    let lastCustomer = '', lastPO = '';
     
     for (let i = dataStartIndex; i < lines.length; i++) {
       let cols = lines[i].split('\t');
-      if (cols.length < 2 && cols[0].trim() === '') continue; // Skip bad/empty rows
+      if (cols.length < 2 && cols[0].trim() === '') continue;
       
       let rawCust = custIdx !== -1 && cols[custIdx] ? cols[custIdx].trim().toUpperCase() : '';
       let rawPO = poIdx !== -1 && cols[poIdx] ? cols[poIdx].trim().toUpperCase() : '';
       
-      // CASCADE LOGIC: If customer is provided, it sets a new baseline.
-      if (rawCust) {
-          lastCustomer = rawCust;
-          lastPO = rawPO; // Reset PO to current line's PO (even if blank)
-      }
+      if (rawCust) { lastCustomer = rawCust; lastPO = rawPO; }
       
       let activeCust = rawCust || lastCustomer;
       let activePO = rawCust ? rawPO : (rawPO || lastPO);
-      
       let ref = skuIdx !== -1 && cols[skuIdx] ? cols[skuIdx].trim().toUpperCase() : '';
-      
-      if (!ref) continue; // Must have a SKU to add a row
+      if (!ref) continue;
       
       let qtyRaw = qtyIdx !== -1 && cols[qtyIdx] ? cols[qtyIdx].replace(/\D/g, '') : '1';
       let qty = parseInt(qtyRaw, 10);
       if (isNaN(qty) || qty < 1) qty = 1;
       
       let isRes = false, tagVal = '', resQty = 0;
-      
       if (activeCust && activeCust !== 'SHELF' && activeCust !== 'NA' && activeCust !== 'N/A') {
         isRes = true;
-        tagVal = activeCust;
-        if (activePO && activePO !== 'NA' && activePO !== 'N/A') {
-          tagVal += ' - ' + activePO;
-        }
+        tagVal = activeCust + ((activePO && activePO !== 'NA' && activePO !== 'N/A') ? ' - ' + activePO : '');
         resQty = qty;
       }
       
       this.addManifestRow(ref, qty, isRes, tagVal, resQty);
       parsedCount++;
     }
-    
     if (parsedCount > 0) {
       document.getElementById('pasteManifestArea').value = '';
       alert(`Successfully parsed and added ${parsedCount} items!`);
-    } else {
-      alert("Could not extract items. Please ensure you are pasting directly from the spreadsheet columns.");
-    }
+    } else alert("Could not extract items.");
   },
 
   readManifestDataFromUI() {
@@ -304,6 +286,13 @@ const SessionManager = {
     UIManager.hideAllConfirmButtons();
   },
 
+  getCombinedCustomerTag() {
+    let custName = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
+    let custPO = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
+    if (custName === '+ Add Customer') custName = '';
+    return custName + (custPO ? ` - ${custPO}` : '');
+  },
+
   goToReviewStage() {
     let expField = document.getElementById('expInput');
     if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) UIManager.formatExpDate(expField);
@@ -314,7 +303,7 @@ const SessionManager = {
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    const cTag = document.getElementById('customerTagInput') ? document.getElementById('customerTagInput').value.trim() : '';
+    const cTag = this.getCombinedCustomerTag();
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
     if (this.isManifestEnabled && this.expectedManifest.length > 0) {
@@ -399,7 +388,7 @@ const SessionManager = {
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    const cTag = document.getElementById('customerTagInput') ? document.getElementById('customerTagInput').value.trim() : '';
+    const cTag = this.getCombinedCustomerTag();
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
     
     const desc = DatabaseManager.getItemDesc(this.currentMatchedItem) || "Navigate to vendor website for item description.";
