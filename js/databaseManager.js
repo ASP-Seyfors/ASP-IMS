@@ -1,3 +1,8 @@
+/* ======================================================================= */
+/* ASP SCANNER APP - DATABASE MANAGER (js/databaseManager.js)              */
+/* VERSION 1.9.2 | POPULATES ITEM-LEVEL CUSTOMER DROPDOWNS                 */
+/* ======================================================================= */
+
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
   "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
@@ -25,6 +30,10 @@ const DatabaseManager = {
           this.vendors = jsonContent.vendors;
           localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
         }
+        if (jsonContent.customers && jsonContent.customers.length > 0) {
+          this.customers = jsonContent.customers;
+          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        }
       } else {
         console.warn("Notice: External database.json not found, using local cache.");
       }
@@ -35,6 +44,7 @@ const DatabaseManager = {
     this.populateRefDatalist();
     this.populateVendors();
     this.populatePartners();
+    this.populateItemCustomerSelect();
     this.runMasterLookup();
   },
 
@@ -81,6 +91,32 @@ const DatabaseManager = {
     }
   },
 
+  populateItemCustomerSelect() {
+    const sel = document.getElementById('itemCustomerSelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    this.customers.forEach(c => {
+      let opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  },
+
+  handleItemCustomerSelect(val) {
+    if (val === "+ Add Customer") {
+      let newC = prompt("Enter new Customer name:");
+      if (newC) {
+        this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
+        localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        this.populatePartners();
+        this.populateItemCustomerSelect();
+        document.getElementById('itemCustomerSelect').value = newC.trim().toUpperCase();
+      } else {
+        document.getElementById('itemCustomerSelect').selectedIndex = 0;
+      }
+    }
+  },
+
   handlePartnerSelect(val, type) {
     if (val === "+ Add Supplier") {
       let newS = prompt("Enter new Supplier/Vendor name:");
@@ -93,10 +129,11 @@ const DatabaseManager = {
     } else if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
-        this.customers.splice(this.customers.length - 1, 0, newC.trim());
+        this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
         localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
         this.populatePartners();
-        document.getElementById('customerSelect').value = newC.trim();
+        this.populateItemCustomerSelect();
+        document.getElementById('customerSelect').value = newC.trim().toUpperCase();
       } else document.getElementById('customerSelect').selectedIndex = 0;
     }
   },
