@@ -1,14 +1,14 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.6.0 | UPDATED: 2026.08.09                   -->
+<!-- ASP SCANNER APP - VERSION 1.7.0 | UPDATED: 2026.08.09                   -->
 <!-- CHANGELOG: Pre-Load Manifest, OCR Document Auto-Fill (Beta),            -->
-<!--            Real-Time Reconciliation Badges & Conditional Export Sections -->
+<!--            Multi-File Audit & Chain of Custody Traceability Engine       -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.6.0</title>
+  <title>ASP-Android Scanner App v1.7.0</title>
   
   <link rel="stylesheet" href="styles.css">
   
@@ -56,13 +56,20 @@
     .badge-match { background-color: #c8e6c9; color: #2e7d32; }
     .badge-warn { background-color: #ffe0b2; color: #e65100; }
     .badge-alert { background-color: #ffcdd2; color: #c62828; }
+    .audit-card {
+      background-color: #ffffff;
+      border: 1px solid #0277bd;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.6.0)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.7.0)</span></h2>
   
   <div class="form-row">
     <div class="form-label">User Name:</div>
@@ -108,6 +115,12 @@
   </div>
   <div class="btn-flex-row" style="margin-top: 8px;">
     <button class="btn-action" style="background-color: #f57f17; color: #ffffff; font-size: 0.85rem;" onclick="rescueLastSession()">Rescue Last Session (Cache)</button>
+  </div>
+
+  <hr style="margin: 16px 0; border: 0; border-top: 1px solid #8b8589;">
+
+  <div style="text-align: center;">
+    <button class="btn-action" style="background-color: #0277bd; color: #ffffff; font-size: 0.95rem;" onclick="openAuditHub()">📊 Generate Multi-Session Traceability Summary</button>
   </div>
 </div>
 
@@ -473,6 +486,46 @@
     </div>
   </div>
 
+</div>
+
+<!-- SCREEN 5: MULTI-SESSION AUDIT & TRACEABILITY HUB -->
+<div id="screenAuditHub" style="display: none;" class="card">
+  <h2>Multi-Session Traceability & Audit Tool</h2>
+  
+  <p style="font-size:0.85rem; color:#555; margin-bottom:12px;">
+    Upload multiple session TXT export logs from your workstation or Google Drive to generate a master weekly audit report with complete Lot-level chain-of-custody tracking.
+  </p>
+
+  <div class="form-row">
+    <div class="input-wrapper">
+      <input type="file" id="auditFilesUpload" accept=".txt" multiple style="display:none;" onchange="processAuditFiles(event)">
+      <button class="btn-action btn-start" onclick="document.getElementById('auditFilesUpload').click()">📁 Select / Upload Session Logs (.TXT)</button>
+    </div>
+  </div>
+
+  <div id="auditResultsContainer" style="display:none; margin-top:16px;">
+    <div class="export-panel">
+      <h4>Audit Actions</h4>
+      <div class="form-row" style="margin-bottom: 0;">
+        <div class="input-wrapper" style="display: flex; flex-direction: row; gap: 8px;">
+          <select id="auditExportDropdown" style="flex: 3; padding: 10px; font-weight: bold; text-align: left;">
+            <option value="" disabled selected>-- Choose Export --</option>
+            <option value="pdf">🖨️ Print Master Audit (or Save as PDF)</option>
+            <option value="txt">📄 Save Master Audit Log (TXT)</option>
+          </select>
+          <button class="btn-action btn-start" style="flex: 1; margin: 0; padding: 10px;" onclick="executeAuditExport()">Go ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="auditPreviewContent">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+  <div class="btn-flex-row" style="margin-top: 16px;">
+    <button class="btn-action btn-cancel" onclick="closeAuditHub()">🔙 Return to Main Screen</button>
+  </div>
 </div>
 
 <script src="app.js"></script>
