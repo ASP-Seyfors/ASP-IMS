@@ -18,6 +18,62 @@
   ],
   "items": [
     {
+      "gtin": "30705031041602",
+      "ref": "J599G",
+      "desc": "8-0 COATED VICRYL VIOLET 1X12" TG140-8 DOUBLE ARMED (BX/12) J599G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031040582",
+      "ref": "J496G",
+      "desc": "4-0 COATED VICRYL UNDYED 1X18" PS-2 (BX/12) J496G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031060580",
+      "ref": "Z338H",
+      "desc": "3-0 PDS II VIOLET 1X27" CT-1 (BX/36) Z338H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031038275",
+      "ref": "J219H",
+      "desc": "3-0 COATED VICRYL UNDYED 1X27" SH-1 (BX/36) J219H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031051663",
+      "ref": "VCP214H",
+      "desc": "4-0 COATED VICRYL PLUS UNDYED 1X27" RB-1 (BX/36) VCP214H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031060320",
+      "ref": "Z195T",
+      "desc": "2 PDS II VIOLET 1X27" CP (BX/24) Z195T",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "4-0 ETHILON BLACK 1X18" PS-2 (BX/12) 1667G",
+      "ref": "1667G",
+      "desc": "",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "",
+      "ref": "SA6H",
+      "desc": "0 PERMA HAND BLACK 2X60" TIE (BX/36) SA6H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
       "gtin": "30705031038619",
       "ref": "J304H",
       "desc": "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H",
@@ -123,7 +179,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30381780537162",
       "ref": "206520",
       "desc": "INTEGRA Spine Sealant System Duraseal® Exact 5 mL High Viscosity Spray Tip Polyethylene Glycol (Peg) Ester Solution / Trilysine Amine Solution Sealant System, Spine Durasealexact 5 mL (5/BX) D/S 206520",
       "price": "$4,000.00",
@@ -531,7 +587,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031019182",
       "ref": "8696G",
       "desc": "ETHICON 7-0 Prolene Blue 1X18\" P-1 (BX/12) 8696G",
       "price": "$120.00",
@@ -790,7 +846,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031041336",
       "ref": "J571G",
       "desc": "ETHICON 5-0 Coated Vicryl Violet 1X18\" S-14 Double Armed (BX/12) J571G",
       "price": "$170.00",
@@ -846,7 +902,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "10884521186033",
       "ref": "LF1212A",
       "desc": "COVIDIEN Small Jaw Instrument Ligasure™ 18.8 cm (7.4 in) Single Units LF1212A",
       "price": "$300.00",
@@ -1175,7 +1231,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031055982",
       "ref": "VCP880T",
       "desc": "ETHICON 2 Coated Vicryl Plus Undyed 1X54\" TP-1 (BX/24) VCP880T",
       "price": "$150.00",
@@ -1833,7 +1889,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031040490",
       "ref": "J493G",
       "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" P-3 (BX/12) J493G",
       "price": "$0.00",
