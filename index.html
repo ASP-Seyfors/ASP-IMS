@@ -1,67 +1,30 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.8.0 | UPDATED: 2026.08.10                   -->
-<!-- CHANGELOG: Spreadsheet Data Parser, Dynamic Session Routing, UI Cleanup -->
+<!-- ASP SCANNER APP - VERSION 1.8.5 | UPDATED: 2026.08.10                   -->
+<!-- CHANGELOG: Smart Spreadsheet Parser, Folder Structure, Clear List Btn   -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.8.0</title>
+  <title>ASP-Android Scanner App v1.8.5</title>
   
-  <link rel="stylesheet" href="styles.css">
+  <!-- UPDATED PATH TO CSS -->
+  <link rel="stylesheet" href="css/styles.css">
   
-  <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <!-- Experimental OCR Library for Document Scanning -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
-    #refInput, #lotInput, .manifest-ref-input {
-      text-transform: uppercase;
-    }
-    .manifest-row {
-      background: #ffffff;
-      border: 1px solid #8b8589;
-      border-radius: 4px;
-      padding: 8px;
-      margin-bottom: 8px;
-    }
-    .manifest-subrow {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-      background: #e3f2fd;
-      padding: 6px;
-      border-radius: 3px;
-    }
-    .progress-banner {
-      background-color: #e8f5e9;
-      border: 2px solid #2e7d32;
-      color: #1b5e20;
-      padding: 8px;
-      border-radius: 4px;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .badge-info {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 3px;
-      font-size: 0.8rem;
-      font-weight: bold;
-    }
+    #refInput, #lotInput, .manifest-ref-input { text-transform: uppercase; }
+    .manifest-row { background: #ffffff; border: 1px solid #8b8589; border-radius: 4px; padding: 8px; margin-bottom: 8px; }
+    .manifest-subrow { display: flex; gap: 6px; margin-top: 6px; background: #e3f2fd; padding: 6px; border-radius: 3px; }
+    .progress-banner { background-color: #e8f5e9; border: 2px solid #2e7d32; color: #1b5e20; padding: 8px; border-radius: 4px; font-weight: bold; text-align: center; margin-bottom: 10px; }
+    .badge-info { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.8rem; font-weight: bold; }
     .badge-match { background-color: #c8e6c9; color: #2e7d32; }
     .badge-warn { background-color: #ffe0b2; color: #e65100; }
     .badge-alert { background-color: #ffcdd2; color: #c62828; }
-    .audit-card {
-      background-color: #ffffff;
-      border: 1px solid #0277bd;
-      border-radius: 4px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
+    .audit-card { background-color: #ffffff; border: 1px solid #0277bd; border-radius: 4px; padding: 10px; margin-bottom: 10px; }
   </style>
 </head>
 <body class="theme-slate">
@@ -70,7 +33,7 @@
 <div id="screenSetup" class="card">
   
   <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-    <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v1.8.0</span>
+    <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v1.8.5</span>
     <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
       <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
     </label>
@@ -160,6 +123,7 @@
 
   <div style="text-align: center; margin-top: 10px;">
     <button class="btn-small" onclick="addManifestRow()">+ Add Expected Item Line</button>
+    <button class="btn-small btn-clear" style="margin-left: 8px;" onclick="clearManifestList()">🧹 Clear List</button>
   </div>
 
   <div class="btn-flex-row" style="margin-top: 16px;">
@@ -526,10 +490,9 @@
     <button class="btn-action btn-clear" style="flex:1;" onclick="clearAuditSessions()">🧹 Clear Sessions</button>
   </div>
 
-  
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">
     
-    <!-- NEW: THRIVE & DATABASE SYNC PANEL -->
+    <!-- THRIVE & DATABASE SYNC PANEL -->
     <div class="export-panel" style="background-color: #f3e5f5; border-color: #7b1fa2; margin-bottom: 15px;">
       <h4 style="color: #7b1fa2; text-align: center; margin: 0 0 10px 0;">Technical Admin - Thrive & Database Sync</h4>
       <div class="btn-flex-row">
@@ -539,7 +502,7 @@
       </div>
     </div>
 
-    <!-- EXISTING: AUDIT EXPORT PANEL -->
+    <!-- AUDIT EXPORT PANEL -->
     <div class="export-panel">
       <h4>Audit Actions</h4>
       <div class="form-row" style="margin-bottom: 0;">
@@ -560,14 +523,12 @@
   </div>
 </div>
 
-<!-- SYSTEM LOGIC MODULES -->
-<script src="databaseManager.js"></script>
-<script src="uiManager.js"></script>
-<script src="scannerManager.js"></script>
-<script src="sessionManager.js"></script>
-<script src="auditManager.js"></script>
-
-<!-- GLOBAL BINDINGS & INITIALIZATION -->
-<script src="app.js"></script>
+<!-- UPDATED SCRIPT LINKS FOR FOLDER STRUCTURE -->
+<script src="js/databaseManager.js"></script>
+<script src="js/uiManager.js"></script>
+<script src="js/scannerManager.js"></script>
+<script src="js/sessionManager.js"></script>
+<script src="js/auditManager.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
