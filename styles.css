@@ -1,11 +1,11 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - STYLESHEET (styles.css)                               */
-/* VERSION 1.5.1 | RESPONSIVE DESKTOP & MOBILE OPTIMIZED                   */
+/* VERSION 1.7.3 | FOREST & SAGE EYE-STRAIN REDUCTION PALETTE               */
 /* ======================================================================= */
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0e68c;
+  background-color: #23332b; /* Dark Sage Green for eye-strain reduction */
   color: #000000;
   margin: 12px;
   padding: 0;
@@ -13,11 +13,12 @@ body {
 
 /* Base Card Layout */
 .card {
-  background-color: #f5f5dc;
+  background-color: #f4eeda; /* Soft Khaki Card Container */
   border: 1px solid #8b8589;
   border-radius: 6px;
   padding: 14px;
   margin-bottom: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 h2 {
@@ -192,6 +193,7 @@ input.needs-attention, select.needs-attention {
   margin-bottom: 12px;
   border-radius: 4px;
   text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .header-banner h3 {
@@ -304,6 +306,7 @@ input.needs-attention, select.needs-attention {
   padding: 12px;
   border-radius: 6px;
   margin-bottom: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .export-panel h4 {
@@ -317,13 +320,13 @@ input.needs-attention, select.needs-attention {
 /* ======================================================================= */
 @media (min-width: 800px) {
   body {
-    max-width: 800px;
+    max-width: 850px;
     margin: 30px auto;
-    background-color: #e2d9a3; /* Slightly darker background contrast for desktop */
+    background-color: #1a2720; /* Deepest Forest/Sage shade for desktop frame */
   }
 
   .card, .header-banner, .export-panel {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   }
 
   .form-label {
