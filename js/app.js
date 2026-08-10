@@ -45,3 +45,4 @@ window.exportThriveCreates = () => AuditManager.exportThriveCreates();
 window.exportThriveEdits = () => AuditManager.exportThriveEdits();
 window.exportUpdatedDatabaseJSON = () => AuditManager.exportUpdatedDatabaseJSON();
 window.clearManifestList = () => SessionManager.clearManifestList();
+window.handleItemCustomerSelect = (val) => DatabaseManager.handleItemCustomerSelect(val);
