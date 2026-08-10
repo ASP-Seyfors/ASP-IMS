@@ -21,6 +21,15 @@ const SessionManager = {
   sessionDateStr: localStorage.getItem('asp_session_date_str') || "",
   currentMatchedItem: null,
 
+  init() {
+    // Pre-fill the User Name input with the last saved user name
+    let lastUser = localStorage.getItem('asp_user_name') || "";
+    let userInput = document.getElementById('userNameInput');
+    if (userInput && lastUser) {
+      userInput.value = lastUser;
+    }
+  },
+
   startSession() {
     const uName = document.getElementById('userNameInput').value.trim();
     const type = document.querySelector('input[name="sessionType"]:checked').value;
@@ -42,9 +51,10 @@ const SessionManager = {
     this.sessionDateStr = `${nowObj.getFullYear()}.${String(nowObj.getMonth() + 1).padStart(2, '0')}.${String(nowObj.getDate()).padStart(2, '0')}`;
     this.sessionStartStr = nowObj.toLocaleTimeString();
 
+    // Persist session details including last user name
     localStorage.setItem('asp_session_is_active', 'true');
     localStorage.setItem('asp_manifest_enabled', this.isManifestEnabled ? 'true' : 'false');
-    localStorage.setItem('asp_user_name', this.currentUserName);
+    localStorage.setItem('asp_user_name', this.currentUserName); // <--- Saves last used user
     localStorage.setItem('asp_session_name', this.currentSessionName);
     localStorage.setItem('asp_order_num', this.currentOrderNum);
     localStorage.setItem('asp_workflow_type', this.currentWorkflowType);
