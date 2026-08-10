@@ -254,11 +254,12 @@
       </div>
     </div>
 
-    <!-- 2. Customer Tag -->
+    <!-- 2. Customer Tag Selector -->
     <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
       <div class="form-label" style="color: #0277bd;">Customer / Order Tag:</div>
-      <div class="input-wrapper">
-        <input type="text" id="customerTagInput" placeholder="e.g. John Doe #12345">
+      <div class="input-wrapper" style="display: flex; gap: 6px;">
+        <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value)"></select>
+        <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;">
       </div>
     </div>
 
