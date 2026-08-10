@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - LOGIC & SCRIPTING (app.js)                            */
-/* VERSION 1.7.0 | MULTI-SESSION AUDIT & TRACEABILITY ENGINE               */
+/* VERSION 1.7.1 | EXECUTIVE AUDIT REPORTING & FORMAL PDF GENERATOR        */
 /* ======================================================================= */
 
 const defaultVendors = [
@@ -356,28 +356,46 @@ function compileTraceabilityData() {
   let lotTraceMap = {};
   let totalItemsScanned = 0;
   let uniqueRefs = new Set();
+  let datesArray = [];
 
   parsedAuditSessions.forEach(session => {
+    if (session.date && session.date !== "Unknown") {
+      datesArray.push(session.date.replace(/\./g, '-'));
+    }
+
     session.items.forEach(item => {
       uniqueRefs.add(item.ref);
       totalItemsScanned += item.qty;
 
       let key = `${item.ref}_${item.lot}`;
       if (!lotTraceMap[key]) {
+        let match = db.find(i => getItemSku(i) === item.ref);
         lotTraceMap[key] = {
           ref: item.ref,
           lot: item.lot,
           exp: item.exp,
+          desc: match ? getItemDesc(match) : 'No description available',
+          mfr: match ? getItemVendor(match) : 'ETHICON',
           inboundQty: 0,
           reservedQty: 0,
           outboundQty: 0,
+          receivedDate: 'N/A',
+          reservedForTag: '',
           timeline: []
         };
       }
 
-      if (item.workflow.includes('Receiving')) lotTraceMap[key].inboundQty += item.qty;
-      if (item.workflow.includes('Reserving')) lotTraceMap[key].reservedQty += item.qty;
-      if (item.workflow.includes('Packing')) lotTraceMap[key].outboundQty += item.qty;
+      if (item.workflow.includes('Receiving')) {
+        lotTraceMap[key].inboundQty += item.qty;
+        if (lotTraceMap[key].receivedDate === 'N/A') lotTraceMap[key].receivedDate = item.date;
+      }
+      if (item.workflow.includes('Reserving')) {
+        lotTraceMap[key].reservedQty += item.qty;
+        if (item.customerTag) lotTraceMap[key].reservedForTag = item.customerTag;
+      }
+      if (item.workflow.includes('Packing')) {
+        lotTraceMap[key].outboundQty += item.qty;
+      }
 
       lotTraceMap[key].timeline.push({
         date: item.date,
@@ -390,49 +408,151 @@ function compileTraceabilityData() {
     });
   });
 
-  return { lotTraceMap, totalItemsScanned, uniqueRefsCount: uniqueRefs.size };
+  // Calculate Date Range for Filename
+  datesArray.sort();
+  let startDate = datesArray.length > 0 ? datesArray[0] : sessionDateStr;
+  let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : sessionDateStr;
+
+  // Convert to Sorted Array Alphabetically by REF
+  let sortedTraceList = Object.values(lotTraceMap).sort((a, b) => {
+    if (a.ref < b.ref) return -1;
+    if (a.ref > b.ref) return 1;
+    if (a.lot < b.lot) return -1;
+    if (a.lot > b.lot) return 1;
+    return 0;
+  });
+
+  return {
+    sortedTraceList,
+    totalItemsScanned,
+    uniqueRefsCount: uniqueRefs.size,
+    startDate,
+    endDate
+  };
 }
 
 function renderAuditPreviewUI() {
   const container = document.getElementById('auditPreviewContent');
-  const { lotTraceMap, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
+  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate } = compileTraceabilityData();
 
   let html = `
     <div class="audit-card" style="background-color:#e3f2fd;">
-      <h3>Audit Scope: ${parsedAuditSessions.length} Sessions Processed</h3>
-      <div><strong>Total Unique REFs:</strong> ${uniqueRefsCount} | <strong>Total Units Handled:</strong> ${totalItemsScanned}</div>
+      <h3>Week Summary (${startDate} - ${endDate})</h3>
+      <div><strong>Sessions Uploaded:</strong> ${parsedAuditSessions.length} | <strong>Unique REFs:</strong> ${uniqueRefsCount} | <strong>Total Units:</strong> ${totalItemsScanned}</div>
     </div>
   `;
 
-  for (let key in lotTraceMap) {
-    let trace = lotTraceMap[key];
+  sortedTraceList.forEach(trace => {
     let isReconciled = (trace.inboundQty === trace.outboundQty && trace.inboundQty > 0);
     let badgeClass = isReconciled ? 'badge-match' : 'badge-warn';
     let statusText = isReconciled ? '✓ Reconciled' : '⚠️ Pending / Discrepancy';
 
     html += `
       <div class="audit-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong style="font-size:1.05rem;">REF: ${trace.ref} (Lot: ${trace.lot})</strong>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:4px; margin-bottom:6px;">
+          <strong style="font-size:1rem; color:#0277bd;">Ref: ${trace.ref}</strong>
           <span class="badge-info ${badgeClass}">${statusText}</span>
         </div>
-        <div style="font-size:0.85rem; color:#555; margin: 4px 0;">Expiration: ${trace.exp}</div>
-        <div style="font-size:0.85rem; margin-bottom:6px;">
-          Inbound: <strong>${trace.inboundQty}</strong> | Reserved: <strong>${trace.reservedQty}</strong> | Outbound: <strong>${trace.outboundQty}</strong>
+        <div style="font-size:0.85rem; font-family:monospace; line-height:1.4;">
+          <div><strong>Lot:</strong> ${trace.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${trace.exp} &nbsp;|&nbsp; <strong>Total Qty:</strong> ${trace.inboundQty || trace.outboundQty || trace.reservedQty}</div>
+          <div><strong>Received Date:</strong> ${trace.receivedDate}</div>
+          <div><strong>Reserved Qty:</strong> ${trace.reservedQty} &nbsp;|&nbsp; <strong>Reserved for:</strong> ${trace.reservedForTag || 'N/A'}</div>
         </div>
-        <div style="font-size:0.8rem; background:#f5f5f5; padding:6px; border-radius:3px;">
-          <strong>Chain of Custody Events:</strong><br>
+      </div>
     `;
-
-    trace.timeline.forEach(event => {
-      let tagStr = event.customerTag ? ` (Tag: ${event.customerTag})` : '';
-      html += `&nbsp;&nbsp;• [${event.date}] ${event.workflow}: ${event.qty} unit(s) via <em>${event.sessionName}</em>${tagStr}<br>`;
-    });
-
-    html += `</div></div>`;
-  }
+  });
 
   container.innerHTML = html;
+}
+
+function buildHTMLAuditReportString(filename, startDate, endDate) {
+  const { sortedTraceList, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
+
+  let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${filename}</title>
+<style>
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 30px; font-size: 13px; }
+.header-grid { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0277bd; padding-bottom: 15px; margin-bottom: 20px; }
+.company-info h1 { margin: 0; color: #0277bd; font-size: 22px; text-transform: uppercase; }
+.company-info p { margin: 2px 0; color: #555; }
+.report-meta { text-align: right; }
+.report-meta h2 { margin: 0; color: #333; font-size: 16px; margin-bottom: 6px; }
+.report-meta table { width: 100%; text-align: right; border: none; font-size: 12px; margin: 0; }
+.report-meta td { border: none; padding: 2px 0 2px 10px; }
+.section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 6px 10px; font-size: 14px; font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; }
+.audit-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; }
+.audit-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 8px; text-align: left; color: #555; }
+.audit-table td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
+.ref-title { font-size: 14px; font-weight: bold; color: #0277bd; }
+.sub-detail { font-size: 11px; color: #555; margin-top: 2px; }
+.timeline-list { background: #f9f9f9; padding: 6px; border-radius: 4px; border: 1px solid #eee; margin-top: 4px; font-size: 11px; font-family: monospace; }
+@media print {
+  body { margin: 0; padding: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+<div class="header-grid">
+<div>
+  <img src="ASP_Box_Web_RGB.png" style="max-height: 70px;" alt="ASP Logo" />
+</div>
+<div class="company-info" style="margin-left: 20px;">
+  <h1>Allied Surgical Products</h1>
+  <p>737 Barbara Street | Palm Harbor, FL 34684</p>
+</div>
+<div class="report-meta">
+  <h2>SHIPPING & RECEIVING WEEKLY SUMMARY</h2>
+  <table>
+    <tr><td><strong>Date Range:</strong></td><td>${startDate} - ${endDate}</td></tr>
+    <tr><td><strong>Sessions Audited:</strong></td><td>${parsedAuditSessions.length} Logs</td></tr>
+    <tr><td><strong>Unique REFs:</strong></td><td>${uniqueRefsCount}</td></tr>
+    <tr><td><strong>Total Units Handled:</strong></td><td>${totalItemsScanned}</td></tr>
+  </table>
+</div>
+</div>
+
+<div class="section-title">📦 WEEKLY ITEM TRACEABILITY & CHAIN OF CUSTODY</div>
+<table class="data-table audit-table">
+<thead>
+  <tr>
+    <th style="width:25%;">Ref & Manufacturer</th>
+    <th style="width:40%;">Lot / Expiration / Status</th>
+    <th style="width:35%;">Chain of Custody Events</th>
+  </tr>
+</thead>
+<tbody>`;
+
+  sortedTraceList.forEach(trace => {
+    let timelineHtml = `<div class="timeline-list">`;
+    trace.timeline.forEach(ev => {
+      let tagStr = ev.customerTag ? ` [Tag: ${ev.customerTag}]` : '';
+      timelineHtml += `• <strong>${ev.date}</strong> - ${ev.workflow}: ${ev.qty} unit(s)${tagStr}<br>`;
+    });
+    timelineHtml += `</div>`;
+
+    html += `
+      <tr>
+        <td>
+          <div class="ref-title">Ref: ${trace.ref}</div>
+          <div class="sub-detail">${trace.mfr}</div>
+          <div class="sub-detail" style="font-style:italic;">${trace.desc}</div>
+        </td>
+        <td>
+          <div><strong>Lot:</strong> ${trace.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${trace.exp} &nbsp;|&nbsp; <strong>Qty:</strong> ${trace.inboundQty || trace.outboundQty || trace.reservedQty}</div>
+          <div class="sub-detail"><strong>Received Date:</strong> ${trace.receivedDate}</div>
+          <div class="sub-detail"><strong>Reserved Qty:</strong> ${trace.reservedQty} &nbsp;|&nbsp; <strong>Reserved for:</strong> ${trace.reservedForTag || 'N/A'}</div>
+        </td>
+        <td>${timelineHtml}</td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table></body></html>`;
+  return html;
 }
 
 window.executeAuditExport = function() {
@@ -442,48 +562,55 @@ window.executeAuditExport = function() {
     return;
   }
 
-  const { lotTraceMap, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
-  const filename = `MASTER_WEEKLY_AUDIT_TRACEABILITY_${sessionDateStr}.${val}`;
+  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate } = compileTraceabilityData();
+  const filename = `ASP - Shipping & Receiving - Week Summary (${startDate}-${endDate}).${val}`;
 
+  if (val === 'pdf') {
+    let printWin = window.open('', '_blank');
+    if (!printWin) {
+      alert("Pop-up blocked! Please allow pop-ups to generate the PDF.");
+      return;
+    }
+
+    let fileContent = buildHTMLAuditReportString(filename, startDate, endDate);
+    printWin.document.open();
+    printWin.document.write(fileContent);
+    printWin.document.title = filename;
+    printWin.document.close();
+
+    setTimeout(() => {
+      printWin.focus();
+      printWin.print();
+    }, 500);
+    return;
+  }
+
+  // TXT FALLBACK EXPORT
   let reportText = [
     `================================================================================`,
-    `ASP MASTER WEEKLY TRACEABILITY & AUDIT SUMMARY`,
+    `ASP - Shipping & Receiving - Week Summary (${startDate}-${endDate})`,
     `Generated Date: ${sessionDateStr}`,
     `Total Uploaded Sessions: ${parsedAuditSessions.length}`,
     `Total Unique REFs: ${uniqueRefsCount}`,
     `Total Units Handled: ${totalItemsScanned}`,
-    `================================================================================\n`,
-    `--- LOT-LEVEL CHAIN OF CUSTODY TRACEABILITY ---\n`
+    `================================================================================\n`
   ];
 
-  for (let key in lotTraceMap) {
-    let trace = lotTraceMap[key];
-    reportText.push(`[REF: ${trace.ref}] | LOT: ${trace.lot} | EXP: ${trace.exp}`);
-    reportText.push(`  | Total Inbound: ${trace.inboundQty} | Total Reserved: ${trace.reservedQty} | Total Outbound: ${trace.outboundQty}`);
-    reportText.push(`  | Timeline Chain of Custody:`);
-    trace.timeline.forEach(event => {
-      let tagStr = event.customerTag ? ` (Tag: ${event.customerTag})` : '';
-      reportText.push(`    - [${event.date}] ${event.workflow}: ${event.qty} unit(s) [Session: ${event.sessionName}]${tagStr} (User: ${event.user})`);
+  sortedTraceList.forEach(trace => {
+    reportText.push(`Ref: ${trace.ref}    |    Lot: ${trace.lot}    |    Exp: ${trace.exp}    |    Qty: ${trace.inboundQty || trace.outboundQty || trace.reservedQty}`);
+    reportText.push(`             |    Received: ${trace.receivedDate}`);
+    reportText.push(`             |    Reserved Qty: ${trace.reservedQty}    |    Reserved for: ${trace.reservedForTag || 'N/A'}`);
+    reportText.push(`             |    Timeline History:`);
+    trace.timeline.forEach(ev => {
+      let tagStr = ev.customerTag ? ` [Tag: ${ev.customerTag}]` : '';
+      reportText.push(`                 - [${ev.date}] ${ev.workflow}: ${ev.qty} unit(s) via ${ev.sessionName}${tagStr}`);
     });
     reportText.push(``);
-  }
+  });
 
-  reportText.push(`================================================================================\nEND OF MASTER TRACEABILITY AUDIT\n================================================================================`);
-  let fullText = reportText.join('\n');
-
-  if (val === 'pdf') {
-    let printWin = window.open('', '_blank');
-    if (printWin) {
-      let html = `<html><head><title>${filename}</title><style>body{font-family:monospace; font-size:12px; padding:20px; white-space:pre-wrap;}</style></head><body>${fullText}</body></html>`;
-      printWin.document.open();
-      printWin.document.write(html);
-      printWin.document.title = filename;
-      printWin.document.close();
-      setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
-    }
-  } else {
-    triggerShareOrDownload(fullText, filename, 'text/plain');
-  }
+  reportText.push(`================================================================================\nEND OF WEEKLY SUMMARY\n================================================================================`);
+  
+  triggerShareOrDownload(reportText.join('\n'), filename, 'text/plain');
 };
 
 /* --- LOOKUP & MATCHING LOGIC --- */
