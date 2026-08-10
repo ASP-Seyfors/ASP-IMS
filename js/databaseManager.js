@@ -18,6 +18,23 @@ const DatabaseManager = {
   customers: JSON.parse(localStorage.getItem('asp_wh_customers')) || defaultCustomers,
 
   async init() {
+    // AUTO-SYNC: Merge any new hardcoded defaults into localStorage cache
+    defaultSuppliers.forEach(s => {
+      if (!this.suppliers.includes(s)) {
+        // Insert right before "+ Add Supplier"
+        this.suppliers.splice(this.suppliers.length - 1, 0, s);
+      }
+    });
+    localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+
+    defaultCustomers.forEach(c => {
+      if (!this.customers.includes(c)) {
+        // Insert right before "+ Add Customer"
+        this.customers.splice(this.customers.length - 1, 0, c);
+      }
+    });
+    localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+
     try {
       const response = await fetch('database.json');
       if (response.ok) {
@@ -29,10 +46,6 @@ const DatabaseManager = {
         if (jsonContent.vendors && jsonContent.vendors.length > 0) {
           this.vendors = jsonContent.vendors;
           localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
-        }
-        if (jsonContent.customers && jsonContent.customers.length > 0) {
-          this.customers = jsonContent.customers;
-          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
         }
       } else {
         console.warn("Notice: External database.json not found, using local cache.");
