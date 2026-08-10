@@ -454,7 +454,95 @@ const SessionManager = {
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'none';
     AuditManager.updateSessionSummaryView();
+    
+    // NEW CALL: Render the advanced review if needed
+    this.renderAdvancedReview(); 
+    
     document.getElementById('screenSummary').style.display = 'block';
+  },
+
+  getVendorSearchUrl(mfr, ref) {
+    let cleanMfr = (mfr || '').toUpperCase();
+    if (cleanMfr.includes('ETHICON')) return 'https://www.ethicon.com/na/epc/search/';
+    if (cleanMfr.includes('SYNERGY')) return 'https://www.synergysurgical.com/search/in-date,short-dated.html';
+    
+    // Fallback: Standard Google Search for Manufacturer + SKU
+    return `https://www.google.com/search?q=${encodeURIComponent(mfr + ' ' + ref)}`;
+  },
+
+  renderAdvancedReview() {
+    const card = document.getElementById('advancedReviewCard');
+    const list = document.getElementById('advancedItemsList');
+    if (!card || !list) return;
+
+    // Filter pending items to only those that still have the default placeholder
+    let unresolved = this.pendingNewItems.filter(i => i.desc === "Navigate to vendor website for item description." || !i.desc);
+    
+    if (unresolved.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = 'block';
+    list.innerHTML = '';
+
+    unresolved.forEach((item, index) => {
+      let searchUrl = this.getVendorSearchUrl(item.mfr, item.ref);
+      let div = document.createElement('div');
+      div.style.marginBottom = '10px';
+      div.style.padding = '10px';
+      div.style.backgroundColor = '#ffffff';
+      div.style.border = '1px solid #90caf9';
+      div.style.borderRadius = '4px';
+
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div><strong style="color: #0277bd;">${item.ref}</strong> <span style="font-size:0.8rem; color:#555; margin-left: 6px;">${item.mfr}</span></div>
+          <button class="btn-small" style="background-color:#1976d2; color:#ffffff; padding: 4px 10px;" onclick="window.open('${searchUrl}', '_blank')">🔍 Search</button>
+        </div>
+        <input type="text" id="advDesc_${index}" class="adv-desc-input" data-ref="${item.ref}" placeholder="Paste description here..." style="width:100%; padding:8px; box-sizing:border-box; border: 1px solid #ccc; border-radius: 4px;">
+      `;
+      list.appendChild(div);
+    });
+  },
+
+  saveAdvancedDescriptions() {
+    const inputs = document.querySelectorAll('.adv-desc-input');
+    let updatedCount = 0;
+
+    inputs.forEach(input => {
+      let newDesc = input.value.trim();
+      let ref = input.getAttribute('data-ref');
+      
+      if (newDesc && newDesc !== "Navigate to vendor website for item description.") {
+        // 1. Update pendingNewItems list
+        let pendingItem = this.pendingNewItems.find(i => i.ref === ref);
+        if (pendingItem) pendingItem.desc = newDesc;
+
+        // 2. Update Master Database
+        let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+        if (dbItem) dbItem.desc = newDesc;
+
+        // 3. Update Scanned Objects in the current session
+        this.scannedObjects.forEach(scanned => {
+          if (scanned.ref === ref && scanned.isNew) {
+            scanned.desc = newDesc;
+          }
+        });
+        updatedCount++;
+      }
+    });
+
+    if (updatedCount > 0) {
+      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+      localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
+      localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
+      
+      alert(`Successfully updated ${updatedCount} descriptions!`);
+      this.renderAdvancedReview(); // Re-render to hide the card if all items are resolved
+    } else {
+      alert("No new descriptions were entered.");
+    }
   },
 
   cancelSession() {
