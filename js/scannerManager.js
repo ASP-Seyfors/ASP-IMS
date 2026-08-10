@@ -6,9 +6,25 @@ const ScannerManager = {
 
   handleSuccessfulScan(decodedText) {
     if (this.scanCooldown) return;
+    
+    // Clean string formatting artifacts
     let cleanText = decodedText.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
     if (cleanText.length < 4) return;
 
+    // SAFETY NET FILTER: Validate that barcode contains meaningful GS1 data
+    // Accepts strings starting with (01), (17), 01, 17, combined 2D matrix strings, or raw 12-14 digit GTINs.
+    // Ignores standalone variant lines like (20)13 or irrelevant internal barcodes.
+    const isGs1Gtin = cleanText.startsWith('(01)') || cleanText.startsWith('01');
+    const isGs1LotExp = cleanText.startsWith('(17)') || cleanText.startsWith('17');
+    const isCombined2D = cleanText.includes('(01)') && cleanText.includes('(17)');
+    const isRawGtin = /^\d{12,14}$/.test(cleanText);
+
+    if (!isGs1Gtin && !isGs1LotExp && !isCombined2D && !isRawGtin) {
+      console.log(`[Safety Net] Ignored non-inventory barcode: ${cleanText}`);
+      return; // Silently ignore non-essential barcodes
+    }
+
+    // Duplicate Check: Prevent scanning the exact same barcode line twice
     for (let i = 1; i <= 4; i++) {
       if (document.getElementById(`rawScan${i}`).value.trim() === cleanText) return;
     }
@@ -33,10 +49,12 @@ const ScannerManager = {
       document.getElementById(`rawScan${targetLine}`).value = cleanText;
       this.processAllScans();
 
+      // Check if all essential data (GTIN, Lot, Exp) has been successfully extracted
       let currentGtin = document.getElementById('gtinInput').value.trim() !== '' || document.getElementById('chkNaGtin').checked;
       let currentLot = document.getElementById('lotInput').value.trim() !== '' || document.getElementById('chkNaLot').checked;
       let currentExp = document.getElementById('expInput').value.trim() !== '' || document.getElementById('chkNaExp').checked;
 
+      // Automatically close camera and advance once all 3 essential details are captured
       if (currentGtin && currentLot && currentExp && this.isCameraActive) {
         setTimeout(() => this.toggleCameraScanner(), 300);
       } else if (this.visibleScanLines < 4) {
