@@ -1,17 +1,15 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER APP - VERSION 1.5.1 | UPDATED: 2026.08.09                   -->
-<!-- CHANGELOG: Added Total Item Count Metric, Removed HTML Export Option    -->
+<!-- ASP SCANNER APP - VERSION 1.5.2 | UPDATED: 2026.08.09                   -->
+<!-- CHANGELOG: Added User Name field to Session Setup & Export Headers      -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP-Android Scanner App v1.5.1</title>
+  <title>ASP-Android Scanner App v1.5.2</title>
   
   <link rel="stylesheet" href="styles.css">
-  
-  <!-- HTML5 Camera Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
@@ -24,7 +22,15 @@
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
-  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.5.1)</span></h2>
+  <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.5.2)</span></h2>
+  
+  <div class="form-row">
+    <div class="form-label">User Name:</div>
+    <div class="input-wrapper">
+      <input type="text" id="userNameInput" placeholder="e.g. Thomas">
+    </div>
+  </div>
+
   <div class="form-row">
     <div class="form-label">Session Name:</div>
     <div class="input-wrapper">
@@ -65,6 +71,7 @@
   <div class="header-banner">
     <h3 id="hdrTitle">Session Name (Order #)</h3>
     <div class="header-sub">
+      <span><strong>User:</strong> <span id="hdrUser">--</span></span>
       <span><strong>Date:</strong> <span id="hdrDate">--</span></span>
       <span><strong>Start Time:</strong> <span id="hdrTime">--</span></span>
       <span><strong>Workflow:</strong> <span id="hdrWorkflow">--</span></span>
@@ -240,6 +247,7 @@
   <div class="header-banner">
     <h3 id="hdrTitleRev">Session Name (Order #)</h3>
     <div class="header-sub">
+      <span><strong>User:</strong> <span id="hdrUserRev">--</span></span>
       <span><strong>Date:</strong> <span id="hdrDateRev">--</span></span>
       <span><strong>Start Time:</strong> <span id="hdrTimeRev">--</span></span>
       <span><strong>Workflow:</strong> <span id="hdrWorkflowRev">--</span></span>
@@ -327,6 +335,7 @@
   <div class="header-banner">
     <h3 id="hdrTitleSum">Session Name (Order #)</h3>
     <div class="header-sub">
+      <span><strong>User:</strong> <span id="hdrUserSum">--</span></span>
       <span><strong>Date:</strong> <span id="hdrDateSum">--</span></span>
       <span><strong>Start Time:</strong> <span id="hdrTimeSum">--</span></span>
       <span><strong>Workflow:</strong> <span id="hdrWorkflowSum">--</span></span>
