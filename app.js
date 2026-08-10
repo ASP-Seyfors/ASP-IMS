@@ -1,5 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - LOGIC & SCRIPTING (app.js)                            */
+/* VERSION 1.5.2 | UPDATED: 2026.08.09                                     */
 /* ======================================================================= */
 
 const defaultVendors = [
@@ -18,6 +19,7 @@ let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned
 let currentItemAction = "Inventory";
 let visibleScanLines = 1;
 let isSessionActive = false;
+let currentUserName = localStorage.getItem('asp_user_name') || "";
 let currentSessionName = localStorage.getItem('asp_session_name') || "";
 let currentOrderNum = localStorage.getItem('asp_order_num') || "";
 let currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
@@ -300,6 +302,7 @@ window.handleVendorSelect = function(val) {
 /* --- SESSION MANAGEMENT --- */
 
 window.startSession = function() {
+  const uName = document.getElementById('userNameInput').value.trim();
   const sName = document.getElementById('sessionNameInput').value.trim();
   const oNum = document.getElementById('orderNumInput').value.trim();
   const wType = document.getElementById('workflowTypeSelect').value;
@@ -319,10 +322,12 @@ window.startSession = function() {
   sessionDateStr = `${yyyy}.${mm}.${dd}`;
   sessionStartStr = nowObj.toLocaleTimeString();
 
+  currentUserName = uName || "N/A";
   currentSessionName = sName;
   currentOrderNum = oNum;
   currentWorkflowType = wType;
 
+  localStorage.setItem('asp_user_name', currentUserName);
   localStorage.setItem('asp_session_name', currentSessionName);
   localStorage.setItem('asp_order_num', currentOrderNum);
   localStorage.setItem('asp_workflow_type', currentWorkflowType);
@@ -367,6 +372,7 @@ window.updateHeaderBanners = function() {
   if (currentOrderNum) titleStr += ` (${currentOrderNum})`;
 
   document.getElementById('hdrTitle').textContent = titleStr;
+  document.getElementById('hdrUser').textContent = currentUserName || 'N/A';
   document.getElementById('hdrDate').textContent = sessionDateStr;
   document.getElementById('hdrTime').textContent = sessionStartStr;
   document.getElementById('hdrWorkflow').textContent = currentWorkflowType;
@@ -374,6 +380,7 @@ window.updateHeaderBanners = function() {
   let hdrTitleRev = document.getElementById('hdrTitleRev');
   if (hdrTitleRev) {
       hdrTitleRev.textContent = titleStr;
+      document.getElementById('hdrUserRev').textContent = currentUserName || 'N/A';
       document.getElementById('hdrDateRev').textContent = sessionDateStr;
       document.getElementById('hdrTimeRev').textContent = sessionStartStr;
       document.getElementById('hdrWorkflowRev').textContent = currentWorkflowType;
@@ -382,6 +389,7 @@ window.updateHeaderBanners = function() {
   let hdrTitleSum = document.getElementById('hdrTitleSum');
   if (hdrTitleSum) {
     hdrTitleSum.textContent = titleStr;
+    document.getElementById('hdrUserSum').textContent = currentUserName || 'N/A';
     document.getElementById('hdrDateSum').textContent = sessionDateStr;
     document.getElementById('hdrTimeSum').textContent = sessionStartStr;
     document.getElementById('hdrWorkflowSum').textContent = currentWorkflowType;
@@ -481,6 +489,7 @@ window.rescueLastSession = function() {
   pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
   pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
   
+  currentUserName = localStorage.getItem('asp_user_name') || "";
   currentSessionName = localStorage.getItem('asp_session_name') || "Rescued Session";
   currentOrderNum = localStorage.getItem('asp_order_num') || "";
   currentWorkflowType = localStorage.getItem('asp_workflow_type') || "Receiving";
@@ -1069,8 +1078,9 @@ function buildTXTReportString() {
     `================================================================================`,
     `ASP SCANNER APP SUMMARY EXPORT - ${sessionTitleHeader}`,
     ``,
-    `          Total Unique REFs Scanned: ${totalUniqueRefs}`,
-    `          Total Items Scanned:       ${totalItemsScanned}`,
+    `          Scanned By:          ${currentUserName || 'N/A'}`,
+    `          Total Unique REFs:   ${totalUniqueRefs}`,
+    `          Total Items Scanned: ${totalItemsScanned}`,
     ``,
     `          Workflow Process:    ${currentWorkflowType}`,
     `          Scanned Date:        ${sessionDateStr}`,
@@ -1227,6 +1237,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   <h2>SESSION LOG EXPORT</h2>
   <table>
     <tr><td><strong>Session:</strong></td><td>${sessionTitleHeader}</td></tr>
+    <tr><td><strong>User:</strong></td><td>${currentUserName || 'N/A'}</td></tr>
     <tr><td><strong>Workflow:</strong></td><td>${currentWorkflowType}</td></tr>
     <tr><td><strong>Date:</strong></td><td>${sessionDateStr}</td></tr>
     <tr><td><strong>Time Span:</strong></td><td>${sessionStartStr} - ${timeEndStr}</td></tr>
@@ -1346,40 +1357,35 @@ window.triggerShareOrDownload = async function(content, filename, mimeType) {
   }
 };
 
-window.triggerNativePrint = function(htmlContent) {
-    let printIframe = document.createElement('iframe');
-    printIframe.style.position = 'absolute';
-    printIframe.style.width = '0px';
-    printIframe.style.height = '0px';
-    printIframe.style.border = 'none';
-    document.body.appendChild(printIframe);
-    
-    let doc = printIframe.contentWindow.document;
-    doc.open();
-    doc.write(htmlContent);
-    doc.close();
-    
-    setTimeout(() => {
-        printIframe.contentWindow.focus();
-        printIframe.contentWindow.print();
-        setTimeout(() => { document.body.removeChild(printIframe); }, 1000);
-    }, 500);
-};
-
 window.exportData = async function(formatType) {
   if (sessionScannedObjects.length === 0 && pendingNewItems.length === 0 && pendingFieldUpdates.length === 0) {
     alert("No data was scanned in this session."); return;
   }
 
   let filename = generateExactFilename(formatType);
-  let fileContent = formatType === 'txt' ? buildTXTReportString() : buildHTMLReportString(filename);
 
   if (formatType === 'pdf') {
-      triggerNativePrint(fileContent);
+      let printWin = window.open('', '_blank');
+      if (!printWin) {
+          alert("Pop-up blocked! Please allow pop-ups for this site to generate the PDF.");
+          return;
+      }
+      
+      let fileContent = buildHTMLReportString(filename);
+      printWin.document.open();
+      printWin.document.write(fileContent);
+      printWin.document.title = filename; 
+      printWin.document.close();
+      
+      setTimeout(() => {
+          printWin.focus();
+          printWin.print();
+      }, 500);
       return;
   }
 
-  let mime = formatType === 'txt' ? 'text/plain' : 'text/html';
+  let fileContent = buildTXTReportString();
+  let mime = 'text/plain';
   await triggerShareOrDownload(fileContent, filename, mime);
 };
 
