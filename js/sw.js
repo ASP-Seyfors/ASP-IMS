@@ -11,8 +11,8 @@ const ASSETS_TO_CACHE = [
   './js/uiManager.js',
   './database.json',
   './ASP_Box_Web_RGB.png',
-  './ASP_Box_Web_RGB (192x192 Icon).png',
-  './ASP_Box_Web_RGB (512x512 Icon).png',
+  './ASP_Icon_192.png',
+  './ASP_Icon_512.png',
   'https://unpkg.com/html5-qrcode',
   'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'
 ];
