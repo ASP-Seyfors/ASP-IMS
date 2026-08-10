@@ -2156,3 +2156,25 @@ window.exportData = async function(formatType) {
 window.onload = function() {
     loadMasterDatabase();
 };
+
+
+window.changeAppTheme = function(themeName) {
+  document.body.classList.remove('theme-sage', 'theme-gold', 'theme-slate');
+  document.body.classList.add(`theme-${themeName}`);
+  localStorage.setItem('asp_app_theme', themeName);
+  
+  let sel = document.getElementById('themeSelect');
+  if (sel) sel.value = themeName;
+};
+
+window.loadSavedTheme = function() {
+  let savedTheme = localStorage.getItem('asp_app_theme') || 'sage';
+  changeAppTheme(savedTheme);
+};
+
+// Ensure theme loads immediately on page startup
+let origOnload = window.onload;
+window.onload = function() {
+    if (origOnload) origOnload();
+    loadSavedTheme();
+};
