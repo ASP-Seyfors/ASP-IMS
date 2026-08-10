@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - LOGIC & SCRIPTING (app.js)                            */
-/* VERSION 1.5.2 | UPDATED: 2026.08.09                                     */
+/* VERSION 1.6.0 | EXPECTED MANIFEST & RECONCILIATION ENGINE               */
 /* ======================================================================= */
 
 const defaultVendors = [
@@ -15,6 +15,10 @@ let vendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendo
 let pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
 let pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
 let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
+
+// Manifest Reconciliation State
+let isManifestEnabled = false;
+let expectedManifest = JSON.parse(localStorage.getItem('asp_active_manifest')) || [];
 
 let currentItemAction = "Inventory";
 let visibleScanLines = 1;
@@ -101,6 +105,163 @@ window.loadMasterDatabase = async function() {
     console.error("Database parsing error:", err);
   }
 }
+
+/* --- MANIFEST PRE-LOAD & RECONCILIATION LOGIC --- */
+
+window.addManifestRow = function(refVal = '', qtyVal = 1, isRes = false, tagVal = '', resQtyVal = 1) {
+  const container = document.getElementById('manifestRowsContainer');
+  if (!container) return;
+
+  const rowIdx = container.children.length;
+  const div = document.createElement('div');
+  div.className = 'manifest-row';
+  div.id = `manifestRow_${rowIdx}`;
+
+  div.innerHTML = `
+    <div style="display:flex; gap:6px; align-items:center;">
+      <input type="text" class="manifest-ref-input" placeholder="REF / SKU" value="${refVal}" oninput="this.value = this.value.toUpperCase();" style="flex:2;">
+      <input type="number" class="manifest-qty-input" placeholder="Qty" value="${qtyVal}" min="1" style="flex:1;">
+      <button class="btn-small btn-cancel" onclick="this.parentElement.parentElement.remove()" style="padding:4px 8px;">✕</button>
+    </div>
+    <div style="margin-top:6px;">
+      <label style="font-size:0.8rem; font-weight:bold; cursor:pointer;">
+        <input type="checkbox" class="manifest-res-chk" onchange="toggleManifestResRow(${rowIdx})" ${isRes ? 'checked' : ''}> ☐ Reserved for Customer
+      </label>
+    </div>
+    <div class="manifest-subrow" id="manifestResSubrow_${rowIdx}" style="display:${isRes ? 'flex' : 'none'};">
+      <input type="text" class="manifest-tag-input" placeholder="Customer Tag" value="${tagVal}" style="flex:2;">
+      <input type="number" class="manifest-resqty-input" placeholder="Res Qty" value="${resQtyVal}" min="1" style="flex:1;">
+    </div>
+  `;
+  container.appendChild(div);
+};
+
+window.toggleManifestResRow = function(idx) {
+  const row = document.getElementById(`manifestRow_${idx}`);
+  if (!row) return;
+  const chk = row.querySelector('.manifest-res-chk');
+  const subrow = document.getElementById(`manifestResSubrow_${idx}`);
+  if (chk && subrow) {
+    subrow.style.display = chk.checked ? 'flex' : 'none';
+  }
+};
+
+window.scanDocumentOCR = function(event) {
+  if (event.target.files.length === 0) return;
+  const file = event.target.files[0];
+  alert("Processing document image with experimental OCR... Please wait a few seconds.");
+
+  Tesseract.recognize(file, 'eng')
+    .then(({ data: { text } }) => {
+      let lines = text.split('\n');
+      let foundMatches = 0;
+
+      lines.forEach(line => {
+        let words = line.toUpperCase().split(/\s+/);
+        words.forEach(word => {
+          let cleanWord = word.replace(/[^A-Z0-9-]/g, '');
+          let match = db.find(i => getItemSku(i) === cleanWord);
+          if (match) {
+            addManifestRow(cleanWord, 1);
+            foundMatches++;
+          }
+        });
+      });
+
+      if (foundMatches > 0) {
+        alert(`OCR Scan Complete: Pre-filled ${foundMatches} recognized REF(s) from document! Please verify quantities.`);
+      } else {
+        alert("OCR Scan Complete: No known database REFs detected in image. Please add rows manually.");
+      }
+      event.target.value = '';
+    })
+    .catch(err => {
+      alert("OCR Error: " + err.message);
+      event.target.value = '';
+    });
+};
+
+window.readManifestDataFromUI = function() {
+  const container = document.getElementById('manifestRowsContainer');
+  if (!container) return [];
+
+  let list = [];
+  const rows = container.querySelectorAll('.manifest-row');
+  rows.forEach(row => {
+    let ref = row.querySelector('.manifest-ref-input').value.trim().toUpperCase();
+    let qty = parseInt(row.querySelector('.manifest-qty-input').value, 10) || 1;
+    let chk = row.querySelector('.manifest-res-chk').checked;
+    let tag = row.querySelector('.manifest-tag-input').value.trim();
+    let resQty = parseInt(row.querySelector('.manifest-resqty-input').value, 10) || 1;
+
+    if (ref) {
+      list.push({
+        ref: ref,
+        expectedQty: qty,
+        isReserved: chk,
+        customerTag: chk ? tag : '',
+        reservedQty: chk ? resQty : 0
+      });
+    }
+  });
+  return list;
+};
+
+window.goToManifestReview = function() {
+  expectedManifest = readManifestDataFromUI();
+  if (expectedManifest.length === 0) {
+    alert("Please enter at least one expected item row.");
+    return;
+  }
+
+  const container = document.getElementById('manifestReviewSummaryContainer');
+  let totalExp = expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
+
+  let html = `<div style="margin-bottom:10px;"><strong>Total Expected Pieces:</strong> ${totalExp} across ${expectedManifest.length} unique REFs</div>`;
+  html += `<table class="lot-table" style="width:100%;"><thead><tr><th>REF</th><th>Expected Qty</th><th>Customer Reserve</th></tr></thead><tbody>`;
+
+  expectedManifest.forEach(item => {
+    let resText = item.isReserved ? `${item.customerTag} (Qty: ${item.reservedQty})` : '--';
+    html += `<tr><td><strong>${item.ref}</strong></td><td style="text-align:center;">${item.expectedQty}</td><td>${resText}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+
+  container.innerHTML = html;
+  document.getElementById('screenManifestEntry').style.display = 'none';
+  document.getElementById('screenManifestReview').style.display = 'block';
+};
+
+window.returnToManifestEdit = function() {
+  document.getElementById('screenManifestReview').style.display = 'none';
+  document.getElementById('screenManifestEntry').style.display = 'block';
+};
+
+window.cancelManifestEntry = function() {
+  document.getElementById('screenManifestEntry').style.display = 'none';
+  document.getElementById('screenSetup').style.display = 'block';
+};
+
+window.confirmManifestAndStart = function() {
+  localStorage.setItem('asp_active_manifest', JSON.stringify(expectedManifest));
+  document.getElementById('screenManifestReview').style.display = 'none';
+  document.getElementById('screenScanning').style.display = 'block';
+  updateManifestProgressUI();
+};
+
+window.updateManifestProgressUI = function() {
+  const banner = document.getElementById('manifestProgressBanner');
+  if (!banner || !isManifestEnabled || expectedManifest.length === 0) {
+    if (banner) banner.style.display = 'none';
+    return;
+  }
+
+  banner.style.display = 'block';
+  let totalExpected = expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
+  let totalScanned = sessionScannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
+
+  document.getElementById('manifestScannedQty').textContent = totalScanned;
+  document.getElementById('manifestTotalQty').textContent = totalExpected;
+};
 
 /* --- LOOKUP & MATCHING LOGIC --- */
 
@@ -306,6 +467,7 @@ window.startSession = function() {
   const sName = document.getElementById('sessionNameInput').value.trim();
   const oNum = document.getElementById('orderNumInput').value.trim();
   const wType = document.getElementById('workflowTypeSelect').value;
+  const chkManifest = document.getElementById('chkPreloadManifest').checked;
 
   if (!sName) {
     alert("Please enter a Session Name before starting.");
@@ -313,7 +475,9 @@ window.startSession = function() {
   }
 
   isSessionActive = true;
+  isManifestEnabled = chkManifest;
   localStorage.setItem('asp_session_is_active', 'true');
+  localStorage.setItem('asp_manifest_enabled', isManifestEnabled ? 'true' : 'false');
 
   const nowObj = new Date();
   let yyyy = nowObj.getFullYear();
@@ -339,10 +503,18 @@ window.startSession = function() {
 
   updateHeaderBanners();
 
-  document.getElementById('screenSetup').style.display = 'none';
-  document.getElementById('screenScanning').style.display = 'block';
-  document.getElementById('screenReview').style.display = 'none';
-  document.getElementById('screenSummary').style.display = 'none';
+  if (isManifestEnabled) {
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('manifestRowsContainer').innerHTML = '';
+    addManifestRow(); // Default first row
+    document.getElementById('screenManifestEntry').style.display = 'block';
+  } else {
+    expectedManifest = [];
+    localStorage.setItem('asp_active_manifest', JSON.stringify([]));
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenScanning').style.display = 'block';
+    updateManifestProgressUI();
+  }
 
   let destRow = document.getElementById('rowItemDestination');
   let tagRow = document.getElementById('rowCustomerTag');
@@ -400,11 +572,15 @@ window.checkSessionRecoveryState = function() {
   let storedActiveState = localStorage.getItem('asp_session_is_active');
   if (storedActiveState === 'true') {
     isSessionActive = true;
+    isManifestEnabled = localStorage.getItem('asp_manifest_enabled') === 'true';
+    expectedManifest = JSON.parse(localStorage.getItem('asp_active_manifest')) || [];
+    
     updateHeaderBanners();
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenSummary').style.display = 'none';
+    updateManifestProgressUI();
 
     let destRow = document.getElementById('rowItemDestination');
     let tagRow = document.getElementById('rowCustomerTag');
@@ -425,9 +601,13 @@ window.cancelSession = function() {
   if (!confirmCancel) return;
 
   isSessionActive = false;
+  isManifestEnabled = false;
   localStorage.setItem('asp_session_is_active', 'false');
+  localStorage.setItem('asp_manifest_enabled', 'false');
   sessionScannedObjects = [];
+  expectedManifest = [];
   localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+  localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
   if (isCameraActive) toggleCameraScanner();
   
@@ -444,7 +624,7 @@ window.cancelSession = function() {
 window.completeSession = function() {
   let confirmClear = confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.");
   if (!confirmClear) return;
-  
+
   pendingNewItems = []; pendingFieldUpdates = [];
   localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
   localStorage.setItem('asp_pending_updates', JSON.stringify([]));
@@ -458,7 +638,9 @@ window.completeSession = function() {
   document.getElementById('screenSummary').style.display = 'none';
   document.getElementById('screenSetup').style.display = 'block';
   isSessionActive = false; 
+  isManifestEnabled = false;
   localStorage.setItem('asp_session_is_active', 'false');
+  localStorage.setItem('asp_manifest_enabled', 'false');
 }
 
 window.continueScanning = function() {
@@ -489,6 +671,9 @@ window.rescueLastSession = function() {
   pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
   pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
   
+  isManifestEnabled = localStorage.getItem('asp_manifest_enabled') === 'true';
+  expectedManifest = JSON.parse(localStorage.getItem('asp_active_manifest')) || [];
+
   currentUserName = localStorage.getItem('asp_user_name') || "";
   currentSessionName = localStorage.getItem('asp_session_name') || "Rescued Session";
   currentOrderNum = localStorage.getItem('asp_order_num') || "";
@@ -789,6 +974,36 @@ window.goToReviewStage = function() {
   const cTag = document.getElementById('customerTagInput') ? document.getElementById('customerTagInput').value.trim() : '';
   const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
+  // Calculate Real-Time Progress Metrics for Verification Screen
+  let revRefRow = document.getElementById('revRefProgressRow');
+  let revTotalRow = document.getElementById('revTotalProgressRow');
+
+  if (isManifestEnabled && expectedManifest.length > 0) {
+    revRefRow.style.display = 'flex';
+    revTotalRow.style.display = 'flex';
+
+    let manifestItem = expectedManifest.find(i => i.ref === ref);
+    let scannedRefQtySoFar = sessionScannedObjects
+      .filter(i => i.ref === ref)
+      .reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
+
+    let newTotalScannedForRef = scannedRefQtySoFar + qty;
+
+    if (manifestItem) {
+      document.getElementById('revRefProgress').textContent = `${newTotalScannedForRef} Scanned / ${manifestItem.expectedQty} Expected`;
+    } else {
+      document.getElementById('revRefProgress').innerHTML = `<span class="badge-info badge-alert">⚠️ Unexpected Item (Not on Manifest)</span>`;
+    }
+
+    let totalScannedOverall = sessionScannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0) + qty;
+    let totalExpectedOverall = expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
+
+    document.getElementById('revTotalProgress').textContent = `${totalScannedOverall} / ${totalExpectedOverall} Total Order Items`;
+  } else {
+    revRefRow.style.display = 'none';
+    revTotalRow.style.display = 'none';
+  }
+
   document.getElementById('revRef').textContent = ref;
   document.getElementById('revGtin').textContent = gtin || '--';
   document.getElementById('revLot').textContent = lot || '--';
@@ -930,6 +1145,7 @@ window.saveItemLog = function() {
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(sessionScannedObjects));
 
     resetScanLinesAndFields();
+    updateManifestProgressUI();
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
 
@@ -1029,41 +1245,28 @@ window.executeAction = function() {
     setTimeout(() => { selectEl.value = ""; }, 500);
 };
 
+/* --- CONDITIONAL EXPORT BUILDERS --- */
+
 function buildTXTReportString() {
-  let invMap = {}, resMap = {}, packMap = {};
+  let scannedMap = {};
 
   sessionScannedObjects.forEach(item => {
     let rKey = item.ref;
-    let cleanGtin = cleanGtinValue(item.gtin);
-    
-    let targetMaps = [];
-    if (item.actionTag === 'Inventory') targetMaps.push(invMap);
-    else if (item.actionTag === 'Reserved') {
-      targetMaps.push(resMap);
-      if (currentWorkflowType.includes('Receiving & Reserving')) targetMaps.push(invMap); 
-    } else if (item.actionTag === 'Pack & Ship') targetMaps.push(packMap);
+    if (!scannedMap[rKey]) {
+      scannedMap[rKey] = { ref: item.ref, desc: item.desc, mfr: item.mfr, price: item.price, totalScannedQty: 0, byTag: {} };
+    }
+    scannedMap[rKey].totalScannedQty += item.qty;
 
-    targetMaps.forEach(targetMap => {
-      if (!targetMap[rKey]) {
-        targetMap[rKey] = { ref: item.ref, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {} };
-      } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        targetMap[rKey].gtin = cleanGtin;
-      }
-      targetMap[rKey].totalQty += item.qty;
+    let tKey = item.customerTag || 'UNTAGGED';
+    if (!scannedMap[rKey].byTag[tKey]) scannedMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+    scannedMap[rKey].byTag[tKey].tagTotalQty += item.qty;
 
-      let tKey = item.customerTag || 'UNTAGGED';
-      if (!targetMap[rKey].byTag[tKey]) {
-        targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
-      }
-      targetMap[rKey].byTag[tKey].tagTotalQty += item.qty;
-
-      let lotKey = `${item.lot}_${item.exp}`;
-      if (!targetMap[rKey].byTag[tKey].lots[lotKey]) {
-        targetMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes: [] };
-      }
-      targetMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
-      if (item.itemNote) targetMap[rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
-    });
+    let lotKey = `${item.lot}_${item.exp}`;
+    if (!scannedMap[rKey].byTag[tKey].lots[lotKey]) {
+      scannedMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes: [] };
+    }
+    scannedMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
+    if (item.itemNote) scannedMap[rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
   });
 
   let sessionTitleHeader = currentSessionName;
@@ -1093,92 +1296,108 @@ function buildTXTReportString() {
   }
   reportLines.push(`================================================================================\n`);
 
-  function formatTextMap(mapData, title, showTags) {
-    if (Object.keys(mapData).length === 0) return;
-    reportLines.push(`--- ${title} ---\n`);
-    let count = 1;
-    for (let rKey in mapData) {
-      let rData = mapData[rKey];
-      reportLines.push(`[${count}] REF: ${rData.ref}\n    | GTIN: ${rData.gtin}\n    | Total Quantity: ${rData.totalQty}`);
-      for (let tKey in rData.byTag) {
-        let tagData = rData.byTag[tKey];
-        if (showTags && tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in tagData.lots) {
-          let lData = tagData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
-          if(lData.notes.length > 0) reportLines.push(`        * Notes: ${lData.notes.join(', ')}`);
-        }
+  // CONDITIONAL SECTION 1: SHORTAGES / MISSING ITEMS
+  if (isManifestEnabled && expectedManifest.length > 0) {
+    let shortages = [];
+    expectedManifest.forEach(exp => {
+      let scannedObj = scannedMap[exp.ref];
+      let scannedQty = scannedObj ? scannedObj.totalScannedQty : 0;
+      if (scannedQty < exp.expectedQty) {
+        shortages.push({ ref: exp.ref, expected: exp.expectedQty, scanned: scannedQty, shortQty: exp.expectedQty - scannedQty });
       }
-      reportLines.push(``); count++;
+    });
+
+    if (shortages.length > 0) {
+      reportLines.push(`--- SHORTAGES / MISSING ITEMS ---`);
+      shortages.forEach(s => {
+        reportLines.push(`  * REF: ${s.ref} | Expected: ${s.expected} | Scanned: ${s.scanned} | SHORT: ${s.shortQty}`);
+      });
+      reportLines.push(``);
     }
   }
 
-  formatTextMap(invMap, "INVENTORY ADDITIONS", true);
-  formatTextMap(resMap, "RESERVED FOR CUSTOMERS", true);
-  formatTextMap(packMap, "PACK & SHIP", true);
-
-  if (pendingNewItems.length > 0) {
-    reportLines.push(`--------------------------------------------------------------------------------\n--- NEW ITEM DETAILS ---\n--------------------------------------------------------------------------------`);
-    let nIdx = 1;
-    pendingNewItems.forEach(nItem => {
-      reportLines.push(`[ ${nIdx} ] REF: ${nItem.ref}\n          | GTIN: ${cleanGtinValue(nItem.gtin)}\n          | Manufacturer: ${nItem.mfr}\n          | Price: ${nItem.price}`); nIdx++;
-    }); reportLines.push(``);
-  }
-
-  if (pendingFieldUpdates.length > 0) {
-    reportLines.push(`--------------------------------------------------------------------------------\n--- EXISTING ITEM UPDATES (${pendingFieldUpdates.length}) ---\n--------------------------------------------------------------------------------`);
-    let uIdx = 1;
-    pendingFieldUpdates.forEach(upd => {
-      reportLines.push(`[ ${uIdx} ] REF: ${upd.ref}\n          | GTIN: ${cleanGtinValue(upd.newValue)}`); uIdx++;
-    }); reportLines.push(``);
-  }
-
-  if (sessionScannedObjects.length > 0) {
-    reportLines.push(`--------------------------------------------------------------------------------\n--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---\n--------------------------------------------------------------------------------\nSession Start Time: ${sessionStartStr || 'N/A'}\n`);
-    sessionScannedObjects.forEach(item => {
-      reportLines.push(`REF: ${item.ref}`);
-      if (item.rawScanLines && item.rawScanLines.length > 0) {
-        item.rawScanLines.forEach((lineVal, idx) => { reportLines.push(`  - Barcode Line ${idx + 1}: ${lineVal}`); });
-      } else reportLines.push(`  - No raw barcodes captured.`);
-      reportLines.push(``);
+  // CONDITIONAL SECTION 2: OVERAGES
+  if (isManifestEnabled && expectedManifest.length > 0) {
+    let overages = [];
+    Object.keys(scannedMap).forEach(rKey => {
+      let expObj = expectedManifest.find(e => e.ref === rKey);
+      let expQty = expObj ? expObj.expectedQty : 0;
+      let scannedQty = scannedMap[rKey].totalScannedQty;
+      if (scannedQty > expQty) {
+        overages.push({ ref: rKey, expected: expQty, scanned: scannedQty, overQty: scannedQty - expQty });
+      }
     });
+
+    if (overages.length > 0) {
+      reportLines.push(`--- OVERAGES / UNEXPECTED ITEMS ---`);
+      overages.forEach(o => {
+        reportLines.push(`  * REF: ${o.ref} | Expected: ${o.expected} | Scanned: ${o.scanned} | OVER: +${o.overQty}`);
+      });
+      reportLines.push(``);
+    }
   }
 
-  reportLines.push(`================================================================================\nEND OF RECEIVING INVENTORY SUMMARY\n================================================================================`);
+  // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
+  let reservedItems = sessionScannedObjects.filter(i => i.customerTag);
+  if (reservedItems.length > 0) {
+    reportLines.push(`--- ROUTED TO CUSTOMER BINS ---`);
+    reservedItems.forEach(r => {
+      reportLines.push(`  * REF: ${r.ref} | Tag: ${r.customerTag} | Qty: ${r.qty}`);
+    });
+    reportLines.push(``);
+  }
+
+  // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
+  let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+  if (unpricedItems.length > 0) {
+    reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
+    unpricedItems.forEach(u => {
+      reportLines.push(`  * REF: ${u.ref} | MFR: ${u.mfr} | Qty Scanned: ${u.totalScannedQty}`);
+    });
+    reportLines.push(``);
+  }
+
+  reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
+  let count = 1;
+  for (let rKey in scannedMap) {
+    let rData = scannedMap[rKey];
+    reportLines.push(`[${count}] REF: ${rData.ref}\n    | Total Quantity: ${rData.totalScannedQty}`);
+    for (let tKey in rData.byTag) {
+      let tagData = rData.byTag[tKey];
+      if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+      reportLines.push(`    | Lot & Expiration Breakdowns:`);
+      for (let lKey in tagData.lots) {
+        let lData = tagData.lots[lKey];
+        reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+        if(lData.notes.length > 0) reportLines.push(`        * Notes: ${lData.notes.join(', ')}`);
+      }
+    }
+    reportLines.push(``); count++;
+  }
+
+  reportLines.push(`================================================================================\nEND OF INVENTORY SUMMARY\n================================================================================`);
   return reportLines.join('\n');
 }
 
 function buildHTMLReportString(filename) {
-  let invMap = {}, resMap = {}, packMap = {};
+  let scannedMap = {};
 
   sessionScannedObjects.forEach(item => {
     let rKey = item.ref;
     let cleanGtin = cleanGtinValue(item.gtin);
-    let targetMaps = [];
-    if (item.actionTag === 'Inventory') targetMaps.push(invMap);
-    else if (item.actionTag === 'Reserved') {
-      targetMaps.push(resMap);
-      if (currentWorkflowType.includes('Receiving & Reserving')) targetMaps.push(invMap); 
-    } else if (item.actionTag === 'Pack & Ship') targetMaps.push(packMap);
+    if (!scannedMap[rKey]) {
+      scannedMap[rKey] = { ref: item.ref, desc: item.desc, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalScannedQty: 0, byTag: {} };
+    }
+    scannedMap[rKey].totalScannedQty += item.qty;
 
-    targetMaps.forEach(targetMap => {
-      if (!targetMap[rKey]) {
-        targetMap[rKey] = { ref: item.ref, desc: item.desc, gtin: cleanGtin, mfr: item.mfr, price: item.price, totalQty: 0, byTag: {} };
-      } else if ((!targetMap[rKey].gtin || targetMap[rKey].gtin === 'N/A') && cleanGtin !== 'N/A') {
-        targetMap[rKey].gtin = cleanGtin;
-      }
-      targetMap[rKey].totalQty += item.qty;
+    let tKey = item.customerTag || 'UNTAGGED';
+    if (!scannedMap[rKey].byTag[tKey]) scannedMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+    scannedMap[rKey].byTag[tKey].tagTotalQty += item.qty;
 
-      let tKey = item.customerTag || 'UNTAGGED';
-      if (!targetMap[rKey].byTag[tKey]) targetMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
-      targetMap[rKey].byTag[tKey].tagTotalQty += item.qty;
-
-      let lotKey = `${item.lot}_${item.exp}`;
-      if (!targetMap[rKey].byTag[tKey].lots[lotKey]) targetMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes:[] };
-      targetMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
-      if (item.itemNote) targetMap[rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
-    });
+    let lotKey = `${item.lot}_${item.exp}`;
+    if (!scannedMap[rKey].byTag[tKey].lots[lotKey]) scannedMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes:[] };
+    scannedMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
+    if (item.itemNote) scannedMap[rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
   });
 
   let sessionTitleHeader = currentSessionName;
@@ -1204,19 +1423,23 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 .report-meta h2 { margin: 0; color: #333; font-size: 18px; margin-bottom: 8px; }
 .report-meta table { width: 100%; text-align: right; border: none; font-size: 13px; margin: 0; }
 .report-meta td { border: none; padding: 2px 0 2px 15px; }
-.section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 8px 12px; font-size: 16px; font-weight: bold; margin: 30px 0 15px 0; text-transform: uppercase; }
-.data-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-.data-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 10px; text-align: left; font-size: 13px; color: #555; }
-.data-table td { border-bottom: 1px solid #eee; padding: 10px; vertical-align: top; }
-.ref-col { font-weight: bold; color: #000; font-size: 15px; }
+.section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 8px 12px; font-size: 16px; font-weight: bold; margin: 25px 0 12px 0; text-transform: uppercase; }
+.data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.data-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 8px; text-align: left; font-size: 12px; color: #555; }
+.data-table td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
+.ref-col { font-weight: bold; color: #000; font-size: 14px; }
 .desc-col { font-size: 12px; color: #666; max-width: 250px; }
 .lot-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; background: #fafafa; border: 1px solid #eaeaea; }
 .lot-table th, .lot-table td { border: 1px solid #eaeaea; padding: 4px 8px; }
 .lot-table th { background: #f0f0f0; }
-.tag-header { font-weight: bold; color: #d32f2f; margin: 10px 0 4px 0; font-size: 12px; text-transform: uppercase; }
+.tag-header { font-weight: bold; color: #d32f2f; margin: 8px 0 4px 0; font-size: 12px; text-transform: uppercase; }
 .note-text { color: #d32f2f; font-style: italic; font-size: 11px; display: block; margin-top: 3px;}
-.raw-scan-list { font-family: monospace; font-size: 11px; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
 .session-notes { background-color: #fff9c4; border-left: 4px solid #fbc02d; padding: 10px; margin-bottom: 20px; font-size: 13px;}
+.alert-box { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; }
+.alert-short { background-color: #ffebee; border-left: 4px solid #c62828; color: #c62828; }
+.alert-over { background-color: #fff3e0; border-left: 4px solid #e65100; color: #e65100; }
+.alert-tag { background-color: #e3f2fd; border-left: 4px solid #0277bd; color: #0277bd; }
+.alert-price { background-color: #f3e5f5; border-left: 4px solid #7b1fa2; color: #7b1fa2; }
 @media print {
   body { margin: 0; padding: 15px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .page-break { page-break-before: always; }
@@ -1251,63 +1474,92 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `<div class="session-notes"><strong>Session Notes:</strong> ${sNote}</div>`;
   }
 
-  function buildTableHTML(mapData, showTags, showPrice) {
-    if (Object.keys(mapData).length === 0) return '';
-    let tb = `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
-    for (let rKey in mapData) {
-      let rData = mapData[rKey];
-      let lotSection = '';
-      for (let tKey in rData.byTag) {
-        let tagData = rData.byTag[tKey];
-        if (showTags && tKey !== 'UNTAGGED') lotSection += `<div class="tag-header">Tag: ${tKey} (Qty: ${tagData.tagTotalQty})</div>`;
-        else if (showTags && Object.keys(rData.byTag).length > 1) lotSection += `<div class="tag-header" style="color:#555;">UNTAGGED (Qty: ${tagData.tagTotalQty})</div>`;
-        
-        lotSection += `<table class="lot-table"><tr><th>Lot Number</th><th>Exp Date</th><th>Qty</th></tr>`;
-        for (let lKey in tagData.lots) {
-           let lData = tagData.lots[lKey];
-           let noteStr = lData.notes.length > 0 ? `<span class="note-text">${lData.notes.join('<br>')}</span>` : '';
-           lotSection += `<tr><td>${lData.lot}${noteStr}</td><td>${lData.exp}</td><td style="text-align:center; font-weight:bold;">${lData.qty}</td></tr>`;
-        }
-        lotSection += `</table>`;
+  // CONDITIONAL SECTION 1: SHORTAGES
+  if (isManifestEnabled && expectedManifest.length > 0) {
+    let shortages = [];
+    expectedManifest.forEach(exp => {
+      let scannedObj = scannedMap[exp.ref];
+      let scannedQty = scannedObj ? scannedObj.totalScannedQty : 0;
+      if (scannedQty < exp.expectedQty) {
+        shortages.push({ ref: exp.ref, expected: exp.expectedQty, scanned: scannedQty, shortQty: exp.expectedQty - scannedQty });
       }
-      let descText = rData.desc || 'No description available.';
-      let priceHtml = showPrice ? `<br><strong style="color:#2e7d32;">${rData.price}</strong>` : '';
-      tb += `<tr><td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td><td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td><td>${lotSection}</td><td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalQty}</td></tr>`;
+    });
+
+    if (shortages.length > 0) {
+      html += `<div class="section-title" style="border-color:#c62828; color:#c62828;">⚠️ SHORTAGES / MISSING ITEMS</div><div class="alert-box alert-short"><table style="width:100%;"><tr><th>REF</th><th>Expected</th><th>Scanned</th><th>Shortage</th></tr>`;
+      shortages.forEach(s => {
+        html += `<tr><td><strong>${s.ref}</strong></td><td style="text-align:center;">${s.expected}</td><td style="text-align:center;">${s.scanned}</td><td style="text-align:center; font-weight:bold; color:#c62828;">-${s.shortQty}</td></tr>`;
+      });
+      html += `</table></div>`;
     }
-    tb += `</tbody></table>`; return tb;
   }
 
-  if (Object.keys(invMap).length > 0) { html += `<div class="section-title">📦 INVENTORY ADDITIONS</div>`; html += buildTableHTML(invMap, true, false); }
-  if (Object.keys(resMap).length > 0) { html += `<div class="section-title">🚩 RESERVED FOR CUSTOMERS</div>`; html += buildTableHTML(resMap, true, false); }
-  if (Object.keys(packMap).length > 0) { html += `<div class="section-title">🖐️ PACK & SHIP (OUTBOUND)</div>`; html += buildTableHTML(packMap, true, true); }
+  // CONDITIONAL SECTION 2: OVERAGES
+  if (isManifestEnabled && expectedManifest.length > 0) {
+    let overages = [];
+    Object.keys(scannedMap).forEach(rKey => {
+      let expObj = expectedManifest.find(e => e.ref === rKey);
+      let expQty = expObj ? expObj.expectedQty : 0;
+      let scannedQty = scannedMap[rKey].totalScannedQty;
+      if (scannedQty > expQty) {
+        overages.push({ ref: rKey, expected: expQty, scanned: scannedQty, overQty: scannedQty - expQty });
+      }
+    });
 
-  if (pendingNewItems.length > 0 || pendingFieldUpdates.length > 0 || sessionScannedObjects.length > 0) {
-     html += `<div class="page-break"></div><div class="section-title" style="background-color:#424242; color:#fff; border-color:#212121;">⚙️ SYSTEM LOGS & BARCODE DATA</div>`;
+    if (overages.length > 0) {
+      html += `<div class="section-title" style="border-color:#e65100; color:#e65100;">⚠️ OVERAGES / UNEXPECTED ITEMS</div><div class="alert-box alert-over"><table style="width:100%;"><tr><th>REF</th><th>Expected</th><th>Scanned</th><th>Overage</th></tr>`;
+      overages.forEach(o => {
+        html += `<tr><td><strong>${o.ref}</strong></td><td style="text-align:center;">${o.expected}</td><td style="text-align:center;">${o.scanned}</td><td style="text-align:center; font-weight:bold; color:#e65100;">+${o.overQty}</td></tr>`;
+      });
+      html += `</table></div>`;
+    }
   }
 
-  if (pendingNewItems.length > 0) {
-    html += `<h4 style="margin-bottom:5px;">New Items Added to Database</h4><table class="data-table"><thead><tr><th>REF</th><th>Manufacturer</th><th>GTIN</th></tr></thead><tbody>`;
-    pendingNewItems.forEach(nItem => { html += `<tr><td><strong>${nItem.ref}</strong></td><td>${nItem.mfr}</td><td>${cleanGtinValue(nItem.gtin)}</td></tr>`; });
-    html += `</tbody></table>`;
+  // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
+  let reservedItems = sessionScannedObjects.filter(i => i.customerTag);
+  if (reservedItems.length > 0) {
+    html += `<div class="section-title" style="border-color:#0277bd; color:#0277bd;">🚩 ROUTED TO CUSTOMER BINS</div><div class="alert-box alert-tag"><table style="width:100%;"><tr><th>REF</th><th>Customer Tag</th><th>Quantity Routed</th></tr>`;
+    reservedItems.forEach(r => {
+      html += `<tr><td><strong>${r.ref}</strong></td><td>${r.customerTag}</td><td style="text-align:center; font-weight:bold;">${r.qty}</td></tr>`;
+    });
+    html += `</table></div>`;
   }
 
-  if (pendingFieldUpdates.length > 0) {
-    html += `<h4 style="margin-bottom:5px;">Existing Database Updates</h4><table class="data-table"><thead><tr><th>REF</th><th>Updated Value</th></tr></thead><tbody>`;
-    pendingFieldUpdates.forEach(upd => { html += `<tr><td><strong>${upd.ref}</strong></td><td>${cleanGtinValue(upd.newValue)}</td></tr>`; });
-    html += `</tbody></table>`;
+  // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
+  let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+  if (unpricedItems.length > 0) {
+    html += `<div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING</div><div class="alert-box alert-price"><table style="width:100%;"><tr><th>REF</th><th>Manufacturer</th><th>Quantity Scanned</th></tr>`;
+    unpricedItems.forEach(u => {
+      html += `<tr><td><strong>${u.ref}</strong></td><td>${u.mfr}</td><td style="text-align:center; font-weight:bold;">${u.totalScannedQty}</td></tr>`;
+    });
+    html += `</table></div>`;
   }
 
-  if (sessionScannedObjects.length > 0) {
-    html += `<h4 style="margin-bottom:5px;">Raw Barcode Scans</h4><div class="raw-scan-list">`;
-    sessionScannedObjects.forEach(item => {
-      html += `<div style="margin-bottom:8px;"><strong>REF: ${item.ref}</strong><br>`;
-      if (item.rawScanLines && item.rawScanLines.length > 0) {
-        item.rawScanLines.forEach((lineVal, idx) => { html += `&nbsp;&nbsp;Line ${idx + 1}: ${lineVal}<br>`; });
-      } else html += `&nbsp;&nbsp;No raw barcodes captured.<br>`;
-      html += `</div>`;
-    }); html += `</div>`;
+  // SCANNED BREAKDOWN TABLE
+  html += `<div class="section-title">📦 SCANNED ITEM BREAKDOWN</div>`;
+  html += `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
+  
+  for (let rKey in scannedMap) {
+    let rData = scannedMap[rKey];
+    let lotSection = '';
+    for (let tKey in rData.byTag) {
+      let tagData = rData.byTag[tKey];
+      if (tKey !== 'UNTAGGED') lotSection += `<div class="tag-header">Tag: ${tKey} (Qty: ${tagData.tagTotalQty})</div>`;
+      
+      lotSection += `<table class="lot-table"><tr><th>Lot Number</th><th>Exp Date</th><th>Qty</th></tr>`;
+      for (let lKey in tagData.lots) {
+         let lData = tagData.lots[lKey];
+         let noteStr = lData.notes.length > 0 ? `<span class="note-text">${lData.notes.join('<br>')}</span>` : '';
+         lotSection += `<tr><td>${lData.lot}${noteStr}</td><td>${lData.exp}</td><td style="text-align:center; font-weight:bold;">${lData.qty}</td></tr>`;
+      }
+      lotSection += `</table>`;
+    }
+    let descText = rData.desc || 'No description available.';
+    let priceHtml = rData.price ? `<br><strong style="color:#2e7d32;">${rData.price}</strong>` : '';
+    html += `<tr><td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td><td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td><td>${lotSection}</td><td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalScannedQty}</td></tr>`;
   }
-  html += `</body></html>`; return html;
+  html += `</tbody></table></body></html>`; 
+  return html;
 }
 
 window.triggerShareOrDownload = async function(content, filename, mimeType) {
