@@ -31,6 +31,7 @@ const DatabaseManager = {
     } catch (err) {
       console.error("Database parsing error:", err);
     }
+    
     this.populateRefDatalist();
     this.populateVendors();
     this.populatePartners();
