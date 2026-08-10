@@ -526,7 +526,20 @@
     <button class="btn-action btn-clear" style="flex:1;" onclick="clearAuditSessions()">🧹 Clear Sessions</button>
   </div>
 
+  
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">
+    
+    <!-- NEW: THRIVE & DATABASE SYNC PANEL -->
+    <div class="export-panel" style="background-color: #f3e5f5; border-color: #7b1fa2; margin-bottom: 15px;">
+      <h4 style="color: #7b1fa2; text-align: center; margin: 0 0 10px 0;">Technical Admin - Thrive & Database Sync</h4>
+      <div class="btn-flex-row">
+        <button class="btn-action" style="background-color: #7b1fa2; color: #ffffff;" onclick="exportThriveCreates()">📥 Thrive 'Create' (CSV)</button>
+        <button class="btn-action" style="background-color: #6a1b9a; color: #ffffff;" onclick="exportThriveEdits()">📥 Thrive 'Edit' (CSV)</button>
+        <button class="btn-action" style="background-color: #4a148c; color: #ffffff;" onclick="exportUpdatedDatabaseJSON()">💾 Generate database.json</button>
+      </div>
+    </div>
+
+    <!-- EXISTING: AUDIT EXPORT PANEL -->
     <div class="export-panel">
       <h4>Audit Actions</h4>
       <div class="form-row" style="margin-bottom: 0;">
