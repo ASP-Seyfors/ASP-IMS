@@ -24,6 +24,7 @@ const AuditManager = {
           let noteRow = document.createElement('div'); noteRow.style.fontSize = '0.8rem'; noteRow.style.color = '#d32f2f'; noteRow.style.marginTop = '4px';
           noteRow.innerHTML = `<em>Note: ${item.itemNote}</em>`; div.appendChild(noteRow);
       }
+      
       container.appendChild(div);
     });
   },
