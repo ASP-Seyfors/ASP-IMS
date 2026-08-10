@@ -8,12 +8,12 @@
   "theme_color": "#1a1d20",
   "icons": [
     {
-      "src": "ASP_Box_Web_RGB (192x192 Icon).png",
+      "src": "ASP_Icon_192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "ASP_Box_Web_RGB (512x512 Icon).png",
+      "src": "ASP_Icon_512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
