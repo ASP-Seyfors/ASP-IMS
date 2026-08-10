@@ -68,7 +68,18 @@
 <body>
 
 <!-- SCREEN 1: SESSION SETUP PHASE -->
-<div id="screenSetup" class="card">
+<div class="form-row">
+    <div class="form-label">App Theme:</div>
+    <div class="input-wrapper">
+      <select id="themeSelect" onchange="changeAppTheme(this.value)">
+        <option value="sage">🌲 Sage & Khaki (Eye-Strain Relief)</option>
+        <option value="gold">🌾 Classic Gold & Khaki</option>
+        <option value="slate">🌑 Slate & Charcoal (Dark Mode)</option>
+      </select>
+    </div>
+  </div>
+  
+  <div id="screenSetup" class="card">
   <h2>Start New Scanning Session <span style="font-size: 0.75rem; color: #555;">(v1.7.2)</span></h2>
   
   <div class="form-row">
