@@ -1,23 +1,16 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - STYLESHEET (styles.css)                               */
-/* VERSION 1.7.4 | DYNAMIC COLOR THEME SWITCHER                           */
+/* VERSION 1.7.5 | CENTER-ALIGNED THEMES WITHOUT EMOJIS                   */
 /* ======================================================================= */
 
-/* Theme 1: Sage & Khaki (Default) */
+/* Theme Variables */
 body, body.theme-sage {
   --bg-color: #23332b;
   --desktop-bg: #1a2720;
   --card-bg: #f4eeda;
   --raw-bg: #e6dfb8;
-  font-family: Arial, sans-serif;
-  background-color: var(--bg-color);
-  color: #000000;
-  margin: 12px;
-  padding: 0;
-  transition: background-color 0.3s ease;
 }
 
-/* Theme 2: Classic Gold & Khaki */
 body.theme-gold {
   --bg-color: #f0e68c;
   --desktop-bg: #e2d9a3;
@@ -25,12 +18,21 @@ body.theme-gold {
   --raw-bg: #e6dfb8;
 }
 
-/* Theme 3: Slate & Charcoal (Dark Mode) */
 body.theme-slate {
   --bg-color: #1a1d20;
   --desktop-bg: #121416;
   --card-bg: #f0f2f5;
   --raw-bg: #e2e4e8;
+}
+
+/* Base Body Styles (Centering Preserved across All Themes) */
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: #000000;
+  margin: 12px;
+  padding: 0;
+  transition: background-color 0.3s ease;
 }
 
 /* Base Card Layout */
@@ -339,11 +341,11 @@ input.needs-attention, select.needs-attention {
   color: #0277bd;
 }
 
-/* DESKTOP / WORKSTATION MEDIA QUERY */
+/* DESKTOP / WORKSTATION MEDIA QUERY (Guarantees Centering across All Themes) */
 @media (min-width: 800px) {
   body {
     max-width: 850px;
-    margin: 30px auto;
+    margin: 30px auto !important;
     background-color: var(--desktop-bg);
   }
 
