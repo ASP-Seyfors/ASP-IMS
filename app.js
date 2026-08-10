@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - LOGIC & SCRIPTING (app.js)                            */
-/* VERSION 1.6.0 | EXPECTED MANIFEST & RECONCILIATION ENGINE               */
+/* VERSION 1.7.0 | MULTI-SESSION AUDIT & TRACEABILITY ENGINE               */
 /* ======================================================================= */
 
 const defaultVendors = [
@@ -19,6 +19,9 @@ let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned
 // Manifest Reconciliation State
 let isManifestEnabled = false;
 let expectedManifest = JSON.parse(localStorage.getItem('asp_active_manifest')) || [];
+
+// Multi-Session Audit State
+let parsedAuditSessions = [];
 
 let currentItemAction = "Inventory";
 let visibleScanLines = 1;
@@ -261,6 +264,226 @@ window.updateManifestProgressUI = function() {
 
   document.getElementById('manifestScannedQty').textContent = totalScanned;
   document.getElementById('manifestTotalQty').textContent = totalExpected;
+};
+
+/* --- MULTI-SESSION AUDIT & TRACEABILITY ENGINE --- */
+
+window.openAuditHub = function() {
+  document.getElementById('screenSetup').style.display = 'none';
+  document.getElementById('screenAuditHub').style.display = 'block';
+};
+
+window.closeAuditHub = function() {
+  document.getElementById('screenAuditHub').style.display = 'none';
+  document.getElementById('screenSetup').style.display = 'block';
+};
+
+window.processAuditFiles = async function(event) {
+  const files = event.target.files;
+  if (files.length === 0) return;
+
+  parsedAuditSessions = [];
+  let filePromises = Array.from(files).map(file => {
+    return new Promise((resolve) => {
+      let reader = new FileReader();
+      reader.onload = (e) => {
+        let text = e.target.result;
+        let sessionData = parseTXTExportContent(text, file.name);
+        if (sessionData) parsedAuditSessions.push(sessionData);
+        resolve();
+      };
+      reader.readAsText(file);
+    });
+  });
+
+  await Promise.all(filePromises);
+
+  if (parsedAuditSessions.length > 0) {
+    renderAuditPreviewUI();
+    document.getElementById('auditResultsContainer').style.display = 'block';
+  } else {
+    alert("Could not parse valid session logs from selected files.");
+  }
+};
+
+function parseTXTExportContent(text, filename) {
+  let sessionName = filename;
+  let workflow = "Unknown";
+  let date = "Unknown";
+  let user = "N/A";
+  let items = [];
+
+  let lines = text.split('\n');
+  let currentRef = "";
+  let currentTag = "";
+
+  lines.forEach(line => {
+    let trim = line.trim();
+    if (trim.includes("ASP SCANNER APP SUMMARY EXPORT - ")) {
+      sessionName = trim.replace("ASP SCANNER APP SUMMARY EXPORT - ", "").trim();
+    } else if (trim.startsWith("Scanned By:")) {
+      user = trim.replace("Scanned By:", "").trim();
+    } else if (trim.startsWith("Workflow Process:")) {
+      workflow = trim.replace("Workflow Process:", "").trim();
+    } else if (trim.startsWith("Scanned Date:")) {
+      date = trim.replace("Scanned Date:", "").trim();
+    } else if (trim.startsWith("[") && trim.includes("REF:")) {
+      currentRef = trim.substring(trim.indexOf("REF:") + 4).trim();
+    } else if (trim.startsWith("| Customer Tag:")) {
+      currentTag = trim.substring(trim.indexOf("Customer Tag:") + 15).replace(/\(Qty: \d+\)/, '').trim();
+    } else if (trim.startsWith("- Lot:")) {
+      let lotMatch = trim.match(/- Lot:\s*([^|]+)\|\s*Exp:\s*([^|]+)\|\s*Qty:\s*(\d+)/);
+      if (lotMatch && currentRef) {
+        items.push({
+          ref: currentRef,
+          lot: lotMatch[1].trim(),
+          exp: lotMatch[2].trim(),
+          qty: parseInt(lotMatch[3], 10) || 1,
+          customerTag: currentTag,
+          workflow: workflow,
+          sessionName: sessionName,
+          date: date,
+          user: user
+        });
+      }
+    }
+  });
+
+  return items.length > 0 ? { sessionName, workflow, date, user, items } : null;
+}
+
+function compileTraceabilityData() {
+  let lotTraceMap = {};
+  let totalItemsScanned = 0;
+  let uniqueRefs = new Set();
+
+  parsedAuditSessions.forEach(session => {
+    session.items.forEach(item => {
+      uniqueRefs.add(item.ref);
+      totalItemsScanned += item.qty;
+
+      let key = `${item.ref}_${item.lot}`;
+      if (!lotTraceMap[key]) {
+        lotTraceMap[key] = {
+          ref: item.ref,
+          lot: item.lot,
+          exp: item.exp,
+          inboundQty: 0,
+          reservedQty: 0,
+          outboundQty: 0,
+          timeline: []
+        };
+      }
+
+      if (item.workflow.includes('Receiving')) lotTraceMap[key].inboundQty += item.qty;
+      if (item.workflow.includes('Reserving')) lotTraceMap[key].reservedQty += item.qty;
+      if (item.workflow.includes('Packing')) lotTraceMap[key].outboundQty += item.qty;
+
+      lotTraceMap[key].timeline.push({
+        date: item.date,
+        workflow: item.workflow,
+        qty: item.qty,
+        sessionName: item.sessionName,
+        customerTag: item.customerTag,
+        user: item.user
+      });
+    });
+  });
+
+  return { lotTraceMap, totalItemsScanned, uniqueRefsCount: uniqueRefs.size };
+}
+
+function renderAuditPreviewUI() {
+  const container = document.getElementById('auditPreviewContent');
+  const { lotTraceMap, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
+
+  let html = `
+    <div class="audit-card" style="background-color:#e3f2fd;">
+      <h3>Audit Scope: ${parsedAuditSessions.length} Sessions Processed</h3>
+      <div><strong>Total Unique REFs:</strong> ${uniqueRefsCount} | <strong>Total Units Handled:</strong> ${totalItemsScanned}</div>
+    </div>
+  `;
+
+  for (let key in lotTraceMap) {
+    let trace = lotTraceMap[key];
+    let isReconciled = (trace.inboundQty === trace.outboundQty && trace.inboundQty > 0);
+    let badgeClass = isReconciled ? 'badge-match' : 'badge-warn';
+    let statusText = isReconciled ? '✓ Reconciled' : '⚠️ Pending / Discrepancy';
+
+    html += `
+      <div class="audit-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:1.05rem;">REF: ${trace.ref} (Lot: ${trace.lot})</strong>
+          <span class="badge-info ${badgeClass}">${statusText}</span>
+        </div>
+        <div style="font-size:0.85rem; color:#555; margin: 4px 0;">Expiration: ${trace.exp}</div>
+        <div style="font-size:0.85rem; margin-bottom:6px;">
+          Inbound: <strong>${trace.inboundQty}</strong> | Reserved: <strong>${trace.reservedQty}</strong> | Outbound: <strong>${trace.outboundQty}</strong>
+        </div>
+        <div style="font-size:0.8rem; background:#f5f5f5; padding:6px; border-radius:3px;">
+          <strong>Chain of Custody Events:</strong><br>
+    `;
+
+    trace.timeline.forEach(event => {
+      let tagStr = event.customerTag ? ` (Tag: ${event.customerTag})` : '';
+      html += `&nbsp;&nbsp;• [${event.date}] ${event.workflow}: ${event.qty} unit(s) via <em>${event.sessionName}</em>${tagStr}<br>`;
+    });
+
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+window.executeAuditExport = function() {
+  const val = document.getElementById('auditExportDropdown').value;
+  if (!val) {
+    alert("Please select an audit export format.");
+    return;
+  }
+
+  const { lotTraceMap, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
+  const filename = `MASTER_WEEKLY_AUDIT_TRACEABILITY_${sessionDateStr}.${val}`;
+
+  let reportText = [
+    `================================================================================`,
+    `ASP MASTER WEEKLY TRACEABILITY & AUDIT SUMMARY`,
+    `Generated Date: ${sessionDateStr}`,
+    `Total Uploaded Sessions: ${parsedAuditSessions.length}`,
+    `Total Unique REFs: ${uniqueRefsCount}`,
+    `Total Units Handled: ${totalItemsScanned}`,
+    `================================================================================\n`,
+    `--- LOT-LEVEL CHAIN OF CUSTODY TRACEABILITY ---\n`
+  ];
+
+  for (let key in lotTraceMap) {
+    let trace = lotTraceMap[key];
+    reportText.push(`[REF: ${trace.ref}] | LOT: ${trace.lot} | EXP: ${trace.exp}`);
+    reportText.push(`  | Total Inbound: ${trace.inboundQty} | Total Reserved: ${trace.reservedQty} | Total Outbound: ${trace.outboundQty}`);
+    reportText.push(`  | Timeline Chain of Custody:`);
+    trace.timeline.forEach(event => {
+      let tagStr = event.customerTag ? ` (Tag: ${event.customerTag})` : '';
+      reportText.push(`    - [${event.date}] ${event.workflow}: ${event.qty} unit(s) [Session: ${event.sessionName}]${tagStr} (User: ${event.user})`);
+    });
+    reportText.push(``);
+  }
+
+  reportText.push(`================================================================================\nEND OF MASTER TRACEABILITY AUDIT\n================================================================================`);
+  let fullText = reportText.join('\n');
+
+  if (val === 'pdf') {
+    let printWin = window.open('', '_blank');
+    if (printWin) {
+      let html = `<html><head><title>${filename}</title><style>body{font-family:monospace; font-size:12px; padding:20px; white-space:pre-wrap;}</style></head><body>${fullText}</body></html>`;
+      printWin.document.open();
+      printWin.document.write(html);
+      printWin.document.title = filename;
+      printWin.document.close();
+      setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
+    }
+  } else {
+    triggerShareOrDownload(fullText, filename, 'text/plain');
+  }
 };
 
 /* --- LOOKUP & MATCHING LOGIC --- */
@@ -506,7 +729,7 @@ window.startSession = function() {
   if (isManifestEnabled) {
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('manifestRowsContainer').innerHTML = '';
-    addManifestRow(); // Default first row
+    addManifestRow();
     document.getElementById('screenManifestEntry').style.display = 'block';
   } else {
     expectedManifest = [];
@@ -1252,6 +1475,7 @@ function buildTXTReportString() {
 
   sessionScannedObjects.forEach(item => {
     let rKey = item.ref;
+    let cleanGtin = cleanGtinValue(item.gtin);
     if (!scannedMap[rKey]) {
       scannedMap[rKey] = { ref: item.ref, desc: item.desc, mfr: item.mfr, price: item.price, totalScannedQty: 0, byTag: {} };
     }
