@@ -1,26 +1,27 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - LOGIC & SCRIPTING (app.js)                            */
-/* VERSION 1.7.2 | EXECUTIVE AUDIT TABLES & CHRONOLOGICAL TRACEABILITY     */
+/* VERSION 1.8.0 | SPREADSHEET PARSER & DYNAMIC SESSION ROUTING            */
 /* ======================================================================= */
 
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
-  "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
-  "+ Create New Vendor"
+  "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER"
 ];
+
+const defaultSuppliers = ["Medline", "GeoSurgical", "RevMed", "SPS", "+ Add Supplier"];
+const defaultCustomers = ["AHS", "RFP", "CASCADE", "REDHEAD", "SUNCOAST", "MAP", "PMCY", "EMMANUEL JR", "+ Add Customer"];
 
 let db = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
 let vendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors;
+let suppliers = JSON.parse(localStorage.getItem('asp_wh_suppliers')) || defaultSuppliers;
+let customers = JSON.parse(localStorage.getItem('asp_wh_customers')) || defaultCustomers;
 
 let pendingNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
 let pendingFieldUpdates = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
 let sessionScannedObjects = JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [];
 
-// Manifest Reconciliation State
 let isManifestEnabled = false;
 let expectedManifest = JSON.parse(localStorage.getItem('asp_active_manifest')) || [];
-
-// Multi-Session Audit State
 let parsedAuditSessions = [];
 
 let currentItemAction = "Inventory";
@@ -39,6 +40,22 @@ let pendingUpdates = {};
 let html5QrCode = null;
 let isCameraActive = false;
 let scanCooldown = false;
+
+/* --- THEME INITIALIZATION --- */
+
+window.changeAppTheme = function(themeName) {
+  document.body.classList.remove('theme-sage', 'theme-gold', 'theme-slate');
+  document.body.classList.add(`theme-${themeName}`);
+  localStorage.setItem('asp_app_theme', themeName);
+  
+  let sel = document.getElementById('themeSelect');
+  if (sel) sel.value = themeName;
+};
+
+window.loadSavedTheme = function() {
+  let savedTheme = localStorage.getItem('asp_app_theme') || 'slate';
+  changeAppTheme(savedTheme);
+};
 
 /* --- DATABASE INITIALIZATION & PREDICTIVE TEXT --- */
 
@@ -73,11 +90,36 @@ window.populateVendors = function() {
   if (!sel) return;
   sel.innerHTML = '';
   vendors.forEach(v => {
+    if (v === "+ Create New Vendor") return;
     let opt = document.createElement('option');
     opt.value = v; opt.textContent = v;
     sel.appendChild(opt);
   });
+  let optNew = document.createElement('option');
+  optNew.value = "+ Create New Vendor"; optNew.textContent = "+ Create New Vendor";
+  sel.appendChild(optNew);
   evaluateFieldAttention();
+}
+
+window.populatePartners = function() {
+  const supSel = document.getElementById('supplierSelect');
+  const custSel = document.getElementById('customerSelect');
+  if (supSel) {
+    supSel.innerHTML = '';
+    suppliers.forEach(s => {
+      let opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      supSel.appendChild(opt);
+    });
+  }
+  if (custSel) {
+    custSel.innerHTML = '';
+    customers.forEach(c => {
+      let opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      custSel.appendChild(opt);
+    });
+  }
 }
 
 window.loadMasterDatabase = async function() {
@@ -99,13 +141,58 @@ window.loadMasterDatabase = async function() {
         localStorage.setItem('asp_wh_vendors', JSON.stringify(vendors));
         populateVendors();
       }
+      populatePartners();
       runMasterLookup();
     } else {
       console.warn("Notice: External database.json not found or returned an error.");
       populateRefDatalist();
+      populatePartners();
     }
   } catch (err) {
     console.error("Database parsing error:", err);
+  }
+}
+
+/* --- DYNAMIC UI CONTROLS --- */
+
+window.toggleSessionType = function() {
+  const type = document.querySelector('input[name="sessionType"]:checked').value;
+  const rowSup = document.getElementById('rowSupplier');
+  const rowCust = document.getElementById('rowCustomer');
+  const rowProc = document.getElementById('rowProcess');
+  
+  if (type === 'Shipment') {
+    rowSup.style.display = 'flex';
+    rowCust.style.display = 'none';
+    rowProc.style.display = 'none';
+  } else {
+    rowSup.style.display = 'none';
+    rowCust.style.display = 'flex';
+    rowProc.style.display = 'flex';
+  }
+}
+
+window.handlePartnerSelect = function(val, type) {
+  if (val === "+ Add Supplier") {
+    let newS = prompt("Enter new Supplier/Vendor name:");
+    if (newS) {
+      suppliers.splice(suppliers.length - 1, 0, newS.trim());
+      localStorage.setItem('asp_wh_suppliers', JSON.stringify(suppliers));
+      populatePartners();
+      document.getElementById('supplierSelect').value = newS.trim();
+    } else {
+      document.getElementById('supplierSelect').selectedIndex = 0;
+    }
+  } else if (val === "+ Add Customer") {
+    let newC = prompt("Enter new Customer name:");
+    if (newC) {
+      customers.splice(customers.length - 1, 0, newC.trim());
+      localStorage.setItem('asp_wh_customers', JSON.stringify(customers));
+      populatePartners();
+      document.getElementById('customerSelect').value = newC.trim();
+    } else {
+      document.getElementById('customerSelect').selectedIndex = 0;
+    }
   }
 }
 
@@ -149,39 +236,72 @@ window.toggleManifestResRow = function(idx) {
   }
 };
 
-window.scanDocumentOCR = function(event) {
-  if (event.target.files.length === 0) return;
-  const file = event.target.files[0];
-  alert("Processing document image with experimental OCR... Please wait a few seconds.");
-
-  Tesseract.recognize(file, 'eng')
-    .then(({ data: { text } }) => {
-      let lines = text.split('\n');
-      let foundMatches = 0;
-
-      lines.forEach(line => {
-        let words = line.toUpperCase().split(/\s+/);
-        words.forEach(word => {
-          let cleanWord = word.replace(/[^A-Z0-9-]/g, '');
-          let match = db.find(i => getItemSku(i) === cleanWord);
-          if (match) {
-            addManifestRow(cleanWord, 1);
-            foundMatches++;
-          }
-        });
-      });
-
-      if (foundMatches > 0) {
-        alert(`OCR Scan Complete: Pre-filled ${foundMatches} recognized REF(s) from document! Please verify quantities.`);
-      } else {
-        alert("OCR Scan Complete: No known database REFs detected in image. Please add rows manually.");
+window.processPastedSpreadsheet = function() {
+  const text = document.getElementById('pasteManifestArea').value.trim();
+  if (!text) {
+    alert("Please paste spreadsheet data first.");
+    return;
+  }
+  
+  const lines = text.split('\n');
+  if (lines.length === 0) return;
+  
+  let headers = lines[0].toUpperCase().split('\t');
+  let skuIdx = -1, qtyIdx = -1, custIdx = -1, poIdx = -1;
+  
+  headers.forEach((h, i) => {
+    let cleanH = h.trim();
+    if (cleanH === 'SKU' || cleanH === 'REF') skuIdx = i;
+    if (cleanH === 'QTY' || cleanH === 'QUANTITY') qtyIdx = i;
+    if (cleanH === 'CUSTOMER' || cleanH === 'CUST') custIdx = i;
+    if (cleanH === 'PO' || cleanH === 'INVOICE') poIdx = i;
+  });
+  
+  let startIndex = 0;
+  if (skuIdx === -1 && qtyIdx === -1) {
+    custIdx = 0; poIdx = 1; skuIdx = 2; qtyIdx = 3;
+  } else {
+    startIndex = 1; 
+  }
+  
+  let parsedCount = 0;
+  
+  for (let i = startIndex; i < lines.length; i++) {
+    let cols = lines[i].split('\t');
+    if (cols.length < 2) continue; 
+    
+    let ref = cols[skuIdx] ? cols[skuIdx].trim().toUpperCase() : '';
+    let qty = cols[qtyIdx] ? parseInt(cols[qtyIdx].replace(/\D/g, ''), 10) : 1;
+    if (isNaN(qty) || qty < 1) qty = 1;
+    
+    let customer = cols[custIdx] ? cols[custIdx].trim().toUpperCase() : '';
+    let po = cols[poIdx] ? cols[poIdx].trim().toUpperCase() : '';
+    
+    if (!ref) continue;
+    
+    let isRes = false;
+    let tagVal = '';
+    let resQty = 0;
+    
+    if (customer && customer !== 'SHELF' && customer !== 'NA' && customer !== 'N/A') {
+      isRes = true;
+      tagVal = customer;
+      if (po && po !== 'NA' && po !== 'N/A') {
+        tagVal += ' - ' + po;
       }
-      event.target.value = '';
-    })
-    .catch(err => {
-      alert("OCR Error: " + err.message);
-      event.target.value = '';
-    });
+      resQty = qty;
+    }
+    
+    addManifestRow(ref, qty, isRes, tagVal, resQty);
+    parsedCount++;
+  }
+  
+  if (parsedCount > 0) {
+    document.getElementById('pasteManifestArea').value = '';
+    alert(`Successfully parsed and added ${parsedCount} items!`);
+  } else {
+    alert("Could not extract items. Please ensure you are pasting directly from the spreadsheet columns.");
+  }
 };
 
 window.readManifestDataFromUI = function() {
@@ -340,7 +460,6 @@ function parseTXTExportContent(text, filename) {
       currentRef = trim.substring(trim.indexOf("REF:") + 4).trim();
       currentTag = ""; currentItemNote = "";
     } else if (trim.startsWith("| Customer Tag:")) {
-      // Fix string truncation: capture entire Tag string without dropping initial characters
       let tagMatch = trim.match(/Customer Tag:\s*(.+?)(?:\s*\(Qty:|\s*$)/);
       if (tagMatch) currentTag = tagMatch[1].trim();
     } else if (trim.startsWith("* Notes:")) {
@@ -366,6 +485,7 @@ function parseTXTExportContent(text, filename) {
           itemNote: currentItemNote,
           workflow: effectiveWorkflow,
           sessionName: sessionName,
+          fileName: filename,
           date: date,
           user: user
         });
@@ -373,7 +493,7 @@ function parseTXTExportContent(text, filename) {
     }
   });
 
-  return items.length > 0 ? { sessionName, workflow, date, user, items } : null;
+  return items.length > 0 ? { fileName: filename, sessionName, workflow, date, user, items } : null;
 }
 
 function compileTraceabilityData() {
@@ -381,8 +501,13 @@ function compileTraceabilityData() {
   let totalItemsScanned = 0;
   let uniqueRefs = new Set();
   let datesArray = [];
+  let sourceFilesList = [];
 
   parsedAuditSessions.forEach(session => {
+    if (session.fileName && !sourceFilesList.includes(session.fileName)) {
+      sourceFilesList.push(session.fileName);
+    }
+
     session.items.forEach(item => {
       uniqueRefs.add(item.ref);
       totalItemsScanned += item.qty;
@@ -431,6 +556,7 @@ function compileTraceabilityData() {
         workflow: item.workflow,
         qty: item.qty,
         sessionName: item.sessionName,
+        fileName: item.fileName,
         customerTag: item.customerTag,
         itemNote: item.itemNote,
         user: item.user
@@ -438,12 +564,10 @@ function compileTraceabilityData() {
     });
   });
 
-  // Calculate Global Date Range for Filename
   datesArray.sort();
   let startDate = datesArray.length > 0 ? datesArray[0] : sessionDateStr;
   let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : sessionDateStr;
 
-  // Convert to Sorted Array Alphabetically by REF
   let sortedTraceList = Object.values(lotTraceMap).sort((a, b) => {
     if (a.ref < b.ref) return -1;
     if (a.ref > b.ref) return 1;
@@ -452,7 +576,6 @@ function compileTraceabilityData() {
     return 0;
   });
 
-  // Sort Timeline History Chronologically (Oldest to Newest)
   sortedTraceList.forEach(trace => {
     trace.timeline.sort((a, b) => {
       let dateA = new Date(a.date.replace(/\./g, '-'));
@@ -466,18 +589,25 @@ function compileTraceabilityData() {
     totalItemsScanned,
     uniqueRefsCount: uniqueRefs.size,
     startDate,
-    endDate
+    endDate,
+    sourceFilesList
   };
 }
 
 function renderAuditPreviewUI() {
   const container = document.getElementById('auditPreviewContent');
-  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate } = compileTraceabilityData();
+  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate, sourceFilesList } = compileTraceabilityData();
+
+  let fileListHtml = sourceFilesList.map(f => `<li>${f}</li>`).join('');
 
   let html = `
     <div class="audit-card" style="background-color:#e3f2fd;">
       <h3>Week Summary (${startDate} - ${endDate})</h3>
       <div><strong>Sessions Uploaded:</strong> ${parsedAuditSessions.length} | <strong>Unique REFs:</strong> ${uniqueRefsCount} | <strong>Total Units:</strong> ${totalItemsScanned}</div>
+      <div style="margin-top:8px; font-size:0.8rem; color:#555;">
+        <strong>Source Log Files (${sourceFilesList.length}):</strong>
+        <ul style="margin:4px 0 0 16px; padding:0; max-height:80px; overflow-y:auto;">${fileListHtml}</ul>
+      </div>
     </div>
   `;
 
@@ -505,9 +635,8 @@ function renderAuditPreviewUI() {
 }
 
 function buildHTMLAuditReportString(filename, startDate, endDate) {
-  const { sortedTraceList, totalItemsScanned, uniqueRefsCount } = compileTraceabilityData();
+  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, sourceFilesList } = compileTraceabilityData();
 
-  // Group Traceability Lifecycles logically
   let inventoryStockList = [];
   let customerGroupMap = {};
   let generalOutboundList = [];
@@ -524,6 +653,8 @@ function buildHTMLAuditReportString(filename, startDate, endDate) {
     }
   });
 
+  let fileItemsHtml = sourceFilesList.map(f => `<div style="font-size:10px; color:#555;">• ${f}</div>`).join('');
+
   let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -538,6 +669,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 .report-meta h2 { margin: 0; color: #333; font-size: 15px; margin-bottom: 6px; }
 .report-meta table { width: 100%; text-align: right; border: none; font-size: 11px; margin: 0; }
 .report-meta td { border: none; padding: 1px 0 1px 10px; }
+.file-log-box { background: #f4eeda; border: 1px solid #8b8589; border-radius: 4px; padding: 8px 12px; margin-bottom: 15px; }
+.file-log-box h4 { margin: 0 0 4px 0; color: #0277bd; font-size: 11px; text-transform: uppercase; }
 .section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 6px 10px; font-size: 13px; font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; }
 .sub-section-title { background-color: #e3f2fd; border-left: 4px solid #0277bd; padding: 4px 8px; font-size: 12px; font-weight: bold; margin: 12px 0 6px 0; color: #0277bd; }
 .audit-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
@@ -570,6 +703,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     <tr><td><strong>Total Units Handled:</strong></td><td>${totalItemsScanned}</td></tr>
   </table>
 </div>
+</div>
+
+<div class="file-log-box">
+  <h4>AUDITED SOURCE LOG FILES (${sourceFilesList.length})</h4>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px;">
+    ${fileItemsHtml}
+  </div>
 </div>
 
 <!-- TABLE 1: MASTER ITEM CATALOG -->
@@ -650,7 +790,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 <div class="page-break"></div>
 <div class="section-title">3. LIFECYCLE TRACEABILITY FLOW (CHRONOLOGICAL)</div>`;
 
-  // Group 3A: Received to Stock
   if (inventoryStockList.length > 0) {
     html += `<div class="sub-section-title">📦 Received to General Stock Inventory</div>
     <table class="audit-table">
@@ -663,7 +802,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</tbody></table>`;
   }
 
-  // Group 3B: Customer Allocations
   if (Object.keys(customerGroupMap).length > 0) {
     html += `<div class="sub-section-title">🚩 Customer Allocations & Reserved Bins</div>`;
     for (let custTag in customerGroupMap) {
@@ -679,7 +817,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   }
 
-  // Group 3C: General Outbound
   if (generalOutboundList.length > 0) {
     html += `<div class="sub-section-title">🖐️ General Outbound Shipments</div>
     <table class="audit-table">
@@ -703,7 +840,7 @@ window.executeAuditExport = function() {
     return;
   }
 
-  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate } = compileTraceabilityData();
+  const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate, sourceFilesList } = compileTraceabilityData();
   const filename = `ASP - Shipping & Receiving - Week Summary (${startDate}-${endDate}).${val}`;
 
   if (val === 'pdf') {
@@ -726,7 +863,6 @@ window.executeAuditExport = function() {
     return;
   }
 
-  // TXT FALLBACK EXPORT
   let reportText = [
     `================================================================================`,
     `ASP - Shipping & Receiving - Week Summary (${startDate}-${endDate})`,
@@ -734,6 +870,9 @@ window.executeAuditExport = function() {
     `Total Uploaded Sessions: ${parsedAuditSessions.length}`,
     `Total Unique REFs: ${uniqueRefsCount}`,
     `Total Units Handled: ${totalItemsScanned}`,
+    `================================================================================`,
+    `AUDITED SOURCE LOG FILES (${sourceFilesList.length}):`,
+    sourceFilesList.map(f => `  • ${f}`).join('\n'),
     `================================================================================\n`,
     `--- 1. MASTER ITEM CATALOG ---\n`
   ];
@@ -975,15 +1114,19 @@ window.handleVendorSelect = function(val) {
 
 window.startSession = function() {
   const uName = document.getElementById('userNameInput').value.trim();
-  const sName = document.getElementById('sessionNameInput').value.trim();
-  const oNum = document.getElementById('orderNumInput').value.trim();
-  const wType = document.getElementById('workflowTypeSelect').value;
+  const type = document.querySelector('input[name="sessionType"]:checked').value;
+  let partner = type === 'Shipment' ? document.getElementById('supplierSelect').value : document.getElementById('customerSelect').value;
+  const oDetails = document.getElementById('orderDetailsInput').value.trim();
+  const wType = type === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
   const chkManifest = document.getElementById('chkPreloadManifest').checked;
 
-  if (!sName) {
-    alert("Please enter a Session Name before starting.");
+  if (!partner || partner === '+ Add Supplier' || partner === '+ Add Customer') {
+    alert("Please select a valid Supplier or Customer.");
     return;
   }
+
+  let sName = partner;
+  if (oDetails) sName += ` (${oDetails})`;
 
   isSessionActive = true;
   isManifestEnabled = chkManifest;
@@ -999,7 +1142,7 @@ window.startSession = function() {
 
   currentUserName = uName || "N/A";
   currentSessionName = sName;
-  currentOrderNum = oNum;
+  currentOrderNum = oDetails;
   currentWorkflowType = wType;
 
   localStorage.setItem('asp_user_name', currentUserName);
@@ -1051,10 +1194,7 @@ window.startSession = function() {
 }
 
 window.updateHeaderBanners = function() {
-  let titleStr = currentSessionName;
-  if (currentOrderNum) titleStr += ` (${currentOrderNum})`;
-
-  document.getElementById('hdrTitle').textContent = titleStr;
+  document.getElementById('hdrTitle').textContent = currentSessionName;
   document.getElementById('hdrUser').textContent = currentUserName || 'N/A';
   document.getElementById('hdrDate').textContent = sessionDateStr;
   document.getElementById('hdrTime').textContent = sessionStartStr;
@@ -1062,7 +1202,7 @@ window.updateHeaderBanners = function() {
 
   let hdrTitleRev = document.getElementById('hdrTitleRev');
   if (hdrTitleRev) {
-      hdrTitleRev.textContent = titleStr;
+      hdrTitleRev.textContent = currentSessionName;
       document.getElementById('hdrUserRev').textContent = currentUserName || 'N/A';
       document.getElementById('hdrDateRev').textContent = sessionDateStr;
       document.getElementById('hdrTimeRev').textContent = sessionStartStr;
@@ -1071,7 +1211,7 @@ window.updateHeaderBanners = function() {
 
   let hdrTitleSum = document.getElementById('hdrTitleSum');
   if (hdrTitleSum) {
-    hdrTitleSum.textContent = titleStr;
+    hdrTitleSum.textContent = currentSessionName;
     document.getElementById('hdrUserSum').textContent = currentUserName || 'N/A';
     document.getElementById('hdrDateSum').textContent = sessionDateStr;
     document.getElementById('hdrTimeSum').textContent = sessionStartStr;
@@ -1485,7 +1625,6 @@ window.goToReviewStage = function() {
   const cTag = document.getElementById('customerTagInput') ? document.getElementById('customerTagInput').value.trim() : '';
   const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-  // Calculate Real-Time Progress Metrics for Verification Screen
   let revRefRow = document.getElementById('revRefProgressRow');
   let revTotalRow = document.getElementById('revTotalProgressRow');
 
@@ -1722,7 +1861,7 @@ function generateExactFilename(extension = "txt") {
   let oNum = currentOrderNum;
   let wType = currentWorkflowType || "Receiving";
   let prefix = sName;
-  if (oNum) prefix += ` (${oNum})`;
+  if (oNum && !sName.includes(oNum)) prefix += ` (${oNum})`;
 
   return `${sessionDateStr} - ${prefix} - ${wType}.${extension}`;
 }
@@ -1782,7 +1921,7 @@ function buildTXTReportString() {
   });
 
   let sessionTitleHeader = currentSessionName;
-  if (currentOrderNum) sessionTitleHeader += ` (${currentOrderNum})`;
+  if (currentOrderNum && !sessionTitleHeader.includes(currentOrderNum)) sessionTitleHeader += ` (${currentOrderNum})`;
   const nowObj = new Date();
   let timeEndStr = nowObj.toLocaleTimeString();
   let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
@@ -1808,7 +1947,6 @@ function buildTXTReportString() {
   }
   reportLines.push(`================================================================================\n`);
 
-  // CONDITIONAL SECTION 1: SHORTAGES / MISSING ITEMS
   if (isManifestEnabled && expectedManifest.length > 0) {
     let shortages = [];
     expectedManifest.forEach(exp => {
@@ -1828,7 +1966,6 @@ function buildTXTReportString() {
     }
   }
 
-  // CONDITIONAL SECTION 2: OVERAGES
   if (isManifestEnabled && expectedManifest.length > 0) {
     let overages = [];
     Object.keys(scannedMap).forEach(rKey => {
@@ -1849,7 +1986,6 @@ function buildTXTReportString() {
     }
   }
 
-  // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
   let reservedItems = sessionScannedObjects.filter(i => i.customerTag);
   if (reservedItems.length > 0) {
     reportLines.push(`--- ROUTED TO CUSTOMER BINS ---`);
@@ -1859,7 +1995,6 @@ function buildTXTReportString() {
     reportLines.push(``);
   }
 
-  // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
   let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
   if (unpricedItems.length > 0) {
     reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
@@ -1913,7 +2048,7 @@ function buildHTMLReportString(filename) {
   });
 
   let sessionTitleHeader = currentSessionName;
-  if (currentOrderNum) sessionTitleHeader += ` (${currentOrderNum})`;
+  if (currentOrderNum && !sessionTitleHeader.includes(currentOrderNum)) sessionTitleHeader += ` (${currentOrderNum})`;
   const nowObj = new Date();
   let timeEndStr = nowObj.toLocaleTimeString();
   let totalUniqueRefs = new Set(sessionScannedObjects.map(i => i.ref)).size;
@@ -1986,7 +2121,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `<div class="session-notes"><strong>Session Notes:</strong> ${sNote}</div>`;
   }
 
-  // CONDITIONAL SECTION 1: SHORTAGES
   if (isManifestEnabled && expectedManifest.length > 0) {
     let shortages = [];
     expectedManifest.forEach(exp => {
@@ -2006,7 +2140,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   }
 
-  // CONDITIONAL SECTION 2: OVERAGES
   if (isManifestEnabled && expectedManifest.length > 0) {
     let overages = [];
     Object.keys(scannedMap).forEach(rKey => {
@@ -2027,7 +2160,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   }
 
-  // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
   let reservedItems = sessionScannedObjects.filter(i => i.customerTag);
   if (reservedItems.length > 0) {
     html += `<div class="section-title" style="border-color:#0277bd; color:#0277bd;">🚩 ROUTED TO CUSTOMER BINS</div><div class="alert-box alert-tag"><table style="width:100%;"><tr><th>REF</th><th>Customer Tag</th><th>Quantity Routed</th></tr>`;
@@ -2037,7 +2169,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</table></div>`;
   }
 
-  // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
   let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
   if (unpricedItems.length > 0) {
     html += `<div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING</div><div class="alert-box alert-price"><table style="width:100%;"><tr><th>REF</th><th>Manufacturer</th><th>Quantity Scanned</th></tr>`;
@@ -2047,7 +2178,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</table></div>`;
   }
 
-  // SCANNED BREAKDOWN TABLE
   html += `<div class="section-title">📦 SCANNED ITEM BREAKDOWN</div>`;
   html += `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
   
@@ -2153,28 +2283,10 @@ window.exportData = async function(formatType) {
   await triggerShareOrDownload(fileContent, filename, mime);
 };
 
-window.onload = function() {
-    loadMasterDatabase();
-};
-
-
-window.changeAppTheme = function(themeName) {
-  document.body.classList.remove('theme-sage', 'theme-gold', 'theme-slate');
-  document.body.classList.add(`theme-${themeName}`);
-  localStorage.setItem('asp_app_theme', themeName);
-  
-  let sel = document.getElementById('themeSelect');
-  if (sel) sel.value = themeName;
-};
-
-window.loadSavedTheme = function() {
-  let savedTheme = localStorage.getItem('asp_app_theme') || 'sage';
-  changeAppTheme(savedTheme);
-};
-
-// Ensure theme loads immediately on page startup
 let origOnload = window.onload;
 window.onload = function() {
     if (origOnload) origOnload();
     loadSavedTheme();
+    loadMasterDatabase();
+    toggleSessionType(); 
 };
