@@ -44,3 +44,4 @@ window.executeAuditExport = () => AuditManager.executeAuditExport();
 window.exportThriveCreates = () => AuditManager.exportThriveCreates();
 window.exportThriveEdits = () => AuditManager.exportThriveEdits();
 window.exportUpdatedDatabaseJSON = () => AuditManager.exportUpdatedDatabaseJSON();
+window.clearManifestList = () => SessionManager.clearManifestList();
