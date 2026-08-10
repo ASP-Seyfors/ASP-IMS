@@ -1,6 +1,7 @@
 // ============================================================================
 // 6. GLOBAL HTML EVENT BINDINGS (Maintains exact compatibility with index.html)
 // ============================================================================
+
 window.onload = () => { UIManager.loadSavedTheme(); DatabaseManager.init(); UIManager.toggleSessionType(); };
 window.changeAppTheme = (val) => UIManager.changeAppTheme(val);
 window.toggleSessionType = () => UIManager.toggleSessionType();
