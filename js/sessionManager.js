@@ -102,18 +102,27 @@ const SessionManager = {
   },
 
   launchAIVisionBridge() {
+    const platform = document.getElementById('aiPlatformSelect') ? document.getElementById('aiPlatformSelect').value : 'gemini';
+    
     const promptText = `Analyze these attached medical inventory box photos. Group the items by REF/SKU, Quantity, Lot Number, and Expiration Date. For any item where the Lot or Expiration is unreadable or not visible, put 'N/A'.
 
 Return ONLY a raw tab-separated table with NO extra introductory text, headers, or explanations, formatted in these exact columns:
 REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
-    // Copy the prompt directly to clipboard
+    let targetUrl = 'https://gemini.google.com/app';
+    let platformName = 'Gemini';
+
+    if (platform === 'chatgpt') {
+      targetUrl = 'https://chatgpt.com';
+      platformName = 'ChatGPT';
+    }
+
     navigator.clipboard.writeText(promptText).then(() => {
-      alert("AI Vision Prompt copied to your clipboard! Opening Gemini...\n\nJust paste (Ctrl+V) into the chat and attach your shipment photos.");
-      window.open('https://gemini.google.com', '_blank');
+      alert(`AI Vision Prompt copied to your clipboard!\n\nOpening ${platformName}... Just paste (Ctrl+V) into the chat and attach your shipment photos.`);
+      window.open(targetUrl, '_blank');
     }).catch(err => {
       console.error('Failed to copy prompt: ', err);
-      window.open('https://gemini.google.com', '_blank');
+      window.open(targetUrl, '_blank');
     });
   },
 
