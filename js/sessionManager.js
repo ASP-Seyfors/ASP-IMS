@@ -435,6 +435,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (val) rawBarcodesGathered.push(val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, ''));
     }
 
+    // LIVE GTIN SYNC: Link GTIN in memory for immediate re-scan matching
+    if (this.currentMatchedItem && gtin && gtin !== "N/A" && !this.currentMatchedItem.gtin) {
+      this.currentMatchedItem.gtin = gtin;
+      let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+      if (dbMatch) dbMatch.gtin = gtin;
+      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+    }
+
     let isNewRef = false;
     if (!this.currentMatchedItem && ref) {
       isNewRef = true;
