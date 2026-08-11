@@ -190,16 +190,6 @@ const AuditManager = {
       reportLines.push(``);
     }
 
-    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
-    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
-    if (unpricedItems.length > 0) {
-      reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
-      unpricedItems.forEach(u => {
-        reportLines.push(`  * REF: ${u.ref} | MFR: ${u.mfr} | Qty Scanned: ${u.totalScannedQty}`);
-      });
-      reportLines.push(``);
-    }
-
     reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
     let count = 1;
     for (let rKey in scannedMap) {
@@ -216,6 +206,26 @@ const AuditManager = {
         }
       }
       reportLines.push(``); count++;
+    }
+
+    // 2-Column Pricing Table placed at the end of buildHTMLReportString()
+    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+    if (unpricedItems.length > 0) {
+      html += `
+        <div style="margin-top: 30px; page-break-inside: avoid;">
+          <div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING (${unpricedItems.length})</div>
+          <table class="data-table" style="width:100%;">
+            <thead>
+              <tr style="background-color:#f3e5f5;">
+                <th style="padding:6px; text-align:left;">REF / SKU</th>
+                <th style="padding:6px; text-align:left;">Manufacturer</th>
+              </tr>
+            </thead>
+            <tbody>`;
+      unpricedItems.forEach(u => {
+        html += `<tr><td style="font-weight:bold;">${u.ref}</td><td>${u.mfr}</td></tr>`;
+      });
+      html += `</tbody></table></div>`;
     }
 
     if (SessionManager.pendingNewItems.length > 0) {
@@ -441,7 +451,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
 
     let baseFilename = `${SessionManager.sessionDateStr} - ${SessionManager.currentSessionName} - ${SessionManager.currentWorkflowType}`;
-    let filename = `${baseFilename}.${formatType}`;
 
     if (formatType === 'pdf') {
       let printWin = window.open('', '_blank');
@@ -450,10 +459,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return;
       }
       
-      let fileContent = this.buildHTMLReportString(filename);
+      let fileContent = this.buildHTMLReportString(baseFilename);
       printWin.document.open();
       printWin.document.write(fileContent);
-      printWin.document.title = filename; 
+      printWin.document.title = baseFilename; // Prevents double .PDF extension
       printWin.document.close();
       
       setTimeout(() => {
@@ -463,6 +472,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
+    let filename = `${baseFilename}.txt`;
     let fileContent = this.buildTXTReportString();
     let mime = 'text/plain';
     await UIManager.triggerShareOrDownload(fileContent, filename, mime);
