@@ -2,6 +2,10 @@
 // 6. GLOBAL HTML EVENT BINDINGS (Maintains exact compatibility with index.html)
 // ============================================================================
 async function checkAppUpdates() {
+  // Show an immediate visual feedback loading indicator
+  const btn = event ? event.target : null;
+  if (btn) btn.textContent = "⏳ Checking...";
+
   if ('serviceWorker' in navigator) {
     try {
       const registration = await navigator.serviceWorker.getRegistration();
@@ -9,13 +13,25 @@ async function checkAppUpdates() {
         // Force the browser to re-check sw.js on GitHub Pages
         await registration.update();
 
-        // Check if a new service worker is waiting or installing
-        if (registration.waiting || registration.installing) {
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-          alert("✅ New update found and applied! Reloading application...");
+        // If a new worker is waiting, activate it immediately
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          alert("🎉 New update found and applied! Reloading application...");
           window.location.reload(true);
+          return;
+        }
+
+        // Listen for new updates that might be installing right now
+        if (registration.installing) {
+          alert("⏬ Downloading latest update... The page will refresh once complete.");
+          registration.installing.addEventListener('statechange', (e) => {
+            if (e.target.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                alert("✅ Update complete! Reloading app...");
+                window.location.reload(true);
+              }
+            }
+          });
           return;
         }
       }
@@ -24,9 +40,9 @@ async function checkAppUpdates() {
     }
   }
 
-  // If no new service worker version was waiting
-  alert("✓ You are already running the latest version of ASP Scanner (v1.8.7).");
-  window.location.reload(true);
+  // If no new update was detected on the server
+  alert("✓ You are already running the latest version of ASP Scanner (v1.8.7)!");
+  if (btn) btn.textContent = "🔄 Check for Updates";
 }
 
 window.onload = () => { 
