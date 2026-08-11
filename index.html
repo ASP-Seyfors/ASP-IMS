@@ -112,10 +112,20 @@
 <div id="screenManifestEntry" style="display: none;" class="card">
   <h2>Pre-Load Expected Items</h2>
   
-  <div style="margin-bottom: 12px; text-align: right;">
-    <button class="btn-action" style="background-color: #7b1fa2; color: #ffffff; padding: 6px 12px; font-size: 0.85rem;" onclick="SessionManager.launchAIVisionBridge()">
-      🤖 Open AI Vision Assistant
-    </button>
+  <!-- AI VISION BRIDGE PANEL -->
+  <div style="margin-bottom: 15px; background-color: #f3e5f5; border: 1px solid #7b1fa2; padding: 10px; border-radius: 4px;">
+    <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
+      <span style="font-weight: bold; color: #7b1fa2; font-size: 0.85rem;">🤖 AI Photo Analysis Assistant:</span>
+      <div style="display: flex; gap: 6px;">
+        <select id="aiPlatformSelect" style="padding: 4px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #7b1fa2;">
+          <option value="gemini" selected>Google Gemini</option>
+          <option value="chatgpt">ChatGPT</option>
+        </select>
+        <button class="btn-action" style="background-color: #7b1fa2; color: #ffffff; padding: 6px 10px; font-size: 0.8rem; margin: 0;" onclick="SessionManager.launchAIVisionBridge()">
+          Open Assistant ➔
+        </button>
+      </div>
+    </div>
   </div>
 
   <div style="margin-bottom: 15px; border-bottom: 1px dashed #8b8589; padding-bottom: 15px;">
