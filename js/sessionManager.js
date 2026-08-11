@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 1.9.2 | COMBINES CUSTOMER SELECTOR + ORDER # FIELD             */
+/* VERSION 2.0 | COMBINES CUSTOMER SELECTOR + ORDER # FIELD             */
 /* ======================================================================= */
 
 const SessionManager = {
