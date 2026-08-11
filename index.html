@@ -8,6 +8,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ASP Scanner v1.8.5</title>
+
+  <!-- Inside #screenSetup card header -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v1.8.5</span>
+    <button class="btn-small" style="padding: 2px 8px; font-size: 0.7rem; background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">
+      🔄 Check for Updates
+    </button>
+  </div>
+  <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
+    <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
+  </label>
+</div>
   
   <link rel="stylesheet" href="css/styles.css">
   <link rel="manifest" href="manifest.json">
