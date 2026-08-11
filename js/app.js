@@ -8,18 +8,24 @@ async function checkAppUpdates() {
       if (registration) {
         // Force the browser to re-check sw.js on GitHub Pages
         await registration.update();
-        
-        if (registration.waiting) {
-          // Tell the waiting worker to activate immediately
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+        // Check if a new service worker is waiting or installing
+        if (registration.waiting || registration.installing) {
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          alert("✅ New update found and applied! Reloading application...");
+          window.location.reload(true);
+          return;
         }
       }
     } catch (err) {
       console.warn("Service worker update check failed:", err);
     }
   }
-  
-  // Hard reload the browser window to load new JS/CSS from server
+
+  // If no new service worker version was waiting
+  alert("✓ You are already running the latest version of ASP Scanner (v1.8.7).");
   window.location.reload(true);
 }
 
