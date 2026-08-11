@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 1.9.1 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
+/* VERSION 2.0 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
 /* ======================================================================= */
 
 const AuditManager = {
