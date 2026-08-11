@@ -452,7 +452,17 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    let baseFilename = `${SessionManager.sessionDateStr} - ${SessionManager.currentSessionName} - ${SessionManager.currentWorkflowType}`;
+    // Clean session name to prevent '.PDF' doubling or invalid file characters
+    let cleanSession = (SessionManager.currentSessionName || 'Session')
+      .replace(/\.pdf$/i, '')
+      .replace(/[^a-zA-Z0-9_\-\(\)\s]/g, '_')
+      .trim();
+
+    let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow')
+      .replace(/[^a-zA-Z0-9_\-\(\)\s]/g, '_')
+      .trim();
+
+    let baseFilename = `${SessionManager.sessionDateStr} - ${cleanSession} - ${cleanWorkflow}`;
 
     if (formatType === 'pdf') {
       let printWin = window.open('', '_blank');
@@ -464,7 +474,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let fileContent = this.buildHTMLReportString(baseFilename);
       printWin.document.open();
       printWin.document.write(fileContent);
-      printWin.document.title = baseFilename;
+      printWin.document.title = baseFilename; // Clean title ensures browser saves as 'baseFilename.pdf'
       printWin.document.close();
       
       setTimeout(() => {
