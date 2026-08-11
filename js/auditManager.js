@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.0.1 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
+/* VERSION 2.0.2 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
 /* ======================================================================= */
 
 const AuditManager = {
@@ -76,7 +76,7 @@ const AuditManager = {
     } else if (val === 'complete') {
       SessionManager.completeSession();
     } else if (val === 'pdf' || val === 'txt') {
-      this.(val);
+      this.exportSessionData(val);
     }
 
     setTimeout(() => { document.getElementById('exportDropdown').value = ""; }, 500);
@@ -452,10 +452,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    // 1. Convert date dots to hyphens (2026.08.11 -> 2026-08-11) so browser print dialogs don't truncate at .08
     let safeDate = (SessionManager.sessionDateStr || '').replace(/\./g, '-');
 
-    // 2. Clean session name & workflow, allowing ampersands (&), hyphens, parens, and spaces while stripping stray .pdf tags
     let cleanSession = (SessionManager.currentSessionName || 'Session')
       .replace(/\.pdf$/i, '')
       .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
@@ -468,7 +466,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       .replace(/\./g, '-')
       .trim();
 
-    // Base filename without inner periods
     let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
 
     if (formatType === 'pdf') {
@@ -481,7 +478,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let fileContent = this.buildHTMLReportString(baseFilename);
       printWin.document.open();
       printWin.document.write(fileContent);
-      printWin.document.title = baseFilename; // Chrome uses document.title for the suggested PDF filename
+      printWin.document.title = baseFilename;
       printWin.document.close();
       
       setTimeout(() => {
