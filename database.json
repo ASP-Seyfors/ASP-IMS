@@ -207,7 +207,7 @@
       "mfr": "COOPER SURGICAL"
     },
     {
-      "gtin": "",
+      "gtin": "30705031004898",
       "ref": "3846T",
       "desc": "ETHICON 2 Prolene Blue 3X20\" LR (BX/24) 3846T",
       "price": "$360.00",
@@ -291,7 +291,7 @@
       "mfr": "INTUITIVE"
     },
     {
-      "gtin": "",
+      "gtin": "00886874117118",
       "ref": "48345T",
       "desc": "INTUITIVE Intuitive Surgical 48345T Da Vinci Xi Sureform 45 Reload, 45 mm, 6-Row, Black (Each) 48345T",
       "price": "$100.00",
@@ -354,7 +354,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031007066",
       "ref": "632G",
       "desc": "ETHICON 3-0 Perma Hand Black 1X18\" X-1 (BX/12) 632G",
       "price": "$40.00",
@@ -522,7 +522,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031013746",
       "ref": "825G",
       "desc": "ETHICON 2 Ethilon Black 1X60\" Tp-1 (BX/12) 825G",
       "price": "$78.00",
@@ -746,7 +746,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031039036",
       "ref": "J340H",
       "desc": "ETHICON 0 Coated Vicryl Violet 1X27\" CT-1 (BX/36) J340H",
       "price": "$102.00",
@@ -767,7 +767,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031039647",
       "ref": "J415H",
       "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X27\" SH (BX/36) J415H",
       "price": "$116.00",
@@ -872,7 +872,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031043675",
       "ref": "J946H",
       "desc": "ETHICON 0 Coated Vicryl Undyed 1X36\" CT-1 (BX/36) J946H",
       "price": "$113.00",
@@ -1180,7 +1180,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031053032",
       "ref": "VCP417H",
       "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" SH (BX/36) VCP417H",
       "price": "$114.00",
@@ -1600,7 +1600,7 @@
       "mfr": "INTUITIVE"
     },
     {
-      "gtin": "",
+      "gtin": "30705031007776",
       "ref": "663G",
       "desc": "ETHICON 3-0 Ethilon Black 1X18\" FS-1 (BX/12) 663G",
       "price": "$0.00",
@@ -2167,7 +2167,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031134687",
       "ref": "VR494",
       "desc": "ETHICON 4-0 Vicryl Rapide Undyed 1X18\" P-3 VR494",
       "price": "$0.00",
@@ -2181,7 +2181,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031056996",
       "ref": "W31G",
       "desc": "ETHICON Bone Wax, 2.5 Grams, 1 Dozen Per Box W31G",
       "price": "$0.00",
@@ -2209,7 +2209,7 @@
       "mfr": "SHARPOINT"
     },
     {
-      "gtin": "",
+      "gtin": "30705031058679",
       "ref": "Y303H",
       "desc": "ETHICON 5-0 Monocryl Violet 1X27\" RB-1 (BX/36) Y303H",
       "price": "$0.00",
@@ -2223,7 +2223,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031058716",
       "ref": "Y305H",
       "desc": "ETHICON 3-0 Monocryl Violet 1X27\" RB-1 (BX/36) Y305H",
       "price": "$0.00",
