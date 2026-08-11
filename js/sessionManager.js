@@ -504,6 +504,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const list = document.getElementById('advancedItemsList');
     if (!card || !list) return;
 
+    // SAFETY GUARD: Ensure pendingNewItems is always an array
+    if (!Array.isArray(this.pendingNewItems)) {
+      this.pendingNewItems = [];
+    }
+
+    // Filter pending items to only those that still have the default placeholder
     let unresolved = this.pendingNewItems.filter(i => i.desc === "Navigate to vendor website for item description." || !i.desc);
     
     if (unresolved.length === 0) {
