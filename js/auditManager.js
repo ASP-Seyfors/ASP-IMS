@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.0 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
+/* VERSION 2.0.1 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
 /* ======================================================================= */
 
 const AuditManager = {
@@ -190,6 +190,16 @@ const AuditManager = {
       reportLines.push(``);
     }
 
+    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
+    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+    if (unpricedItems.length > 0) {
+      reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
+      unpricedItems.forEach(u => {
+        reportLines.push(`  * REF: ${u.ref} | MFR: ${u.mfr} | Qty Scanned: ${u.totalScannedQty}`);
+      });
+      reportLines.push(``);
+    }
+
     reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
     let count = 1;
     for (let rKey in scannedMap) {
@@ -206,26 +216,6 @@ const AuditManager = {
         }
       }
       reportLines.push(``); count++;
-    }
-
-    // 2-Column Pricing Table placed at the end of buildHTMLReportString()
-    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
-    if (unpricedItems.length > 0) {
-      html += `
-        <div style="margin-top: 30px; page-break-inside: avoid;">
-          <div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING (${unpricedItems.length})</div>
-          <table class="data-table" style="width:100%;">
-            <thead>
-              <tr style="background-color:#f3e5f5;">
-                <th style="padding:6px; text-align:left;">REF / SKU</th>
-                <th style="padding:6px; text-align:left;">Manufacturer</th>
-              </tr>
-            </thead>
-            <tbody>`;
-      unpricedItems.forEach(u => {
-        html += `<tr><td style="font-weight:bold;">${u.ref}</td><td>${u.mfr}</td></tr>`;
-      });
-      html += `</tbody></table></div>`;
     }
 
     if (SessionManager.pendingNewItems.length > 0) {
@@ -408,16 +398,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `</table></div>`;
     }
 
-    // ITEMS REQUIRING PRICING
-    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
-    if (unpricedItems.length > 0) {
-      html += `<div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING</div><div class="alert-box alert-price"><table style="width:100%;"><tr><th>REF</th><th>Manufacturer</th><th>Quantity Scanned</th></tr>`;
-      unpricedItems.forEach(u => {
-        html += `<tr><td><strong>${u.ref}</strong></td><td>${u.mfr}</td><td style="text-align:center; font-weight:bold;">${u.totalScannedQty}</td></tr>`;
-      });
-      html += `</table></div>`;
-    }
-
     html += `<div class="section-title">📦 SCANNED ITEM BREAKDOWN</div>`;
     html += `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
     
@@ -440,7 +420,29 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let priceHtml = rData.price ? `<br><strong style="color:#2e7d32;">${rData.price}</strong>` : '';
       html += `<tr><td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td><td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td><td>${lotSection}</td><td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalScannedQty}</td></tr>`;
     }
-    html += `</tbody></table></body></html>`; 
+    html += `</tbody></table>`;
+
+    // 2-COLUMN PRICING TABLE AT VERY END
+    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+    if (unpricedItems.length > 0) {
+      html += `
+        <div style="margin-top: 30px; page-break-inside: avoid;">
+          <div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING (${unpricedItems.length})</div>
+          <table class="data-table" style="width:100%;">
+            <thead>
+              <tr style="background-color:#f3e5f5;">
+                <th style="padding:6px; text-align:left;">REF / SKU</th>
+                <th style="padding:6px; text-align:left;">Manufacturer</th>
+              </tr>
+            </thead>
+            <tbody>`;
+      unpricedItems.forEach(u => {
+        html += `<tr><td style="font-weight:bold;">${u.ref}</td><td>${u.mfr}</td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+    }
+
+    html += `</body></html>`; 
     return html;
   },
 
@@ -462,7 +464,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let fileContent = this.buildHTMLReportString(baseFilename);
       printWin.document.open();
       printWin.document.write(fileContent);
-      printWin.document.title = baseFilename; // Prevents double .PDF extension
+      printWin.document.title = baseFilename;
       printWin.document.close();
       
       setTimeout(() => {
