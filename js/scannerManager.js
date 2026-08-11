@@ -149,6 +149,7 @@ const ScannerManager = {
     document.getElementById('refInput').focus();
   },
 
+  // 2. Fix target method call inside captureViewfinderFrame()
   captureViewfinderFrame() {
     const videoEl = document.querySelector('#cameraViewfinder video');
     if (!videoEl) {
@@ -166,12 +167,11 @@ const ScannerManager = {
       if (!blob) return;
       const file = new File([blob], "viewfinder_snap.png", { type: "image/png" });
       
-      // Pass captured blob directly into image scanner logic
-      if (typeof html5QrCode !== 'undefined') {
+      if (typeof Html5Qrcode !== 'undefined') {
         const qrScanner = new Html5Qrcode("cameraViewfinder");
         qrScanner.scanFile(file, true)
           .then(decodedText => {
-            this.handleCameraScan(decodedText);
+            this.handleSuccessfulScan(decodedText); // Fixed function reference
           })
           .catch(err => {
             alert("Could not detect barcode from snapshot frame. Try adjusting light or distance.");
@@ -180,11 +180,21 @@ const ScannerManager = {
     }, 'image/png');
   },
 
+  // 1. Force Uppercase on all Raw Scan inputs inside processAllScans()
   processAllScans() {
+    for (let i = 1; i <= 4; i++) {
+      let inputEl = document.getElementById(`rawScan${i}`);
+      if (inputEl && inputEl.value) {
+        inputEl.value = inputEl.value.toUpperCase();
+      }
+    }
+
     let lines = [
       document.getElementById('rawScan1').value, document.getElementById('rawScan2').value,
       document.getElementById('rawScan3').value, document.getElementById('rawScan4').value
     ];
+    // ... rest of existing processAllScans code remains the same ...
+  },
 
     let gtin = "", lot = "", exp = "";
     lines.forEach(rawLine => {
