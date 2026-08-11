@@ -202,11 +202,13 @@
         </div>
       </h2>
 
+      <!-- Inside #cameraContainer in index.html -->
       <div id="cameraContainer">
         <div class="cam-status-overlay">
           <span id="tagGtin" class="status-tag">GTIN</span>
           <span id="tagLot" class="status-tag">LOT</span>
           <span id="tagExp" class="status-tag">EXP</span>
+          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()">📸 Snap Frame</button>
         </div>
         <div id="cameraViewfinder"></div>
       </div>
