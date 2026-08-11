@@ -76,7 +76,7 @@ const AuditManager = {
     } else if (val === 'complete') {
       SessionManager.completeSession();
     } else if (val === 'pdf' || val === 'txt') {
-      this.exportSessionData(val);
+      this.(val);
     }
 
     setTimeout(() => { document.getElementById('exportDropdown').value = ""; }, 500);
@@ -452,17 +452,24 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    // Clean session name to prevent '.PDF' doubling or invalid file characters
+    // 1. Convert date dots to hyphens (2026.08.11 -> 2026-08-11) so browser print dialogs don't truncate at .08
+    let safeDate = (SessionManager.sessionDateStr || '').replace(/\./g, '-');
+
+    // 2. Clean session name & workflow, allowing ampersands (&), hyphens, parens, and spaces while stripping stray .pdf tags
     let cleanSession = (SessionManager.currentSessionName || 'Session')
       .replace(/\.pdf$/i, '')
-      .replace(/[^a-zA-Z0-9_\-\(\)\s]/g, '_')
+      .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
+      .replace(/\./g, '-')
       .trim();
 
     let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow')
-      .replace(/[^a-zA-Z0-9_\-\(\)\s]/g, '_')
+      .replace(/\.pdf$/i, '')
+      .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
+      .replace(/\./g, '-')
       .trim();
 
-    let baseFilename = `${SessionManager.sessionDateStr} - ${cleanSession} - ${cleanWorkflow}`;
+    // Base filename without inner periods
+    let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
 
     if (formatType === 'pdf') {
       let printWin = window.open('', '_blank');
@@ -474,7 +481,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let fileContent = this.buildHTMLReportString(baseFilename);
       printWin.document.open();
       printWin.document.write(fileContent);
-      printWin.document.title = baseFilename; // Clean title ensures browser saves as 'baseFilename.pdf'
+      printWin.document.title = baseFilename; // Chrome uses document.title for the suggested PDF filename
       printWin.document.close();
       
       setTimeout(() => {
