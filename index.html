@@ -112,8 +112,14 @@
 <div id="screenManifestEntry" style="display: none;" class="card">
   <h2>Pre-Load Expected Items</h2>
   
+  <div style="margin-bottom: 12px; text-align: right;">
+    <button class="btn-action" style="background-color: #7b1fa2; color: #ffffff; padding: 6px 12px; font-size: 0.85rem;" onclick="SessionManager.launchAIVisionBridge()">
+      🤖 Open AI Vision Assistant
+    </button>
+  </div>
+
   <div style="margin-bottom: 15px; border-bottom: 1px dashed #8b8589; padding-bottom: 15px;">
-    <textarea id="pasteManifestArea" rows="4" placeholder="Paste directly from Google Sheets here... (Columns: Customer, PO, SKU, QTY)" style="width: 100%; font-size: 0.85rem; padding: 8px; resize: vertical;"></textarea>
+    <textarea id="pasteManifestArea" rows="4" placeholder="Paste directly from Google Sheets or AI Vision output here... (Columns: SKU, QTY, Lot, Exp)" style="width: 100%; font-size: 0.85rem; padding: 8px; resize: vertical;"></textarea>
     <button class="btn-action" style="background-color: #1976d2; color: #ffffff; margin-top: 6px; padding: 8px;" onclick="processPastedSpreadsheet()">📋 Parse Pasted Data</button>
   </div>
 
