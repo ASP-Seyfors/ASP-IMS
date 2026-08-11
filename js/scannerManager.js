@@ -1,3 +1,8 @@
+/* ======================================================================= */
+/* ASP SCANNER APP - SCANNER MANAGER (js/scannerManager.js)                */
+/* VERSION 2.0.1 | CAMERA, SNAPSHOT FRAME & GS1 PARSER ENGINE             */
+/* ======================================================================= */
+
 const ScannerManager = {
   html5QrCode: null,
   isCameraActive: false,
@@ -12,8 +17,6 @@ const ScannerManager = {
     if (cleanText.length < 4) return;
 
     // SAFETY NET FILTER: Validate that barcode contains meaningful GS1 data
-    // Accepts strings starting with (01), (17), 01, 17, combined 2D matrix strings, or raw 12-14 digit GTINs.
-    // Ignores standalone variant lines like (20)13 or irrelevant internal barcodes.
     const isGs1Gtin = cleanText.startsWith('(01)') || cleanText.startsWith('01');
     const isGs1LotExp = cleanText.startsWith('(17)') || cleanText.startsWith('17');
     const isCombined2D = cleanText.includes('(01)') && cleanText.includes('(17)');
@@ -21,7 +24,7 @@ const ScannerManager = {
 
     if (!isGs1Gtin && !isGs1LotExp && !isCombined2D && !isRawGtin) {
       console.log(`[Safety Net] Ignored non-inventory barcode: ${cleanText}`);
-      return; // Silently ignore non-essential barcodes
+      return;
     }
 
     // Duplicate Check: Prevent scanning the exact same barcode line twice
@@ -49,12 +52,11 @@ const ScannerManager = {
       document.getElementById(`rawScan${targetLine}`).value = cleanText;
       this.processAllScans();
 
-      // Check if all essential data (GTIN, Lot, Exp) has been successfully extracted
+      // Check if essential data (GTIN, Lot, Exp) is captured
       let currentGtin = document.getElementById('gtinInput').value.trim() !== '' || document.getElementById('chkNaGtin').checked;
       let currentLot = document.getElementById('lotInput').value.trim() !== '' || document.getElementById('chkNaLot').checked;
       let currentExp = document.getElementById('expInput').value.trim() !== '' || document.getElementById('chkNaExp').checked;
 
-      // Automatically close camera and advance once all 3 essential details are captured
       if (currentGtin && currentLot && currentExp && this.isCameraActive) {
         setTimeout(() => this.toggleCameraScanner(), 300);
       } else if (this.visibleScanLines < 4) {
@@ -149,7 +151,6 @@ const ScannerManager = {
     document.getElementById('refInput').focus();
   },
 
-  // 2. Fix target method call inside captureViewfinderFrame()
   captureViewfinderFrame() {
     const videoEl = document.querySelector('#cameraViewfinder video');
     if (!videoEl) {
@@ -171,7 +172,7 @@ const ScannerManager = {
         const qrScanner = new Html5Qrcode("cameraViewfinder");
         qrScanner.scanFile(file, true)
           .then(decodedText => {
-            this.handleSuccessfulScan(decodedText); // Fixed function reference
+            this.handleSuccessfulScan(decodedText);
           })
           .catch(err => {
             alert("Could not detect barcode from snapshot frame. Try adjusting light or distance.");
@@ -180,7 +181,6 @@ const ScannerManager = {
     }, 'image/png');
   },
 
-  // 1. Force Uppercase on all Raw Scan inputs inside processAllScans()
   processAllScans() {
     for (let i = 1; i <= 4; i++) {
       let inputEl = document.getElementById(`rawScan${i}`);
@@ -193,8 +193,6 @@ const ScannerManager = {
       document.getElementById('rawScan1').value, document.getElementById('rawScan2').value,
       document.getElementById('rawScan3').value, document.getElementById('rawScan4').value
     ];
-    // ... rest of existing processAllScans code remains the same ...
-  },
 
     let gtin = "", lot = "", exp = "";
     lines.forEach(rawLine => {
