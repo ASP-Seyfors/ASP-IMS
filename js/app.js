@@ -41,7 +41,7 @@ async function checkAppUpdates() {
   }
 
   // If no new update was detected on the server
-  alert("✓ You are already running the latest version of ASP Scanner (v1.8.7)!");
+  alert("✓ You are already running the latest version of ASP Scanner (v2.0)!");
   if (btn) btn.textContent = "🔄 Check for Updates";
 }
 
