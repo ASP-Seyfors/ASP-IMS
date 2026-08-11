@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.0 | COMBINES CUSTOMER SELECTOR + ORDER # FIELD             */
+/* VERSION 2.0 | FULL STACK WORKFLOW & LIVE DATABASE SYNC                  */
 /* ======================================================================= */
 
 const SessionManager = {
@@ -22,7 +22,6 @@ const SessionManager = {
   currentMatchedItem: null,
 
   init() {
-    // Pre-fill the User Name input with the last saved user name
     let lastUser = localStorage.getItem('asp_user_name') || "";
     let userInput = document.getElementById('userNameInput');
     if (userInput && lastUser) {
@@ -51,10 +50,9 @@ const SessionManager = {
     this.sessionDateStr = `${nowObj.getFullYear()}.${String(nowObj.getMonth() + 1).padStart(2, '0')}.${String(nowObj.getDate()).padStart(2, '0')}`;
     this.sessionStartStr = nowObj.toLocaleTimeString();
 
-    // Persist session details including last user name
     localStorage.setItem('asp_session_is_active', 'true');
     localStorage.setItem('asp_manifest_enabled', this.isManifestEnabled ? 'true' : 'false');
-    localStorage.setItem('asp_user_name', this.currentUserName); // <--- Saves last used user
+    localStorage.setItem('asp_user_name', this.currentUserName);
     localStorage.setItem('asp_session_name', this.currentSessionName);
     localStorage.setItem('asp_order_num', this.currentOrderNum);
     localStorage.setItem('asp_workflow_type', this.currentWorkflowType);
@@ -488,7 +486,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     AuditManager.updateSessionSummaryView();
     
-    // NEW CALL: Render the advanced review if needed
     this.renderAdvancedReview(); 
     
     document.getElementById('screenSummary').style.display = 'block';
@@ -499,7 +496,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (cleanMfr.includes('ETHICON')) return 'https://www.ethicon.com/na/epc/search/';
     if (cleanMfr.includes('SYNERGY')) return 'https://www.synergysurgical.com/search/in-date,short-dated.html';
     
-    // Fallback: Standard Google Search for Manufacturer + SKU
     return `https://www.google.com/search?q=${encodeURIComponent(mfr + ' ' + ref)}`;
   },
 
@@ -508,7 +504,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const list = document.getElementById('advancedItemsList');
     if (!card || !list) return;
 
-    // Filter pending items to only those that still have the default placeholder
     let unresolved = this.pendingNewItems.filter(i => i.desc === "Navigate to vendor website for item description." || !i.desc);
     
     if (unresolved.length === 0) {
@@ -548,15 +543,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let ref = input.getAttribute('data-ref');
       
       if (newDesc && newDesc !== "Navigate to vendor website for item description.") {
-        // 1. Update pendingNewItems list
         let pendingItem = this.pendingNewItems.find(i => i.ref === ref);
         if (pendingItem) pendingItem.desc = newDesc;
 
-        // 2. Update Master Database
         let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
         if (dbItem) dbItem.desc = newDesc;
 
-        // 3. Update Scanned Objects in the current session
         this.scannedObjects.forEach(scanned => {
           if (scanned.ref === ref && scanned.isNew) {
             scanned.desc = newDesc;
@@ -572,7 +564,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
       
       alert(`Successfully updated ${updatedCount} descriptions!`);
-      this.renderAdvancedReview(); // Re-render to hide the card if all items are resolved
+      this.renderAdvancedReview();
     } else {
       alert("No new descriptions were entered.");
     }
