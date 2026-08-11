@@ -149,6 +149,37 @@ const ScannerManager = {
     document.getElementById('refInput').focus();
   },
 
+  captureViewfinderFrame() {
+    const videoEl = document.querySelector('#cameraViewfinder video');
+    if (!videoEl) {
+      alert("Camera is not active.");
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoEl.videoWidth || 1280;
+    canvas.height = videoEl.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], "viewfinder_snap.png", { type: "image/png" });
+      
+      // Pass captured blob directly into image scanner logic
+      if (typeof html5QrCode !== 'undefined') {
+        const qrScanner = new Html5Qrcode("cameraViewfinder");
+        qrScanner.scanFile(file, true)
+          .then(decodedText => {
+            this.handleCameraScan(decodedText);
+          })
+          .catch(err => {
+            alert("Could not detect barcode from snapshot frame. Try adjusting light or distance.");
+          });
+      }
+    }, 'image/png');
+  },
+
   processAllScans() {
     let lines = [
       document.getElementById('rawScan1').value, document.getElementById('rawScan2').value,
