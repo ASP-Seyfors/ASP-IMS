@@ -1,6 +1,27 @@
 // ============================================================================
 // 6. GLOBAL HTML EVENT BINDINGS (Maintains exact compatibility with index.html)
 // ============================================================================
+async function checkAppUpdates() {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        // Force the browser to re-check sw.js on GitHub Pages
+        await registration.update();
+        
+        if (registration.waiting) {
+          // Tell the waiting worker to activate immediately
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }
+    } catch (err) {
+      console.warn("Service worker update check failed:", err);
+    }
+  }
+  
+  // Hard reload the browser window to load new JS/CSS from server
+  window.location.reload(true);
+}
 
 window.onload = () => { 
   UIManager.loadSavedTheme(); 
