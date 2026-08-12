@@ -3,6 +3,7 @@
 /* VERSION 2.0.8 | CAMERA, SNAPSHOT FRAME & GS1 PARSER ENGINE             */
 /* ======================================================================= */
 
+
 const ScannerManager = {
   html5QrCode: null,
   isCameraActive: false,
