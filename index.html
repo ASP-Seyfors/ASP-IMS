@@ -462,19 +462,6 @@
   </div>
 </div>
 
-<script src="js/databaseManager.js"></script>
-<script src="js/uiManager.js"></script>
-<script src="js/scannerManager.js"></script>
-<script src="js/sessionManager.js"></script>
-<script src="js/auditManager.js"></script>
-<script src="js/app.js"></script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js');
-  });
-}
-
 <!-- SCREEN 6: SESSION ARCHIVE -->
 <div id="screenArchive" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
@@ -499,6 +486,19 @@ if ('serviceWorker' in navigator) {
     <!-- Archive Items Injected Here -->
   </div>
 </div>
+
+<script src="js/databaseManager.js"></script>
+<script src="js/uiManager.js"></script>
+<script src="js/scannerManager.js"></script>
+<script src="js/sessionManager.js"></script>
+<script src="js/auditManager.js"></script>
+<script src="js/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
 </script>
 </body>
 </html>

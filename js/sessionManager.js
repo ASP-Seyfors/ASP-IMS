@@ -156,7 +156,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       </div>
       <div style="margin-top:6px;">
         <label style="font-size:0.8rem; font-weight:bold; cursor:pointer;">
-          <input type="checkbox" class="manifest-res-chk" onchange="toggleManifestResRow(${rowIdx})" ${isRes ? 'checked' : ''}> ☐ Reserved for Customer
+          <input type="checkbox" class="manifest-res-chk" onchange="toggleManifestResRow(${rowIdx})" ${isRes ? 'checked' : ''}> Reserved for Customer
         </label>
       </div>
       <div class="manifest-subrow" id="manifestResSubrow_${rowIdx}" style="display:${isRes ? 'flex' : 'none'};">
@@ -615,7 +615,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
 
     this.saveToArchive('Completed');
-  }
+  },
 
   // ==========================================
   // SESSION ARCHIVE ENGINE
