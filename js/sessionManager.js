@@ -625,6 +625,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
     UIManager.toggleSessionNote();
 
+    // Reset Pre-Load Checkbox
+    const chkPreload = document.getElementById('chkPreloadManifest');
+    if (chkPreload) chkPreload.checked = false;
+
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenSummary').style.display = 'none';
@@ -640,6 +644,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     
     document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
     UIManager.toggleSessionNote();
+
+    // Reset Pre-Load Checkbox
+    const chkPreload = document.getElementById('chkPreloadManifest');
+    if (chkPreload) chkPreload.checked = false;
 
     document.getElementById('screenSummary').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
