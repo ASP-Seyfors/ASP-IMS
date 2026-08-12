@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - DATABASE MANAGER (js/databaseManager.js)              */
-/* VERSION 1.9.2 | POPULATES ITEM-LEVEL CUSTOMER DROPDOWNS                 */
+/* VERSION 2.0.8 | POPULATES ITEM-LEVEL CUSTOMER DROPDOWNS                 */
 /* ======================================================================= */
 
 const defaultVendors = [
@@ -194,6 +194,35 @@ const DatabaseManager = {
       this.populateDisplay(match);
       document.getElementById('prevDescText').textContent = `${this.getItemSku(match)} - ${this.getItemDesc(match)}`;
       document.getElementById('liveMatchPreview').style.display = 'block';
+
+      // SMART RESERVATION AUTO-FILL: Check manifest reserved quota
+      if (SessionManager.isManifestEnabled && SessionManager.expectedManifest && SessionManager.expectedManifest.length > 0) {
+        let matchedSku = this.getItemSku(match);
+        let manifestItem = SessionManager.expectedManifest.find(i => i.ref === matchedSku && i.isReserved);
+
+        if (manifestItem) {
+          let alreadyReserved = SessionManager.scannedObjects
+            .filter(i => i.ref === matchedSku && i.actionTag === 'Reserved')
+            .reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
+
+          if (alreadyReserved < manifestItem.reservedQty) {
+            UIManager.setItemAction('Reserved');
+            let tagInput = document.getElementById('itemOrderNumInput');
+            let custSelect = document.getElementById('itemCustomerSelect');
+
+            if (manifestItem.customerTag) {
+              let parts = manifestItem.customerTag.split(' - ');
+              if (custSelect) custSelect.value = parts[0] || '';
+              if (tagInput) tagInput.value = parts[1] || '';
+            }
+          } else {
+            // Quota met: default back to standard Inventory
+            UIManager.setItemAction('Inventory');
+            let tagInput = document.getElementById('itemOrderNumInput');
+            if (tagInput) tagInput.value = '';
+          }
+        }
+      }
     } else {
       SessionManager.currentMatchedItem = null;
       UIManager.hideAllConfirmButtons();
