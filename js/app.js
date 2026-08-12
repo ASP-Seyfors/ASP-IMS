@@ -1,6 +1,7 @@
-// ============================================================================
-// 6. GLOBAL HTML EVENT BINDINGS (Maintains exact compatibility with index.html)
-// ============================================================================
+/* ======================================================================= */
+/* ASP SCANNER APP - GLOBAL EVENT BINDINGS (works with index.html)         */
+/* VERSION 2.1.0                                                           */
+/* ======================================================================= */
 async function checkAppUpdates() {
   // Show an immediate visual feedback loading indicator
   const btn = event ? event.target : null;

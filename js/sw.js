@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asp-scanner-v2.0.8';
+const CACHE_NAME = 'asp-scanner-v2.1.0';
 
 const ASSETS_TO_CACHE = [
   './',

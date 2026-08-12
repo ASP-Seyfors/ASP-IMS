@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.0.8 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
+/* VERSION 2.1.0                                                           */
 /* ======================================================================= */
 
 
@@ -23,41 +23,38 @@ const AuditManager = {
     }
 
     SessionManager.scannedObjects.forEach((item, index) => {
-      let div = document.createElement('div');
-      div.className = 'summary-item-card';
-
-      let topRow = document.createElement('div');
-      topRow.style.display = 'flex';
-      topRow.style.justifyContent = 'space-between';
-      topRow.style.width = '100%';
-
       let statusIcon = item.actionTag === 'Reserved' ? '🚩' : (item.actionTag === 'Pack & Ship' ? '🖐️' : '📦');
+      let tagHtml = item.customerTag ? `<strong>Customer:</strong> <span style="color:#0277bd;">${item.customerTag}</span>` : '';
+      let noteHtml = item.itemNote ? `<div style="font-size:0.8rem; color:#d32f2f; margin-top:6px;"><em>Note: ${item.itemNote}</em></div>` : '';
 
-      topRow.innerHTML = `<span><strong>${index + 1}. REF:</strong> <span style="color:#0277bd;">${item.ref}</span></span> 
-                          <span><strong>Qty:</strong> ${item.qty}</span>`;
-      div.appendChild(topRow);
+      // Accordion Details Container
+      let details = document.createElement('details');
+      details.className = 'summary-item-card';
 
-      let botRow = document.createElement('div');
-      botRow.style.display = 'flex';
-      botRow.style.justifyContent = 'space-between';
-      botRow.style.width = '100%';
-      botRow.style.marginTop = '6px';
-      botRow.style.fontSize = '0.85rem';
-      botRow.style.color = '#555';
+      let summary = document.createElement('summary');
+      summary.innerHTML = `<span style="color:#0277bd;">[+] ${index + 1}. REF: ${item.ref}</span> <span>Qty: ${item.qty}</span>`;
+      details.appendChild(summary);
 
-      let tagHtml = item.customerTag ? `<strong>Tag:</strong> <span style="color:#0277bd;">${item.customerTag}</span>` : '';
-      botRow.innerHTML = `<span>Status: ${statusIcon} ${item.actionTag}</span> <span>${tagHtml}</span>`;
-      div.appendChild(botRow);
+      let content = document.createElement('div');
+      content.style.paddingTop = '10px';
+      content.style.marginTop = '10px';
+      content.style.borderTop = '1px solid #eee';
+      content.style.fontSize = '0.85rem';
+      content.style.color = '#555';
       
-      if (item.itemNote) {
-        let noteRow = document.createElement('div');
-        noteRow.style.fontSize = '0.8rem';
-        noteRow.style.color = '#d32f2f';
-        noteRow.style.marginTop = '4px';
-        noteRow.innerHTML = `<em>Note: ${item.itemNote}</em>`;
-        div.appendChild(noteRow);
-      }
-      container.appendChild(div);
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span><strong>Lot:</strong> ${item.lot}</span>
+          <span><strong>Exp:</strong> ${item.exp}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>Status: ${statusIcon} ${item.actionTag}</span>
+          <span>${tagHtml}</span>
+        </div>
+        ${noteHtml}
+      `;
+      details.appendChild(content);
+      container.appendChild(details);
     });
   },
 
@@ -461,37 +458,30 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    // Date formatted as YYYY.MM.DD
-    let formattedDate = SessionManager.sessionDateStr || '';
-
-    let cleanSession = (SessionManager.currentSessionName || 'Session')
-      .replace(/\.pdf$/i, '')
-      .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
-      .trim();
-
-    let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow')
-      .replace(/\.pdf$/i, '')
-      .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
-      .trim();
-
-    let baseFilename = `${formattedDate} - ${cleanSession} - ${cleanWorkflow}`;
+    let safeDate = (SessionManager.sessionDateStr || '').replace(/\./g, '-');
+    let cleanSession = (SessionManager.currentSessionName || 'Session').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').replace(/\./g, '-').trim();
+    let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').replace(/\./g, '-').trim();
+    let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
 
     if (formatType === 'pdf') {
-      let printWin = window.open('', '_blank');
-      if (!printWin) {
-        alert("Pop-up blocked! Please allow pop-ups for this site to generate the PDF.");
-        return;
-      }
-      
+      // Hidden iframe print logic (prevents new tab)
       let fileContent = this.buildHTMLReportString(baseFilename);
-      printWin.document.open();
-      printWin.document.write(fileContent);
-      printWin.document.title = baseFilename;
-      printWin.document.close();
+      let iframe = document.getElementById('pdfPrintFrame');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'pdfPrintFrame';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+      let doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(fileContent);
+      doc.title = baseFilename;
+      doc.close();
       
       setTimeout(() => {
-        printWin.focus();
-        printWin.print();
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
       }, 500);
       return;
     }

@@ -1,9 +1,7 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - DATABASE MANAGER (js/databaseManager.js)              */
-/* VERSION 2.0.8 | POPULATES ITEM-LEVEL CUSTOMER DROPDOWNS                 */
+/* VERSION 2.1.0                                                           */
 /* ======================================================================= */
-
-
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
   "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   

@@ -1,22 +1,22 @@
 {
   "vendors": [
-    "ARTHREX",
-    "BARD",
-    "BAXTER",
-    "BD",
-    "COOPER SURGICAL",
-    "COOPERSURG",
-    "COVIDIEN",
-    "ETHICON",
-    "INTEGRA",
-    "INTUITIVE",
-    "MEDTRONIC",
-    "SHARPOINT",
-    "SMITH & NEPHEW",
-    "STRYKER",
-    "+ Create New Vendor"
-  ],
-  "items": [
+              "ARTHREX",
+              "BARD",
+              "BAXTER",
+              "BD",
+              "COOPER SURGICAL",
+              "COOPERSURG",
+              "COVIDIEN",
+              "ETHICON",
+              "INTEGRA",
+              "INTUITIVE",
+              "MEDTRONIC",
+              "SHARPOINT",
+              "SMITH & NEPHEW",
+              "STRYKER",
+              "+ Create New Vendor"
+              ],
+  "items":  [
     {
       "gtin": "30705031041602",
       "ref": "J599G",

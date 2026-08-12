@@ -1,3 +1,7 @@
+/* ======================================================================= */
+/* ASP SCANNER APP - UI MANAGER (js/UIManager.js)                          */
+/* VERSION 2.1.0                                                           */
+/* ======================================================================= */
 const UIManager = {
   loadSavedTheme() {
     let savedTheme = localStorage.getItem('asp_app_theme') || 'slate';

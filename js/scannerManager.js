@@ -1,9 +1,7 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SCANNER MANAGER (js/scannerManager.js)                */
-/* VERSION 2.0.8 | CAMERA, SNAPSHOT FRAME & GS1 PARSER ENGINE             */
+/* VERSION 2.1.0                                                           */
 /* ======================================================================= */
-
-
 const ScannerManager = {
   html5QrCode: null,
   isCameraActive: false,

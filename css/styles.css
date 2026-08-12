@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - STYLESHEET (styles.css)                               */
-/* VERSION 2.0.8 | CENTER-ALIGNED THEMES WITHOUT EMOJIS                   */
+/* VERSION 2.1.0                                                           */
 /* ======================================================================= */
 
 /* Theme Variables */
@@ -372,4 +372,83 @@ input.needs-attention, select.needs-attention {
     padding: 10px 0;
     font-size: 1rem;
   }
+}
+
+/* NEW UTILITY CLASSES FOR UI ALIGNMENT & SIZING */
+.btn-auto {
+  width: auto !important;
+  padding: 8px 16px !important;
+  display: inline-block;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.input-center {
+  text-align: center;
+  margin: 0 auto;
+  display: block;
+}
+
+.input-short {
+  max-width: 160px;
+}
+
+.input-micro {
+  max-width: 80px;
+}
+
+/* VERIFICATION CARD REDESIGN */
+.verify-card {
+  background-color: #f8f9fa;
+  border: 1px solid #0277bd;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+.verify-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.verify-data-grid div {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  padding: 8px;
+  border-radius: 4px;
+}
+.verify-data-grid span {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.verify-data-grid strong {
+  font-size: 1.1rem;
+  color: #000;
+}
+
+/* ACCORDION (SCREEN 4) */
+details.summary-item-card {
+  background-color: #ffffff;
+  border: 1px solid #8b8589;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+details.summary-item-card summary {
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  justify-content: space-between;
+}
+details.summary-item-card summary::marker {
+  display: none;
 }
