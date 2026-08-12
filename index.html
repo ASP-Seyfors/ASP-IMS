@@ -28,26 +28,6 @@
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
   
-  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 15px;">
-    <!-- Left Side: Theme & Version -->
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <select id="themeSelect" onchange="changeAppTheme(this.value)" style="width: auto; padding: 4px; font-size: 0.75rem; background: transparent; border: 1px solid #8b8589; border-radius: 4px; color: inherit;">
-        <option value="slate">Slate & Charcoal</option>
-        <option value="sage">Sage & Khaki</option>
-        <option value="gold">Classic Gold</option>
-      </select>
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v2.1</span>
-        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
-      </div>
-    </div>
-    
-    <!-- Right Side: Preload Toggle -->
-    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
-      <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
-    </label>
-  </div>
-
   <h2 style="margin-top: 4px; padding-bottom: 8px;">ASP Scanner - Start Session</h2>
   
   <div class="form-row">
@@ -83,7 +63,6 @@
     </div>
   </div>
   
-  <!-- User Name Moved Below Order Details -->
   <div class="form-row">
     <div class="form-label">User Name:</div>
     <div class="input-wrapper">
@@ -101,15 +80,45 @@
     </div>
   </div>
 
-  <div class="btn-flex-row" style="margin-top: 16px; align-items: flex-end;">
-    <!-- Archive moved to bottom left -->
-    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff;" onclick="SessionManager.openArchive()">Session Archive</button>
-    <!-- Start kept robust on right -->
-    <button class="btn-action btn-start" style="flex: 1;" onclick="startSession()">Start Scanning Session</button>
+  <!-- Pre-Load Toggle Centered Below Form Inputs -->
+  <div style="text-align: center; margin-top: 15px; margin-bottom: 20px;">
+    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
+      <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
+    </label>
   </div>
 
-  <div style="text-align: center; margin-top: 20px;">
-    <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="openAuditHub()">Inventory Traceability</button>
+  <!-- Start Button Compacted & Centered -->
+  <div style="text-align: center; margin-bottom: 25px;">
+    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important;" onclick="startSession()">Start Scanning Session</button>
+  </div>
+
+  <!-- Bottom Navigation & Utility Footer Grid -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px;">
+    
+    <!-- Bottom Left: Session Archive -->
+    <div style="text-align: left;">
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0;" onclick="SessionManager.openArchive()">Session Archive</button>
+    </div>
+
+    <!-- Bottom Center: Inventory Traceability -->
+    <div style="text-align: center;">
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">Inventory Traceability</button>
+    </div>
+
+    <!-- Bottom Right: Theme Dropdown & Updates/Version -->
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+      <select id="themeSelect" onchange="changeAppTheme(this.value)" style="width: auto; padding: 4px; font-size: 0.75rem; background: transparent; border: 1px solid #8b8589; border-radius: 4px; color: inherit;">
+        <option value="slate">Slate & Charcoal</option>
+        <option value="sage">Sage & Khaki</option>
+        <option value="gold">Classic Gold</option>
+      </select>
+      
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v2.1.1</span>
+        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; padding: 4px 8px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
