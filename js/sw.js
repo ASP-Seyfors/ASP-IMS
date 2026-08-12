@@ -1,4 +1,5 @@
 const CACHE_NAME = 'asp-scanner-v2.0.8';
+
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
