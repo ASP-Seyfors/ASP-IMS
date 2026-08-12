@@ -3,6 +3,7 @@
 /* VERSION 2.0.8 | POPULATES ITEM-LEVEL CUSTOMER DROPDOWNS                 */
 /* ======================================================================= */
 
+
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
   "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
