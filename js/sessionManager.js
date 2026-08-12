@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.0 | FULL STACK WORKFLOW & LIVE DATABASE SYNC                  */
+/* VERSION 2.0.8 | FULL STACK WORKFLOW & LIVE DATABASE SYNC                  */
 /* ======================================================================= */
 
 const SessionManager = {
