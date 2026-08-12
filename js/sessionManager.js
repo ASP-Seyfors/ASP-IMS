@@ -332,9 +332,16 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   goToReviewStage() {
     let expField = document.getElementById('expInput');
-    if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) UIManager.formatExpDate(expField);
+    if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) {
+      UIManager.formatExpDate(expField);
+    }
+    
     const ref = document.getElementById('refInput').value.trim().toUpperCase();
-    if (!ref) { alert("Please enter or scan a REF/SKU before continuing."); return; }
+    if (!ref) { 
+      alert("Please enter or scan a REF/SKU before continuing."); 
+      return; 
+    }
+    
     const gtin = document.getElementById('gtinInput').value.trim();
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
@@ -343,48 +350,70 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const cTag = this.getCombinedCustomerTag();
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
+    // Manifest Progress Indicators (Safely Guarded)
+    const refProgRow = document.getElementById('revRefProgressRow');
+    const totalProgRow = document.getElementById('revTotalProgressRow');
+    const refProgText = document.getElementById('revRefProgress');
+    const totalProgText = document.getElementById('revTotalProgress');
+
     if (this.isManifestEnabled && this.expectedManifest.length > 0) {
-      document.getElementById('revRefProgressRow').style.display = 'flex';
-      document.getElementById('revTotalProgressRow').style.display = 'flex';
+      if (refProgRow) refProgRow.style.display = 'flex';
+      if (totalProgRow) totalProgRow.style.display = 'flex';
+      
       let manifestItem = this.expectedManifest.find(i => i.ref === ref);
       let scannedRefQtySoFar = this.scannedObjects.filter(i => i.ref === ref).reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
       let newTotalScannedForRef = scannedRefQtySoFar + qty;
-      if (manifestItem) document.getElementById('revRefProgress').textContent = `${newTotalScannedForRef} Scanned / ${manifestItem.expectedQty} Expected`;
-      else document.getElementById('revRefProgress').innerHTML = `<span class="badge-info badge-alert">⚠️ Unexpected Item (Not on Manifest)</span>`;
+      
+      if (refProgText) {
+        if (manifestItem) refProgText.textContent = `${newTotalScannedForRef} Scanned / ${manifestItem.expectedQty} Expected`;
+        else refProgText.innerHTML = `<span class="badge-info badge-alert">⚠️ Unexpected Item (Not on Manifest)</span>`;
+      }
+      
       let totalScannedOverall = this.scannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0) + qty;
       let totalExpectedOverall = this.expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
-      document.getElementById('revTotalProgress').textContent = `${totalScannedOverall} / ${totalExpectedOverall} Total Order Items`;
+      if (totalProgText) totalProgText.textContent = `${totalScannedOverall} / ${totalExpectedOverall} Total Order Items`;
     } else {
-      document.getElementById('revRefProgressRow').style.display = 'none';
-      document.getElementById('revTotalProgressRow').style.display = 'none';
+      if (refProgRow) refProgRow.style.display = 'none';
+      if (totalProgRow) totalProgRow.style.display = 'none';
     }
 
-    document.getElementById('revRef').textContent = ref;
-    document.getElementById('revGtin').textContent = gtin || '--';
-    document.getElementById('revLot').textContent = lot || '--';
-    document.getElementById('revExp').textContent = exp || '--';
-    document.getElementById('revMfr').textContent = vendor;
-    document.getElementById('revQty').textContent = qty;
+    // Required Fields Rendering
+    if (document.getElementById('revRef')) document.getElementById('revRef').textContent = ref;
+    if (document.getElementById('revGtin')) document.getElementById('revGtin').textContent = gtin || '--';
+    if (document.getElementById('revLot')) document.getElementById('revLot').textContent = lot || '--';
+    if (document.getElementById('revExp')) document.getElementById('revExp').textContent = exp || '--';
+    if (document.getElementById('revMfr')) document.getElementById('revMfr').textContent = vendor;
+    if (document.getElementById('revQty')) document.getElementById('revQty').textContent = qty;
     
+    // Item Note Row Guard
     if (document.getElementById('revItemNoteRow')) {
-        document.getElementById('revItemNoteRow').style.display = iNote ? 'flex' : 'none';
-        document.getElementById('revItemNote').textContent = iNote;
+      document.getElementById('revItemNoteRow').style.display = iNote ? 'flex' : 'none';
+      if (document.getElementById('revItemNote')) document.getElementById('revItemNote').textContent = iNote;
     }
 
-    document.getElementById('revDesc').textContent = DatabaseManager.getItemDesc(this.currentMatchedItem) || "Navigate to vendor website for item description.";
-    document.getElementById('revPrice').textContent = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
+    if (document.getElementById('revDesc')) {
+      document.getElementById('revDesc').textContent = DatabaseManager.getItemDesc(this.currentMatchedItem) || "Navigate to vendor website for item description.";
+    }
+    if (document.getElementById('revPrice')) {
+      document.getElementById('revPrice').textContent = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
+    }
 
     if (document.getElementById('revActionRow')) {
       document.getElementById('revActionRow').style.display = this.currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
-      document.getElementById('revAction').textContent = this.currentItemAction;
+      if (document.getElementById('revAction')) document.getElementById('revAction').textContent = this.currentItemAction;
     }
     
+    // Customer Tag Row Guard
     let tagRow = document.getElementById('rowCustomerTag');
     let revTagRow = document.getElementById('revCustomerTagRow');
-    if (tagRow && tagRow.style.display !== 'none') {
-       revTagRow.style.display = 'flex'; document.getElementById('revCustomerTag').textContent = cTag || 'NONE';
-    } else { if (revTagRow) revTagRow.style.display = 'none'; }
+    if (tagRow && tagRow.style.display !== 'none' && revTagRow) {
+      revTagRow.style.display = 'flex'; 
+      if (document.getElementById('revCustomerTag')) document.getElementById('revCustomerTag').textContent = cTag || 'NONE';
+    } else if (revTagRow) { 
+      revTagRow.style.display = 'none'; 
+    }
 
+    // GTIN Difference Banner Guard
     let diffBanner = document.getElementById('gtinDiffBanner');
     let btnGtin = document.getElementById('btnConfirmGtin');
     if (this.currentMatchedItem && gtin && gtin !== "N/A" && this.currentMatchedItem.gtin !== gtin) {
@@ -400,8 +429,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let btnMfr = document.getElementById('btnConfirmMfr');
-    if (btnMfr) btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
+    if (btnMfr) {
+      btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
+    }
 
+    // Transition Screens
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'block';
   },
