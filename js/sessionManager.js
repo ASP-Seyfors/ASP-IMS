@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.1.1                                                           */
+/* VERSION 2.1.2                                                           */
 /* ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
@@ -27,6 +27,10 @@ const SessionManager = {
     let userInput = document.getElementById('userNameInput');
     if (userInput && lastUser) {
       userInput.value = lastUser;
+    }
+    // Load font size preference on startup
+    if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) {
+      UIManager.loadFontPreference();
     }
   },
 
@@ -398,9 +402,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       document.getElementById('revPrice').textContent = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
     }
 
+    // FIX: Always render the correct destination type regardless of the row's display state
+    if (document.getElementById('revAction')) {
+      document.getElementById('revAction').textContent = this.currentItemAction;
+    }
     if (document.getElementById('revActionRow')) {
       document.getElementById('revActionRow').style.display = this.currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
-      if (document.getElementById('revAction')) document.getElementById('revAction').textContent = this.currentItemAction;
     }
     
     // Customer Tag Row Guard
@@ -690,6 +697,16 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     archive = archive.filter(s => s.lastUpdated > cutoff);
     
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+  },
+
+  openSettings() {
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenSettings').style.display = 'block';
+  },
+
+  closeSettings() {
+    document.getElementById('screenSettings').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
   },
 
   openArchive() {

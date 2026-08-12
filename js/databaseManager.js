@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - DATABASE MANAGER (js/databaseManager.js)              */
-/* VERSION 2.1.1                                                           */
+/* VERSION 2.1.2                                                           */
 /* ======================================================================= */
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 

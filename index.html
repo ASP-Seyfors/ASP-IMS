@@ -1,5 +1,5 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER - VERSION 2.1.1                                             -->
+<!-- ASP SCANNER - VERSION 2.1.2                                             -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
@@ -93,8 +93,7 @@
   </div>
 
   <!-- Bottom Navigation & Utility Footer Grid -->
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px;">
-    
+  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px;">
     <!-- Bottom Left: Session Archive -->
     <div style="text-align: left;">
       <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0;" onclick="SessionManager.openArchive()">Session Archive</button>
@@ -105,20 +104,48 @@
       <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">Inventory Traceability</button>
     </div>
 
-    <!-- Bottom Right: Theme Dropdown & Updates/Version -->
-    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-      <select id="themeSelect" onchange="changeAppTheme(this.value)" style="width: auto; padding: 4px; font-size: 0.75rem; background: transparent; border: 1px solid #8b8589; border-radius: 4px; color: inherit;">
+    <!-- Bottom Right: Settings Button -->
+    <div style="text-align: right;">
+      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 7: SETTINGS PAGE -->
+<div id="screenSettings" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
+    <h2 style="border:none; margin:0; padding:0;">ASP Scanner - Settings</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeSettings()">🔙 Return</button>
+  </div>
+
+  <div class="form-row">
+    <div class="form-label">App Theme:</div>
+    <div class="input-wrapper">
+      <select id="themeSelect" onchange="UIManager.changeAppTheme(this.value)">
         <option value="slate">Slate & Charcoal</option>
         <option value="sage">Sage & Khaki</option>
         <option value="gold">Classic Gold</option>
       </select>
-      
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="font-size: 0.75rem; color: #555; font-weight: bold;">v2.1.1</span>
-        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; padding: 4px 8px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
-      </div>
     </div>
+  </div>
 
+  <div class="form-row">
+    <div class="form-label">Font Size:</div>
+    <div class="input-wrapper">
+      <select id="fontSizeSelect" onchange="UIManager.changeFontSize(this.value)">
+        <option value="small">Small (85%)</option>
+        <option value="medium" selected>Medium (100% - Default)</option>
+        <option value="large">Large (115%)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row" style="margin-top: 20px;">
+    <div class="form-label">App Version:</div>
+    <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-weight: bold; color: #0277bd;">v2.1.2</span>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
+    </div>
   </div>
 </div>
 

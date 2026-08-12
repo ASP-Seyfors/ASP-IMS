@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.1.1                                                           */
+/* VERSION 2.1.2                                                           */
 /* ======================================================================= */
 
 
@@ -458,13 +458,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    let safeDate = (SessionManager.sessionDateStr || '').replace(/\./g, '-');
-    let cleanSession = (SessionManager.currentSessionName || 'Session').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').replace(/\./g, '-').trim();
-    let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').replace(/\./g, '-').trim();
+    // Preserve dot notation (YYYY.MM.DD)
+    let safeDate = (SessionManager.sessionDateStr || '').trim();
+    let cleanSession = (SessionManager.currentSessionName || 'Session').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').trim();
+    let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').trim();
     let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
 
     if (formatType === 'pdf') {
-      // Hidden iframe print logic (prevents new tab)
       let fileContent = this.buildHTMLReportString(baseFilename);
       let iframe = document.getElementById('pdfPrintFrame');
       if (!iframe) {
@@ -479,9 +479,14 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       doc.title = baseFilename;
       doc.close();
       
+      // Temporarily lock window title so browser print dialog uses baseFilename
+      let originalTitle = document.title;
+      document.title = baseFilename;
+
       setTimeout(() => {
         iframe.contentWindow.focus();
         iframe.contentWindow.print();
+        setTimeout(() => { document.title = originalTitle; }, 2000);
       }, 500);
       return;
     }

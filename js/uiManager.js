@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - UI MANAGER (js/UIManager.js)                          */
-/* VERSION 2.1.1                                                           */
+/* VERSION 2.1.2                                                           */
 /* ======================================================================= */
 const UIManager = {
   loadSavedTheme() {
@@ -14,6 +14,20 @@ const UIManager = {
     localStorage.setItem('asp_app_theme', themeName);
     let sel = document.getElementById('themeSelect');
     if (sel) sel.value = themeName;
+  },
+
+  changeFontSize(sizeVal) {
+    document.body.classList.remove('font-small', 'font-medium', 'font-large');
+    document.body.classList.add(`font-${sizeVal}`);
+    localStorage.setItem('asp_font_size', sizeVal);
+  },
+
+  loadFontPreference() {
+    let savedSize = localStorage.getItem('asp_font_size') || 'medium';
+    document.body.classList.remove('font-small', 'font-medium', 'font-large');
+    document.body.classList.add(`font-${savedSize}`);
+    let fontSelect = document.getElementById('fontSizeSelect');
+    if (fontSelect) fontSelect.value = savedSize;
   },
 
   toggleSessionType() {

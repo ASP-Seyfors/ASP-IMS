@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - STYLESHEET (styles.css)                               */
-/* VERSION 2.1.1                                                           */
+/* VERSION 2.1.2                                                           */
 /* ======================================================================= */
 
 /* Theme Variables */
@@ -452,3 +452,10 @@ details.summary-item-card summary {
 details.summary-item-card summary::marker {
   display: none;
 }
+/* GLOBAL FONT SIZE SCALING */
+body.font-small { font-size: 14px !important; }
+body.font-medium { font-size: 16px !important; }
+body.font-large { font-size: 18px !important; }
+
+body.font-small input, body.font-small select, body.font-small button { font-size: 0.82rem !important; }
+body.font-large input, body.font-large select, body.font-large button { font-size: 1.05rem !important; }
