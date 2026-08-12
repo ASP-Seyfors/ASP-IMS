@@ -18,6 +18,55 @@
               ],
   "items":  [
     {
+      "gtin": "30705031053193",
+      "ref": "VCP433H",
+      "desc": "Ethicon 5-0 COATED VICRYL PLUS UNDYED 1X27\" RB-2 (BX/36) VCP433H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031041398",
+      "ref": "J578G",
+      "desc": "Ethicon 6-0 COATED VICRYL VIOLET 1X8\" S-14 DOUBLE ARMED (BX/12) J578G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031041381",
+      "ref": "J576G",
+      "desc": "Ethicon 7-0 COATED VICRYL VIOLET 1X18\" TG160-8 DOUBLE ARMED (BX/12) J576G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031038855",
+      "ref": "J328H",
+      "desc": "Ethicon 2-0 COATED VICRYL VIOLET 1X27\" CT-3 (BX/36) J328H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031038190",
+      "ref": "J212H",
+      "desc": "Ethicon 6-0 COATED VICRYL UNDYED 1X27\" RB-1 (BX/36) J212H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031002566",
+      "ref": "1780G",
+      "desc": "Ethicon 6-0 PERMA HAND BLACK 1X18\" S-14 DOUBLE ARMED (BX/12) 1780G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031060566",
+      "ref": "Z334H",
+      "desc": "Ethicon 0 PDS II VIOLET 1X27\" CT-2 (BX36) Z334H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
       "gtin": "30705031041602",
       "ref": "J599G",
       "desc": "8-0 COATED VICRYL VIOLET 1X12\" TG140-8 DOUBLE ARMED (BX/12) J599G",
