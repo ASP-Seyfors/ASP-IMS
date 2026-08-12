@@ -1,5 +1,5 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER - VERSION 2.1.0                                             -->
+<!-- ASP SCANNER - VERSION 2.1.1                                             -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
@@ -102,8 +102,8 @@
   </div>
 
   <div class="btn-flex-row" style="margin-top: 16px; align-items: flex-end;">
-    <!-- Rescue moved to bottom left -->
-    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff;" onclick="rescueLastSession()">Rescue Session</button>
+    <!-- Archive moved to bottom left -->
+    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff;" onclick="SessionManager.openArchive()">Session Archive</button>
     <!-- Start kept robust on right -->
     <button class="btn-action btn-start" style="flex: 1;" onclick="startSession()">Start Scanning Session</button>
   </div>
@@ -465,6 +465,31 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
   });
 }
+
+<!-- SCREEN 6: SESSION ARCHIVE -->
+<div id="screenArchive" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
+    <h2 style="border:none; margin:0; padding:0;">Session Archive</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeArchive()">🔙 Return</button>
+  </div>
+  
+  <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">Restore recent sessions to continue scanning, or view and export completed runs. Sessions are kept for 30 days.</p>
+
+  <div class="form-row">
+    <div class="form-label" style="color: #0277bd;">Filter Timeframe:</div>
+    <div class="input-wrapper">
+      <select id="archiveFilter" onchange="SessionManager.renderArchiveList()" style="border: 2px solid #0277bd; font-weight: bold;">
+        <option value="today">Today (Last 24 Hrs)</option>
+        <option value="week">This Week (Last 7 Days)</option>
+        <option value="month" selected>This Month (Last 30 Days)</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="archiveListContainer" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+    <!-- Archive Items Injected Here -->
+  </div>
+</div>
 </script>
 </body>
 </html>

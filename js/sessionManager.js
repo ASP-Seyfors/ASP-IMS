@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.1.0                                                           */
+/* VERSION 2.1.1                                                           */
 /* ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
@@ -19,6 +19,8 @@ const SessionManager = {
   sessionStartStr: localStorage.getItem('asp_session_start_str') || "",
   sessionDateStr: localStorage.getItem('asp_session_date_str') || "",
   currentMatchedItem: null,
+
+  sessionId: localStorage.getItem('asp_session_id') || "",
 
   init() {
     let lastUser = localStorage.getItem('asp_user_name') || "";
@@ -48,6 +50,9 @@ const SessionManager = {
     const nowObj = new Date();
     this.sessionDateStr = `${nowObj.getFullYear()}.${String(nowObj.getMonth() + 1).padStart(2, '0')}.${String(nowObj.getDate()).padStart(2, '0')}`;
     this.sessionStartStr = nowObj.toLocaleTimeString();
+
+    this.sessionId = Date.now().toString();
+    localStorage.setItem('asp_session_id', this.sessionId);
 
     localStorage.setItem('asp_session_is_active', 'true');
     localStorage.setItem('asp_manifest_enabled', this.isManifestEnabled ? 'true' : 'false');
@@ -477,6 +482,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     ScannerManager.resetScanLinesAndFields();
     this.updateManifestProgressUI();
     this.returnToEdit();
+
+    this.saveToArchive('Active');
   },
 
   goToSummaryScreen() {
@@ -590,6 +597,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenSummary').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
+
+    this.saveToArchive('Cancelled');
   },
 
   completeSession() {
@@ -604,5 +613,147 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenSetup').style.display = 'block';
     this.isSessionActive = false; this.isManifestEnabled = false;
     localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
+
+    this.saveToArchive('Completed');
+  }
+
+  // ==========================================
+  // SESSION ARCHIVE ENGINE
+  // ==========================================
+  saveToArchive(status = 'Active') {
+    if (!this.sessionId || this.scannedObjects.length === 0) return;
+    
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let sessionObj = {
+      id: this.sessionId,
+      status: status,
+      userName: this.currentUserName,
+      sessionName: this.currentSessionName,
+      orderNum: this.currentOrderNum,
+      workflowType: this.currentWorkflowType,
+      dateStr: this.sessionDateStr,
+      startStr: this.sessionStartStr,
+      manifestEnabled: this.isManifestEnabled,
+      expectedManifest: this.expectedManifest,
+      scannedObjects: this.scannedObjects,
+      pendingNewItems: this.pendingNewItems,
+      pendingUpdates: this.pendingFieldUpdates,
+      lastUpdated: Date.now()
+    };
+
+    let existingIdx = archive.findIndex(s => s.id === this.sessionId);
+    if (existingIdx > -1) archive[existingIdx] = sessionObj;
+    else archive.unshift(sessionObj);
+
+    // Auto-delete sessions older than 30 days (2592000000 ms)
+    let cutoff = Date.now() - 2592000000;
+    archive = archive.filter(s => s.lastUpdated > cutoff);
+    
+    localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+  },
+
+  openArchive() {
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenArchive').style.display = 'block';
+    this.renderArchiveList();
+  },
+
+  closeArchive() {
+    document.getElementById('screenArchive').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+  },
+
+  renderArchiveList() {
+    const container = document.getElementById('archiveListContainer');
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    
+    if (archive.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:#555;">No archived sessions found.</div>';
+      return;
+    }
+
+    let filterVal = document.getElementById('archiveFilter').value;
+    let cutoff = 0;
+    if (filterVal === 'today') cutoff = Date.now() - (24 * 60 * 60 * 1000);
+    else if (filterVal === 'week') cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    else cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+
+    let filtered = archive.filter(s => s.lastUpdated >= cutoff);
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:#555;">No sessions found for this timeframe.</div>`;
+      return;
+    }
+
+    let html = '';
+    filtered.forEach(s => {
+      let statusColor = s.status === 'Completed' ? '#2e7d32' : (s.status === 'Cancelled' ? '#d32f2f' : '#f57f17');
+      html += `
+        <div class="audit-card" style="border-left: 5px solid ${statusColor};">
+          <div class="flex-between" style="margin-bottom: 6px;">
+            <strong style="color:#0277bd; font-size:1.05rem;">${s.sessionName}</strong>
+            <span class="badge-info" style="background-color:${statusColor}; color:#fff;">${s.status}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #555; line-height: 1.4; margin-bottom: 10px;">
+            <div><strong>Items Scanned:</strong> ${s.scannedObjects.length}</div>
+            <div><strong>Date:</strong> ${s.dateStr} | <strong>Start:</strong> ${s.startStr}</div>
+            <div><strong>Workflow:</strong> ${s.workflowType}</div>
+          </div>
+          <div class="flex-between">
+            <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.deleteArchivedSession('${s.id}')">🗑️ Delete</button>
+            <button class="btn-action btn-save btn-auto" style="margin:0; padding:6px 12px;" onclick="SessionManager.restoreArchivedSession('${s.id}')">🔄 Restore Session</button>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  },
+
+  restoreArchivedSession(id) {
+    if (!confirm("Restore this session? This will override your current unsaved session if you have one active.")) return;
+    
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let s = archive.find(x => x.id === id);
+    if (!s) return;
+
+    this.sessionId = s.id;
+    this.isSessionActive = true;
+    this.currentUserName = s.userName;
+    this.currentSessionName = s.sessionName;
+    this.currentOrderNum = s.orderNum;
+    this.currentWorkflowType = s.workflowType;
+    this.sessionDateStr = s.dateStr;
+    this.sessionStartStr = s.startStr;
+    this.isManifestEnabled = s.manifestEnabled;
+    this.expectedManifest = s.expectedManifest;
+    this.scannedObjects = s.scannedObjects;
+    this.pendingNewItems = s.pendingNewItems;
+    this.pendingFieldUpdates = s.pendingUpdates;
+
+    localStorage.setItem('asp_session_id', this.sessionId);
+    localStorage.setItem('asp_session_is_active', 'true');
+    localStorage.setItem('asp_user_name', this.currentUserName);
+    localStorage.setItem('asp_session_name', this.currentSessionName);
+    localStorage.setItem('asp_order_num', this.currentOrderNum);
+    localStorage.setItem('asp_workflow_type', this.currentWorkflowType);
+    localStorage.setItem('asp_session_date_str', this.sessionDateStr);
+    localStorage.setItem('asp_session_start_str', this.sessionStartStr);
+    localStorage.setItem('asp_manifest_enabled', this.isManifestEnabled ? 'true' : 'false');
+    localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
+    localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
+    localStorage.setItem('asp_pending_updates', JSON.stringify(this.pendingFieldUpdates));
+
+    this.updateHeaderBanners();
+    document.getElementById('screenArchive').style.display = 'none';
+    this.goToSummaryScreen();
+  },
+
+  deleteArchivedSession(id) {
+    if (!confirm("Are you sure you want to permanently delete this session from the archive?")) return;
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    archive = archive.filter(s => s.id !== id);
+    localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+    this.renderArchiveList();
   }
 };
