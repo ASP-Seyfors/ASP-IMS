@@ -3,6 +3,7 @@
 /* VERSION 2.0.8 | FULL STACK WORKFLOW & LIVE DATABASE SYNC                  */
 /* ======================================================================= */
 
+
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
   pendingNewItems: JSON.parse(localStorage.getItem('asp_pending_new_items')) || [],
