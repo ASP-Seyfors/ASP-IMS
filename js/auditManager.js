@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.0.2 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
+/* VERSION 2.0.8 | FULL PRODUCTION SINGLE-SESSION & MULTI-AUDIT EXPORTS    */
 /* ======================================================================= */
 
 const AuditManager = {
@@ -281,66 +281,71 @@ const AuditManager = {
     let totalItemsScanned = SessionManager.scannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
     let sNote = document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : '';
 
+    let workflowTitle = SessionManager.currentWorkflowType ? `${SessionManager.currentWorkflowType.toUpperCase()} - ` : '';
+    let mainTitle = `${workflowTitle}SESSION LOG`;
+
     let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>${filename}</title>
 <style>
-body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 40px; font-size: 14px; }
-.header-grid { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0277bd; padding-bottom: 20px; margin-bottom: 20px; }
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 30px; font-size: 13px; }
+.top-title-banner { text-align: center; border-bottom: 2px solid #0277bd; padding-bottom: 6px; margin-bottom: 14px; }
+.top-title-banner h2 { margin: 0; color: #0277bd; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+.header-grid { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
 .company-info { flex: 1; }
-.company-info h1 { margin: 0; color: #0277bd; font-size: 24px; text-transform: uppercase; }
-.company-info p { margin: 2px 0; color: #555; }
+.company-info h1 { margin: 0; color: #333; font-size: 14px; text-transform: uppercase; white-space: nowrap; }
+.company-info p { margin: 2px 0; color: #555; font-size: 11px; }
 .report-meta { text-align: right; }
-.report-meta h2 { margin: 0; color: #333; font-size: 18px; margin-bottom: 8px; }
-.report-meta table { width: 100%; text-align: right; border: none; font-size: 13px; margin: 0; }
+.report-meta table { width: 100%; text-align: right; border: none; font-size: 12px; margin: 0; }
 .report-meta td { border: none; padding: 2px 0 2px 15px; }
-.section-title { background-color: #f0f0f0; border-left: 5px solid #0277bd; padding: 8px 12px; font-size: 16px; font-weight: bold; margin: 25px 0 12px 0; text-transform: uppercase; }
+.section-title { background-color: #f0f0f0; border-left: 4px solid #0277bd; padding: 6px 10px; font-size: 13px; font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; }
 .data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-.data-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 8px; text-align: left; font-size: 12px; color: #555; }
-.data-table td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
-.ref-col { font-weight: bold; color: #000; font-size: 14px; }
-.desc-col { font-size: 12px; color: #666; max-width: 250px; }
-.lot-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; background: #fafafa; border: 1px solid #eaeaea; }
-.lot-table th, .lot-table td { border: 1px solid #eaeaea; padding: 4px 8px; }
+.data-table th { background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 6px; text-align: left; font-size: 11px; color: #555; }
+.data-table td { border-bottom: 1px solid #eee; padding: 6px; vertical-align: top; }
+.ref-col { font-weight: bold; color: #000; font-size: 13px; }
+.desc-col { font-size: 11px; color: #666; max-width: 250px; }
+.lot-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; background: #fafafa; border: 1px solid #eaeaea; }
+.lot-table th, .lot-table td { border: 1px solid #eaeaea; padding: 4px 6px; }
 .lot-table th { background: #f0f0f0; }
-.tag-header { font-weight: bold; color: #d32f2f; margin: 8px 0 4px 0; font-size: 12px; text-transform: uppercase; }
+.tag-header { font-weight: bold; color: #d32f2f; margin: 6px 0 4px 0; font-size: 11px; text-transform: uppercase; }
 .note-text { color: #d32f2f; font-style: italic; font-size: 11px; display: block; margin-top: 3px;}
-.session-notes { background-color: #fff9c4; border-left: 4px solid #fbc02d; padding: 10px; margin-bottom: 20px; font-size: 13px;}
-.alert-box { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; }
+.session-notes { background-color: #fff9c4; border-left: 4px solid #fbc02d; padding: 8px 10px; margin-bottom: 15px; font-size: 12px;}
+.alert-box { padding: 8px 12px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; }
 .alert-short { background-color: #ffebee; border-left: 4px solid #c62828; color: #c62828; }
 .alert-over { background-color: #fff3e0; border-left: 4px solid #e65100; color: #e65100; }
 .alert-tag { background-color: #e3f2fd; border-left: 4px solid #0277bd; color: #0277bd; }
-.alert-price { background-color: #f3e5f5; border-left: 4px solid #7b1fa2; color: #7b1fa2; }
 @media print {
   body { margin: 0; padding: 15px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .page-break { page-break-before: always; }
 }
 </style>
 </head>
 <body>
+
+<div class="top-title-banner">
+  <h2>${mainTitle}</h2>
+</div>
+
 <div class="header-grid">
-<div>
-  <img src="ASP_Box_Web_RGB.png" style="max-height: 80px;" alt="ASP Logo" />
-</div>
-<div class="company-info" style="margin-left: 20px;">
-  <h1>Allied Surgical Products</h1>
-  <p>737 Barbara Street</p>
-  <p>Palm Harbor, FL 34684</p>
-</div>
-<div class="report-meta">
-  <h2>SESSION LOG EXPORT</h2>
-  <table>
-    <tr><td><strong>Session:</strong></td><td>${sessionTitleHeader}</td></tr>
-    <tr><td><strong>User:</strong></td><td>${SessionManager.currentUserName || 'N/A'}</td></tr>
-    <tr><td><strong>Workflow:</strong></td><td>${SessionManager.currentWorkflowType}</td></tr>
-    <tr><td><strong>Date:</strong></td><td>${SessionManager.sessionDateStr}</td></tr>
-    <tr><td><strong>Time Span:</strong></td><td>${SessionManager.sessionStartStr} - ${timeEndStr}</td></tr>
-    <tr><td><strong>Unique REFs:</strong></td><td>${totalUniqueRefs}</td></tr>
-    <tr><td><strong>Total Items:</strong></td><td>${totalItemsScanned}</td></tr>
-  </table>
-</div>
+  <div>
+    <img src="ASP_Box_Web_RGB.png" style="max-height: 50px;" alt="ASP Logo" />
+  </div>
+  <div class="company-info" style="margin-left: 15px;">
+    <h1>Allied Surgical Products</h1>
+    <p>737 Barbara Street</p>
+    <p>Palm Harbor, FL 34684</p>
+  </div>
+  <div class="report-meta">
+    <table>
+      <tr><td><strong>Session:</strong></td><td>${sessionTitleHeader}</td></tr>
+      <tr><td><strong>User:</strong></td><td>${SessionManager.currentUserName || 'N/A'}</td></tr>
+      <tr><td><strong>Date:</strong></td><td>${SessionManager.sessionDateStr}</td></tr>
+      <tr><td><strong>Time Span:</strong></td><td>${SessionManager.sessionStartStr} - ${timeEndStr}</td></tr>
+      <tr><td><strong>Unique REFs:</strong></td><td>${totalUniqueRefs}</td></tr>
+      <tr><td><strong>Total Items:</strong></td><td>${totalItemsScanned}</td></tr>
+    </table>
+  </div>
 </div>`;
 
     if (sNote) {
@@ -388,16 +393,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       }
     }
 
-    // ROUTED TO CUSTOMER BINS
-    let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
-    if (reservedItems.length > 0) {
-      html += `<div class="section-title" style="border-color:#0277bd; color:#0277bd;">🚩 ROUTED TO CUSTOMER BINS</div><div class="alert-box alert-tag"><table style="width:100%;"><tr><th>REF</th><th>Customer Tag</th><th>Quantity Routed</th></tr>`;
-      reservedItems.forEach(r => {
-        html += `<tr><td><strong>${r.ref}</strong></td><td>${r.customerTag}</td><td style="text-align:center; font-weight:bold;">${r.qty}</td></tr>`;
-      });
-      html += `</table></div>`;
-    }
-
+    // 1. SCANNED ITEM BREAKDOWN
     html += `<div class="section-title">📦 SCANNED ITEM BREAKDOWN</div>`;
     html += `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
     
@@ -418,15 +414,27 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       }
       let descText = rData.desc || 'No description available.';
       let priceHtml = rData.price ? `<br><strong style="color:#2e7d32;">${rData.price}</strong>` : '';
-      html += `<tr><td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:4px;">${rData.mfr}</div></td><td><div class="desc-col">${descText}</div><div style="font-size:11px; margin-top:6px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td><td>${lotSection}</td><td style="text-align:center; font-size:18px; font-weight:bold;">${rData.totalScannedQty}</td></tr>`;
+      html += `<tr><td><div class="ref-col">${rData.ref}</div><div style="font-size:11px; color:#888; margin-top:2px;">${rData.mfr}</div></td><td><div class="desc-col">${descText}</div><div style="font-size:10px; margin-top:4px;"><strong>GTIN:</strong> ${rData.gtin}</div>${priceHtml}</td><td>${lotSection}</td><td style="text-align:center; font-size:16px; font-weight:bold;">${rData.totalScannedQty}</td></tr>`;
     }
     html += `</tbody></table>`;
 
-    // 2-COLUMN PRICING TABLE AT VERY END
+    // 2. ROUTED TO CUSTOMER BINS (MOVED AFTER BREAKDOWN)
+    let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
+    if (reservedItems.length > 0) {
+      let totalReservedQty = reservedItems.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
+      html += `<div class="section-title" style="border-color:#0277bd; color:#0277bd;">🚩 ROUTED TO CUSTOMER BINS</div><div class="alert-box alert-tag"><table style="width:100%;"><thead><tr><th>REF</th><th>Customer Tag</th><th style="text-align:center;">Quantity Routed</th></tr></thead><tbody>`;
+      reservedItems.forEach(r => {
+        html += `<tr><td><strong>${r.ref}</strong></td><td>${r.customerTag}</td><td style="text-align:center; font-weight:bold;">${r.qty}</td></tr>`;
+      });
+      html += `<tr style="border-top:2px solid #0277bd;"><td colspan="2" style="text-align:right; font-weight:bold; padding-top:6px;">Total Quantity Reserved:</td><td style="text-align:center; font-weight:bold; font-size:13px; padding-top:6px;">${totalReservedQty}</td></tr>`;
+      html += `</tbody></table></div>`;
+    }
+
+    // 3. ITEMS REQUIRING PRICING (AT VERY END)
     let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
     if (unpricedItems.length > 0) {
       html += `
-        <div style="margin-top: 30px; page-break-inside: avoid;">
+        <div style="margin-top: 20px; page-break-inside: avoid;">
           <div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING (${unpricedItems.length})</div>
           <table class="data-table" style="width:100%;">
             <thead>
@@ -452,21 +460,20 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    let safeDate = (SessionManager.sessionDateStr || '').replace(/\./g, '-');
+    // Date formatted as YYYY.MM.DD
+    let formattedDate = SessionManager.sessionDateStr || '';
 
     let cleanSession = (SessionManager.currentSessionName || 'Session')
       .replace(/\.pdf$/i, '')
       .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
-      .replace(/\./g, '-')
       .trim();
 
     let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow')
       .replace(/\.pdf$/i, '')
       .replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_')
-      .replace(/\./g, '-')
       .trim();
 
-    let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
+    let baseFilename = `${formattedDate} - ${cleanSession} - ${cleanWorkflow}`;
 
     if (formatType === 'pdf') {
       let printWin = window.open('', '_blank');
