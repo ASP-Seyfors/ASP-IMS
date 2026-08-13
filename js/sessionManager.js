@@ -1,7 +1,18 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: js/sessionManager.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Core session lifecycle engine for the ASP Scanner application. Handles
+ *   session initialization, workflow state management, real-time scanning
+ *   memory storage, pre-load manifest verification, and local storage archiving.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
   pendingNewItems: JSON.parse(localStorage.getItem('asp_pending_new_items')) || [],

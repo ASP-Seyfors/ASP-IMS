@@ -1,9 +1,18 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
-
-
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: js/auditManager.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Audit, report generation, and traceability engine. Constructs TXT and
+ *   printable HTML/PDF session summaries, calculates live session metrics,
+ *   parses multi-log uploads, and builds Thrive CSV export formats.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 const AuditManager = {
   parsedAuditSessions: [],
 

@@ -1,7 +1,18 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - UI MANAGER (js/UIManager.js)                          */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: js/uiManager.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   User interface interaction manager handling theme toggling, dynamic font
+ *   scaling, field validation/attention highlighting, date formatting, modal
+ *   controls, and native file download/share triggers.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 const UIManager = {
   loadSavedTheme() {
     let savedTheme = localStorage.getItem('asp_app_theme') || 'slate';

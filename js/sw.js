@@ -1,3 +1,17 @@
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: sw.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Service Worker engine enabling Progressive Web App (PWA) functionality,
+ *   offline caching strategies, asset cache busting, and version management.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 const CACHE_NAME = 'asp-scanner-v2.2.1';
 
 

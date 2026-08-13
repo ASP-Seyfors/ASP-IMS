@@ -1,7 +1,18 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - GLOBAL EVENT BINDINGS (works with index.html)         */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: js/app.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Main application entry point and global event binding layer. Handles
+ *   DOM load initialization, window-level function bridges, and service
+ *   worker lifecycle registration.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 async function checkAppUpdates() {
   // Show an immediate visual feedback loading indicator
   const btn = event ? event.target : null;

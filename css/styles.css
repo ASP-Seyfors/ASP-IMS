@@ -1,8 +1,18 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - STYLESHEET (styles.css)                               */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
-
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: css/styles.css
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Master stylesheet defining CSS custom properties (themes: Slate, Sage,
+ *   Gold), responsive card layouts, mobile-first and desktop media queries,
+ *   status badges, and global font scaling utilities.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 /* Theme Variables */
 body, body.theme-sage {
   --bg-color: #23332b;

@@ -1,7 +1,18 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - SCANNER MANAGER (js/scannerManager.js)                */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: js/scannerManager.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Hardware and camera barcode engine integrating HTML5-QRCode viewfinder,
+ *   OCR processing, GS1 2D DataMatrix/1D parsing, and real-time GTIN/LOT/EXP
+ *   field auto-population.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 const ScannerManager = {
   html5QrCode: null,
   isCameraActive: false,

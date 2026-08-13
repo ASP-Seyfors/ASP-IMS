@@ -1,7 +1,17 @@
-/* ======================================================================= */
-/* ASP SCANNER APP - DATABASE MANAGER (js/databaseManager.js)              */
-/* VERSION 2.2.1                                                           */
-/* ======================================================================= */
+/* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * File: js/databaseManager.js
+ * Author: Thomas Paul Seyfors
+ * Version: 2.2.1
+ * Date: August 2026
+ * 
+ * Description:
+ *   Local database controller for warehouse inventory catalog lookup, GTIN/SKU
+ *   cross-referencing, manufacturer mapping, and live item description matching.
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
   "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
