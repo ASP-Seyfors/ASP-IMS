@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SCANNER MANAGER (js/scannerManager.js)                */
-/* VERSION 2.1.5                                                           */
+/* VERSION 2.2.0                                                           */
 /* ======================================================================= */
 const ScannerManager = {
   html5QrCode: null,

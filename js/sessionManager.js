@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.1.5                                                           */
+/* VERSION 2.2.0                                                           */
 /* ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
@@ -40,6 +40,51 @@ const SessionManager = {
     });
 
     if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
+  },
+
+  startStocktakeSession() {
+    const uName = document.getElementById('userNameInput').value.trim();
+    
+    this.currentUserName = uName || "Operator";
+    this.currentSessionName = "Warehouse Stocktake";
+    this.currentOrderNum = "FULL-INV";
+    this.currentWorkflowType = "Stocktake";
+    this.isSessionActive = true;
+    this.isManifestEnabled = false;
+
+    const nowObj = new Date();
+    this.sessionDateStr = `${nowObj.getFullYear()}.${String(nowObj.getMonth() + 1).padStart(2, '0')}.${String(nowObj.getDate()).padStart(2, '0')}`;
+    this.sessionStartStr = nowObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    this.sessionId = Date.now().toString();
+    localStorage.setItem('asp_session_id', this.sessionId);
+
+    localStorage.setItem('asp_session_is_active', 'true');
+    localStorage.setItem('asp_manifest_enabled', 'false');
+    localStorage.setItem('asp_user_name', this.currentUserName);
+    localStorage.setItem('asp_session_name', this.currentSessionName);
+    localStorage.setItem('asp_order_num', this.currentOrderNum);
+    localStorage.setItem('asp_workflow_type', this.currentWorkflowType);
+    localStorage.setItem('asp_session_start_str', this.sessionStartStr);
+    localStorage.setItem('asp_session_date_str', this.sessionDateStr);
+    
+    this.scannedObjects = [];
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+
+    this.updateHeaderBanners();
+
+    // UI Transitions
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenScanning').style.display = 'block';
+
+    // UI Locks for Stocktake Mode
+    let destRow = document.getElementById('rowItemDestination');
+    let tagRow = document.getElementById('rowCustomerTag');
+    if (destRow) destRow.style.display = 'none';
+    if (tagRow) tagRow.style.display = 'none';
+    
+    this.currentItemAction = 'Inventory';
+    ScannerManager.resetScanLinesAndFields();
   },
 
   startSession() {

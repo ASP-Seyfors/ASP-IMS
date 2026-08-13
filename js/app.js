@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - GLOBAL EVENT BINDINGS (works with index.html)         */
-/* VERSION 2.1.5                                                           */
+/* VERSION 2.2.0                                                           */
 /* ======================================================================= */
 async function checkAppUpdates() {
   // Show an immediate visual feedback loading indicator

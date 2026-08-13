@@ -1,5 +1,5 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER - VERSION 2.1.5                                             -->
+<!-- ASP SCANNER - VERSION 2.2.0                                             -->
 <!-- ======================================================================= -->
 
 <!DOCTYPE html>
@@ -89,8 +89,13 @@
   </div>
 
   <!-- Start Button Compacted & Centered -->
+  <div style="text-align: center; margin-bottom: 15px;">
+    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; width: 80%; max-width: 300px;" onclick="startSession()">Start Scanning Session</button>
+  </div>
+
+  <!-- Stocktake Button -->
   <div style="text-align: center; margin-bottom: 25px;">
-    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important;" onclick="startSession()">Start Scanning Session</button>
+    <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; padding: 8px 16px !important; width: 80%; max-width: 300px;" onclick="SessionManager.startStocktakeSession()">📋 Perform Stocktake</button>
   </div>
 
   <!-- Bottom Navigation & Utility Footer Grid -->
