@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.1.3                                                           */
+/* VERSION 2.1.4                                                           */
 /* ======================================================================= */
 
 
@@ -24,10 +24,8 @@ const AuditManager = {
 
     SessionManager.scannedObjects.forEach((item, index) => {
       let statusIcon = item.actionTag === 'Reserved' ? '🚩' : (item.actionTag === 'Pack & Ship' ? '🖐️' : '📦');
-      let tagHtml = item.customerTag ? `<strong>Customer:</strong> <span style="color:#0277bd;">${item.customerTag}</span>` : '';
       let noteHtml = item.itemNote ? `<div style="font-size:0.8rem; color:#d32f2f; margin-top:6px;"><em>Note: ${item.itemNote}</em></div>` : '';
 
-      // Accordion Details Container
       let details = document.createElement('details');
       details.className = 'summary-item-card';
 
@@ -43,15 +41,27 @@ const AuditManager = {
       content.style.color = '#555';
       
       content.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
           <span><strong>Lot:</strong> ${item.lot}</span>
           <span><strong>Exp:</strong> ${item.exp}</span>
-        </div>
-        <div style="display:flex; justify-content:space-between;">
           <span>Status: ${statusIcon} ${item.actionTag}</span>
-          <span>${tagHtml}</span>
         </div>
         ${noteHtml}
+        
+        <!-- Editable Controls -->
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; padding:8px; margin-top:8px;">
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+            <label style="font-weight:bold; font-size:0.8rem;">Qty:</label>
+            <input type="number" id="editQty_${index}" value="${item.qty}" min="1" style="width:60px; padding:4px; text-align:center;">
+            
+            <label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Customer Tag:</label>
+            <input type="text" id="editTag_${index}" value="${item.customerTag || ''}" placeholder="e.g. SURGISHOP" style="flex:1; padding:4px; text-transform:uppercase;">
+          </div>
+          <div class="flex-between" style="margin-top:6px;">
+            <button class="btn-small btn-cancel btn-auto" style="padding:3px 8px;" onclick="SessionManager.deleteScannedItem(${index})">🗑️ Delete Entry</button>
+            <button class="btn-small btn-save btn-auto" style="padding:3px 12px; background-color:#1976d2;" onclick="SessionManager.updateScannedItem(${index})">💾 Save Changes</button>
+          </div>
+        </div>
       `;
       details.appendChild(content);
       container.appendChild(details);

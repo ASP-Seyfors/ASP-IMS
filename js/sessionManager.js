@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.1.3                                                           */
+/* VERSION 2.1.4                                                           */
 /* ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
@@ -782,6 +782,46 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
     alert("Manifest updated! Recalculating session summaries...");
     this.goToSummaryScreen();
+  },
+
+  updateScannedItem(index) {
+    if (!this.scannedObjects[index]) return;
+    
+    let qtyEl = document.getElementById(`editQty_${index}`);
+    let tagEl = document.getElementById(`editTag_${index}`);
+    if (!qtyEl) return;
+    
+    let newQty = parseInt(qtyEl.value, 10) || 1;
+    let newTag = tagEl ? tagEl.value.trim() : '';
+
+    this.scannedObjects[index].qty = newQty;
+    this.scannedObjects[index].customerTag = newTag;
+    if (newTag) this.scannedObjects[index].actionTag = 'Reserved';
+
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
+    this.updateManifestProgressUI();
+    this.saveToArchive('Active');
+    
+    alert(`Updated REF ${this.scannedObjects[index].ref} (Qty: ${newQty}${newTag ? ', Tag: ' + newTag : ''})`);
+    AuditManager.updateSessionSummaryView();
+    this.renderManifestReconciliation();
+    this.renderAdvancedReview();
+  },
+
+  deleteScannedItem(index) {
+    if (!this.scannedObjects[index]) return;
+    let item = this.scannedObjects[index];
+    
+    if (!confirm(`Delete scanned item run for REF: ${item.ref} (Lot: ${item.lot}, Qty: ${item.qty})?`)) return;
+
+    this.scannedObjects.splice(index, 1);
+    localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
+    this.updateManifestProgressUI();
+    this.saveToArchive('Active');
+
+    AuditManager.updateSessionSummaryView();
+    this.renderManifestReconciliation();
+    this.renderAdvancedReview();
   },
 
   openSettings() {
