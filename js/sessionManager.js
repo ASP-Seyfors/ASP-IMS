@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.1.2                                                           */
+/* VERSION 2.1.3                                                           */
 /* ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
@@ -25,13 +25,21 @@ const SessionManager = {
   init() {
     let lastUser = localStorage.getItem('asp_user_name') || "";
     let userInput = document.getElementById('userNameInput');
-    if (userInput && lastUser) {
-      userInput.value = lastUser;
-    }
-    // Load font size preference on startup
-    if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) {
-      UIManager.loadFontPreference();
-    }
+    if (userInput && lastUser) userInput.value = lastUser;
+
+    ['supplierSelect', 'customerSelect'].forEach(id => {
+      let sel = document.getElementById(id);
+      if (sel && sel.options.length > 1) {
+        let opts = Array.from(sel.options);
+        let first = opts.shift();
+        opts.sort((a, b) => a.text.localeCompare(b.text));
+        sel.innerHTML = '';
+        sel.add(first);
+        opts.forEach(o => sel.add(o));
+      }
+    });
+
+    if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
   },
 
   startSession() {
@@ -133,8 +141,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   updateHeaderBanners() {
-    let titleStr = `${this.currentSessionName} - ${this.currentWorkflowType}`;
-    ['hdrTitle', 'hdrTitleRev', 'hdrTitleSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = titleStr; });
+    ['hdrTitle', 'hdrTitleRev', 'hdrTitleSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.currentSessionName; });
+    ['hdrWorkflow', 'hdrWorkflowRev', 'hdrWorkflowSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.currentWorkflowType; });
     ['hdrUser', 'hdrUserRev', 'hdrUserSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.currentUserName || 'N/A'; });
     ['hdrDate', 'hdrDateRev', 'hdrDateSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.sessionDateStr; });
     ['hdrTime', 'hdrTimeRev', 'hdrTimeSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.sessionStartStr; });
@@ -152,21 +160,38 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (!container) return;
     const rowIdx = container.children.length;
     const div = document.createElement('div'); div.className = 'manifest-row'; div.id = `manifestRow_${rowIdx}`;
+    
+    let allocHtml = isRes ? `
+      <div class="manifest-subrow flex-between" style="display:flex; gap:6px; margin-top:4px;">
+        <input type="text" class="manifest-tag-input" placeholder="Customer Tag" value="${tagVal}" style="flex:2;">
+        <input type="number" class="manifest-resqty-input" placeholder="Res Qty" value="${resQtyVal}" min="1" style="flex:1;">
+        <button class="btn-small btn-cancel" onclick="this.parentElement.remove()" style="padding:4px 8px;">✕</button>
+      </div>` : '';
+
     div.innerHTML = `
       <div style="display:flex; gap:6px; align-items:center;">
         <input type="text" class="manifest-ref-input" placeholder="REF / SKU" value="${refVal}" oninput="this.value = this.value.toUpperCase();" style="flex:2;">
-        <input type="number" class="manifest-qty-input" placeholder="Qty" value="${qtyVal}" min="1" style="flex:1;">
+        <input type="number" class="manifest-qty-input" placeholder="Total Expected Qty" value="${qtyVal}" min="1" style="flex:1;">
         <button class="btn-small btn-cancel" onclick="this.parentElement.parentElement.remove()" style="padding:4px 8px;">✕</button>
       </div>
+      <div id="allocContainer_${rowIdx}">${allocHtml}</div>
       <div style="margin-top:6px;">
-        <label style="font-size:0.8rem; font-weight:bold; cursor:pointer;">
-          <input type="checkbox" class="manifest-res-chk" onchange="toggleManifestResRow(${rowIdx})" ${isRes ? 'checked' : ''}> Reserved for Customer
-        </label>
+        <button class="btn-small btn-auto" style="font-size:0.75rem; padding:2px 8px; background-color:#0277bd;" onclick="SessionManager.addManifestAllocation(${rowIdx})">+ Add Customer Allocation</button>
       </div>
-      <div class="manifest-subrow" id="manifestResSubrow_${rowIdx}" style="display:${isRes ? 'flex' : 'none'};">
-        <input type="text" class="manifest-tag-input" placeholder="Customer Tag" value="${tagVal}" style="flex:2;">
-        <input type="number" class="manifest-resqty-input" placeholder="Res Qty" value="${resQtyVal}" min="1" style="flex:1;">
-      </div>
+    `;
+    container.appendChild(div);
+  },
+
+  addManifestAllocation(rowIdx) {
+    const container = document.getElementById(`allocContainer_${rowIdx}`);
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'manifest-subrow flex-between';
+    div.style.display = 'flex'; div.style.gap = '6px'; div.style.marginTop = '4px';
+    div.innerHTML = `
+      <input type="text" class="manifest-tag-input" placeholder="Customer Tag" style="flex:2;">
+      <input type="number" class="manifest-resqty-input" placeholder="Res Qty" value="1" min="1" style="flex:1;">
+      <button class="btn-small btn-cancel" onclick="this.parentElement.remove()" style="padding:4px 8px;">✕</button>
     `;
     container.appendChild(div);
   },
@@ -256,11 +281,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let list = [];
     container.querySelectorAll('.manifest-row').forEach(row => {
       let ref = row.querySelector('.manifest-ref-input').value.trim().toUpperCase();
-      let qty = parseInt(row.querySelector('.manifest-qty-input').value, 10) || 1;
-      let chk = row.querySelector('.manifest-res-chk').checked;
-      let tag = row.querySelector('.manifest-tag-input').value.trim();
-      let resQty = parseInt(row.querySelector('.manifest-resqty-input').value, 10) || 1;
-      if (ref) list.push({ ref, expectedQty: qty, isReserved: chk, customerTag: chk ? tag : '', reservedQty: chk ? resQty : 0 });
+      let expectedQty = parseInt(row.querySelector('.manifest-qty-input').value, 10) || 1;
+      let allocations = [];
+      row.querySelectorAll('.manifest-subrow').forEach(subrow => {
+        let tag = subrow.querySelector('.manifest-tag-input').value.trim();
+        let rQty = parseInt(subrow.querySelector('.manifest-resqty-input').value, 10) || 1;
+        if (tag) allocations.push({ customerTag: tag, reservedQty: rQty });
+      });
+      if (ref) list.push({ ref, expectedQty, allocations });
     });
     return list;
   },
@@ -269,12 +297,21 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.expectedManifest = this.readManifestDataFromUI();
     if (this.expectedManifest.length === 0) { alert("Please enter at least one expected item row."); return; }
     let totalExp = this.expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
-    let html = `<div style="margin-bottom:10px;"><strong>Total Expected Pieces:</strong> ${totalExp} across ${this.expectedManifest.length} unique REFs</div><table class="lot-table" style="width:100%;"><thead><tr><th>REF</th><th>Expected Qty</th><th>Customer Reserve</th></tr></thead><tbody>`;
+    
+    let html = `<div style="margin-bottom:15px; text-align:center;"><strong>Total Expected Pieces:</strong> ${totalExp} across ${this.expectedManifest.length} unique REFs</div>`;
     this.expectedManifest.forEach(item => {
-      let resText = item.isReserved ? `${item.customerTag} (Qty: ${item.reservedQty})` : '--';
-      html += `<tr><td><strong>${item.ref}</strong></td><td style="text-align:center;">${item.expectedQty}</td><td>${resText}</td></tr>`;
+      html += `<div style="border: 1px solid #0277bd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #ffffff; text-align: center;">
+        <div style="font-size: 1.2rem; color: #0277bd;"><strong>${item.ref}</strong></div>
+        <div style="margin: 6px 0; font-size: 1.05rem;"><strong>Total Expected:</strong> ${item.expectedQty}</div>`;
+      if (item.allocations.length > 0) {
+        html += `<div style="margin-top: 10px; font-size: 0.9rem; color: #555;"><strong>Allocations:</strong><br>`;
+        item.allocations.forEach(a => { html += `<span style="display:inline-block; background:#e3f2fd; color:#0277bd; padding:4px 8px; border:1px dashed #0277bd; border-radius:3px; margin:4px; font-weight:bold;">${a.customerTag} (Qty: ${a.reservedQty})</span><br>`; });
+        html += `</div>`;
+      } else {
+        html += `<div style="margin-top: 10px; font-size: 0.85rem; color: #757575;"><em>All routed to standard Inventory.</em></div>`;
+      }
+      html += `</div>`;
     });
-    html += `</tbody></table>`;
     document.getElementById('manifestReviewSummaryContainer').innerHTML = html;
     document.getElementById('screenManifestEntry').style.display = 'none';
     document.getElementById('screenManifestReview').style.display = 'block';
@@ -531,6 +568,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     AuditManager.updateSessionSummaryView();
     
+    this.renderManifestReconciliation();
     this.renderAdvancedReview(); 
     
     document.getElementById('screenSummary').style.display = 'block';
@@ -697,6 +735,53 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     archive = archive.filter(s => s.lastUpdated > cutoff);
     
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+  },
+
+  renderManifestReconciliation() {
+    const card = document.getElementById('manifestReconcileCard');
+    const list = document.getElementById('manifestReconcileList');
+    if (!card || !list || !this.isManifestEnabled || this.expectedManifest.length === 0) return;
+
+    let scannedMap = {};
+    this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
+
+    let hasDiscrepancy = false;
+    let html = '';
+
+    this.expectedManifest.forEach((exp, idx) => {
+      let scannedQty = scannedMap[exp.ref] || 0;
+      if (scannedQty !== exp.expectedQty) {
+        hasDiscrepancy = true;
+        html += `
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; background:#fff; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            <input type="text" id="recRef_${idx}" value="${exp.ref}" style="flex:2; text-transform:uppercase; font-weight:bold; color:#0277bd;">
+            <input type="number" id="recQty_${idx}" value="${exp.expectedQty}" min="1" style="flex:1;">
+            <span style="font-size:0.8rem; color:#555; flex:1.5;">Scanned: <strong>${scannedQty}</strong></span>
+          </div>
+        `;
+      }
+    });
+
+    if (hasDiscrepancy) {
+      card.style.display = 'block';
+      list.innerHTML = html;
+    } else {
+      card.style.display = 'none';
+    }
+  },
+
+  saveManifestReconciliation() {
+    this.expectedManifest.forEach((exp, idx) => {
+      let refEl = document.getElementById(`recRef_${idx}`);
+      let qtyEl = document.getElementById(`recQty_${idx}`);
+      if (refEl && qtyEl) {
+        exp.ref = refEl.value.trim().toUpperCase();
+        exp.expectedQty = parseInt(qtyEl.value, 10) || 1;
+      }
+    });
+    localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
+    alert("Manifest updated! Recalculating session summaries...");
+    this.goToSummaryScreen();
   },
 
   openSettings() {

@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.1.2                                                           */
+/* VERSION 2.1.3                                                           */
 /* ======================================================================= */
 
 
@@ -137,6 +137,28 @@ const AuditManager = {
     }
     reportLines.push(`================================================================================\n`);
 
+    // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
+    let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
+    if (reservedItems.length > 0) {
+      reportLines.push(`--- ROUTED TO CUSTOMER BINS ---`);
+      reservedItems.forEach(r => {
+        reportLines.push(`  * REF: ${r.ref} | Tag: ${r.customerTag} | Qty: ${r.qty}`);
+      });
+      reportLines.push(``);
+    }
+
+    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
+    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+    if (unpricedItems.length > 0) {
+      reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
+      unpricedItems.forEach(u => {
+        reportLines.push(`  * REF: ${u.ref} | MFR: ${u.mfr} | Qty Scanned: ${u.totalScannedQty}`);
+      });
+      reportLines.push(``);
+    }
+
+    reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
+
     // CONDITIONAL SECTION 1: SHORTAGES
     if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
       let shortages = [];
@@ -178,27 +200,6 @@ const AuditManager = {
       }
     }
 
-    // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
-    let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
-    if (reservedItems.length > 0) {
-      reportLines.push(`--- ROUTED TO CUSTOMER BINS ---`);
-      reservedItems.forEach(r => {
-        reportLines.push(`  * REF: ${r.ref} | Tag: ${r.customerTag} | Qty: ${r.qty}`);
-      });
-      reportLines.push(``);
-    }
-
-    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
-    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
-    if (unpricedItems.length > 0) {
-      reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
-      unpricedItems.forEach(u => {
-        reportLines.push(`  * REF: ${u.ref} | MFR: ${u.mfr} | Qty Scanned: ${u.totalScannedQty}`);
-      });
-      reportLines.push(``);
-    }
-
-    reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
     let count = 1;
     for (let rKey in scannedMap) {
       let rData = scannedMap[rKey];
@@ -350,47 +351,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `<div class="session-notes"><strong>Session Notes:</strong> ${sNote}</div>`;
     }
 
-    // SHORTAGES
-    if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
-      let shortages = [];
-      SessionManager.expectedManifest.forEach(exp => {
-        let scannedObj = scannedMap[exp.ref];
-        let scannedQty = scannedObj ? scannedObj.totalScannedQty : 0;
-        if (scannedQty < exp.expectedQty) {
-          shortages.push({ ref: exp.ref, expected: exp.expectedQty, scanned: scannedQty, shortQty: exp.expectedQty - scannedQty });
-        }
-      });
-
-      if (shortages.length > 0) {
-        html += `<div class="section-title" style="border-color:#c62828; color:#c62828;">⚠️ SHORTAGES / MISSING ITEMS</div><div class="alert-box alert-short"><table style="width:100%;"><tr><th>REF</th><th>Expected</th><th>Scanned</th><th>Shortage</th></tr>`;
-        shortages.forEach(s => {
-          html += `<tr><td><strong>${s.ref}</strong></td><td style="text-align:center;">${s.expected}</td><td style="text-align:center;">${s.scanned}</td><td style="text-align:center; font-weight:bold; color:#c62828;">-${s.shortQty}</td></tr>`;
-        });
-        html += `</table></div>`;
-      }
-    }
-
-    // OVERAGES
-    if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
-      let overages = [];
-      Object.keys(scannedMap).forEach(rKey => {
-        let expObj = SessionManager.expectedManifest.find(e => e.ref === rKey);
-        let expQty = expObj ? expObj.expectedQty : 0;
-        let scannedQty = scannedMap[rKey].totalScannedQty;
-        if (scannedQty > expQty) {
-          overages.push({ ref: rKey, expected: expQty, scanned: scannedQty, overQty: scannedQty - expQty });
-        }
-      });
-
-      if (overages.length > 0) {
-        html += `<div class="section-title" style="border-color:#e65100; color:#e65100;">⚠️ OVERAGES / UNEXPECTED ITEMS</div><div class="alert-box alert-over"><table style="width:100%;"><tr><th>REF</th><th>Expected</th><th>Scanned</th><th>Overage</th></tr>`;
-        overages.forEach(o => {
-          html += `<tr><td><strong>${o.ref}</strong></td><td style="text-align:center;">${o.expected}</td><td style="text-align:center;">${o.scanned}</td><td style="text-align:center; font-weight:bold; color:#e65100;">+${o.overQty}</td></tr>`;
-        });
-        html += `</table></div>`;
-      }
-    }
-
     // 1. SCANNED ITEM BREAKDOWN
     html += `<div class="section-title">📦 SCANNED ITEM BREAKDOWN</div>`;
     html += `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
@@ -446,6 +406,47 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         html += `<tr><td style="font-weight:bold;">${u.ref}</td><td>${u.mfr}</td></tr>`;
       });
       html += `</tbody></table></div>`;
+    }
+
+    // SHORTAGES
+    if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
+      let shortages = [];
+      SessionManager.expectedManifest.forEach(exp => {
+        let scannedObj = scannedMap[exp.ref];
+        let scannedQty = scannedObj ? scannedObj.totalScannedQty : 0;
+        if (scannedQty < exp.expectedQty) {
+          shortages.push({ ref: exp.ref, expected: exp.expectedQty, scanned: scannedQty, shortQty: exp.expectedQty - scannedQty });
+        }
+      });
+
+      if (shortages.length > 0) {
+        html += `<div class="section-title" style="border-color:#c62828; color:#c62828;">⚠️ SHORTAGES / MISSING ITEMS</div><div class="alert-box alert-short"><table style="width:100%;"><tr><th>REF</th><th>Expected</th><th>Scanned</th><th>Shortage</th></tr>`;
+        shortages.forEach(s => {
+          html += `<tr><td><strong>${s.ref}</strong></td><td style="text-align:center;">${s.expected}</td><td style="text-align:center;">${s.scanned}</td><td style="text-align:center; font-weight:bold; color:#c62828;">-${s.shortQty}</td></tr>`;
+        });
+        html += `</table></div>`;
+      }
+    }
+
+    // OVERAGES
+    if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
+      let overages = [];
+      Object.keys(scannedMap).forEach(rKey => {
+        let expObj = SessionManager.expectedManifest.find(e => e.ref === rKey);
+        let expQty = expObj ? expObj.expectedQty : 0;
+        let scannedQty = scannedMap[rKey].totalScannedQty;
+        if (scannedQty > expQty) {
+          overages.push({ ref: rKey, expected: expQty, scanned: scannedQty, overQty: scannedQty - expQty });
+        }
+      });
+
+      if (overages.length > 0) {
+        html += `<div class="section-title" style="border-color:#e65100; color:#e65100;">⚠️ OVERAGES / UNEXPECTED ITEMS</div><div class="alert-box alert-over"><table style="width:100%;"><tr><th>REF</th><th>Expected</th><th>Scanned</th><th>Overage</th></tr>`;
+        overages.forEach(o => {
+          html += `<tr><td><strong>${o.ref}</strong></td><td style="text-align:center;">${o.expected}</td><td style="text-align:center;">${o.scanned}</td><td style="text-align:center; font-weight:bold; color:#e65100;">+${o.overQty}</td></tr>`;
+        });
+        html += `</table></div>`;
+      }
     }
 
     html += `</body></html>`; 

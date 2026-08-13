@@ -1,5 +1,5 @@
 <!-- ======================================================================= -->
-<!-- ASP SCANNER - VERSION 2.1.2                                             -->
+<!-- ASP SCANNER - VERSION 2.1.3                                             -->
 <!-- ======================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
@@ -183,15 +183,15 @@
 
 <!-- SCREEN 1C: MANIFEST REVIEW & VERIFICATION -->
 <div id="screenManifestReview" style="display: none;" class="card">
-  <h2>Verify Expected Order Manifest</h2>
+  <h2>Verify Expected Order</h2>
   
   <div id="manifestReviewSummaryContainer">
     <!-- Summary Injected via JS -->
   </div>
 
-  <div class="btn-flex-row" style="margin-top: 16px;">
-    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff;" onclick="returnToManifestEdit()">🔙 Edit Manifest</button>
-    <button class="btn-action btn-save" style="flex: 2;" onclick="confirmManifestAndStart()">✅ Confirm & Begin Scanning</button>
+  <div class="flex-between" style="margin-top: 16px;">
+    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin:0;" onclick="returnToManifestEdit()">🔙 Return to Pre-Loading</button>
+    <button class="btn-action btn-save btn-auto" style="margin:0;" onclick="confirmManifestAndStart()">✅ Confirm & Begin Scanning</button>
   </div>
 </div>
 
@@ -199,13 +199,18 @@
 <div id="screenScanning" style="display: none;">
   
   <div class="header-banner">
-    <h3 id="hdrTitle">Customer Name (Order #) - Workflow</h3>
-    <div class="flex-between" style="font-size: 0.85rem; color: #333333; margin-top: 6px;">
-      <div style="text-align: left;"><strong>User:</strong> <span id="hdrUser">--</span></div>
-      <div style="text-align: right;"><strong>Date:</strong> <span id="hdrDate">--</span> | <strong>Start:</strong> <span id="hdrTime">--</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="text-align: left; font-size: 0.85rem; width: 25%;"><strong>User:</strong><br><span id="hdrUser">--</span></div>
+      <div style="text-align: center; width: 50%;">
+        <h3 id="hdrTitle" style="margin: 0; font-size: 1.1rem; color: #0277bd;">Customer (Order)</h3>
+        <div id="hdrWorkflow" style="font-size: 0.85rem; font-weight: bold; color: #555; margin-top: 4px;">Workflow</div>
+      </div>
+      <div style="text-align: right; font-size: 0.85rem; width: 25%;">
+        <strong>Date:</strong> <span id="hdrDate">--</span><br><strong>Start:</strong> <span id="hdrTime">--</span>
+      </div>
     </div>
     <div style="text-align: right; margin-top: 10px;">
-      <button class="btn-action btn-stop btn-auto" onclick="goToSummaryScreen()">Review Session</button>
+      <button class="btn-action btn-stop btn-auto" style="padding: 6px 12px !important; margin: 0;" onclick="goToSummaryScreen()">Review Session</button>
     </div>
   </div>
 
@@ -357,10 +362,15 @@
 <div id="screenReview" style="display: none;">
   
   <div class="header-banner">
-    <h3 id="hdrTitleRev">Customer Name (Order #) - Workflow</h3>
-    <div class="flex-between" style="font-size: 0.85rem; color: #333333; margin-top: 6px;">
-      <div style="text-align: left;"><strong>User:</strong> <span id="hdrUserRev">--</span></div>
-      <div style="text-align: right;"><strong>Date:</strong> <span id="hdrDateRev">--</span> | <strong>Start:</strong> <span id="hdrTimeRev">--</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="text-align: left; font-size: 0.85rem; width: 25%;"><strong>User:</strong><br><span id="hdrUserRev">--</span></div>
+      <div style="text-align: center; width: 50%;">
+        <h3 id="hdrTitleRev" style="margin: 0; font-size: 1.1rem; color: #0277bd;">Customer (Order)</h3>
+        <div id="hdrWorkflowRev" style="font-size: 0.85rem; font-weight: bold; color: #555; margin-top: 4px;">Workflow</div>
+      </div>
+      <div style="text-align: right; font-size: 0.85rem; width: 25%;">
+        <strong>Date:</strong> <span id="hdrDateRev">--</span><br><strong>Start:</strong> <span id="hdrTimeRev">--</span>
+      </div>
     </div>
   </div>
 
@@ -392,7 +402,7 @@
       </div>
       
       <div id="revCustomerTagRow" style="display:none; background-color:#e3f2fd; padding:8px; border:1px dashed #0277bd; border-radius:4px; margin-bottom:10px;">
-        <span style="font-size:0.8rem; color:#0277bd; display:block;">Customer / Order Tag</span>
+        <span style="font-size:0.8rem; color:#0277bd; display:block; margin-bottom: 6px;">Customer / Order Tag:</span>
         <strong id="revCustomerTag" style="color:#0277bd;">--</strong>
       </div>
       
@@ -425,10 +435,15 @@
 <div id="screenSummary" style="display: none;">
   
   <div class="header-banner">
-    <h3 id="hdrTitleSum">Customer Name (Order #) - Workflow</h3>
-    <div class="flex-between" style="font-size: 0.85rem; color: #333333; margin-top: 6px;">
-      <div style="text-align: left;"><strong>User:</strong> <span id="hdrUserSum">--</span></div>
-      <div style="text-align: right;"><strong>Date:</strong> <span id="hdrDateSum">--</span> | <strong>Start:</strong> <span id="hdrTimeSum">--</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="text-align: left; font-size: 0.85rem; width: 25%;"><strong>User:</strong><br><span id="hdrUserSum">--</span></div>
+      <div style="text-align: center; width: 50%;">
+        <h3 id="hdrTitleSum" style="margin: 0; font-size: 1.1rem; color: #0277bd;">Customer (Order)</h3>
+        <div id="hdrWorkflowSum" style="font-size: 0.85rem; font-weight: bold; color: #555; margin-top: 4px;">Workflow</div>
+      </div>
+      <div style="text-align: right; font-size: 0.85rem; width: 25%;">
+        <strong>Date:</strong> <span id="hdrDateSum">--</span><br><strong>Start:</strong> <span id="hdrTimeSum">--</span>
+      </div>
     </div>
   </div>
 
@@ -445,6 +460,15 @@
         </select>
         <button class="btn-action btn-start btn-auto" style="margin: 0; padding: 10px;" onclick="executeAction()">Go ➔</button>
       </div>
+    </div>
+  </div>
+
+  <div class="card" id="manifestReconcileCard" style="display: none; border-color: #f57f17; background-color: #fffde7;">
+    <h3 style="color: #f57f17; margin: 0; border: none; padding: 0;">⚠️ Manifest Discrepancies Detected</h3>
+    <p style="font-size:0.85rem; color:#555; margin:6px 0 10px 0;">Correct any pre-load typos or update expected quantities before exporting:</p>
+    <div id="manifestReconcileList"></div>
+    <div style="text-align: right; margin-top: 10px;">
+      <button class="btn-action btn-save btn-auto" style="background-color:#f57f17;" onclick="SessionManager.saveManifestReconciliation()">🔄 Update Manifest & Recalculate</button>
     </div>
   </div>
 
