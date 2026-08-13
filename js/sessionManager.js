@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.1
+ * Version: 2.2.2
  * Date: August 2026
  * 
  * Description:
@@ -717,6 +717,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   cancelSession() {
     if (!confirm("Are you sure you want to CANCEL this entire scanning session?\n\nAll items scanned during this session will be discarded.")) return;
+    
+    // FIX: Save the cancelled status to the archive BEFORE wiping the arrays
+    this.saveToArchive('Cancelled');
+
     this.isSessionActive = false; this.isManifestEnabled = false;
     localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
     this.scannedObjects = []; this.expectedManifest = [];
@@ -734,8 +738,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenSummary').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
-
-    this.saveToArchive('Cancelled');
   },
 
   completeSession() {
