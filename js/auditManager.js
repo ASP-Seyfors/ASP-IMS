@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - AUDIT & EXPORT MANAGER (js/auditManager.js)           */
-/* VERSION 2.2.0                                                           */
+/* VERSION 2.2.1                                                           */
 /* ======================================================================= */
 
 
@@ -14,15 +14,27 @@ const AuditManager = {
 
   updateSessionSummaryView() {
     let container = document.getElementById('summaryListContainer');
+    let elUnique = document.getElementById('sumUniqueRefs');
+    let elTotal = document.getElementById('sumTotalQty');
+
     if (!container) return;
     container.innerHTML = '';
 
     if (SessionManager.scannedObjects.length === 0) {
       container.innerHTML = '<div style="text-align:center; padding: 14px; color: #555;">No items scanned in this session yet.</div>';
+      if(elUnique) elUnique.textContent = '0';
+      if(elTotal) elTotal.textContent = '0';
       return;
     }
 
+    let totalQty = 0;
+    let uniqueRefs = new Set();
+
     SessionManager.scannedObjects.forEach((item, index) => {
+      // Tally unique REFs and total pieces
+      totalQty += item.qty;
+      uniqueRefs.add(item.ref);
+
       let statusIcon = item.actionTag === 'Reserved' ? '🚩' : (item.actionTag === 'Pack & Ship' ? '🖐️' : '📦');
       let noteHtml = item.itemNote ? `<div style="font-size:0.8rem; color:#d32f2f; margin-top:6px;"><em>Note: ${item.itemNote}</em></div>` : '';
 
@@ -66,6 +78,10 @@ const AuditManager = {
       details.appendChild(content);
       container.appendChild(details);
     });
+
+    // Write final tallies to the header
+    if(elUnique) elUnique.textContent = uniqueRefs.size;
+    if(elTotal) elTotal.textContent = totalQty;
   },
 
   executeSessionAction() {

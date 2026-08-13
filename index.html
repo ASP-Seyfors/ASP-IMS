@@ -99,20 +99,20 @@
   </div>
 
   <!-- Bottom Navigation & Utility Footer Grid -->
-  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px;">
+  <div style="display: flex; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px;">
     <!-- Bottom Left: Session Archive -->
-    <div style="text-align: left;">
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0;" onclick="SessionManager.openArchive()">Session Archive</button>
+    <div style="flex: 1; text-align: left;">
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important;" onclick="SessionManager.openArchive()">Session Archive</button>
     </div>
 
     <!-- Bottom Center: Inventory Traceability -->
-    <div style="text-align: center;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">Inventory Traceability</button>
+    <div style="flex: 1; text-align: center;">
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0; padding: 8px 12px !important;" onclick="openAuditHub()">Inventory Traceability</button>
     </div>
 
     <!-- Bottom Right: Settings Button -->
-    <div style="text-align: right;">
-      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
+    <div style="flex: 1; text-align: right;">
+      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
     </div>
   </div>
 </div>
@@ -487,7 +487,13 @@
   </div>
 
   <div class="card">
-    <h2 style="border:none; margin-bottom:4px;">Current Session Logs</h2>
+    <h2 style="margin-bottom:4px;">
+      <span>Current Session Logs</span>
+      <div style="text-align: right; font-size: 0.85rem; font-weight: normal; color: #555; line-height: 1.3;">
+        <div>Unique REFs: <strong id="sumUniqueRefs" style="color:#0277bd;">0</strong></div>
+        <div>Total Qty: <strong id="sumTotalQty" style="color:#0277bd;">0</strong></div>
+      </div>
+    </h2>
     <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#f57f17; display:block; margin-bottom:10px;">
       <input type="checkbox" id="chkSessionNote" onchange="toggleSessionNote()"> 📝 Add Session Note
     </label>

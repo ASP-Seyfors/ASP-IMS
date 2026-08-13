@@ -1,6 +1,6 @@
 /* ======================================================================= */
 /* ASP SCANNER APP - SESSION MANAGER (js/sessionManager.js)                */
-/* VERSION 2.2.0                                                           */
+/* VERSION 2.2.1                                                           */
 /* ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
