@@ -18,6 +18,20 @@
               ],
   "items":  [
     {
+      "gtin": "30705031061969",
+      "ref": "Z970H",
+      "desc": "Ethicon 0 PDS II VIOLET 1X27\" CP-2 (BX/36) Z970H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031038312",
+      "ref": "J259H",
+      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 1X27\" CT-1 (BX/36) J259H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
       "gtin": "30705031053193",
       "ref": "VCP433H",
       "desc": "Ethicon 5-0 COATED VICRYL PLUS UNDYED 1X27\" RB-2 (BX/36) VCP433H",
@@ -270,7 +284,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "35413765589615",
       "ref": "4301-02",
       "desc": "Baxter Seprafilm Adhesion Barrier 5 X 6 (BX/10) 4301-02",
       "price": "$1,300.00",
@@ -424,7 +438,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031007745",
       "ref": "662H",
       "desc": "ETHICON 4-0 Ethilon Black 1X18\" FS-2 (BX/36) 662H",
       "price": "$150.00",
@@ -802,7 +816,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031039074",
       "ref": "J344H",
       "desc": "ETHICON 3-0 Coated Vicryl Violet 1X36\" CT-1 (BX/36) J344H",
       "price": "$120.00",
@@ -1089,7 +1103,7 @@
       "mfr": "COVIDIEN"
     },
     {
-      "gtin": "",
+      "gtin": "10884521808966",
       "ref": "SIG45AVM",
       "desc": "COVIDIEN Covidien Endo Gia Reload W/Tri-Staple Technology - Vascular/Medium; 45 mm (Each) EGIA45AVM",
       "price": "$135.00",
@@ -1201,7 +1215,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031052370",
       "ref": "VCP332H",
       "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP332H",
       "price": "$117.00",
@@ -1663,7 +1677,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031007820",
       "ref": "664H",
       "desc": "ETHICON 2-0 Ethilon Black 1X18\" FS (BX/36) 664H",
       "price": "$110.00",
@@ -2342,7 +2356,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031059379",
       "ref": "Y496G",
       "desc": "ETHICON 4-0 Monocryl Undyed 1X18\" PS-2 (BX/12) Y496G",
       "price": "$0.00",
