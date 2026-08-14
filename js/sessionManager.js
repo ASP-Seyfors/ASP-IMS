@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.5
+ * Version: 2.2.6
  * Date: August 2026
  * 
  * Description:
@@ -46,28 +46,36 @@ const SessionManager = {
     try {
       let res = await fetch(this.googleFeederUrl);
       let data = await res.json();
-      this.fetchedStagedData = data;
+      
+      // Separate the Staging Feed from the Analytics Feed
+      this.fetchedStagedData = data.stagedSessions || {};
+      
+      if (data.customerAnalytics) {
+        localStorage.setItem('asp_remote_analytics', JSON.stringify(data.customerAnalytics));
+        localStorage.setItem('asp_remote_customers', JSON.stringify(data.customerList));
+      }
       
       let select = document.getElementById('stagedOrdersSelect');
       if (!select) return;
       select.innerHTML = '<option value="">-- Select Staged Run --</option>';
 
       let count = 0;
-      for (let sessionName in data) {
+      for (let sessionName in this.fetchedStagedData) {
         let opt = document.createElement('option');
         opt.value = sessionName;
-        opt.textContent = `${sessionName} (${data[sessionName].length} items)`;
+        opt.textContent = `${sessionName} (${this.fetchedStagedData[sessionName].length} items)`;
         select.appendChild(opt);
         count++;
       }
 
-      if (count > 0) {
-        alert(`Successfully fetched ${count} staged runs from Google Sheets!`);
-      } else {
-        alert("No staged runs found on the ASP_Scanner_Feeder tab.");
-      }
+      // Update UI with new Customers
+      if (typeof UIManager !== 'undefined') UIManager.populateCustomerDropdown();
+
+      if (count > 0) alert(`Successfully synced! Found ${count} staged runs and updated Customer Analytics.`);
+      else alert("Synced successfully, but no staged runs found on the ASP_Scanner_Feed tab.");
+      
     } catch (err) {
-      alert("Error fetching staged sessions: " + err.message);
+      alert("Error syncing feed: " + err.message);
     }
   },
 
@@ -200,7 +208,19 @@ const SessionManager = {
     if (this.isManifestEnabled) {
       document.getElementById('screenSetup').style.display = 'none';
       document.getElementById('manifestRowsContainer').innerHTML = '';
-      this.addManifestRow();
+      
+      // FIX: Render fetched items into the Pre-Load UI
+      if (this.expectedManifest && this.expectedManifest.length > 0) {
+        this.expectedManifest.forEach(item => {
+          let isRes = item.allocations && item.allocations.length > 0;
+          let tagVal = isRes ? item.allocations[0].customerTag : '';
+          let resQtyVal = isRes ? item.allocations[0].reservedQty : 1;
+          this.addManifestRow(item.ref, item.expectedQty, isRes, tagVal, resQtyVal);
+        });
+      } else {
+        this.addManifestRow(); // Fallback to 1 blank row if nothing was fetched
+      }
+      
       document.getElementById('screenManifestEntry').style.display = 'block';
     } else {
       this.expectedManifest = [];

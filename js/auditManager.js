@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.5
+ * Version: 2.2.6
  * Date: August 2026
  * 
  * Description:
@@ -720,36 +720,28 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   getHistoricalCustomerData(cust) {
-    let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let skuCounts = {};
-
-    allSessions.forEach(sess => {
-      if (sess.scannedObjects) {
-        sess.scannedObjects.forEach(s => {
-          if (s.customerTag && s.customerTag.toUpperCase().includes(cust.toUpperCase())) {
-            let ref = s.ref;
-            if (!skuCounts[ref]) skuCounts[ref] = { ref: ref, histQty: 0 };
-            skuCounts[ref].histQty += s.qty;
-          }
-        });
-      }
-    });
+    let analytics = JSON.parse(localStorage.getItem('asp_remote_analytics')) || {};
+    let skuCounts = analytics[cust.toUpperCase()] || {}; 
 
     let resultList = [];
-    Object.values(skuCounts).sort((a,b) => b.histQty - a.histQty).slice(0, 10).forEach(item => {
-      let dbItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === item.ref);
+    
+    // Sort SKUs by highest historical quantity and slice top 10
+    let sortedSkus = Object.keys(skuCounts).sort((a,b) => skuCounts[b] - skuCounts[a]).slice(0, 10);
+    
+    sortedSkus.forEach(ref => {
+      let dbItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === ref);
       resultList.push({
-        ref: item.ref,
+        ref: ref,
         desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
-        histQty: item.histQty,
-        onHand: 12, // Draft baseline
+        histQty: skuCounts[ref],
+        onHand: 12, // Will connect to live stocktake baseline later
         price: dbItem ? dbItem.price : '$0.00',
         cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'
       });
     });
 
     return resultList;
-  },
+  }
 
   async exportSessionData(formatType) {
     if (SessionManager.scannedObjects.length === 0 && SessionManager.pendingNewItems.length === 0 && SessionManager.pendingFieldUpdates.length === 0) {

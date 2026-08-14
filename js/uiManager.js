@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.5
+ * Version: 2.2.6
  * Date: August 2026
  * 
  * Description:
@@ -48,6 +48,10 @@ const UIManager = {
         });
       }
     }
+
+    // Add this right before "// Render Sorted Options" inside populateCustomerDropdown():
+    let remoteCustomers = JSON.parse(localStorage.getItem('asp_remote_customers')) || [];
+    remoteCustomers.forEach(c => customerSet.add(c));
 
     // Render Sorted Options
     select.innerHTML = '<option value="">-- Select Customer Account --</option>';
