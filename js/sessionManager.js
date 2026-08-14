@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.9
+ * Version: 2.3.0
  * Date: August 2026
  * 
  * Description:
@@ -196,89 +196,101 @@ const SessionManager = {
   },
 
   startSession() {
-    const uName = document.getElementById('userNameInput').value.trim();
-    const type = document.querySelector('input[name="sessionType"]:checked').value;
-    let partner = type === 'Shipment' ? document.getElementById('supplierSelect').value : document.getElementById('customerSelect').value;
-    const oDetails = document.getElementById('orderDetailsInput').value.trim();
-    const wType = type === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
-    const chkManifest = document.getElementById('chkPreloadManifest').checked;
+    try {
+      const uName = document.getElementById('userNameInput').value.trim();
+      const type = document.querySelector('input[name="sessionType"]:checked').value;
+      let partner = type === 'Shipment' ? document.getElementById('supplierSelect').value : document.getElementById('customerSelect').value;
+      const oDetails = document.getElementById('orderDetailsInput').value.trim();
+      const wType = type === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
+      const chkManifest = document.getElementById('chkPreloadManifest').checked;
 
-    if (!partner || partner === '+ Add Supplier' || partner === '+ Add Customer') { alert("Please select a valid Supplier or Customer."); return; }
-
-    this.currentUserName = uName || "N/A";
-    this.currentSessionName = partner + (oDetails ? ` (${oDetails})` : '');
-    this.currentOrderNum = oDetails;
-    this.currentWorkflowType = wType;
-    this.isSessionActive = true;
-    this.isManifestEnabled = chkManifest;
-
-    const nowObj = new Date();
-    this.sessionDateStr = `${nowObj.getFullYear()}.${String(nowObj.getMonth() + 1).padStart(2, '0')}.${String(nowObj.getDate()).padStart(2, '0')}`;
-    this.sessionStartStr = nowObj.toLocaleTimeString();
-
-    this.sessionId = Date.now().toString();
-    localStorage.setItem('asp_session_id', this.sessionId);
-
-    localStorage.setItem('asp_session_is_active', 'true');
-    localStorage.setItem('asp_manifest_enabled', this.isManifestEnabled ? 'true' : 'false');
-    localStorage.setItem('asp_user_name', this.currentUserName);
-    localStorage.setItem('asp_session_name', this.currentSessionName);
-    localStorage.setItem('asp_order_num', this.currentOrderNum);
-    localStorage.setItem('asp_workflow_type', this.currentWorkflowType);
-    localStorage.setItem('asp_session_start_str', this.sessionStartStr);
-    localStorage.setItem('asp_session_date_str', this.sessionDateStr);
-    
-    this.scannedObjects = [];
-    localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
-
-    this.updateHeaderBanners();
-
-    if (this.isManifestEnabled) {
-      document.getElementById('screenSetup').style.display = 'none';
-      const container = document.getElementById('manifestRowsContainer');
-      if (container) container.innerHTML = '';
-      
-      // SAFE RENDER: Checks if items were fetched and renders them cleanly
-      if (this.expectedManifest && this.expectedManifest.length > 0) {
-        this.expectedManifest.forEach(item => {
-          let hasAlloc = item.allocations && item.allocations.length > 0;
-          let tagVal = hasAlloc ? item.allocations[0].customerTag : '';
-          let resQtyVal = hasAlloc ? item.allocations[0].reservedQty : item.expectedQty;
-          this.addManifestRow(item.ref || '', item.expectedQty || 1, hasAlloc, tagVal, resQtyVal);
-        });
-      } else {
-        this.addManifestRow(); // Fallback to 1 blank row
+      if (!partner || partner === '+ Add Supplier' || partner === '+ Add Customer') {
+        alert("Please select a valid Supplier or Customer.");
+        return;
       }
+
+      this.currentUserName = uName || "N/A";
+      this.currentSessionName = partner + (oDetails ? ` (${oDetails})` : '');
+      this.currentOrderNum = oDetails;
+      this.currentWorkflowType = wType;
+      this.isSessionActive = true;
+      this.isManifestEnabled = chkManifest;
+
+      const nowObj = new Date();
+      this.sessionDateStr = `${nowObj.getFullYear()}.${String(nowObj.getMonth() + 1).padStart(2, '0')}.${String(nowObj.getDate()).padStart(2, '0')}`;
+      this.sessionStartStr = nowObj.toLocaleTimeString();
+
+      this.sessionId = Date.now().toString();
+      localStorage.setItem('asp_session_id', this.sessionId);
+      localStorage.setItem('asp_session_is_active', 'true');
+      localStorage.setItem('asp_manifest_enabled', this.isManifestEnabled ? 'true' : 'false');
+      localStorage.setItem('asp_user_name', this.currentUserName);
+      localStorage.setItem('asp_session_name', this.currentSessionName);
+      localStorage.setItem('asp_order_num', this.currentOrderNum);
+      localStorage.setItem('asp_workflow_type', this.currentWorkflowType);
+      localStorage.setItem('asp_session_start_str', this.sessionStartStr);
+      localStorage.setItem('asp_session_date_str', this.sessionDateStr);
       
-      document.getElementById('screenManifestEntry').style.display = 'block';
-    } else {
-      this.expectedManifest = [];
-      localStorage.setItem('asp_active_manifest', JSON.stringify([]));
+      this.scannedObjects = [];
+      localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+
+      this.updateHeaderBanners();
+
+      // UI SCREEN ROUTING
       document.getElementById('screenSetup').style.display = 'none';
-      document.getElementById('screenScanning').style.display = 'block';
-      this.updateManifestProgressUI();
-    }
 
-    let destRow = document.getElementById('rowItemDestination');
-    let tagRow = document.getElementById('rowCustomerTag');
-    if (this.currentWorkflowType.includes('Receiving & Reserving')) {
-      if (destRow) destRow.style.display = 'flex';
-      if (tagRow) tagRow.style.display = this.currentItemAction === 'Reserved' ? 'flex' : 'none';
-    } else if (this.currentWorkflowType.includes('Reserving')) {
-      if (destRow) destRow.style.display = 'none';
-      if (tagRow) tagRow.style.display = 'flex';
-      this.currentItemAction = 'Reserved';
-    } else if (this.currentWorkflowType.includes('Packing')) {
-      if (destRow) destRow.style.display = 'none';
-      if (tagRow) tagRow.style.display = 'none';
-      this.currentItemAction = 'Pack & Ship';
-    } else {
-      if (destRow) destRow.style.display = 'none';
-      if (tagRow) tagRow.style.display = 'none';
-      this.currentItemAction = 'Inventory';
-    }
+      if (this.isManifestEnabled) {
+        const container = document.getElementById('manifestRowsContainer');
+        if (container) container.innerHTML = '';
+        
+        if (this.expectedManifest && this.expectedManifest.length > 0) {
+          this.expectedManifest.forEach(item => {
+            let hasAlloc = item.allocations && item.allocations.length > 0;
+            let tagVal = hasAlloc ? item.allocations[0].customerTag : (item.customerTag || '');
+            let resQtyVal = hasAlloc ? item.allocations[0].reservedQty : (item.reservedQty || item.expectedQty || 1);
+            this.addManifestRow(item.ref || item.sku || '', item.expectedQty || item.qty || 1, hasAlloc, tagVal, resQtyVal);
+          });
+        } else {
+          this.addManifestRow();
+        }
+        
+        document.getElementById('screenManifestEntry').style.display = 'block';
+      } else {
+        this.expectedManifest = [];
+        localStorage.setItem('asp_active_manifest', JSON.stringify([]));
+        document.getElementById('screenScanning').style.display = 'block';
+        this.updateManifestProgressUI();
+      }
 
-    ScannerManager.resetScanLinesAndFields();
+      let destRow = document.getElementById('rowItemDestination');
+      let tagRow = document.getElementById('rowCustomerTag');
+      if (this.currentWorkflowType.includes('Receiving & Reserving')) {
+        if (destRow) destRow.style.display = 'flex';
+        if (tagRow) tagRow.style.display = this.currentItemAction === 'Reserved' ? 'flex' : 'none';
+      } else if (this.currentWorkflowType.includes('Reserving')) {
+        if (destRow) destRow.style.display = 'none';
+        if (tagRow) tagRow.style.display = 'flex';
+        this.currentItemAction = 'Reserved';
+      } else if (this.currentWorkflowType.includes('Packing')) {
+        if (destRow) destRow.style.display = 'none';
+        if (tagRow) tagRow.style.display = 'none';
+        this.currentItemAction = 'Pack & Ship';
+      } else {
+        if (destRow) destRow.style.display = 'none';
+        if (tagRow) tagRow.style.display = 'none';
+        this.currentItemAction = 'Inventory';
+      }
+
+      ScannerManager.resetScanLinesAndFields();
+
+    } catch (err) {
+      console.error("Error during startSession:", err);
+      alert("Encountered an issue starting session: " + err.message);
+      // Emergency recovery: Restore home screen so it never stays black
+      document.getElementById('screenSetup').style.display = 'block';
+      if (document.getElementById('screenManifestEntry')) document.getElementById('screenManifestEntry').style.display = 'none';
+      if (document.getElementById('screenScanning')) document.getElementById('screenScanning').style.display = 'none';
+    }
   },
 
   launchAIVisionBridge() {
