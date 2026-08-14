@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.7
+ * Version: 2.2.8
  * Date: August 2026
  * 
  * Description:
@@ -43,6 +43,15 @@ const SessionManager = {
       return;
     }
     
+    // 1. Instant Visual Feedback
+    const syncBtn = event && event.target ? event.target : document.querySelector("button[onclick*='fetchStagedSessions']");
+    const originalBtnText = syncBtn ? syncBtn.textContent : "🔄 Sync Feed";
+    if (syncBtn) {
+      syncBtn.textContent = "⏳ Syncing...";
+      syncBtn.disabled = true;
+      syncBtn.style.opacity = "0.7";
+    }
+
     try {
       let res = await fetch(this.googleFeederUrl);
       let data = await res.json();
@@ -56,26 +65,39 @@ const SessionManager = {
       }
       
       let select = document.getElementById('stagedOrdersSelect');
-      if (!select) return;
-      select.innerHTML = '<option value="">-- Select Staged Order --</option>';
+      if (select) {
+        select.innerHTML = '<option value="">-- Select Staged Order --</option>';
 
-      let count = 0;
-      for (let sessionName in this.fetchedStagedData) {
-        let opt = document.createElement('option');
-        opt.value = sessionName;
-        opt.textContent = `${sessionName} (${this.fetchedStagedData[sessionName].length} items)`;
-        select.appendChild(opt);
-        count++;
+        let count = 0;
+        for (let sessionName in this.fetchedStagedData) {
+          let opt = document.createElement('option');
+          opt.value = sessionName;
+          opt.textContent = `${sessionName} (${this.fetchedStagedData[sessionName].length} items)`;
+          select.appendChild(opt);
+          count++;
+        }
+
+        // Update UI with new Customers
+        if (typeof UIManager !== 'undefined' && UIManager.populateCustomerDropdown) {
+          UIManager.populateCustomerDropdown();
+        }
+
+        if (count > 0) {
+          alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
+        } else {
+          alert("Synced successfully, but no staged orders found on the ASP_Scanner_Feed tab.");
+        }
       }
-
-      // Update UI with new Customers
-      if (typeof UIManager !== 'undefined') UIManager.populateCustomerDropdown();
-
-      if (count > 0) alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
-      else alert("Synced successfully, but no staged orders found on the ASP_Scanner_Feed tab.");
       
     } catch (err) {
       alert("Error syncing feed: " + err.message);
+    } finally {
+      // 2. Restore Button State
+      if (syncBtn) {
+        syncBtn.textContent = originalBtnText;
+        syncBtn.disabled = false;
+        syncBtn.style.opacity = "1";
+      }
     }
   },
 
