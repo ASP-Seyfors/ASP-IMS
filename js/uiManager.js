@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.3
+ * Version: 2.2.4
  * Date: August 2026
  * 
  * Description:
@@ -13,6 +13,181 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
+// DYNAMICALLY POPULATE CUSTOMER REPORT SELECTOR
+  populateCustomerDropdown() {
+    let select = document.getElementById('customerReportSelect');
+    if (!select) return;
+
+    let customerSet = new Set();
+
+    // 1. Ingest from Session Archive
+    let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    allSessions.forEach(sess => {
+      if (sess.scannedObjects) {
+        sess.scannedObjects.forEach(s => {
+          if (s.customerTag) {
+            // Extract core customer name (e.g., "AHS" from "AHS - 24158")
+            let cleanCust = s.customerTag.split('-')[0].trim().toUpperCase();
+            if (cleanCust && cleanCust !== 'SHELF' && cleanCust !== 'UNTAGGED') {
+              customerSet.add(cleanCust);
+            }
+          }
+        });
+      }
+    });
+
+    // 2. Ingest from Live Feeder Cache if available
+    if (SessionManager.fetchedStagedData) {
+      for (let sessionKey in SessionManager.fetchedStagedData) {
+        SessionManager.fetchedStagedData[sessionKey].forEach(item => {
+          if (item.customerTag) {
+            let cleanCust = item.customerTag.split('-')[0].trim().toUpperCase();
+            if (cleanCust && cleanCust !== 'SHELF') customerSet.add(cleanCust);
+          }
+        });
+      }
+    }
+
+    // Render Sorted Options
+    select.innerHTML = '<option value="">-- Select Customer Account --</option>';
+    let sortedCustomers = Array.from(customerSet).sort();
+
+    if (sortedCustomers.length === 0) {
+      select.innerHTML = '<option value="">-- No Customer Tags Recorded --</option>';
+      return;
+    }
+
+    sortedCustomers.forEach(cust => {
+      let opt = document.createElement('option');
+      opt.value = cust;
+      opt.textContent = cust;
+      select.appendChild(opt);
+    });
+  },
+  
+// QUICK LOOKUP UTILITY MODAL
+  openQuickLookupModal() {
+    let modal = document.getElementById('quickLookupModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'quickLookupModal';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+      
+      modal.innerHTML = `
+        <div style="background:#fff; border-radius:8px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #00796b; padding-bottom:8px; margin-bottom:15px;">
+            <h3 style="margin:0; color:#00796b;">🔍 Quick Lookup</h3>
+            <button onclick="document.getElementById('quickLookupModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+          </div>
+          
+          <div style="margin-bottom:15px;">
+            <label style="font-weight:bold; font-size:0.85rem; display:block; margin-bottom:4px;">Scan or Enter REF / GTIN:</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="quickLookupInput" placeholder="e.g. 8698G or Scan 2D" style="flex:1; padding:8px; font-size:1rem; text-transform:uppercase;" onkeypress="if(event.key==='Enter') UIManager.executeQuickLookup()">
+              <button onclick="UIManager.executeQuickLookup()" style="background:#00796b; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Search</button>
+            </div>
+          </div>
+          
+          <div id="quickLookupResult" style="min-height:120px;">
+            <div style="text-align:center; color:#777; padding:20px;">Scan or type a REF/GTIN above to inspect database records.</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+    document.getElementById('quickLookupInput').focus();
+  },
+
+  executeQuickLookup() {
+    let query = document.getElementById('quickLookupInput').value.trim().toUpperCase();
+    let resContainer = document.getElementById('quickLookupResult');
+    if (!query) return;
+
+    let item = DatabaseManager.db.find(i => 
+      DatabaseManager.getItemSku(i).toUpperCase() === query || 
+      (i.gtin && i.gtin.toUpperCase() === query)
+    );
+
+    if (!item) {
+      resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" is not in the local database catalog.</div>`;
+      return;
+    }
+
+    let ref = DatabaseManager.getItemSku(item);
+    let mfr = DatabaseManager.getItemVendor(item) || 'ETHICON';
+    let desc = DatabaseManager.getItemDesc(item) || 'No description available.';
+    let price = item.price || '$0.00';
+    let cost = item.cost || '$0.00';
+    
+    // Parse On-Hand FEFO Inventory
+    let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let lotMap = {};
+    let totalOnHand = 0;
+
+    allSessions.forEach(sess => {
+      if (sess.status === 'Completed' && sess.scannedObjects) {
+        sess.scannedObjects.forEach(s => {
+          if (s.ref === ref) {
+            let key = `${s.lot}_${s.exp}`;
+            if (!lotMap[key]) lotMap[key] = { lot: s.lot, exp: s.exp, qty: 0 };
+            if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) {
+              lotMap[key].qty += s.qty;
+            } else if (sess.workflowType.includes('Packing')) {
+              lotMap[key].qty -= s.qty;
+            }
+          }
+        });
+      }
+    });
+
+    let lotRows = '';
+    Object.values(lotMap).filter(l => l.qty > 0).sort((a,b) => new Date(a.exp) - new Date(b.exp)).forEach(l => {
+      totalOnHand += l.qty;
+      let expDate = new Date(l.exp);
+      let monthsLeft = (expDate - new Date()) / (1000 * 60 * 60 * 24 * 30);
+      let alertBadge = monthsLeft <= 6 ? '<span style="color:#d32f2f; font-weight:bold;">🚨 Short-Dated (<6 Mo)</span>' : 
+                        (monthsLeft <= 12 ? '<span style="color:#f57f17; font-weight:bold;">⚠️ Short-Dated (<12 Mo)</span>' : '');
+      
+      lotRows += `
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:4px;"><strong>${l.lot}</strong></td>
+          <td style="padding:4px;">${l.exp}</td>
+          <td style="padding:4px; text-align:center; font-weight:bold;">${l.qty}</td>
+          <td style="padding:4px; text-align:right; font-size:0.75rem;">${alertBadge}</td>
+        </tr>`;
+    });
+
+    resContainer.innerHTML = `
+      <div style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:12px;">
+        <div style="font-size:1.1rem; font-weight:bold; color:#00796b;">REF: ${ref}</div>
+        <div style="font-size:0.85rem; color:#555; margin-bottom:8px;">Manufacturer: <strong>${mfr}</strong></div>
+        <div style="font-size:0.85rem; color:#333; margin-bottom:10px;">${desc}</div>
+        
+        <div style="background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.85rem;">
+          <span>Selling Price: <strong style="color:#2e7d32;">${price}</strong></span>
+          <span>Unit Cost: <strong style="color:#555;">${cost}</strong></span>
+        </div>
+
+        <div style="font-weight:bold; font-size:0.85rem; color:#0277bd; margin-bottom:6px;">
+          Warehouse Stock On-Hand: ${totalOnHand} Box(es)
+        </div>
+        
+        ${totalOnHand > 0 ? `
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd;">
+            <tr style="background:#eee; text-align:left;">
+              <th style="padding:4px;">Lot</th>
+              <th style="padding:4px;">Exp</th>
+              <th style="padding:4px; text-align:center;">Qty</th>
+              <th style="padding:4px; text-align:right;">Status</th>
+            </tr>
+            ${lotRows}
+          </table>
+        ` : '<div style="font-size:0.8rem; color:#777; font-style:italic;">No active FEFO inventory recorded on shelves.</div>'}
+      </div>
+    `;
+  },
+
 const UIManager = {
   loadSavedTheme() {
     let savedTheme = localStorage.getItem('asp_app_theme') || 'slate';

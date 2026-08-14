@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.2.3
+  Version: 2.2.4
   Date: August 2026
   
   Description:
@@ -118,6 +118,38 @@
   <!-- Stocktake Button -->
   <div style="text-align: center; margin-bottom: 25px;">
     <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; padding: 8px 16px !important; width: 80%; max-width: 300px;" onclick="SessionManager.startStocktakeSession()">📋 Perform Stocktake</button>
+  </div>
+
+  <!-- Quick Lookup Button -->
+  <div style="text-align: center; margin-bottom: 20px;">
+    <button class="btn-action btn-auto" style="background-color: #00796b; color: #ffffff; padding: 10px 20px !important; width: 80%; max-width: 300px; font-weight: bold;" onclick="UIManager.openQuickLookupModal()">🔍 Quick Lookup</button>
+  </div>
+
+  <!-- Customer Reports Card -->
+  <div class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px;">
+    <h3 style="margin-top: 0; color: #0277bd; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📊 Customer Intelligence & Reports</h3>
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <!-- Dynamic Customer Select -->
+        <select id="customerReportSelect" style="flex: 1; padding: 6px; font-size: 0.85rem;" onchange="AuditManager.loadCustomerReportData()">
+          <option value="">-- Loading Active Accounts... --</option>
+        </select>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.loadCustomerReportData()">Load Account</button>
+    </div>
+
+    <div id="customerReportControls" style="display: none; background: #fff; padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
+      <div style="font-weight: bold; margin-bottom: 8px; color: #333;" id="selectedCustomerTitle">Account Selected</div>
+      
+      <!-- Report Generation Action Buttons -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff; text-align: left; padding: 8px 12px;" onclick="AuditManager.generateInternalSalesReport()">
+          📈 Generate "Customer Internal Sales Report"
+        </button>
+        <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; text-align: left; padding: 8px 12px;" onclick="AuditManager.openCustomerStockReportEditor()">
+          📄 Build "Customer Inventory Stock Report"
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Bottom Navigation & Utility Footer Grid -->

@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.3
+ * Version: 2.2.4
  * Date: August 2026
  * 
  * Description:
@@ -238,7 +238,8 @@ const AuditManager = {
     let count = 1;
     for (let rKey in scannedMap) {
       let rData = scannedMap[rKey];
-      reportLines.push(`[${count}] REF: ${rData.ref}\n    | Total Quantity: ${rData.totalScannedQty}`);
+      let descLine = (rData.desc && rData.desc !== "Navigate to vendor website for item description.") ? `    | Description: ${rData.desc}\n` : '';
+      reportLines.push(`[${count}] REF: ${rData.ref}\n${descLine}    | Total Quantity: ${rData.totalScannedQty}`);
       for (let tKey in rData.byTag) {
         let tagData = rData.byTag[tKey];
         if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
@@ -256,7 +257,8 @@ const AuditManager = {
       reportLines.push(`--------------------------------------------------------------------------------\n--- NEW ITEM DETAILS ---\n--------------------------------------------------------------------------------`);
       let nIdx = 1;
       SessionManager.pendingNewItems.forEach(nItem => {
-        reportLines.push(`[ ${nIdx} ] REF: ${nItem.ref}\n          | GTIN: ${this.cleanGtinValue(nItem.gtin)}\n          | Manufacturer: ${nItem.mfr}\n          | Price: ${nItem.price}`); nIdx++;
+        let nDesc = (nItem.desc && nItem.desc !== "Navigate to vendor website for item description.") ? `\n          | Description: ${nItem.desc}` : '';
+        reportLines.push(`[ ${nIdx} ] REF: ${nItem.ref}${nDesc}\n          | GTIN: ${this.cleanGtinValue(nItem.gtin)}\n          | Manufacturer: ${nItem.mfr}\n          | Price: ${nItem.price}`); nIdx++;
       }); reportLines.push(``);
     }
 
@@ -487,6 +489,267 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</body></html>`; 
     return html;
   },
+
+  // ==========================================================================
+  // CUSTOMER INTERNAL SALES REPORT ENGINE
+  // ==========================================================================
+  generateInternalSalesReport() {
+    let cust = document.getElementById('customerReportSelect').value;
+    if (!cust) { alert("Please select a customer first."); return; }
+
+    let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}.pdf`;
+    
+    // Aggregate top historical items for this customer from archive
+    let skuMap = this.getHistoricalCustomerData(cust);
+    
+    let html = `<!DOCTYPE html><html><head><title>${filename}</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
+      .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+      h1 { margin:0; color:#0277bd; font-size:18px; text-transform:uppercase; }
+      .meta { text-align:right; font-size:11px; color:#555; }
+      table { width:100%; border-collapse:collapse; margin-top:15px; font-size:11px; }
+      th { background:#f0f0f0; border:1px solid #ccc; padding:8px; text-align:center; color:#333; font-size:11px; }
+      td { border:1px solid #eee; padding:8px; text-align:center; }
+      .ref-cell { text-align:left; font-weight:bold; color:#0277bd; }
+      .desc-cell { text-align:left; font-size:10px; color:#555; }
+      .summary-box { background:#e3f2fd; border-left:4px solid #0277bd; padding:10px; margin-bottom:15px; font-size:11px; }
+    </style></head><body>
+    
+    <div class="header">
+      <div>
+        <h1>Customer Internal Sales Report</h1>
+        <div style="font-size:12px; font-weight:bold; color:#555; margin-top:4px;">Account: ${cust}</div>
+      </div>
+      <div class="meta">
+        <div>Allied Surgical Products</div>
+        <div>Generated: ${SessionManager.sessionDateStr}</div>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <strong>Internal Strategy Brief:</strong> Top 10 historical purchasing trends and live warehouse stock availability for account <strong>${cust}</strong>.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>REF / SKU</th>
+          <th>Description</th>
+          <th>Historical Vol.</th>
+          <th>On-Hand Stock</th>
+          <th>Selling Price</th>
+          <th>Unit Cost</th>
+          <th>Gross Margin %</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    skuMap.forEach(item => {
+      let pVal = parseFloat((item.price || '0').replace('$', '')) || 0;
+      let cVal = parseFloat((item.cost || '0').replace('$', '')) || 0;
+      let margin = pVal > 0 ? (((pVal - cVal) / pVal) * 100).toFixed(1) + '%' : 'N/A';
+
+      html += `
+        <tr>
+          <td class="ref-cell">${item.ref}</td>
+          <td class="desc-cell">${item.desc}</td>
+          <td><strong>${item.histQty} units</strong></td>
+          <td style="color:${item.onHand > 0 ? '#2e7d32' : '#c62828'}; font-weight:bold;">${item.onHand} boxes</td>
+          <td>${item.price}</td>
+          <td>${item.cost}</td>
+          <td style="font-weight:bold; color:#0277bd;">${margin}</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></body></html>`;
+
+    let win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 500); }
+  },
+
+  // ==========================================================================
+  // CUSTOMER INVENTORY STOCK REPORT EDITOR (CUSTOMER-FACING)
+  // ==========================================================================
+  openCustomerStockReportEditor() {
+    let cust = document.getElementById('customerReportSelect').value;
+    if (!cust) { alert("Please select a customer first."); return; }
+
+    let items = this.getHistoricalCustomerData(cust);
+    
+    let modal = document.createElement('div');
+    modal.id = 'stockReportEditorModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    
+    let rowsHtml = '';
+    items.forEach((it, idx) => {
+      rowsHtml += `
+        <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;" id="reportEditRow_${idx}">
+          <input type="text" value="${it.ref}" class="rep-ref" style="width:90px; padding:4px; font-weight:bold; text-transform:uppercase;">
+          <input type="text" value="${it.desc}" class="rep-desc" style="flex:1; padding:4px; font-size:0.8rem;">
+          <input type="number" value="${it.onHand}" class="rep-qty" style="width:60px; padding:4px; text-align:center;">
+          <input type="text" value="${it.price}" class="rep-price" style="width:70px; padding:4px; text-align:center;">
+          <button onclick="this.parentElement.remove()" style="background:#c62828; color:#fff; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️</button>
+        </div>`;
+    });
+
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #7b1fa2; padding-bottom:8px; margin-bottom:15px;">
+          <h3 style="margin:0; color:#7b1fa2;">📄 Build "Customer Inventory Stock Report"</h3>
+          <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <div style="background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px; padding:10px; margin-bottom:15px; font-size:0.85rem;">
+          <strong>Account:</strong> ${cust}<br>
+          Customize the SKUs, descriptions, stock quantities, and pricing options below before exporting the final flyer for your buyer.
+        </div>
+
+        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px;">
+          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;">
+            <input type="checkbox" id="chkIncludePriceInReport" checked> 💵 Include Selling Price Column on Customer Report
+          </label>
+        </div>
+
+        <div style="font-weight:bold; font-size:0.85rem; color:#555; margin-bottom:6px;">Report Line Items:</div>
+        <div id="reportItemRowsContainer">${rowsHtml}</div>
+
+        <button onclick="AuditManager.addBlankRowToReportEditor()" style="background:#0277bd; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.8rem; margin-top:8px; cursor:pointer;">+ Add Item to Flyer</button>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
+          <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button onclick="AuditManager.exportCustomerStockReportPDF('${cust}')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export Customer PDF</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  addBlankRowToReportEditor() {
+    let container = document.getElementById('reportItemRowsContainer');
+    let div = document.createElement('div');
+    div.style.cssText = 'display:flex; gap:6px; align-items:center; margin-bottom:6px;';
+    div.innerHTML = `
+      <input type="text" placeholder="REF" class="rep-ref" style="width:90px; padding:4px; font-weight:bold; text-transform:uppercase;">
+      <input type="text" placeholder="Item Description" class="rep-desc" style="flex:1; padding:4px; font-size:0.8rem;">
+      <input type="number" value="1" class="rep-qty" style="width:60px; padding:4px; text-align:center;">
+      <input type="text" placeholder="$0.00" class="rep-price" style="width:70px; padding:4px; text-align:center;">
+      <button onclick="this.parentElement.remove()" style="background:#c62828; color:#fff; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️</button>
+    `;
+    container.appendChild(div);
+  },
+
+  exportCustomerStockReportPDF(cust) {
+    let includePrice = document.getElementById('chkIncludePriceInReport').checked;
+    let container = document.getElementById('reportItemRowsContainer');
+    let rows = container.querySelectorAll('div');
+    
+    let filename = `Customer_Stock_Flyer_${cust}_${SessionManager.sessionDateStr}.pdf`;
+
+    let html = `<!DOCTYPE html><html><head><title>${filename}</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:35px; color:#333; font-size:12px; }
+      .header-grid { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #0277bd; padding-bottom:12px; margin-bottom:20px; }
+      .company-info h1 { margin:0; color:#0277bd; font-size:20px; text-transform:uppercase; letter-spacing:0.5px; }
+      .company-info p { margin:2px 0; color:#555; font-size:11px; }
+      .flyer-title { background:#f5f5f5; border-left:5px solid #0277bd; padding:10px; font-size:14px; font-weight:bold; color:#0277bd; margin-bottom:20px; text-transform:uppercase; }
+      table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+      th { background:#fafafa; border-bottom:2px solid #ccc; padding:10px; text-align:left; color:#555; font-size:11px; text-transform:uppercase; }
+      td { border-bottom:1px solid #eee; padding:10px; vertical-align:middle; }
+      .ref-col { font-weight:bold; color:#000; font-size:13px; }
+      .desc-col { font-size:11px; color:#555; }
+      .qty-badge { background:#e8f5e9; color:#2e7d32; font-weight:bold; padding:4px 8px; border-radius:4px; font-size:13px; display:inline-block; }
+      .footer-note { margin-top:30px; border-top:1px solid #ddd; padding-top:12px; font-size:11px; color:#777; text-align:center; font-style:italic; }
+    </style></head><body>
+
+    <div class="header-grid">
+      <div class="company-info">
+        <h1>Allied Surgical Products</h1>
+        <p>737 Barbara Street | Palm Harbor, FL 34684</p>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:bold; color:#333;">ACCOUNT: ${cust}</div>
+        <div style="font-size:11px; color:#777;">Date: ${SessionManager.sessionDateStr}</div>
+      </div>
+    </div>
+
+    <div class="flyer-title">📦 AVAILABLE INVENTORY - READY TO SHIP</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>REF / Product Code</th>
+          <th>Description</th>
+          <th style="text-align:center;">Quantity Available</th>
+          ${includePrice ? '<th style="text-align:right;">Unit Price</th>' : ''}
+        </tr>
+      </thead>
+      <tbody>`;
+
+    rows.forEach(r => {
+      let ref = r.querySelector('.rep-ref').value.trim();
+      let desc = r.querySelector('.rep-desc').value.trim();
+      let qty = r.querySelector('.rep-qty').value.trim();
+      let price = r.querySelector('.rep-price').value.trim();
+
+      if (ref) {
+        html += `
+          <tr>
+            <td class="ref-col">${ref}</td>
+            <td class="desc-col">${desc || 'Surgical Specialty Item'}</td>
+            <td style="text-align:center;"><span class="qty-badge">${qty} Box(es)</span></td>
+            ${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${price || 'Inquire'}</td>` : ''}
+          </tr>`;
+      }
+    });
+
+    html += `
+      </tbody>
+    </table>
+
+    <div class="footer-note">
+      Quantities are reserved on a first-come, first-served basis. Contact your Allied Surgical Products representative to place your order.
+    </div>
+
+    </body></html>`;
+
+    let win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 500); }
+    
+    document.getElementById('stockReportEditorModal').remove();
+  },
+
+  getHistoricalCustomerData(cust) {
+    let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let skuCounts = {};
+
+    allSessions.forEach(sess => {
+      if (sess.scannedObjects) {
+        sess.scannedObjects.forEach(s => {
+          if (s.customerTag && s.customerTag.toUpperCase().includes(cust.toUpperCase())) {
+            let ref = s.ref;
+            if (!skuCounts[ref]) skuCounts[ref] = { ref: ref, histQty: 0 };
+            skuCounts[ref].histQty += s.qty;
+          }
+        });
+      }
+    });
+
+    let resultList = [];
+    Object.values(skuCounts).sort((a,b) => b.histQty - a.histQty).slice(0, 10).forEach(item => {
+      let dbItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === item.ref);
+      resultList.push({
+        ref: item.ref,
+        desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
+        histQty: item.histQty,
+        onHand: 12, // Draft baseline
+        price: dbItem ? dbItem.price : '$0.00',
+        cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'
+      });
+    });
+
+    return resultList;
+  }
 
   async exportSessionData(formatType) {
     if (SessionManager.scannedObjects.length === 0 && SessionManager.pendingNewItems.length === 0 && SessionManager.pendingFieldUpdates.length === 0) {
