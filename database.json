@@ -18,6 +18,69 @@
               ],
   "items":  [
     {
+      "gtin": "30705031001682",
+      "ref": "1661G",
+      "desc": "Ethicon 5-0 ETHILON BLACK 1X18\" PS-4 (BX/12) 1661G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031017362",
+      "ref": "8581H",
+      "desc": "Ethicon 4-0 PROLENE BLUE 1X36\" BB DOUBLE ARMED (BX/36) 8581H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031060764",
+      "ref": "Z358T",
+      "desc": "Ethicon 0 PDS II VIOLET 1X36\" CT (BX/24) Z358T",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031044306",
+      "ref": "K802H",
+      "desc": "Ethicon 6-0 PERMA HAND BLACK 1X18\" BV-1 (BX/36) K802H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031052677",
+      "ref": "VCP356H",
+      "desc": "Ethicon 3-0 COATED VICRYL PLUS VIOLET 1X36\" CT (BX/36) VCP356H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031059317",
+      "ref": "Y493G",
+      "desc": "Ethicon 5-0 MONOCRYL UNDYED 1X18\" P-3 (BX/12) Y493G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031002863",
+      "ref": "1893G",
+      "desc": "Ethicon 3-0 ETHILON BLACK 1X18\" PC-5 (BX/12) 1893G",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031038435",
+      "ref": "J269H",
+      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 1X27\" CT-2 (BX/36) J269H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031134717",
+      "ref": "VR834",
+      "desc": "Ethicon 5-0 VICRYL RAPIDE UNDYED 1X18\" PC-1 (BX/12) VR834",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
       "gtin": "30705031061969",
       "ref": "Z970H",
       "desc": "Ethicon 0 PDS II VIOLET 1X27\" CP-2 (BX/36) Z970H",
@@ -123,7 +186,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031001811",
       "ref": "1667G",
       "desc": "4-0 ETHILON BLACK 1X18\" PS-2 (BX/12) 1667G",
       "price": "$0.00",
@@ -473,7 +536,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031008308",
       "ref": "687G",
       "desc": "ETHICON 5-0 Chromic Gut 1X18\" P-3 (BX/12) 687G",
       "price": "$115.00",
@@ -683,7 +746,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031021017",
       "ref": "8832H",
       "desc": "ETHICON 3-0 Prolene Blue 1X30\" SH (BX/36) 8832H",
       "price": "$225.00",
@@ -732,7 +795,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "20705031203539",
       "ref": "DNX12",
       "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive DNX12",
       "price": "$210.00",
@@ -893,7 +956,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031041077",
       "ref": "J544G",
       "desc": "ETHICON 6-0 Coated Vicryl Violet 1X18\" TG100-8 Double Armed (BX/12) J544G",
       "price": "$230.00",
@@ -1488,7 +1551,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031060825",
       "ref": "Z371T",
       "desc": "ETHICON 1 PDS II Violet 1X36\" CTX Z371T",
       "price": "$120.00",
