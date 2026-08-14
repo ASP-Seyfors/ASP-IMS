@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.2
+ * Version: 2.2.3
  * Date: August 2026
  * 
  * Description:
@@ -32,6 +32,67 @@ const SessionManager = {
   currentMatchedItem: null,
 
   sessionId: localStorage.getItem('asp_session_id') || "",
+
+  // Paste your Web App URL here
+  googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
+  fetchedStagedData: {},
+
+  async fetchStagedSessions() {
+    if (!this.googleFeederUrl || this.googleFeederUrl.includes("YOUR_COPIED")) {
+      alert("Please paste your Google Apps Script Web App URL into sessionManager.js first!");
+      return;
+    }
+    
+    try {
+      let res = await fetch(this.googleFeederUrl);
+      let data = await res.json();
+      this.fetchedStagedData = data;
+      
+      let select = document.getElementById('stagedOrdersSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Select Staged Run --</option>';
+
+      let count = 0;
+      for (let sessionName in data) {
+        let opt = document.createElement('option');
+        opt.value = sessionName;
+        opt.textContent = `${sessionName} (${data[sessionName].length} items)`;
+        select.appendChild(opt);
+        count++;
+      }
+
+      if (count > 0) {
+        alert(`Successfully fetched ${count} staged runs from Google Sheets!`);
+      } else {
+        alert("No staged runs found on the ASP_Scanner_Feeder tab.");
+      }
+    } catch (err) {
+      alert("Error fetching staged sessions: " + err.message);
+    }
+  },
+
+  loadSelectedStagedOrder(sessionName) {
+    if (!sessionName || !this.fetchedStagedData[sessionName]) return;
+    
+    let items = this.fetchedStagedData[sessionName];
+    
+    // Automatically turn on Pre-Load and set up manifest rows
+    document.getElementById('chkPreloadManifest').checked = true;
+    document.getElementById('orderDetailsInput').value = sessionName;
+    
+    this.expectedManifest = [];
+    items.forEach(item => {
+      let isRes = item.customerTag && !item.customerTag.toUpperCase().includes('SHELF');
+      this.expectedManifest.push({
+        ref: item.sku,
+        expectedQty: item.qty,
+        allocations: isRes ? [{ customerTag: item.customerTag, reservedQty: item.qty }] : []
+      });
+    });
+
+    localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
+    alert(`Loaded "${sessionName}" with ${items.length} items into Pre-Load Manifest!`);
+  },
 
   init() {
     let lastUser = localStorage.getItem('asp_user_name') || "";
@@ -742,6 +803,26 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   completeSession() {
     if (!confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.")) return;
+    
+    // LIVE FEED PUSH: Background log push to Google Sheets (ASP_Completed_Logs)
+    if (this.googleFeederUrl && !this.googleFeederUrl.includes("YOUR_COPIED")) {
+      let payload = {
+        sessionName: this.currentSessionName,
+        workflowType: this.currentWorkflowType,
+        userName: this.currentUserName,
+        uniqueRefs: new Set(this.scannedObjects.map(i => i.ref)).size,
+        totalQty: this.scannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0),
+        sessionNotes: document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : ''
+      };
+
+      fetch(this.googleFeederUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.warn("Background log push failed:", err));
+    }
+
     this.pendingNewItems = []; this.pendingFieldUpdates = [];
     localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
     

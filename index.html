@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.2.2
+  Version: 2.2.3
   Date: August 2026
   
   Description:
@@ -97,6 +97,17 @@
     <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
       <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
     </label>
+  </div>
+
+  <!-- Live Staging Feeder Panel -->
+  <div style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 12px; margin-top: 15px; margin-bottom: 15px; text-align: center;">
+    <div style="font-size: 0.85rem; font-weight: bold; color: #0277bd; margin-bottom: 6px;">☁️ Live Staging Feeder (Google Sheets)</div>
+    <div style="display: flex; gap: 6px;">
+      <select id="stagedOrdersSelect" style="flex: 1; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)">
+        <option value="">-- Select Staged Run --</option>
+      </select>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="SessionManager.fetchStagedSessions()">🔄 Fetch</button>
+    </div>
   </div>
 
   <!-- Start Button Compacted & Centered -->

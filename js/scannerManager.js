@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/scannerManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2
+ * Version: 2.2.3
  * Date: August 2026
  * 
  * Description:
@@ -211,13 +211,19 @@ const ScannerManager = {
       let idx = 0;
       while (idx < clean.length) {
         if (clean.substring(idx, idx + 2) === "17" && clean.length - idx >= 8 && /^\d{6}$/.test(clean.substring(idx + 2, idx + 8))) {
-          if (!exp) {
-            let rawExp = clean.substring(idx + 2, idx + 8);
-            let yy = parseInt(rawExp.substring(0, 2), 10);
-            let year = yy < 50 ? (2000 + yy) : (1900 + yy);
-            exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
+          let testMm = parseInt(clean.substring(idx + 4, idx + 6), 10);
+          // STRICT MONTH VALIDATION: Ensure month is 01-12 to prevent matching inside "2017" variant strings
+          if (testMm >= 1 && testMm <= 12) {
+            if (!exp) {
+              let rawExp = clean.substring(idx + 2, idx + 8);
+              let yy = parseInt(rawExp.substring(0, 2), 10);
+              let year = yy < 50 ? (2000 + yy) : (1900 + yy);
+              exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
+            }
+            idx += 8;
+          } else {
+            idx++;
           }
-          idx += 8;
         } else if (clean.substring(idx, idx + 2) === "01" && clean.length - idx >= 16 && /^\d{14}$/.test(clean.substring(idx + 2, idx + 16))) {
           if (!gtin) gtin = clean.substring(idx + 2, idx + 16);
           idx += 16;
