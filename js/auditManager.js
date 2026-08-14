@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.5
+ * Version: 2.3.6
  * Date: August 2026
  * 
  * Description:
@@ -810,25 +810,40 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
   async processAuditFiles(event) {
     const files = event.target.files;
-    if (files.length === 0) return;
+    if (!files || files.length === 0) return;
+    
     this.parsedAuditSessions = [];
     let filePromises = Array.from(files).map(file => {
       return new Promise((resolve) => {
         let reader = new FileReader();
         reader.onload = (e) => {
-          let text = e.target.result;
-          let sessionData = this.parseTXTExportContent(text, file.name);
-          if (sessionData) this.parsedAuditSessions.push(sessionData);
+          try {
+            let text = e.target.result;
+            let sessionData = this.parseTXTExportContent(text, file.name);
+            if (sessionData) this.parsedAuditSessions.push(sessionData);
+          } catch (err) {
+            console.error("Error parsing file " + file.name + ":", err);
+          }
           resolve();
         };
+        reader.onerror = () => resolve();
         reader.readAsText(file);
       });
     });
+
     await Promise.all(filePromises);
+
+    const resultsBox = document.getElementById('auditResultsContainer');
     if (this.parsedAuditSessions.length > 0) {
       this.renderAuditPreviewUI();
-      document.getElementById('auditResultsContainer').style.display = 'block';
-    } else alert("Could not parse valid session logs from selected files.");
+      if (resultsBox) resultsBox.style.display = 'block';
+    } else {
+      alert("Could not parse valid session logs from the selected files. Please check that the files are ASP Scanner .txt export logs.");
+      if (resultsBox) resultsBox.style.display = 'none';
+    }
+    
+    // Reset file input so selecting the same files again triggers onchange
+    event.target.value = '';
   },
 
   clearAuditSessions() {
@@ -840,43 +855,74 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   parseTXTExportContent(text, filename) {
-    let sessionName = filename, workflow = "General", date = "Unknown", user = "N/A";
+    let sessionName = filename.replace(/\.txt$/i, ''), workflow = "General", date = "Unknown", user = "N/A";
     let items = [], newItems = [], updatedItems = [];
-    let lines = text.split('\n');
+    let lines = text.split(/\r?\n/);
     let currentMode = "GENERAL";
     let tempRef = "", currentTag = "", currentItemNote = "";
     let currentObj = null;
 
     lines.forEach(line => {
       let trim = line.trim();
-      if (trim.includes("ASP SCANNER APP SUMMARY EXPORT - ")) sessionName = trim.replace("ASP SCANNER APP SUMMARY EXPORT - ", "").trim();
-      else if (trim.startsWith("Scanned By:")) user = trim.replace("Scanned By:", "").trim();
-      else if (trim.startsWith("Workflow Process:")) workflow = trim.replace("Workflow Process:", "").trim();
-      else if (trim.startsWith("Scanned Date:")) date = trim.replace("Scanned Date:", "").trim();
-      else if (trim.includes("--- NEW ITEM DETAILS ---")) { currentMode = "NEW_ITEMS"; return; }
-      else if (trim.includes("--- EXISTING ITEM UPDATES")) { currentMode = "UPDATES"; return; }
-      else if (trim.includes("--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---") || trim.includes("--- 1. MASTER ITEM CATALOG ---")) { currentMode = "DONE"; return; }
+      if (!trim) return;
+
+      if (trim.includes("ASP SCANNER APP SUMMARY EXPORT - ")) {
+        sessionName = trim.replace("ASP SCANNER APP SUMMARY EXPORT - ", "").trim();
+      } else if (trim.includes("Scanned By:")) {
+        user = trim.split("Scanned By:")[1].trim();
+      } else if (trim.includes("Workflow Process:")) {
+        workflow = trim.split("Workflow Process:")[1].trim();
+      } else if (trim.includes("Scanned Date:")) {
+        date = trim.split("Scanned Date:")[1].trim();
+      } else if (trim.includes("--- NEW ITEM DETAILS ---")) {
+        currentMode = "NEW_ITEMS"; return;
+      } else if (trim.includes("--- EXISTING ITEM UPDATES")) {
+        currentMode = "UPDATES"; return;
+      } else if (trim.includes("--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---") || trim.includes("--- 1. MASTER ITEM CATALOG ---") || trim.includes("END OF RECEIVING INVENTORY SUMMARY")) {
+        currentMode = "DONE"; return;
+      }
 
       if (currentMode === "GENERAL") {
         if (trim.startsWith("[") && trim.includes("REF:")) {
-          tempRef = trim.substring(trim.indexOf("REF:") + 4).trim();
-          currentTag = ""; currentItemNote = "";
-        } else if (trim.startsWith("| Customer Tag:")) {
-          let tagMatch = trim.match(/Customer Tag:\s*(.+?)(?:\s*\(Qty:|\s*$)/);
-          if (tagMatch) currentTag = tagMatch[1].trim();
-        } else if (trim.startsWith("* Notes:")) {
-          currentItemNote = trim.replace("* Notes:", "").trim();
-        } else if (trim.startsWith("- Lot:")) {
-          let lotMatch = trim.match(/- Lot:\s*([^|]+)\|\s*Exp:\s*([^|]+)\|\s*Qty:\s*(\d+)/);
-          if (lotMatch && tempRef) {
+          tempRef = trim.substring(trim.indexOf("REF:") + 4).trim().split(/\s+/)[0];
+          currentTag = ""; 
+          currentItemNote = "";
+        } else if (trim.includes("Customer Tag:")) {
+          let parts = trim.split("Customer Tag:");
+          if (parts[1]) {
+            currentTag = parts[1].split("(")[0].replace(/\|/g, '').trim();
+          }
+        } else if (trim.includes("Notes:")) {
+          currentItemNote = trim.split("Notes:")[1].trim();
+        } else if (trim.includes("Lot:") && trim.includes("Exp:") && tempRef) {
+          // Flexible regex to capture Lot, Exp, and Qty
+          let lotMatch = trim.match(/Lot:\s*([^|]+)\|\s*Exp:\s*([^|]+)\|\s*Qty:\s*(\d+)/i);
+          if (lotMatch) {
+            let lotVal = lotMatch[1].trim();
+            let expVal = lotMatch[2].trim();
+            let qtyVal = parseInt(lotMatch[3], 10) || 1;
+
             let effectiveWorkflow = workflow;
             if (workflow === "Unknown" || workflow === "General") {
-              if (text.includes("--- PACK & SHIP ---")) effectiveWorkflow = "Picking & Packing";
-              else if (text.includes("--- RESERVED FOR CUSTOMERS ---") && text.includes("--- INVENTORY ADDITIONS ---")) effectiveWorkflow = "Receiving & Reserving";
-              else if (text.includes("--- RESERVED FOR CUSTOMERS ---")) effectiveWorkflow = "Reserving";
-              else if (text.includes("--- INVENTORY ADDITIONS ---")) effectiveWorkflow = "Receiving";
+              if (text.includes("--- PACK & SHIP ---") || text.includes("Picking & Packing")) effectiveWorkflow = "Picking & Packing";
+              else if (text.includes("Receiving & Reserving")) effectiveWorkflow = "Receiving & Reserving";
+              else if (text.includes("Reserving")) effectiveWorkflow = "Reserving";
+              else if (text.includes("Receiving")) effectiveWorkflow = "Receiving";
             }
-            items.push({ ref: tempRef, lot: lotMatch[1].trim(), exp: lotMatch[2].trim(), qty: parseInt(lotMatch[3], 10) || 1, customerTag: currentTag, itemNote: currentItemNote, workflow: effectiveWorkflow, sessionName: sessionName, fileName: filename, date: date, user: user });
+
+            items.push({
+              ref: tempRef,
+              lot: lotVal,
+              exp: expVal,
+              qty: qtyVal,
+              customerTag: currentTag,
+              itemNote: currentItemNote,
+              workflow: effectiveWorkflow,
+              sessionName: sessionName,
+              fileName: filename,
+              date: date,
+              user: user
+            });
           }
         }
       } else if (currentMode === "NEW_ITEMS") {
@@ -884,17 +930,24 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           let refPart = trim.substring(trim.indexOf("REF:") + 4).trim();
           currentObj = { ref: refPart.split(/\s+/)[0], gtin: "", mfr: "", price: "$0.00" };
           newItems.push(currentObj);
-        } else if (currentObj && trim.startsWith("| GTIN:")) currentObj.gtin = trim.split("GTIN:")[1].trim();
-        else if (currentObj && trim.startsWith("| Manufacturer:")) currentObj.mfr = trim.split("Manufacturer:")[1].trim();
-        else if (currentObj && trim.startsWith("| Price:")) currentObj.price = trim.split("Price:")[1].trim();
+        } else if (currentObj && trim.includes("GTIN:")) {
+          currentObj.gtin = trim.split("GTIN:")[1].trim();
+        } else if (currentObj && trim.includes("Manufacturer:")) {
+          currentObj.mfr = trim.split("Manufacturer:")[1].trim();
+        } else if (currentObj && trim.includes("Price:")) {
+          currentObj.price = trim.split("Price:")[1].trim();
+        }
       } else if (currentMode === "UPDATES") {
         if (trim.startsWith("[") && trim.includes("] REF:")) {
           let refPart = trim.substring(trim.indexOf("REF:") + 4).trim();
           currentObj = { ref: refPart.split(/\s+/)[0], gtin: "" };
           updatedItems.push(currentObj);
-        } else if (currentObj && trim.startsWith("| GTIN:")) currentObj.gtin = trim.split("GTIN:")[1].trim();
+        } else if (currentObj && trim.includes("GTIN:")) {
+          currentObj.gtin = trim.split("GTIN:")[1].trim();
+        }
       }
     });
+
     return items.length > 0 ? { fileName: filename, sessionName, workflow, date, user, items, newItems, updatedItems } : null;
   },
 

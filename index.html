@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.3.5
+  Version: 2.3.6
   Date: August 2026
   
   Description:
@@ -200,7 +200,7 @@
   <div class="form-row" style="margin-top: 20px;">
     <div class="form-label">App Version:</div>
     <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
-      <span style="font-weight: bold; color: #0277bd;">v2.3.5</span>
+      <span style="font-weight: bold; color: #0277bd;">v2.3.6</span>
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
     </div>
   </div>
@@ -559,20 +559,47 @@
 
 </div>
 
-<!-- SCREEN 5: AUDIT HUB (Unchanged for brevity, kept exactly the same as v2.0) -->
+<!-- SCREEN 5: AUDIT HUB & TRACEABILITY -->
 <div id="screenAuditHub" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
     <h2 style="border:none; margin:0; padding:0;">Traceability & Audit Tool</h2>
     <button class="btn-small btn-cancel btn-auto" onclick="closeAuditHub()">🔙 Return</button>
   </div>
-  <!-- ... existing buttons ... -->
+  
+  <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">
+    Select and upload multi-session <code>.txt</code> export logs to compile a comprehensive lifecycle audit, FEFO traceability report, or Thrive batch exports.
+  </p>
+
   <div class="btn-flex-row">
     <input type="file" id="auditFilesUpload" accept=".txt" multiple style="display:none;" onchange="processAuditFiles(event)">
-    <button class="btn-action btn-start" style="flex:2;" onclick="document.getElementById('auditFilesUpload').click()">📁 Select / Upload Logs</button>
-    <button class="btn-action btn-clear" style="flex:1;" onclick="clearAuditSessions()">🧹 Clear</button>
+    <button class="btn-action btn-start" style="flex:2; margin-top:0;" onclick="document.getElementById('auditFilesUpload').click()">📁 Select / Upload Logs</button>
+    <button class="btn-action btn-clear" style="flex:1; margin-top:0;" onclick="clearAuditSessions()">🧹 Clear</button>
   </div>
+
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">
-    <!-- ... same inner logic ... -->
+    
+    <!-- Export Actions Panel -->
+    <div class="export-panel" style="margin-bottom: 15px;">
+      <h4 style="margin: 0 0 8px 0; color: #0277bd;">Export Multi-Session Reports</h4>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <select id="auditExportDropdown" style="flex: 2; padding: 8px; font-size: 0.85rem;">
+          <option value="pdf">🖨️ Export PDF Audit Report</option>
+          <option value="txt">📄 Export TXT Summary</option>
+        </select>
+        <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin: 0; padding: 8px 14px;" onclick="executeAuditExport()">Generate</button>
+      </div>
+
+      <div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;">
+        <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff;" onclick="exportThriveCreates()">📦 Thrive Bulk Create CSV</button>
+        <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="exportThriveEdits()">📝 Thrive Bulk Edit CSV</button>
+        <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="exportUpdatedDatabaseJSON()">💾 Updated Database JSON</button>
+      </div>
+    </div>
+
+    <!-- Audited Results Content -->
+    <div id="auditPreviewContent">
+      <!-- Injected via JavaScript -->
+    </div>
   </div>
 </div>
 
