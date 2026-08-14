@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.1
+ * Version: 2.3.2
  * Date: August 2026
  * 
  * Description:
@@ -14,58 +14,27 @@
  * All Rights Reserved.
  * ======================================================================= */
 const UIManager = {
-  // DYNAMICALLY POPULATE CUSTOMER REPORT SELECTOR
+  // POPULATE CUSTOMER REPORT SELECTOR FROM MASTER CUSTOMER LIST
   populateCustomerDropdown() {
     let select = document.getElementById('customerReportSelect');
     if (!select) return;
 
-    let customerSet = new Set();
-
-    // 1. Ingest from Session Archive
-    let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    allSessions.forEach(sess => {
-      if (sess.scannedObjects) {
-        sess.scannedObjects.forEach(s => {
-          if (s.customerTag) {
-            // Extract core customer name (e.g., "AHS" from "AHS - 24158")
-            let cleanCust = s.customerTag.split('-')[0].trim().toUpperCase();
-            if (cleanCust && cleanCust !== 'SHELF' && cleanCust !== 'UNTAGGED') {
-              customerSet.add(cleanCust);
-            }
-          }
-        });
-      }
-    });
-
-    // 2. Ingest from Live Feeder Cache if available
-    if (SessionManager.fetchedStagedData) {
-      for (let sessionKey in SessionManager.fetchedStagedData) {
-        SessionManager.fetchedStagedData[sessionKey].forEach(item => {
-          if (item.customerTag) {
-            let cleanCust = item.customerTag.split('-')[0].trim().toUpperCase();
-            if (cleanCust && cleanCust !== 'SHELF') customerSet.add(cleanCust);
-          }
-        });
-      }
-    }
-
-    // Add this right before "// Render Sorted Options" inside populateCustomerDropdown():
-    let remoteCustomers = JSON.parse(localStorage.getItem('asp_remote_customers')) || [];
-    remoteCustomers.forEach(c => customerSet.add(c));
-
-    // Render Sorted Options
     select.innerHTML = '<option value="">-- Select Customer Account --</option>';
-    let sortedCustomers = Array.from(customerSet).sort();
+    
+    // Pull the clean, verified master customer list
+    let custList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.customers) 
+      ? DatabaseManager.customers 
+      : JSON.parse(localStorage.getItem('asp_wh_customers')) || [];
 
-    if (sortedCustomers.length === 0) {
-      select.innerHTML = '<option value="">-- No Customer Tags Recorded --</option>';
-      return;
-    }
+    // Filter out the interactive prompt entry and sort alphabetically
+    let cleanList = custList
+      .filter(c => c && c !== '+ Add Customer' && c !== 'SHELF' && c !== 'UNTAGGED')
+      .sort((a, b) => a.localeCompare(b));
 
-    sortedCustomers.forEach(cust => {
+    cleanList.forEach(cust => {
       let opt = document.createElement('option');
-      opt.value = cust;
-      opt.textContent = cust;
+      opt.value = cust.toUpperCase();
+      opt.textContent = cust.toUpperCase();
       select.appendChild(opt);
     });
   },
