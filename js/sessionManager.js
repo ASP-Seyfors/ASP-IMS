@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.6
+ * Version: 2.2.7
  * Date: August 2026
  * 
  * Description:
@@ -57,7 +57,7 @@ const SessionManager = {
       
       let select = document.getElementById('stagedOrdersSelect');
       if (!select) return;
-      select.innerHTML = '<option value="">-- Select Staged Run --</option>';
+      select.innerHTML = '<option value="">-- Select Staged Order --</option>';
 
       let count = 0;
       for (let sessionName in this.fetchedStagedData) {
@@ -71,8 +71,8 @@ const SessionManager = {
       // Update UI with new Customers
       if (typeof UIManager !== 'undefined') UIManager.populateCustomerDropdown();
 
-      if (count > 0) alert(`Successfully synced! Found ${count} staged runs and updated Customer Analytics.`);
-      else alert("Synced successfully, but no staged runs found on the ASP_Scanner_Feed tab.");
+      if (count > 0) alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
+      else alert("Synced successfully, but no staged orders found on the ASP_Scanner_Feed tab.");
       
     } catch (err) {
       alert("Error syncing feed: " + err.message);

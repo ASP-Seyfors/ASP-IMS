@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.2.6
+  Version: 2.2.7
   Date: August 2026
   
   Description:
@@ -104,7 +104,7 @@
     <div style="font-size: 0.85rem; font-weight: bold; color: #0277bd; margin-bottom: 6px;">☁️ Shipments & Orders Feed</div>
     <div style="display: flex; gap: 6px;">
       <select id="stagedOrdersSelect" style="flex: 1; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)">
-        <option value="">-- Select Staged Run --</option>
+        <option value="">-- Select Staged Order --</option>
       </select>
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="SessionManager.fetchStagedSessions()">🔄 Sync Feed</button>
     </div>
