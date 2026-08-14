@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/scannerManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.0
+ * Version: 2.3.1
  * Date: August 2026
  * 
  * Description:
@@ -131,34 +131,60 @@ const ScannerManager = {
 
   resetScanLinesAndFields() {
     this.visibleScanLines = 1;
-    for(let i=1; i<=4; i++) {
-        document.getElementById(`rawScan${i}`).value = '';
-        if(i > 1) document.getElementById(`rowScan${i}`).style.display = 'none';
+    for (let i = 1; i <= 4; i++) {
+      let rawEl = document.getElementById(`rawScan${i}`);
+      if (rawEl) rawEl.value = '';
+      let rowEl = document.getElementById(`rowScan${i}`);
+      if (rowEl && i > 1) rowEl.style.display = 'none';
     }
-    document.getElementById('btnAddLine').style.display = 'inline-block';
     
-    ['gtin', 'lot', 'exp'].forEach(prefix => {
-      let chk = document.getElementById(`chkNa${prefix.charAt(0).toUpperCase() + prefix.slice(1)}`);
-      if(chk) chk.checked = false;
-      let field = document.getElementById(`${prefix}Input`);
-      if(field) { field.value = ''; field.readOnly = false; }
+    let btnAdd = document.getElementById('btnAddLine');
+    if (btnAdd) btnAdd.style.display = 'inline-block';
+    
+    ['Gtin', 'Lot', 'Exp'].forEach(suffix => {
+      let chk = document.getElementById(`chkNa${suffix}`);
+      if (chk) chk.checked = false;
+      let field = document.getElementById(`${suffix.toLowerCase()}Input`);
+      if (field) { field.value = ''; field.readOnly = false; }
     });
 
-    document.getElementById('refInput').value = '';
-    document.getElementById('qtyInput').value = '1';
+    let refInp = document.getElementById('refInput');
+    if (refInp) refInp.value = '';
     
-    let tagInput = document.getElementById('customerTagInput');
-    if (tagInput) tagInput.value = '';
+    let qtyInp = document.getElementById('qtyInput');
+    if (qtyInp) qtyInp.value = '1';
+    
+    let custSel = document.getElementById('itemCustomerSelect');
+    if (custSel) custSel.selectedIndex = 0;
+
+    let ordInp = document.getElementById('itemOrderNumInput');
+    if (ordInp) ordInp.value = '';
+
+    let noteInp = document.getElementById('itemNoteInput');
+    if (noteInp) noteInp.value = '';
 
     let chkNote = document.getElementById('chkItemNote');
-    if (chkNote) { chkNote.checked = false; UIManager.toggleItemNote(); }
+    if (chkNote) { 
+      chkNote.checked = false; 
+      if (typeof UIManager !== 'undefined' && UIManager.toggleItemNote) UIManager.toggleItemNote(); 
+    }
 
-    SessionManager.currentMatchedItem = null;
-    SessionManager.pendingUpdates = {};
-    UIManager.hideAllConfirmButtons();
-    document.getElementById('liveMatchPreview').style.display = 'none';
-    UIManager.evaluateFieldAttention();
-    document.getElementById('refInput').focus();
+    if (typeof SessionManager !== 'undefined') {
+      SessionManager.currentMatchedItem = null;
+      SessionManager.pendingUpdates = {};
+    }
+
+    if (typeof UIManager !== 'undefined') {
+      UIManager.hideAllConfirmButtons();
+      UIManager.evaluateFieldAttention();
+    }
+
+    let liveMatch = document.getElementById('liveMatchPreview');
+    if (liveMatch) liveMatch.style.display = 'none';
+
+    if (refInp) {
+      setTimeout(() => { try { refInp.focus(); } catch(e){} }, 50);
+    }
   },
 
   captureViewfinderFrame() {
