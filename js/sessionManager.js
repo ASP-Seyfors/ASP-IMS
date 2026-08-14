@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.3
+ * Version: 2.3.4
  * Date: August 2026
  * 
  * Description:
@@ -43,7 +43,6 @@ const SessionManager = {
       return;
     }
     
-    // 1. Instant Visual Feedback
     const syncBtn = event && event.target ? event.target : document.querySelector("button[onclick*='fetchStagedSessions']");
     const originalBtnText = syncBtn ? syncBtn.textContent : "🔄 Sync Feed";
     if (syncBtn) {
@@ -56,7 +55,6 @@ const SessionManager = {
       let res = await fetch(this.googleFeederUrl);
       let data = await res.json();
       
-      // Separate the Staging Feed from the Analytics Feed
       this.fetchedStagedData = data.stagedSessions || {};
       
       if (data.customerAnalytics) {
@@ -70,14 +68,24 @@ const SessionManager = {
 
         let count = 0;
         for (let sessionName in this.fetchedStagedData) {
+          let sessionObj = this.fetchedStagedData[sessionName];
+          let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
+          let isDone = sessionObj.isCompleted === true;
+
           let opt = document.createElement('option');
           opt.value = sessionName;
-          opt.textContent = `${sessionName} (${this.fetchedStagedData[sessionName].length} items)`;
+          
+          if (isDone) {
+            opt.textContent = `✅ ${sessionName} (COMPLETED - ${items.length} items)`;
+            opt.style.color = '#2e7d32';
+          } else {
+            opt.textContent = `📦 ${sessionName} (${items.length} items)`;
+          }
+
           select.appendChild(opt);
           count++;
         }
 
-        // Update UI with new Customers
         if (typeof UIManager !== 'undefined' && UIManager.populateCustomerDropdown) {
           UIManager.populateCustomerDropdown();
         }
@@ -92,7 +100,6 @@ const SessionManager = {
     } catch (err) {
       alert("Error syncing feed: " + err.message);
     } finally {
-      // 2. Restore Button State
       if (syncBtn) {
         syncBtn.textContent = originalBtnText;
         syncBtn.disabled = false;
@@ -104,9 +111,18 @@ const SessionManager = {
   loadSelectedStagedOrder(sessionName) {
     if (!sessionName || !this.fetchedStagedData[sessionName]) return;
     
-    let items = this.fetchedStagedData[sessionName];
-    
-    // Automatically turn on Pre-Load and set up manifest rows
+    let sessionObj = this.fetchedStagedData[sessionName];
+    let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
+    let isDone = sessionObj.isCompleted === true;
+
+    if (isDone) {
+      let confirmRescan = confirm(`Notice: "${sessionName}" is already marked as COMPLETED in your logs.\n\nDo you want to re-load this order into the Pre-Load Manifest for a re-scan?`);
+      if (!confirmRescan) {
+        document.getElementById('stagedOrdersSelect').value = "";
+        return;
+      }
+    }
+
     let chk = document.getElementById('chkPreloadManifest');
     if (chk) chk.checked = true;
     
