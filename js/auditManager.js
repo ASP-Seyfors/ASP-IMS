@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.4
+ * Version: 2.2.5
  * Date: August 2026
  * 
  * Description:
@@ -749,7 +749,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     });
 
     return resultList;
-  }
+  },
 
   async exportSessionData(formatType) {
     if (SessionManager.scannedObjects.length === 0 && SessionManager.pendingNewItems.length === 0 && SessionManager.pendingFieldUpdates.length === 0) {

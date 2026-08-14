@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.4
+ * Version: 2.2.5
  * Date: August 2026
  * 
  * Description:
@@ -13,7 +13,8 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-// DYNAMICALLY POPULATE CUSTOMER REPORT SELECTOR
+const UIManager = {
+  // DYNAMICALLY POPULATE CUSTOMER REPORT SELECTOR
   populateCustomerDropdown() {
     let select = document.getElementById('customerReportSelect');
     if (!select) return;
@@ -65,7 +66,7 @@
     });
   },
   
-// QUICK LOOKUP UTILITY MODAL
+  // QUICK LOOKUP UTILITY MODAL
   openQuickLookupModal() {
     let modal = document.getElementById('quickLookupModal');
     if (!modal) {
@@ -188,7 +189,6 @@
     `;
   },
 
-const UIManager = {
   loadSavedTheme() {
     let savedTheme = localStorage.getItem('asp_app_theme') || 'slate';
     this.changeAppTheme(savedTheme);
