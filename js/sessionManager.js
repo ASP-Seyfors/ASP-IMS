@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.2
+ * Version: 2.3.3
  * Date: August 2026
  * 
  * Description:
@@ -865,10 +865,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   completeSession() {
     if (!confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.")) return;
     
-    // LIVE FEED PUSH: Background log push to Google Sheets (ASP_Completed_Logs)
+    // LIVE FEED PUSH: Background log push & mark order completed in Google Sheets
     if (this.googleFeederUrl && !this.googleFeederUrl.includes("YOUR_COPIED")) {
       let payload = {
+        action: "COMPLETE_SESSION",
         sessionName: this.currentSessionName,
+        orderNum: this.currentOrderNum,
         workflowType: this.currentWorkflowType,
         userName: this.currentUserName,
         uniqueRefs: new Set(this.scannedObjects.map(i => i.ref)).size,
@@ -887,17 +889,19 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.pendingNewItems = []; this.pendingFieldUpdates = [];
     localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
     
-    document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
+    document.getElementById('sessionNoteInput').value = ""; 
+    document.getElementById('chkSessionNote').checked = false;
     UIManager.toggleSessionNote();
 
-    // Reset Pre-Load Checkbox
     const chkPreload = document.getElementById('chkPreloadManifest');
     if (chkPreload) chkPreload.checked = false;
 
     document.getElementById('screenSummary').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
-    this.isSessionActive = false; this.isManifestEnabled = false;
-    localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
+    this.isSessionActive = false; 
+    this.isManifestEnabled = false;
+    localStorage.setItem('asp_session_is_active', 'false'); 
+    localStorage.setItem('asp_manifest_enabled', 'false');
 
     this.saveToArchive('Completed');
   },
