@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.3.4
+  Version: 2.3.5
   Date: August 2026
   
   Description:
@@ -40,7 +40,12 @@
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
   
-  <h2 style="margin-top: 4px; padding-bottom: 8px;">ASP Scanner - Start Session</h2>
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
+    <h2 style="border:none; margin:0; padding:0;">ASP Scanner - Start Session</h2>
+    <label style="font-size: 0.85rem; font-weight: bold; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+      <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> ⚙️ Advanced
+    </label>
+  </div>
   
   <div class="form-row">
     <div class="form-label">Session Type:</div>
@@ -92,15 +97,15 @@
     </div>
   </div>
 
-  <!-- Pre-Load Toggle Centered Below Form Inputs -->
-  <div style="text-align: center; margin-top: 15px; margin-bottom: 20px;">
+  <!-- 1. Pre-Load Toggle (Hidden by default unless Advanced is ON) -->
+  <div id="rowPreloadToggle" style="text-align: center; margin-top: 15px; margin-bottom: 20px; display: none;">
     <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
       <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
     </label>
   </div>
 
-  <!-- Live Staging Feeder Panel -->
-  <div style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 12px; margin-top: 15px; margin-bottom: 15px; text-align: center;">
+  <!-- 2. Shipments & Orders Feed (Hidden by default unless Advanced is ON) -->
+  <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 12px; margin-top: 15px; margin-bottom: 15px; text-align: center; display: none;">
     <div style="font-size: 0.85rem; font-weight: bold; color: #0277bd; margin-bottom: 6px;">☁️ Shipments & Orders Feed</div>
     <div style="display: flex; gap: 6px;">
       <select id="stagedOrdersSelect" style="flex: 1; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)">
@@ -111,26 +116,24 @@
   </div>
 
   <!-- Start Button Compacted & Centered -->
-  <div style="text-align: center; margin-bottom: 15px;">
+  <div style="text-align: center; margin-bottom: 15px; margin-top: 15px;">
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; width: 80%; max-width: 300px;" onclick="startSession()">Start Scanning Session</button>
   </div>
 
-  <!-- Customer Reports Card -->
-  <div class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px;">
+  <!-- 3. Customer Reports Card (Hidden by default unless Advanced is ON) -->
+  <div id="cardCustomerReports" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
     <h3 style="margin-top: 0; color: #0277bd; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📊 Customer Reports</h3>
     
     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-      <!-- Dynamic Customer Select -->
-        <select id="customerReportSelect" style="flex: 1; padding: 6px; font-size: 0.85rem;" onchange="AuditManager.loadCustomerReportData()">
-          <option value="">-- Loading Active Accounts... --</option>
-        </select>
+      <select id="customerReportSelect" style="flex: 1; padding: 6px; font-size: 0.85rem;" onchange="AuditManager.loadCustomerReportData()">
+        <option value="">-- Loading Active Accounts... --</option>
+      </select>
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.loadCustomerReportData()">Load Account</button>
     </div>
 
     <div id="customerReportControls" style="display: none; background: #fff; padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
       <div style="font-weight: bold; margin-bottom: 8px; color: #333;" id="selectedCustomerTitle">Account Selected</div>
       
-      <!-- Report Generation Action Buttons -->
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff; text-align: left; padding: 8px 12px;" onclick="AuditManager.generateInternalSalesReport()">
           📈 Generate "Customer Internal Sales Report"
@@ -150,10 +153,10 @@
       <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()">Session Archive</button>
     </div>
 
-    <!-- Center: Stocktake & Traceability -->
-    <div style="flex: 2; min-width: 250px; text-align: center; display: flex; justify-content: center; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem;" onclick="SessionManager.startStocktakeSession()">📋 Perform Stocktake</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem;" onclick="openAuditHub()">📦 Traceability</button>
+    <!-- Center: Stocktake & Traceability (4 & 5. Hidden by default unless Advanced is ON) -->
+    <div id="centerFooterActions" style="flex: 2; min-width: 250px; text-align: center; display: flex; justify-content: center; gap: 8px;">
+      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="SessionManager.startStocktakeSession()">📋 Perform Stocktake</button>
+      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="openAuditHub()">📦 Traceability</button>
     </div>
 
     <!-- Right: Item Lookup & Settings -->
@@ -197,7 +200,7 @@
   <div class="form-row" style="margin-top: 20px;">
     <div class="form-label">App Version:</div>
     <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
-      <span style="font-weight: bold; color: #0277bd;">v2.1.2</span>
+      <span style="font-weight: bold; color: #0277bd;">v2.3.5</span>
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
     </div>
   </div>

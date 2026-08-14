@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.4
+ * Version: 2.3.5
  * Date: August 2026
  * 
  * Description:
@@ -37,6 +37,42 @@ const UIManager = {
       opt.textContent = cust.toUpperCase();
       select.appendChild(opt);
     });
+  },
+
+  // ADVANCED MODE CONTROLLER
+  toggleAdvancedMode() {
+    let chk = document.getElementById('chkAdvancedMode');
+    let isAdv = chk ? chk.checked : false;
+
+    // Persist user preference
+    localStorage.setItem('asp_advanced_mode', isAdv ? 'true' : 'false');
+
+    // 1. Pre-Load Manifest Toggle
+    let elPreload = document.getElementById('rowPreloadToggle');
+    if (elPreload) elPreload.style.display = isAdv ? 'block' : 'none';
+
+    // 2. Shipments & Orders Feed Panel
+    let elFeed = document.getElementById('panelStagedFeed');
+    if (elFeed) elFeed.style.display = isAdv ? 'block' : 'none';
+
+    // 3. Customer Reports Card
+    let elReports = document.getElementById('cardCustomerReports');
+    if (elReports) elReports.style.display = isAdv ? 'block' : 'none';
+
+    // 4. Perform Stocktake Button
+    let btnStock = document.getElementById('btnStocktake');
+    if (btnStock) btnStock.style.display = isAdv ? 'inline-block' : 'none';
+
+    // 5. Traceability Button
+    let btnTrace = document.getElementById('btnTraceability');
+    if (btnTrace) btnTrace.style.display = isAdv ? 'inline-block' : 'none';
+  },
+
+  loadSavedAdvancedMode() {
+    let saved = localStorage.getItem('asp_advanced_mode') === 'true';
+    let chk = document.getElementById('chkAdvancedMode');
+    if (chk) chk.checked = saved;
+    this.toggleAdvancedMode();
   },
   
   // QUICK LOOKUP UTILITY MODAL
