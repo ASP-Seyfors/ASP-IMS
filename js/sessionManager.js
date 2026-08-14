@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.2.8
+ * Version: 2.2.9
  * Date: August 2026
  * 
  * Description:
@@ -107,8 +107,11 @@ const SessionManager = {
     let items = this.fetchedStagedData[sessionName];
     
     // Automatically turn on Pre-Load and set up manifest rows
-    document.getElementById('chkPreloadManifest').checked = true;
-    document.getElementById('orderDetailsInput').value = sessionName;
+    let chk = document.getElementById('chkPreloadManifest');
+    if (chk) chk.checked = true;
+    
+    let detailsInput = document.getElementById('orderDetailsInput');
+    if (detailsInput) detailsInput.value = sessionName;
     
     this.expectedManifest = [];
     items.forEach(item => {
@@ -116,6 +119,9 @@ const SessionManager = {
       this.expectedManifest.push({
         ref: item.sku,
         expectedQty: item.qty,
+        isReserved: isRes,
+        customerTag: item.customerTag || '',
+        reservedQty: item.qty,
         allocations: isRes ? [{ customerTag: item.customerTag, reservedQty: item.qty }] : []
       });
     });
@@ -229,18 +235,19 @@ const SessionManager = {
 
     if (this.isManifestEnabled) {
       document.getElementById('screenSetup').style.display = 'none';
-      document.getElementById('manifestRowsContainer').innerHTML = '';
+      const container = document.getElementById('manifestRowsContainer');
+      if (container) container.innerHTML = '';
       
-      // FIX: Render fetched items into the Pre-Load UI
+      // SAFE RENDER: Checks if items were fetched and renders them cleanly
       if (this.expectedManifest && this.expectedManifest.length > 0) {
         this.expectedManifest.forEach(item => {
-          let isRes = item.allocations && item.allocations.length > 0;
-          let tagVal = isRes ? item.allocations[0].customerTag : '';
-          let resQtyVal = isRes ? item.allocations[0].reservedQty : 1;
-          this.addManifestRow(item.ref, item.expectedQty, isRes, tagVal, resQtyVal);
+          let hasAlloc = item.allocations && item.allocations.length > 0;
+          let tagVal = hasAlloc ? item.allocations[0].customerTag : '';
+          let resQtyVal = hasAlloc ? item.allocations[0].reservedQty : item.expectedQty;
+          this.addManifestRow(item.ref || '', item.expectedQty || 1, hasAlloc, tagVal, resQtyVal);
         });
       } else {
-        this.addManifestRow(); // Fallback to 1 blank row if nothing was fetched
+        this.addManifestRow(); // Fallback to 1 blank row
       }
       
       document.getElementById('screenManifestEntry').style.display = 'block';
