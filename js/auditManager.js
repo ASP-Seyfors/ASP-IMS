@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.7
+ * Version: 2.3.8
  * Date: August 2026
  * 
  * Description:
@@ -980,14 +980,89 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
   renderAuditPreviewUI() {
     const container = document.getElementById('auditPreviewContent');
+    if (!container) return;
+
     const { sortedTraceList, totalItemsScanned, uniqueRefsCount, startDate, endDate, sourceFilesList } = this.compileTraceabilityData();
+    
     let fileListHtml = sourceFilesList.map(f => `<li>${f}</li>`).join('');
-    let html = `<div class="audit-card" style="background-color:#e3f2fd;"><h3>Week Summary (${startDate} - ${endDate})</h3><div><strong>Sessions Uploaded:</strong> ${this.parsedAuditSessions.length} | <strong>Unique REFs:</strong> ${uniqueRefsCount} | <strong>Total Units:</strong> ${totalItemsScanned}</div><div style="margin-top:8px; font-size:0.8rem; color:#555;"><strong>Source Log Files (${sourceFilesList.length}):</strong><ul style="margin:4px 0 0 16px; padding:0; max-height:80px; overflow-y:auto;">${fileListHtml}</ul></div></div>`;
-    sortedTraceList.forEach(trace => {
-      let resHtml = trace.reservedQty > 0 ? `<div><strong>Reserved Qty:</strong> ${trace.reservedQty} &nbsp;|&nbsp; <strong>Reserved For:</strong> ${trace.reservedForTag}</div>` : '';
-      let dmgHtml = trace.damagedQty > 0 ? `<div style="color:#d32f2f;"><strong>Damaged Qty:</strong> ${trace.damagedQty}</div>` : '';
-      html += `<div class="audit-card"><div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:4px; margin-bottom:6px;"><strong style="font-size:1rem; color:#0277bd;">Ref: ${trace.ref}</strong><span style="font-size:0.85rem; color:#555;">${trace.mfr}</span></div><div style="font-size:0.85rem; font-family:monospace; line-height:1.4;"><div><strong>Lot:</strong> ${trace.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${trace.exp} &nbsp;|&nbsp; <strong>Qty:</strong> ${trace.inboundQty || trace.outboundQty || trace.reservedQty}</div><div><strong>Received Date:</strong> ${trace.receivedDate}</div>${resHtml}${dmgHtml}</div></div>`;
+
+    // Categorize data into clear operational buckets
+    let inboundItems = [];
+    let shelfItems = [];
+    let reservedMap = {};
+    let shippedItems = [];
+
+    sortedTraceList.forEach(t => {
+      if (t.inboundQty > 0) inboundItems.push(t);
+      if (t.inboundQty > 0 && !t.reservedForTag && t.outboundQty === 0) shelfItems.push(t);
+      if (t.reservedForTag) {
+        let tag = t.reservedForTag;
+        if (!reservedMap[tag]) reservedMap[tag] = [];
+        reservedMap[tag].push(t);
+      }
+      if (t.outboundQty > 0) shippedItems.push(t);
     });
+
+    let html = `
+      <!-- TOP AUDIT SUMMARY CARD -->
+      <div class="audit-card" style="background-color:#e3f2fd; border-left:5px solid #0277bd; margin-bottom:15px;">
+        <div class="flex-between">
+          <h3 style="margin:0; color:#0277bd;">🗓️ Audit Period: ${startDate} – ${endDate}</h3>
+          <span class="badge-info" style="background-color:#0277bd; color:#fff;">${this.parsedAuditSessions.length} Logs Processed</span>
+        </div>
+        <div style="margin-top:8px; font-size:0.9rem; line-height:1.4;">
+          <strong>Unique REFs Handled:</strong> ${uniqueRefsCount} &nbsp;|&nbsp; 
+          <strong>Total Units Moved:</strong> ${totalItemsScanned}
+        </div>
+        <details style="margin-top:10px; font-size:0.8rem; color:#555;">
+          <summary style="cursor:pointer; font-weight:bold; color:#0277bd;">📁 View Audited Source Logs (${sourceFilesList.length})</summary>
+          <ul style="margin:6px 0 0 16px; padding:0; max-height:90px; overflow-y:auto;">${fileListHtml}</ul>
+        </details>
+      </div>
+
+      <!-- SECTION 1: INBOUND SHIPMENTS -->
+      <div class="card" style="border-left: 5px solid #2e7d32; margin-bottom: 12px;">
+        <h3 style="color:#2e7d32; margin:0 0 8px 0; font-size:1rem;">📥 Inbound Stock Received (${inboundItems.reduce((acc, c) => acc + c.inboundQty, 0)} Units)</h3>
+        <div style="max-height: 200px; overflow-y: auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+            <thead><tr style="background:#e8f5e9; text-align:left;"><th style="padding:4px;">REF</th><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty</th><th style="padding:4px;">Received Date</th></tr></thead>
+            <tbody>
+              ${inboundItems.map(i => `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px; font-weight:bold; color:#0277bd;">${i.ref}</td><td style="padding:4px;">${i.lot}</td><td style="padding:4px;">${i.exp}</td><td style="padding:4px; text-align:center; font-weight:bold;">${i.inboundQty}</td><td style="padding:4px;">${i.receivedDate}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 2: RESERVED CUSTOMER BINS -->
+      <div class="card" style="border-left: 5px solid #0277bd; margin-bottom: 12px;">
+        <h3 style="color:#0277bd; margin:0 0 8px 0; font-size:1rem;">🚩 Active Reserved Bins (Allocated Orders)</h3>
+        ${Object.keys(reservedMap).length > 0 ? Object.keys(reservedMap).map(tag => `
+          <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px; margin-bottom:8px;">
+            <div style="font-weight:bold; color:#0277bd; font-size:0.85rem; margin-bottom:4px;">Order / Customer: ${tag}</div>
+            <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+              <thead><tr style="text-align:left; color:#555;"><th style="padding:2px 4px;">REF</th><th style="padding:2px 4px;">Lot</th><th style="padding:2px 4px; text-align:center;">Reserved</th><th style="padding:2px 4px; text-align:center;">Packed / Shipped</th></tr></thead>
+              <tbody>
+                ${reservedMap[tag].map(r => `<tr><td style="padding:2px 4px; font-weight:bold;">${r.ref}</td><td style="padding:2px 4px;">${r.lot}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:#0277bd;">${r.reservedQty}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:${r.outboundQty >= r.reservedQty ? '#2e7d32' : '#f57f17'};">${r.outboundQty}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        `).join('') : '<div style="font-size:0.8rem; color:#777;">No active customer allocations in this dataset.</div>'}
+      </div>
+
+      <!-- SECTION 3: OUTBOUND ORDERS SHIPPED -->
+      <div class="card" style="border-left: 5px solid #e65100; margin-bottom: 12px;">
+        <h3 style="color:#e65100; margin:0 0 8px 0; font-size:1rem;">🖐️ Outbound Orders Shipped (${shippedItems.reduce((acc, c) => acc + c.outboundQty, 0)} Units)</h3>
+        <div style="max-height: 200px; overflow-y: auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+            <thead><tr style="background:#fff3e0; text-align:left;"><th style="padding:4px;">REF</th><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty Shipped</th></tr></thead>
+            <tbody>
+              ${shippedItems.map(s => `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px; font-weight:bold; color:#0277bd;">${s.ref}</td><td style="padding:4px;">${s.lot}</td><td style="padding:4px;">${s.exp}</td><td style="padding:4px; text-align:center; font-weight:bold; color:#e65100;">${s.outboundQty}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
     container.innerHTML = html;
   },
 
@@ -1055,7 +1130,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   <h2>SHIPPING & RECEIVING WEEKLY SUMMARY</h2>
   <table>
     <tr><td><strong>Date Range:</strong></td><td>${startDate} - ${endDate}</td></tr>
-    <tr><td><strong>Sessions Audited:</strong></td><td>${parsedAuditSessions.length} Logs</td></tr>
+    <tr><td><strong>Sessions Audited:</strong></td><td>${this.parsedAuditSessions.length} Logs</td></tr>
     <tr><td><strong>Unique REFs:</strong></td><td>${uniqueRefsCount}</td></tr>
     <tr><td><strong>Total Units Handled:</strong></td><td>${totalItemsScanned}</td></tr>
   </table>
@@ -1204,10 +1279,15 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let fileContent = this.buildHTMLAuditReportString(filename, startDate, endDate);
       printWin.document.open();
       printWin.document.write(fileContent);
-      printWin.document.title = filename;
       printWin.document.close();
 
-      setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
+      printWin.onload = () => {
+        printWin.focus();
+        printWin.print();
+      };
+      setTimeout(() => {
+        try { printWin.focus(); printWin.print(); } catch(e){}
+      }, 600);
       return;
     }
 
