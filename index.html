@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.6.0
+  Version: 2.7.0
   Date: August 2026
   
   Description:
@@ -120,28 +120,12 @@
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; width: 80%; max-width: 300px;" onclick="startSession()">Start Scanning Session</button>
   </div>
 
-  <!-- 3. Customer Reports Card (Hidden by default unless Advanced is ON) -->
-  <div id="cardCustomerReports" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
-    <h3 style="margin-top: 0; color: #0277bd; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📊 Customer Reports</h3>
-    
-    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-      <select id="customerReportSelect" style="flex: 1; padding: 6px; font-size: 0.85rem;" onchange="AuditManager.loadCustomerReportData()">
-        <option value="">-- Loading Active Accounts... --</option>
-      </select>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.loadCustomerReportData()">Load Account</button>
-    </div>
-
-    <div id="customerReportControls" style="display: none; background: #fff; padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
-      <div style="font-weight: bold; margin-bottom: 8px; color: #333;" id="selectedCustomerTitle">Account Selected</div>
-      
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff; text-align: left; padding: 8px 12px;" onclick="AuditManager.generateInternalSalesReport()">
-          📈 Generate "Customer Internal Sales Report"
-        </button>
-        <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; text-align: left; padding: 8px 12px;" onclick="AuditManager.openCustomerStockReportEditor()">
-          📄 Build "Customer Inventory Stock Report"
-        </button>
-      </div>
+  <!-- 3. Enterprise Data Hub (Hidden by default unless Advanced is ON) -->
+  <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
+    <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📈 Enterprise Data Hub</h3>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #fff; flex: 1; margin:0;" onclick="UIManager.openReportsHub()">📊 Reports Hub</button>
+      <button class="btn-action btn-auto" style="background-color: #00796b; color: #fff; flex: 1; margin:0;" onclick="UIManager.openDbEditor()">🗄️ Database Grid Editor</button>
     </div>
   </div>
 
@@ -180,44 +164,6 @@
       </div>
     </div>
   </div>
-
-<!-- SCREEN 7: SETTINGS PAGE -->
-<div id="screenSettings" style="display: none;" class="card">
-  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
-    <h2 style="border:none; margin:0; padding:0;">ASP Scanner - Settings</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeSettings()">🔙 Return</button>
-  </div>
-
-  <div class="form-row">
-    <div class="form-label">App Theme:</div>
-    <div class="input-wrapper">
-      <select id="themeSelect" onchange="UIManager.changeAppTheme(this.value)">
-        <option value="slate">Slate & Charcoal</option>
-        <option value="sage">Sage & Khaki</option>
-        <option value="gold">Classic Gold</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="form-label">Font Size:</div>
-    <div class="input-wrapper">
-      <select id="fontSizeSelect" onchange="UIManager.changeFontSize(this.value)">
-        <option value="small">Small (85%)</option>
-        <option value="medium" selected>Medium (100% - Default)</option>
-        <option value="large">Large (115%)</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-row" style="margin-top: 20px;">
-    <div class="form-label">App Version:</div>
-    <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
-      <span style="font-weight: bold; color: #0277bd;">v2.3.8</span>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
-    </div>
-  </div>
-</div>
 
 <!-- SCREEN 1B: MANIFEST PRE-LOAD ENTRY -->
 <div id="screenManifestEntry" style="display: none;" class="card">
@@ -650,6 +596,126 @@
     </div>
   </div>
 
+  <!-- SCREEN 7: SETTINGS PAGE -->
+<div id="screenSettings" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
+    <h2 style="border:none; margin:0; padding:0;">ASP Scanner - Settings</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeSettings()">🔙 Return</button>
+  </div>
+
+  <div class="form-row">
+    <div class="form-label">App Theme:</div>
+    <div class="input-wrapper">
+      <select id="themeSelect" onchange="UIManager.changeAppTheme(this.value)">
+        <option value="slate">Slate & Charcoal</option>
+        <option value="sage">Sage & Khaki</option>
+        <option value="gold">Classic Gold</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-label">Font Size:</div>
+    <div class="input-wrapper">
+      <select id="fontSizeSelect" onchange="UIManager.changeFontSize(this.value)">
+        <option value="small">Small (85%)</option>
+        <option value="medium" selected>Medium (100% - Default)</option>
+        <option value="large">Large (115%)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row" style="margin-top: 20px;">
+    <div class="form-label">App Version:</div>
+    <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-weight: bold; color: #0277bd;">v2.3.8</span>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 8: REPORTS & ANALYTICS HUB -->
+<div id="screenReports" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #7b1fa2; padding-bottom: 6px; margin-bottom: 15px;">
+    <h2 style="border:none; margin:0; padding:0; color: #7b1fa2;">Reports & Analytics Hub</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()">🔙 Return</button>
+  </div>
+
+  <!-- General Inventory Reports -->
+  <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateInventoryReport('in_stock')">📦 Full On-Hand Stock</button>
+      <button class="btn-small btn-auto" style="background-color: #c62828; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Out of Stock Items</button>
+      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Missing Price / Cost</button>
+    </div>
+  </div>
+
+  <!-- Expiration Warnings -->
+  <div style="background: #fff3e0; border: 1px solid #ffcc80; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #e65100;">Expiration Risk Reports (FEFO)</h4>
+    <div style="display: flex; gap: 8px;">
+      <select id="expirationFilter" style="flex: 1; padding: 6px;">
+        <option value="6">Expiring in next 6 Months</option>
+        <option value="12">Expiring in next 12 Months</option>
+        <option value="24">Expiring in next 24 Months</option>
+      </select>
+      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateExpirationReport()">⚠️ Run Report</button>
+    </div>
+  </div>
+
+  <!-- End of Week Rollup -->
+  <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #0277bd;">End of Week Rollup Report</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0;">Upload all raw .txt session logs for the week to generate a master KPI summary.</p>
+    <input type="file" id="endOfWeekUpload" accept=".txt" multiple style="display:none;" onchange="ReportsManager.processEndOfWeekReport(event)">
+    <button class="btn-action btn-start btn-auto" style="margin:0; width:100%; padding: 8px;" onclick="document.getElementById('endOfWeekUpload').click()">📁 Select TXT Logs & Generate</button>
+  </div>
+
+  <!-- Legacy Customer Reports -->
+  <div style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px;">
+    <h4 style="margin: 0 0 10px 0; color: #333;">Customer-Specific Reports</h4>
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <select id="customerReportSelect" style="flex: 1; padding: 6px;"></select>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.loadCustomerReportData()">Load</button>
+    </div>
+    <div id="customerReportControls" style="display: none; display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff;" onclick="AuditManager.generateInternalSalesReport()">📈 Customer Internal Sales</button>
+      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()">📄 Customer Stock Flyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 9: DATABASE GRID EDITOR -->
+<div id="screenDbEditor" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #00796b; padding-bottom: 6px; margin-bottom: 10px;">
+    <h2 style="border:none; margin:0; padding:0; color: #00796b;">Database Grid Editor</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()">🔙 Return</button>
+  </div>
+  <p style="font-size: 0.8rem; color: #555;">Edit fields directly in the table. Click "Export Database Update" below to save changes for control review.</p>
+  
+  <div style="overflow-x: auto; max-height: 60vh; border: 1px solid #ccc; margin-bottom: 15px;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff;">
+      <thead style="position: sticky; top: 0; background: #e0f2f1; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4);">
+        <tr>
+          <th style="padding: 8px; border: 1px solid #ccc;">MFR</th>
+          <th style="padding: 8px; border: 1px solid #ccc;">REF / SKU</th>
+          <th style="padding: 8px; border: 1px solid #ccc; width: 40%;">Description</th>
+          <th style="padding: 8px; border: 1px solid #ccc;">Category</th>
+          <th style="padding: 8px; border: 1px solid #ccc;">GTIN</th>
+        </tr>
+      </thead>
+      <tbody id="dbGridBody">
+        <!-- Injected via JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align: right;">
+    <button class="btn-action btn-save btn-auto" onclick="DatabaseManager.exportGridChanges()">💾 Export Database Update (JSON)</button>
+  </div>
+</div>
+
   <div id="archiveListContainer" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
     <!-- Archive Items Injected Here -->
   </div>
@@ -660,6 +726,7 @@
 <script src="js/scannerManager.js"></script>
 <script src="js/sessionManager.js"></script>
 <script src="js/auditManager.js"></script>
+<script src="js/reportsManager.js"></script> <!-- NEW FILE -->
 <script src="js/app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {

@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.6.0
+ * Version: 2.7.0
  * Date: August 2026
  * 
  * Description:
@@ -313,6 +313,45 @@ const UIManager = {
       else obj.el.classList.remove('needs-attention');
     });
     this.updateCameraOverlayStatus();
+  },
+
+  // Connect the advanced toggle to the new Hub
+  toggleAdvancedMode() {
+    let chk = document.getElementById('chkAdvancedMode');
+    let isAdv = chk ? chk.checked : false;
+    localStorage.setItem('asp_advanced_mode', isAdv ? 'true' : 'false');
+    let elPreload = document.getElementById('rowPreloadToggle');
+    if (elPreload) elPreload.style.display = isAdv ? 'block' : 'none';
+    let elFeed = document.getElementById('panelStagedFeed');
+    if (elFeed) elFeed.style.display = isAdv ? 'block' : 'none';
+    let elHub = document.getElementById('panelEnterpriseHub'); // NEW
+    if (elHub) elHub.style.display = isAdv ? 'block' : 'none';
+    let btnStock = document.getElementById('btnStocktake');
+    if (btnStock) btnStock.style.display = isAdv ? 'inline-block' : 'none';
+    let btnTrace = document.getElementById('btnTraceability');
+    if (btnTrace) btnTrace.style.display = isAdv ? 'inline-block' : 'none';
+  },
+
+  openReportsHub() {
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenReports').style.display = 'block';
+    if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
+  },
+
+  closeReportsHub() {
+    document.getElementById('screenReports').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+  },
+
+  openDbEditor() {
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenDbEditor').style.display = 'block';
+    DatabaseManager.renderDbGridEditor();
+  },
+
+  closeDbEditor() {
+    document.getElementById('screenDbEditor').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
   },
 
   updateCameraOverlayStatus() {

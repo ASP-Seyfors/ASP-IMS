@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.6.0
+ * Version: 2.7.0
  * Date: August 2026
  * 
  * Description:
@@ -190,6 +190,63 @@ const DatabaseManager = {
       if (match) return match;
     }
     return null;
+  },
+
+  renderDbGridEditor() {
+    const tbody = document.getElementById('dbGridBody');
+    if (!tbody) return;
+    
+    // Ensure item has a category property, sort MFR -> REF
+    let dbCopy = this.db.map(i => ({ ...i, category: i.category || '' }))
+                        .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
+    
+    let html = '';
+    dbCopy.forEach((item, idx) => {
+      html += `
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding:4px;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:100px; padding:4px;"></td>
+          <td style="padding:4px; font-weight:bold;">${item.ref || item.sku}</td>
+          <td style="padding:4px;"><input type="text" id="grid_desc_${idx}" value="${item.desc || ''}" style="width:100%; padding:4px;"></td>
+          <td style="padding:4px;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:100px; padding:4px;"></td>
+          <td style="padding:4px;"><input type="text" id="grid_gtin_${idx}" value="${item.gtin || ''}" style="width:120px; padding:4px;"></td>
+          <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+  },
+
+  exportGridChanges() {
+    const tbody = document.getElementById('dbGridBody');
+    let rows = tbody.querySelectorAll('tr');
+    let updatedCount = 0;
+
+    rows.forEach((row, idx) => {
+      let ref = document.getElementById(`grid_ref_${idx}`).value;
+      let mfr = document.getElementById(`grid_mfr_${idx}`).value.trim();
+      let desc = document.getElementById(`grid_desc_${idx}`).value.trim();
+      let cat = document.getElementById(`grid_cat_${idx}`).value.trim();
+      let gtin = document.getElementById(`grid_gtin_${idx}`).value.trim();
+
+      let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+      if (dbItem) {
+        if (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.gtin !== gtin) {
+          dbItem.mfr = mfr;
+          dbItem.desc = desc;
+          dbItem.category = cat;
+          dbItem.gtin = gtin;
+          updatedCount++;
+        }
+      }
+    });
+
+    if (updatedCount > 0) {
+      localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
+      let outJSON = { vendors: this.vendors, items: this.db };
+      UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `database_master_export_${Date.now()}.json`, 'application/json');
+    } else {
+      alert("No changes detected in the grid to export.");
+    }
   },
 
   runMasterLookup() {
