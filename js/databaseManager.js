@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.4
+ * Version: 2.9.5
  * Date: August 2026
  * 
  * Description:
@@ -360,7 +360,7 @@ const DatabaseManager = {
   // --- NEW: CLOUD DATABASE SYNC ENGINE ---
   async syncMasterDatabase(event) {
     const btn = event ? event.target : null;
-    const originalText = btn ? btn.textContent : "☁️ Sync Cloud DB";
+    const originalText = btn ? btn.textContent : "☁️ Sync Updates from DB";
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {

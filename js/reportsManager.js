@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.4
+ * Version: 2.9.5
  * ======================================================================= */
 const ReportsManager = {
 
@@ -102,8 +102,8 @@ const ReportsManager = {
     let inboundCount = 0; let outboundCount = 0;
     let totalItems = 0; let uniqueRefs = new Set();
     let newItems = new Set(); let updatedItems = new Set();
-    let datesArray = []; // Used to calculate the filename date range
-    let sessionNamesList = []; // NEW: Array to hold parsed session names
+    let datesArray = []; 
+    let sessionsByDate = {}; // NEW: Object to group files by date
 
     let filePromises = Array.from(files).map(file => {
       return new Promise((resolve) => {
@@ -115,9 +115,12 @@ const ReportsManager = {
           
           let parsed = AuditManager.parseTXTExportContent(text, file.name);
           if (parsed) {
-            // Capture the session date for the filename and name for the list
-            if (parsed.date && parsed.date !== "Unknown") datesArray.push(parsed.date);
-            if (parsed.sessionName) sessionNamesList.push(parsed.sessionName);
+            let sDate = (parsed.date && parsed.date !== "Unknown") ? parsed.date : "Unknown Date";
+            if (sDate !== "Unknown Date") datesArray.push(sDate);
+            
+            // Group by date
+            if (!sessionsByDate[sDate]) sessionsByDate[sDate] = [];
+            sessionsByDate[sDate].push(parsed.fileName);
             
             parsed.items.forEach(i => { totalItems += i.qty; uniqueRefs.add(i.ref); });
             (parsed.newItems || []).forEach(n => newItems.add(n.ref));
@@ -140,6 +143,18 @@ const ReportsManager = {
     let baseFilename = `ASP_End_of_Week_Report_(${dateRangeStr})`;
 
     let generatedDate = new Date().toLocaleDateString();
+
+    // Build the grouped session list HTML
+    let auditedSessionsHtml = '';
+    let sortedDates = Object.keys(sessionsByDate).sort();
+    sortedDates.forEach(d => {
+      auditedSessionsHtml += `<h4 style="margin: 10px 0 4px 0; color: #333; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 2px;">📅 ${d}</h4><ul class="session-list">`;
+      sessionsByDate[d].sort().forEach(f => {
+        auditedSessionsHtml += `<li>${f}</li>`;
+      });
+      auditedSessionsHtml += `</ul>`;
+    });
+    if (!auditedSessionsHtml) auditedSessionsHtml = '<p>No session files recorded.</p>';
     
     let html = `<!DOCTYPE html><html><head><title>ASP End of Week Report</title>
     <style>
@@ -179,8 +194,8 @@ const ReportsManager = {
     <h3>🔄 EXISTING REFs UPDATED (${updatedItems.size})</h3>
     ${updatedItems.size > 0 ? `<ul>${Array.from(updatedItems).map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No existing REFs updated this week.</p>'}
 
-    <h3>📄 AUDITED SESSIONS (${sessionNamesList.length})</h3>
-    ${sessionNamesList.length > 0 ? `<ul class="session-list">${sessionNamesList.map(s => `<li>${s}</li>`).join('')}</ul>` : '<p>No session names recorded.</p>'}
+    <h3>📄 AUDITED SESSIONS (${sessionsCount})</h3>
+    ${auditedSessionsHtml}
 
     </body></html>`;
 
