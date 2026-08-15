@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.8
+ * Version: 2.8.9
  * Date: August 2026
  * 
  * Description:
@@ -36,6 +36,113 @@ const SessionManager = {
   // Paste your Web App URL here
   googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
   fetchedStagedData: {},
+
+  // --- NEW CLOUD ARCHIVE CONFIGURATION ---
+  cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
+
+  pushToCloudArchive(sessionObj) {
+    if (!this.cloudArchiveUrl) return;
+    
+    let payload = {
+      action: "ARCHIVE_SESSION",
+      payload: sessionObj
+    };
+
+    fetch(this.cloudArchiveUrl, {
+      method: 'POST',
+      mode: 'no-cors', // Bypasses strict CORS restrictions for background logging
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn("Background Cloud Archive push failed:", err));
+  },
+
+  async syncCloudArchive(event) {
+    const btn = event ? event.target : null;
+    const originalText = btn ? btn.textContent : "☁️ Sync Cloud";
+    if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    try {
+      let res = await fetch(this.cloudArchiveUrl);
+      let data = await res.json();
+      
+      if (data.status === "success" && data.archive) {
+        let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+        let newCount = 0;
+        
+        // Intelligently merge cloud data into local memory
+        data.archive.forEach(remoteSess => {
+          let existingIdx = localArchive.findIndex(local => local.id === remoteSess.id);
+          if (existingIdx === -1) {
+            localArchive.push(remoteSess);
+            newCount++;
+          } else if (remoteSess.lastUpdated > localArchive[existingIdx].lastUpdated) {
+            localArchive[existingIdx] = remoteSess;
+            newCount++;
+          }
+        });
+        
+        // Sort by newest first
+        localArchive.sort((a,b) => b.lastUpdated - a.lastUpdated);
+        localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
+        
+        this.renderArchiveList();
+
+        // NEW: Also import the Master Database silently while syncing the archive
+        if (data.db && typeof DatabaseManager !== 'undefined') {
+          DatabaseManager.importCloudDatabase(data.db);
+        }
+
+        alert(`Cloud Sync Complete! Retrieved ${data.archive.length} global sessions.\n${newCount} new/updated sessions merged into your device.`);
+      } else {
+        alert("Sync failed: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Error connecting to Cloud Archive: " + err.message);
+    } finally {
+      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+    }
+  },
+
+  // ---------------------------------------
+  async pushLegacySessionsToCloud(event) {
+    const btn = event ? event.target : null;
+    const originalText = btn ? btn.textContent : "⬆️ Upload Local History";
+    if (btn) { btn.textContent = "⏳ Uploading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let completedSessions = archive.filter(s => s.status === 'Completed');
+
+    if (completedSessions.length === 0) {
+      alert("No completed sessions found in local memory to upload.");
+      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+      return;
+    }
+
+    let successCount = 0;
+    for (let session of completedSessions) {
+      try {
+        let payload = {
+          action: "ARCHIVE_SESSION",
+          payload: session
+        };
+
+        // Use await to prevent overwhelming the Google Apps Script endpoint with simultaneous requests
+        await fetch(this.cloudArchiveUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        successCount++;
+      } catch (err) {
+        console.warn(`Failed to push session: ${session.sessionName}`, err);
+      }
+    }
+
+    alert(`Successfully pushed ${successCount} legacy session(s) to the Cloud Archive!`);
+    if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+  },
 
   async fetchStagedSessions() {
     if (!this.googleFeederUrl || this.googleFeederUrl.includes("YOUR_COPIED")) {
@@ -1143,6 +1250,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     archive = archive.filter(s => s.lastUpdated > cutoff);
     
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+
+    // NEW: Auto-push to Google Sheets if the session is finished!
+    if (status === 'Completed') {
+      this.pushToCloudArchive(sessionObj);
+    }
   },
 
   renderManifestReconciliation() {

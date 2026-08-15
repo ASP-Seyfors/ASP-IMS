@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.8.8
+  Version: 2.8.9
   Date: August 2026
   
   Description:
@@ -601,7 +601,13 @@
     <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeArchive()">🔙 Return</button>
   </div>
   
-  <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">Restore recent sessions to continue scanning, or view and export completed runs. Sessions are kept for 30 days.</p>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+    <p style="font-size: 0.85rem; color: #555; margin:0; flex:1; min-width:200px;">Restore local sessions to continue scanning, or sync completed runs with the master database.</p>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-action btn-auto" style="background-color: #388e3c; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.pushLegacySessionsToCloud(event)">⬆️ Upload Local History</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.syncCloudArchive(event)">☁️ Sync Cloud</button>
+    </div>
+  </div>
 
   <div class="form-row">
     <div class="form-label" style="color: #0277bd;">Filter & View:</div>
@@ -720,7 +726,10 @@
 <div id="screenDbEditor" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #00796b; padding-bottom: 6px; margin-bottom: 10px;">
     <h2 style="border:none; margin:0; padding:0; color: #00796b;">Database Grid Editor</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()">🔙 Return</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0;" onclick="DatabaseManager.syncMasterDatabase(event)">☁️ Sync Cloud DB</button>
+      <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()">🔙 Return</button>
+    </div>
   </div>
   <p style="font-size: 0.8rem; color: #555;">Edit fields directly in the table. Click "Export Database Update" below to save changes for control review.</p>
   

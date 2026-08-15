@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.8
+ * Version: 2.8.9
  * Date: August 2026
  * 
  * Description:
@@ -339,5 +339,74 @@ const DatabaseManager = {
 
   getItemSku: (item) => (item && (item.sku || item.ref || '').toString().trim().toUpperCase()) || '',
   getItemVendor: (item) => (item && (item.mfr || item.vendor || item.manufacturer || '').toString().trim()) || '',
-  getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || ''
+  getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || '',
+
+  // --- NEW: CLOUD DATABASE SYNC ENGINE ---
+  async syncMasterDatabase(event) {
+    const btn = event ? event.target : null;
+    const originalText = btn ? btn.textContent : "☁️ Sync Cloud DB";
+    if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    try {
+      // 1. PUSH local device additions to the Google Sheet (Upsert/Append Only)
+      let pushPayload = {
+        action: "SYNC_LOCAL_DB",
+        payload: { items: this.db, customers: this.customers, suppliers: this.suppliers, vendors: this.vendors }
+      };
+      await fetch(SessionManager.cloudArchiveUrl, {
+        method: 'POST', 
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pushPayload)
+      });
+
+      // 2. PULL the fresh, consolidated master database back down
+      let res = await fetch(SessionManager.cloudArchiveUrl);
+      let data = await res.json();
+      
+      if (data.status === "success" && data.db) {
+         this.importCloudDatabase(data.db);
+         alert("Master Database successfully synchronized with the cloud!");
+         
+         // Refresh the grid UI instantly if the user is looking at it
+         if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
+           this.renderDbGridEditor(); 
+         }
+      }
+    } catch (err) {
+      alert("Error syncing database: " + err.message);
+    } finally {
+      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+    }
+  },
+
+  importCloudDatabase(cloudDb) {
+    if (cloudDb.items && cloudDb.items.length > 0) {
+      this.db = cloudDb.items;
+      localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
+    }
+    if (cloudDb.customers && cloudDb.customers.length > 0) {
+      this.customers = cloudDb.customers;
+      if (!this.customers.includes("+ Add Customer")) this.customers.push("+ Add Customer");
+      localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+    }
+    if (cloudDb.suppliers && cloudDb.suppliers.length > 0) {
+      this.suppliers = cloudDb.suppliers;
+      if (!this.suppliers.includes("+ Add Supplier")) this.suppliers.push("+ Add Supplier");
+      localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+    }
+    if (cloudDb.vendors && cloudDb.vendors.length > 0) {
+      this.vendors = cloudDb.vendors;
+      if (!this.vendors.includes("+ Create New Vendor")) this.vendors.push("+ Create New Vendor");
+      localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
+    }
+    
+    // Refresh all UI dropdowns with the newly imported lists
+    this.populatePartners();
+    this.populateVendors();
+    this.populateItemCustomerSelect();
+    if (typeof UIManager !== 'undefined' && typeof UIManager.populateCustomerDropdown === 'function') {
+      UIManager.populateCustomerDropdown();
+    }
+  }
 };
