@@ -349,7 +349,7 @@
     {
       "gtin": "30381780537162",
       "ref": "206520",
-      "desc": "INTEGRA Spine Sealant System Duraseal® Exact 5 mL High Viscosity Spray Tip Polyethylene Glycol (Peg) Ester Solution / Trilysine Amine Solution Sealant System, Spine Durasealexact 5 mL (5/BX) D/S 206520",
+      "desc": "INTEGRA DuraSeal Exact Spine Sealant System Polymer Kit 5ml (BX/5) D/S 206520",
       "price": "$4,000.00",
       "mfr": "INTEGRA"
     },
@@ -657,7 +657,7 @@
     {
       "gtin": "30705031010479",
       "ref": "770G",
-      "desc": "ETHICON 6-0 Absorbable Suture With Needle Gut Plain Plain Gut 3/8 Circle Precision Reverse Cutting Needle Monofilament Suture, Gut Pl 6-0 18\" G-1 (BX/12) 770G",
+      "desc": "ETHICON 6-0 GUT PLA\" YELLOWISH TAN 1X18\" G-1 DOUBLE ARMED (BX/12) 770G",
       "price": "$390.00",
       "mfr": "ETHICON"
     },
@@ -1210,7 +1210,7 @@
     {
       "gtin": "10884521808966",
       "ref": "SIG45AVM",
-      "desc": "COVIDIEN Covidien Endo Gia Reload W/Tri-Staple Technology - Vascular/Medium; 45 mm (Each) EGIA45AVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Reload, 45mm Vascular/Medium Tissue, Tan (Each) EGIA45AVM",
       "price": "$135.00",
       "mfr": "COVIDIEN"
     },
@@ -1224,56 +1224,56 @@
     {
       "gtin": "",
       "ref": "SIG45CTAMT",
-      "desc": "COVIDIEN Covidien Tri-Staple 2.0 Curved Tip Medium/Thick Reload 45 mm Purple SIG45CTAMT",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Medium/Thick Reload 45 mm Purple SIG45CTAMT",
       "price": "$92.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "10884521543720",
       "ref": "SIG45CTAVM",
-      "desc": "Covidien Signia Tri-staple 2.0 Curved Tip Vascular Medium Reload 45.0mm Gold",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Intelligent Reload & Introducer, 45mm Vascular/Medium SIG45CTAVM",
       "price": "$92.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "",
       "ref": "SIG60AMT",
-      "desc": "Covidien Tri-Staple 2.0 Intelligent Reload Medium/Thick SIG60AMT",
+      "desc": "COVIDIEN Tri-Staple 2.0 Intelligent Reload Medium/Thick SIG60AMT",
       "price": "$150.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "10884521808980",
       "ref": "SIG60AVM",
-      "desc": "Covidien Tri-Staple 2.0 Intelligent Reload Vascular/Medium SIG60AVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Reload, 60mm, Vascular/Medium Tissue, Tan SIG60AVM",
       "price": "$135.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "",
       "ref": "SIG60AXT",
-      "desc": "Covidien Signia Tri-staple 2.0 Extra Thick Reload 60.0mm Black SIG60AXT",
+      "desc": "COVIDIEN Signia Tri-staple 2.0 Extra Thick Reload 60.0mm Black SIG60AXT",
       "price": "$150.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "",
       "ref": "SIG60CTAMT",
-      "desc": "Covidien Signia Tri-staple 2.0 Curved Tip Medium Thick Reload 60.0mm Purple SIG60CTAMT",
+      "desc": "COVIDIEN Signia Tri-staple 2.0 Curved Tip Medium Thick Reload 60.0mm Purple SIG60CTAMT",
       "price": "$105.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "10884521543690",
       "ref": "SIG60CTAVM",
-      "desc": "COVIDIEN Covidien Signia Tri-Staple 2.0 Curved Tip Vascular Medium Reload 60.0 mm Gold SIG60CTAVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Intelligent Reload & Introducer, 60mm Vascular/Medium SIG60CTAVM",
       "price": "$105.00",
       "mfr": "COVIDIEN"
     },
     {
       "gtin": "10884521043152",
       "ref": "TA30V3L",
-      "desc": "Covidien TA Autosuture Vascular Loading Unit with DST Series Technology 30 mm - V3 TA30V3L",
+      "desc": "COVIDIEN TA Autosuture Vascular Loading Unit with DST Series Technology 30 mm - V3 TA30V3L",
       "price": "$90.00",
       "mfr": "COVIDIEN"
     },
@@ -1742,7 +1742,7 @@
     {
       "gtin": "",
       "ref": "48345B",
-      "desc": "INTUITIVE Staplers Reloads, Blue, 3.5 mm Size, 6 Rows Of Staples, One Firing Reload, Smartfire Technology, Disposable, Single-Use, For Sureform Staplers 48345B",
+      "desc": "INTUITIVE Surgical da Vinci SureForm 45mm-3.5mm Reload, Six-Row Blue 48345B",
       "price": "$0.00",
       "mfr": "INTUITIVE"
     },
@@ -2029,14 +2029,14 @@
     {
       "gtin": "30705031038732",
       "ref": "J316H",
-      "desc": "ETHICON 3-0 Absorbable Suture With Needle Coated Vicryl™ Polyglactin 910 1/2 Circle Taper Point Needle Braided Suture, Vicryl Vio BR CT 3-0 27\" SH (BX/36) J316H",
+      "desc": "ETHICON 3-0 COATED VICRYL VIOLET 1X27\" SH (BX/36) J316H",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
     {
       "gtin": "30705031039135",
       "ref": "J347H",
-      "desc": "Ethicon 1 (4 Ph. Eur.) CT-1 (36mm 1/2c Taperpoint) 36” (90cm) Coated VICRYL (BX/36) J347H",
+      "desc": "ETHICON 1 (4 Ph. Eur.) CT-1 (36mm 1/2c Taperpoint) 36” (90cm) Coated VICRYL (BX/36) J347H",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
@@ -2050,14 +2050,14 @@
     {
       "gtin": "30705031040131",
       "ref": "J463G",
-      "desc": "ETHICON 5-0 Absorbable Suture With Needle Coated Vicryl™ Polyglactin 910 3/8 Circle Precision Reverse Cutting Needle Braided Suture, Vicryl Vio BR CT 18\" P3 (BX/12) J463G",
+      "desc": "ETHICON 5-0 COATED VICRYL VIOLET 1X18\" P-3 (BX/12) J463G",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
     {
       "gtin": "30705031040155",
       "ref": "J464G",
-      "desc": "Ethicon 4-0 (1.5 Ph. Eur.) P-3 (13mm 3/8c Reverse Cutting) MultiPass Needles ETHALLOY Needle Alloy PRIME Needle 18” (45cm) Coated VICRYL (BX/12) J464G",
+      "desc": "Ethicon 4-0 COATED VICRYL VIOLET 1X18\" P-3 (BX/12) J464G",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
@@ -2148,7 +2148,7 @@
     {
       "gtin": "",
       "ref": "LF1923",
-      "desc": "COVIDIEN Ligasure™ Maryland Jaw Open Sealer / Divider 23 cm, 360 Degrees, Curved, 20.3 mm, 18.5, Case Of 6 LF1923",
+      "desc": "COVIDIEN Medtronic LigaSure Maryland Jaw 23cm Open Sealer/Divider, Nano-Coated (BX/6) LF1923",
       "price": "$0.00",
       "mfr": "COVIDIEN"
     },
@@ -2281,7 +2281,7 @@
     {
       "gtin": "30705031048915",
       "ref": "PDPB9916",
-      "desc": "Ethicon 0 BP-1 (65mm 1/2c Blunt Point) 60\" (150cm) PDS Plus Antibacterial (BX/12) PDPB991G",
+      "desc": "ETHICON 0 BP-1 (65mm 1/2c Blunt Point) 60\" (150cm) PDS Plus Antibacterial (BX/12) PDPB991G",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
@@ -2316,7 +2316,7 @@
     {
       "gtin": "30705031052998",
       "ref": "VCP415H",
-      "desc": "Ethicon 4-0 (1.5 Ph. Eur.) SH (26mm 1/2c Taperpoint) 27” (70cm) Coated VICRYL Plus Antibacterial (BX/36) VCP415H",
+      "desc": "Ethicon 4-0 COATED VICRYL PLUS UNDYED 1X27\" SH (BX/36) VCP415H",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
@@ -2449,14 +2449,14 @@
     {
       "gtin": "",
       "ref": "Y493N",
-      "desc": "SHARPOINT 5-0 Absorbable Suture With Needle Monoderm™ Polyglycolic Acid / PCL P-3 3/8 Circle Precision Reverse Cutting Needle Monofilament Suture Mono Cryo UD 18\" DGL13 (12/BX) Y493N",
+      "desc": "SHARPOINT 5-0 Monoderm PGCL undyed 18\" P-3 Reverse Cutting - Absorbable, Monofilament, PGCL, Poliglecaprone, Suture, Synthetic (12/BX) Y493N",
       "price": "$0.00",
       "mfr": "SHARPOINT"
     },
     {
       "gtin": "30705031059331",
       "ref": "Y494G",
-      "desc": "Ethicon 4-0 (1.5 Ph. Eur.) P-3 (13mm 3/8c Reverse Cutting) MultiPass Needles ETHALLOY Needle Alloy PRIME Needle 18” (45cm) MONOCRYL (BX/12) Y494G",
+      "desc": "Ethicon Ethicon 4-0 MONOCRYL UNDYED 1X18\" P-3 (BX/12) Y494G",
       "price": "$0.00",
       "mfr": "ETHICON"
     },
