@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.0
+ * Version: 2.9.1
  * Date: August 2026
  * 
  * Description:
@@ -364,11 +364,17 @@ const DatabaseManager = {
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
+      // PRE-SYNC FILTER: Strip out the "+ Add..." UI buttons before sending to the database
+      let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+      let cleanSuppliers = this.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
+      let cleanVendors = this.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
+
       // 1. PUSH local device additions to the Google Sheet (Upsert/Append Only)
       let pushPayload = {
         action: "SYNC_LOCAL_DB",
-        payload: { items: this.db, customers: this.customers, suppliers: this.suppliers, vendors: this.vendors }
+        payload: { items: this.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }
       };
+      
       await fetch(SessionManager.cloudArchiveUrl, {
         method: 'POST', 
         mode: 'no-cors',
