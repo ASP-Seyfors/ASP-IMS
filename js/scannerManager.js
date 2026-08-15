@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/scannerManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.4
+ * Version: 2.8.5
  * Date: August 2026
  * 
  * Description:

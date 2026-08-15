@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.4
+ * Version: 2.8.5
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,
@@ -96,7 +96,10 @@ const AuthManager = {
         roleBadge.style.backgroundColor = "#c62828";
       }
       
-      UIManager.toggleAdvancedMode(false); // Force basic mode
+      // Force checkbox to uncheck, then trigger UI lockdown
+      let chk = document.getElementById('chkAdvancedMode');
+      if (chk) chk.checked = false;
+      UIManager.toggleAdvancedMode(false); 
       
       // Purge business intelligence from dropdowns
       DatabaseManager.suppliers = ["+ Add Supplier"];
