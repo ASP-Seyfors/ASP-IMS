@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.7
+ * Version: 2.8.8
  * ======================================================================= */
 const ReportsManager = {
 
@@ -102,6 +102,7 @@ const ReportsManager = {
     let inboundCount = 0; let outboundCount = 0;
     let totalItems = 0; let uniqueRefs = new Set();
     let newItems = new Set(); let updatedItems = new Set();
+    let datesArray = []; // Used to calculate the filename date range
 
     let filePromises = Array.from(files).map(file => {
       return new Promise((resolve) => {
@@ -113,6 +114,8 @@ const ReportsManager = {
           
           let parsed = AuditManager.parseTXTExportContent(text, file.name);
           if (parsed) {
+            // Capture the session date for the filename
+            if (parsed.date && parsed.date !== "Unknown") datesArray.push(parsed.date);
             parsed.items.forEach(i => { totalItems += i.qty; uniqueRefs.add(i.ref); });
             (parsed.newItems || []).forEach(n => newItems.add(n.ref));
             (parsed.updatedItems || []).forEach(u => updatedItems.add(u.ref));
@@ -126,9 +129,16 @@ const ReportsManager = {
     await Promise.all(filePromises);
     event.target.value = '';
 
+    // Calculate Date Range for Filename
+    datesArray.sort();
+    let startDate = datesArray.length > 0 ? datesArray[0] : new Date().toLocaleDateString().replace(/\//g, '.');
+    let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : new Date().toLocaleDateString().replace(/\//g, '.');
+    let dateRangeStr = startDate === endDate ? startDate : `${startDate}-${endDate}`;
+    let baseFilename = `ASP_End_of_Week_Report_(${dateRangeStr})`;
+
     let generatedDate = new Date().toLocaleDateString();
     
-    let html = `<!DOCTYPE html><html><head><title>ASP End of Week Rollup</title>
+    let html = `<!DOCTYPE html><html><head><title>${baseFilename}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
       .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
@@ -167,7 +177,28 @@ const ReportsManager = {
 
     </body></html>`;
 
-    let win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.title = 'ASP_End_of_Week_Rollup'; win.focus(); setTimeout(() => win.print(), 500); }
+    // Hidden Iframe PDF Print Trigger
+    let iframe = document.getElementById('pdfPrintFrame');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'pdfPrintFrame';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+    let doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.title = baseFilename;
+    doc.close();
+    
+    // Temporarily lock window title so browser print dialog uses baseFilename
+    let originalTitle = document.title;
+    document.title = baseFilename;
+
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => { document.title = originalTitle; }, 2000);
+    }, 500);
   }
 };

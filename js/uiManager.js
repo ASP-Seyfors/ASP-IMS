@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.7
+ * Version: 2.8.8
  * Date: August 2026
  * 
  * Description:
@@ -26,16 +26,22 @@ const UIManager = {
       ? DatabaseManager.customers 
       : JSON.parse(localStorage.getItem('asp_wh_customers')) || [];
 
-    // Filter out the interactive prompt entry and sort alphabetically
+    let uniqueSet = new Set();
+    
+    // Filter out prompts, force uppercase, and trim spaces
     let cleanList = custList
-      .filter(c => c && c !== '+ Add Customer' && c !== 'SHELF' && c !== 'UNTAGGED')
-      .sort((a, b) => a.localeCompare(b));
+      .filter(c => c && c !== '+ Add Customer' && c.toUpperCase() !== 'SHELF' && c.toUpperCase() !== 'UNTAGGED')
+      .map(c => c.trim().toUpperCase());
 
-    cleanList.forEach(cust => {
-      let opt = document.createElement('option');
-      opt.value = cust.toUpperCase();
-      opt.textContent = cust.toUpperCase();
-      select.appendChild(opt);
+    // Sort and append only unique names
+    cleanList.sort((a, b) => a.localeCompare(b)).forEach(cust => {
+      if (!uniqueSet.has(cust)) {
+        uniqueSet.add(cust);
+        let opt = document.createElement('option');
+        opt.value = cust;
+        opt.textContent = cust;
+        select.appendChild(opt);
+      }
     });
   },
 
