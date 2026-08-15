@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.6
+ * Version: 2.8.7
  * ======================================================================= */
 const ReportsManager = {
 
@@ -126,25 +126,48 @@ const ReportsManager = {
     await Promise.all(filePromises);
     event.target.value = '';
 
-    let reportLines = [
-      `================================================================================`,
-      `ASP - END OF WEEK ROLLUP REPORT`,
-      `Generated: ${new Date().toLocaleDateString()}`,
-      `================================================================================`,
-      `Total Sessions Logged:       ${sessionsCount}`,
-      `Incoming Shipments:          ${inboundCount}`,
-      `Outgoing Orders:             ${outboundCount}`,
-      `Total Items Handled:         ${totalItems}`,
-      `Unique REFs Touched:         ${uniqueRefs.size}`,
-      `--------------------------------------------------------------------------------`,
-      `NEW REFs DISCOVERED (${newItems.size}):`,
-      ...Array.from(newItems).map(r => `  - ${r}`),
-      `--------------------------------------------------------------------------------`,
-      `EXISTING REFs UPDATED (${updatedItems.size}):`,
-      ...Array.from(updatedItems).map(r => `  - ${r}`),
-      `================================================================================`
-    ];
+    let generatedDate = new Date().toLocaleDateString();
+    
+    let html = `<!DOCTYPE html><html><head><title>ASP End of Week Rollup</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
+      .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+      h1 { margin:0; color:#0277bd; font-size:20px; text-transform:uppercase; }
+      h3 { color: #0277bd; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 20px;}
+      .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+      .kpi-box { background: #f0f8ff; border: 1px solid #bfe0fb; padding: 15px; border-radius: 6px; text-align: center; }
+      .kpi-val { font-size: 20px; font-weight: bold; color: #0277bd; display: block; margin-top: 5px; }
+      ul { column-count: 2; margin: 0; padding-left: 20px; }
+      li { margin-bottom: 4px; font-family: monospace; font-size: 11px; }
+    </style></head><body>
 
-    UIManager.triggerShareOrDownload(reportLines.join('\n'), `ASP_End_of_Week_${Date.now()}.txt`, 'text/plain');
+    <div class="header">
+      <div>
+        <h1>End of Week Rollup Report</h1>
+        <div style="font-size:12px; color:#555; margin-top:4px;">Allied Surgical Products</div>
+      </div>
+      <div style="text-align:right; font-size:11px; color:#555;">
+        <div>Generated: <strong>${generatedDate}</strong></div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-box">Sessions Logged<span class="kpi-val">${sessionsCount}</span></div>
+      <div class="kpi-box">Incoming Shipments<span class="kpi-val">${inboundCount}</span></div>
+      <div class="kpi-box">Outgoing Orders<span class="kpi-val">${outboundCount}</span></div>
+      <div class="kpi-box">Total Items Handled<span class="kpi-val">${totalItems}</span></div>
+      <div class="kpi-box">Unique REFs Touched<span class="kpi-val">${uniqueRefs.size}</span></div>
+    </div>
+
+    <h3>🆕 NEW REFs DISCOVERED (${newItems.size})</h3>
+    ${newItems.size > 0 ? `<ul>${Array.from(newItems).map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No new REFs discovered this week.</p>'}
+
+    <h3>🔄 EXISTING REFs UPDATED (${updatedItems.size})</h3>
+    ${updatedItems.size > 0 ? `<ul>${Array.from(updatedItems).map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No existing REFs updated this week.</p>'}
+
+    </body></html>`;
+
+    let win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.title = 'ASP_End_of_Week_Rollup'; win.focus(); setTimeout(() => win.print(), 500); }
   }
 };

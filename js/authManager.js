@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.6
+ * Version: 2.8.7
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,

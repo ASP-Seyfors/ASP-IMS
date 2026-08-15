@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.6
+ * Version: 2.8.7
  * Date: August 2026
  * 
  * Description:
@@ -1263,32 +1263,52 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let filterVal = document.getElementById('archiveFilter').value;
+    let hideCancelled = document.getElementById('chkHideCancelled') ? document.getElementById('chkHideCancelled').checked : false;
+    let onlyActive = document.getElementById('chkOnlyActive') ? document.getElementById('chkOnlyActive').checked : false;
+    
     let cutoff = 0;
     if (filterVal === 'today') cutoff = Date.now() - (24 * 60 * 60 * 1000);
     else if (filterVal === 'week') cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
     else cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
 
-    let filtered = archive.filter(s => s.lastUpdated >= cutoff);
+    let filtered = archive.filter(s => {
+      if (s.lastUpdated < cutoff) return false;
+      if (hideCancelled && s.status === 'Cancelled') return false;
+      if (onlyActive && s.status !== 'Active') return false;
+      return true;
+    });
 
     if (filtered.length === 0) {
-      container.innerHTML = `<div style="text-align:center; padding:20px; color:#555;">No sessions found for this timeframe.</div>`;
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:#555;">No sessions found matching these filters.</div>`;
       return;
     }
 
     let html = '';
     filtered.forEach(s => {
-      let statusColor = s.status === 'Completed' ? '#2e7d32' : (s.status === 'Cancelled' ? '#d32f2f' : '#f57f17');
+      let statusColor = s.status === 'Completed' ? '#2e7d32' : (s.status === 'Cancelled' ? '#d32f2f' : (s.status === 'Active' ? '#0277bd' : '#f57f17'));
+      
+      let itemsPreview = s.scannedObjects.map(item => `<li>${item.qty}x ${item.ref}</li>`).join('');
+      if(!itemsPreview) itemsPreview = '<li>No items scanned</li>';
+
       html += `
         <div class="audit-card" style="border-left: 5px solid ${statusColor};">
           <div class="flex-between" style="margin-bottom: 6px;">
             <strong style="color:#0277bd; font-size:1.05rem;">${s.sessionName}</strong>
             <span class="badge-info" style="background-color:${statusColor}; color:#fff;">${s.status}</span>
           </div>
-          <div style="font-size: 0.85rem; color: #555; line-height: 1.4; margin-bottom: 10px;">
-            <div><strong>Items Scanned:</strong> ${s.scannedObjects.length}</div>
-            <div><strong>Date:</strong> ${s.dateStr} | <strong>Start:</strong> ${s.startStr}</div>
-            <div><strong>Workflow:</strong> ${s.workflowType}</div>
-          </div>
+          
+          <details style="font-size: 0.85rem; color: #555; margin-bottom: 10px;">
+            <summary style="cursor:pointer; font-weight:bold; color:#333; margin-bottom:6px;">[+] View Details (${s.scannedObjects.length} Items)</summary>
+            <div style="padding-left: 12px; margin-top: 6px; border-left: 2px solid #eee;">
+              <div><strong>Date:</strong> ${s.dateStr} | <strong>Start:</strong> ${s.startStr}</div>
+              <div><strong>Workflow:</strong> ${s.workflowType}</div>
+              <div style="margin-top:6px;"><strong>Scanned Items:</strong></div>
+              <ul style="margin:4px 0 0 0; padding-left:16px; max-height:80px; overflow-y:auto;">
+                ${itemsPreview}
+              </ul>
+            </div>
+          </details>
+          
           <div class="flex-between">
             <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.deleteArchivedSession('${s.id}')">🗑️ Delete</button>
             <button class="btn-action btn-save btn-auto" style="margin:0; padding:6px 12px;" onclick="SessionManager.restoreArchivedSession('${s.id}')">🔄 Restore Session</button>

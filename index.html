@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.8.6
+  Version: 2.8.7
   Date: August 2026
   
   Description:
@@ -604,13 +604,17 @@
   <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">Restore recent sessions to continue scanning, or view and export completed runs. Sessions are kept for 30 days.</p>
 
   <div class="form-row">
-    <div class="form-label" style="color: #0277bd;">Filter Timeframe:</div>
-    <div class="input-wrapper">
-      <select id="archiveFilter" onchange="SessionManager.renderArchiveList()" style="border: 2px solid #0277bd; font-weight: bold;">
+    <div class="form-label" style="color: #0277bd;">Filter & View:</div>
+    <div class="input-wrapper" style="display:flex; flex-direction:column; gap:8px;">
+      <select id="archiveFilter" onchange="SessionManager.renderArchiveList()" style="border: 2px solid #0277bd; font-weight: bold; width:100%;">
         <option value="today">Today (Last 24 Hrs)</option>
         <option value="week">This Week (Last 7 Days)</option>
         <option value="month" selected>This Month (Last 30 Days)</option>
       </select>
+      <div style="display:flex; gap:10px; font-size:0.85rem; color:#555;">
+        <label style="cursor:pointer;"><input type="checkbox" id="chkHideCancelled" onchange="SessionManager.renderArchiveList()" checked> Hide Cancelled</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkOnlyActive" onchange="SessionManager.renderArchiveList()"> Only Active</label>
+      </div>
     </div>
   </div>
 
@@ -652,7 +656,7 @@
     <div class="form-label">App Version:</div>
     <div class="input-wrapper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
       <div>
-        <span style="font-weight: bold; color: #0277bd;">v3.0.0</span>
+        <span style="font-weight: bold; color: #0277bd;">v2.8.7</span>
         <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; margin-left: 10px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
       </div>
       <button class="btn-small btn-cancel btn-auto" onclick="AuthManager.logout()">🚪 Log Out</button>
