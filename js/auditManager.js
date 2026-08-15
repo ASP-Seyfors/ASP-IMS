@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.4.0
+ * Version: 2.5.0
  * Date: August 2026
  * 
  * Description:
@@ -124,11 +124,13 @@ const AuditManager = {
       SessionManager.cancelSession();
     } else if (val === 'complete') {
       SessionManager.completeSession();
+    } else if (val === 'backorder') {
+      SessionManager.suspendToBackorder();
     } else if (val === 'pdf' || val === 'txt') {
       this.exportSessionData(val);
     }
 
-    setTimeout(() => { document.getElementById('exportDropdown').value = ""; }, 500);
+    setTimeout(() => { document.getElementById('exportDropdown').value = "continue"; }, 500);
   },
 
   // ==========================================================================

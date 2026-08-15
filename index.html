@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.4.0
+  Version: 2.5.0
   Date: August 2026
   
   Description:
@@ -272,7 +272,8 @@
   </div>
 
   <div id="manifestProgressBanner" class="progress-banner" style="display:none;">
-    Progress: <span id="manifestScannedQty">0</span> / <span id="manifestTotalQty">0</span> Total Expected Items Scanned
+    Progress: <span id="manifestScannedQty">0</span> / <span id="manifestTotalQty">0</span> Expected 
+    <span id="manifestUnexpectedStats"></span>
   </div>
 
   <!-- REF / SKU LOOKUP SECTION -->
@@ -413,6 +414,17 @@
       <button class="btn-action btn-continue btn-auto" onclick="goToReviewStage()">Continue</button>
     </div>
   </div>
+
+  <!-- NEW: PINNED MANIFEST TRACKER -->
+  <div id="liveManifestTracker" class="card" style="display:none; margin-top: 12px; background-color: #f8f9fa; border-color: #0277bd;">
+    <div style="font-size: 0.9rem; font-weight: bold; color: #0277bd; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px;">
+      📋 Expected Items Tracker
+    </div>
+    <div id="liveManifestList" style="max-height: 180px; overflow-y: auto; font-size: 0.85rem;">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+
 </div>
 
 <!-- SCREEN 3: VERIFICATION & REVIEW PHASE -->
@@ -512,6 +524,7 @@
           <option value="continue" selected>➕ Continue Scanning</option>
           <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
           <option value="txt">📄 Save Data Log (TXT)</option>
+          <option value="backorder">⏳ Pending Backorder (Save & Keep Active)</option>
           <option value="cancel">❌ Discard & Cancel Scanning Session</option>
           <option value="complete">✅ Session Complete (Return Home)</option>
         </select>

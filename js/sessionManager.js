@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.4.0
+ * Version: 2.5.0
  * Date: August 2026
  * 
  * Description:
@@ -453,6 +453,29 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let qty = parseInt(qtyRaw, 10);
       if (isNaN(qty) || qty < 1) qty = 1;
       
+      // NEW: INTELLIGENT "SHELF" SPLITTER
+      let poShelfMatch = activePO.match(/(.*?)\s*\((\d+)\)\s*SHELF\s*\((\d+)\)/i);
+      let isSplitCust = activeCust.includes('/SHELF') || activeCust.includes('SHELF/');
+
+      if (poShelfMatch || isSplitCust) {
+        let realCust = activeCust.split('/')[0].trim();
+        if (realCust === 'SHELF') realCust = activeCust.split('/')[1].trim() || 'UNKNOWN';
+        let realPO = poShelfMatch ? poShelfMatch[1].trim() : activePO;
+        
+        let custQty = poShelfMatch ? parseInt(poShelfMatch[2], 10) : Math.ceil(qty / 2);
+        let shelfQty = poShelfMatch ? parseInt(poShelfMatch[3], 10) : Math.floor(qty / 2);
+        
+        if (custQty > 0) {
+          this.addManifestRow(ref, custQty, true, realCust + ((realPO && realPO !== 'NA') ? ' - ' + realPO : ''), custQty);
+          parsedCount++;
+        }
+        if (shelfQty > 0) {
+          this.addManifestRow(ref, shelfQty, false, '', 0);
+          parsedCount++;
+        }
+        continue; // Skip the standard single-line add
+      }
+      
       let isRes = false, tagVal = '', resQty = 0;
       if (activeCust && activeCust !== 'SHELF' && activeCust !== 'NA' && activeCust !== 'N/A') {
         isRes = true;
@@ -465,7 +488,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
     if (parsedCount > 0) {
       document.getElementById('pasteManifestArea').value = '';
-      alert(`Successfully parsed and added ${parsedCount} items!`);
+      alert(`Successfully parsed and added ${parsedCount} lines (including auto-splits)!`);
     } else alert("Could not extract items.");
   },
 
@@ -530,10 +553,60 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   updateManifestProgressUI() {
     const banner = document.getElementById('manifestProgressBanner');
-    if (!banner || !this.isManifestEnabled || this.expectedManifest.length === 0) { if (banner) banner.style.display = 'none'; return; }
-    banner.style.display = 'block';
-    document.getElementById('manifestScannedQty').textContent = this.scannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
-    document.getElementById('manifestTotalQty').textContent = this.expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
+    const tracker = document.getElementById('liveManifestTracker');
+    
+    if (!this.isManifestEnabled || this.expectedManifest.length === 0) { 
+      if (banner) banner.style.display = 'none'; 
+      if (tracker) tracker.style.display = 'none';
+      return; 
+    }
+    
+    if (banner) banner.style.display = 'block';
+    if (tracker) tracker.style.display = 'block';
+    
+    let expHtml = '';
+    let totalExpected = 0;
+    let totalScannedExp = 0;
+    let totalUnexpected = 0;
+
+    let scannedMap = {};
+    this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
+
+    this.expectedManifest.forEach(exp => {
+      totalExpected += exp.expectedQty;
+      let sQty = scannedMap[exp.ref] || 0;
+      totalScannedExp += Math.min(sQty, exp.expectedQty); // Cap expected scanned
+      let diff = sQty - exp.expectedQty;
+      if (diff > 0) totalUnexpected += diff;
+      
+      let color = sQty >= exp.expectedQty ? '#2e7d32' : (sQty > 0 ? '#f57f17' : '#555');
+      let icon = sQty >= exp.expectedQty ? '✅' : '⏳';
+      
+      expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px;">
+        <span style="font-weight:bold; color:${color};">${icon} ${exp.ref}</span>
+        <span style="color:${color}; font-weight:bold;">${sQty} / ${exp.expectedQty}</span>
+      </div>`;
+    });
+
+    Object.keys(scannedMap).forEach(sRef => {
+      if (!this.expectedManifest.find(e => e.ref === sRef)) {
+        totalUnexpected += scannedMap[sRef];
+        expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px; background-color: #fff3e0;">
+          <span style="font-weight:bold; color:#e65100;">⚠️ ${sRef} (Unexpected)</span>
+          <span style="color:#e65100; font-weight:bold;">${scannedMap[sRef]}</span>
+        </div>`;
+      }
+    });
+
+    document.getElementById('manifestScannedQty').textContent = totalScannedExp;
+    document.getElementById('manifestTotalQty').textContent = totalExpected;
+    
+    let unexpHtml = totalUnexpected > 0 ? ` | <span style="color:#e65100;">${totalUnexpected} Unexpected</span>` : '';
+    document.getElementById('manifestUnexpectedStats').innerHTML = unexpHtml;
+
+    if (document.getElementById('liveManifestList')) {
+      document.getElementById('liveManifestList').innerHTML = expHtml;
+    }
   },
 
   confirmFieldUpdate(field) {
@@ -946,6 +1019,41 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_manifest_enabled', 'false');
 
     this.saveToArchive('Completed');
+  },
+
+  suspendToBackorder() {
+    if (!confirm("Suspend session to Pending Backorder?\n\nThis will export your logs so far and keep the session in the archive to be resumed later.")) return;
+    
+    // Auto-Export Text Log before wiping memory
+    if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
+      AuditManager.exportSessionData('txt');
+    }
+    
+    this.pendingNewItems = []; this.pendingFieldUpdates = [];
+    localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
+    localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+    
+    // Cleanup UI
+    let recList = document.getElementById('manifestReconcileList');
+    let recCard = document.getElementById('manifestReconcileCard');
+    if (recList) recList.innerHTML = '';
+    if (recCard) recCard.style.display = 'none';
+
+    document.getElementById('sessionNoteInput').value = ""; 
+    document.getElementById('chkSessionNote').checked = false;
+    UIManager.toggleSessionNote();
+    const chkPreload = document.getElementById('chkPreloadManifest');
+    if (chkPreload) chkPreload.checked = false;
+
+    document.getElementById('screenSummary').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+    
+    this.isSessionActive = false; 
+    this.isManifestEnabled = false;
+    localStorage.setItem('asp_session_is_active', 'false'); 
+    localStorage.setItem('asp_manifest_enabled', 'false');
+
+    this.saveToArchive('Pending Backorder');
   },
 
   // ==========================================
