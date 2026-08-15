@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.9
+ * Version: 2.9.0
  * Date: August 2026
  * 
  * Description:
@@ -210,6 +210,20 @@ const DatabaseManager = {
     return null;
   },
 
+  // --- NEW: FACTORY RESET UTILITY ---
+  factoryResetDatabase() {
+    if(!confirm("⚠️ WARNING: Are you sure you want to wipe this device's local memory and reset the database back to the original database.json file?")) return;
+    localStorage.removeItem('asp_wh_db');
+    this.db = [];
+    this.init().then(() => {
+      alert("Local memory scrubbed and reset to factory defaults!");
+      if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
+         this.renderDbGridEditor(); 
+      }
+    });
+  },
+
+  // --- UPDATED: TEXT-WRAP GRID EDITOR ---
   renderDbGridEditor() {
     const tbody = document.getElementById('dbGridBody');
     if (!tbody) return;
@@ -222,11 +236,13 @@ const DatabaseManager = {
     dbCopy.forEach((item, idx) => {
       html += `
         <tr style="border-bottom: 1px solid #eee;">
-          <td style="padding:4px;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:100px; padding:4px;"></td>
-          <td style="padding:4px; font-weight:bold;">${item.ref || item.sku}</td>
-          <td style="padding:4px;"><input type="text" id="grid_desc_${idx}" value="${item.desc || ''}" style="width:100%; padding:4px;"></td>
-          <td style="padding:4px;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:100px; padding:4px;"></td>
-          <td style="padding:4px;"><input type="text" id="grid_gtin_${idx}" value="${item.gtin || ''}" style="width:120px; padding:4px;"></td>
+          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:100px; padding:4px;"></td>
+          <td style="padding:4px; font-weight:bold; vertical-align:top;">${item.ref || item.sku}</td>
+          <td style="padding:4px; vertical-align:top;">
+            <textarea id="grid_desc_${idx}" style="width:100%; padding:4px; resize:vertical; min-height:40px; font-family:inherit; font-size:0.85rem; line-height:1.2;">${item.desc || ''}</textarea>
+          </td>
+          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:100px; padding:4px;"></td>
+          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_gtin_${idx}" value="${item.gtin || ''}" style="width:120px; padding:4px;"></td>
           <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
         </tr>
       `;
