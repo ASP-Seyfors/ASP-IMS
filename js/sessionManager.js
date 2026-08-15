@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.5.0
+ * Version: 2.6.0
  * Date: August 2026
  * 
  * Description:
@@ -166,13 +166,13 @@ const SessionManager = {
     if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
   },
 
-  startStocktakeSession() {
+  startStocktakeSession(mode) {
     const uName = document.getElementById('userNameInput').value.trim();
     
     this.currentUserName = uName || "Operator";
-    this.currentSessionName = "Warehouse Stocktake";
-    this.currentOrderNum = "FULL-INV";
-    this.currentWorkflowType = "Stocktake";
+    this.currentSessionName = mode + " Stocktake";
+    this.currentOrderNum = mode === "Full" ? "FULL-INV" : "SEL-INV";
+    this.currentWorkflowType = mode + " Stocktake";
     this.isSessionActive = true;
     this.isManifestEnabled = false;
 
@@ -196,12 +196,11 @@ const SessionManager = {
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
 
     this.updateHeaderBanners();
-
-    // UI Transitions
+    
+    if (typeof UIManager !== 'undefined' && UIManager.closeStocktakeModal) UIManager.closeStocktakeModal();
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
 
-    // UI Locks for Stocktake Mode
     let destRow = document.getElementById('rowItemDestination');
     let tagRow = document.getElementById('rowCustomerTag');
     if (destRow) destRow.style.display = 'none';
@@ -835,6 +834,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     AuditManager.updateSessionSummaryView();
     
+    let optCommit = document.getElementById('optCommitStock');
+    if (optCommit) {
+      optCommit.style.display = this.currentWorkflowType.includes('Stocktake') ? 'block' : 'none';
+    }
+
     this.renderManifestReconciliation();
     this.renderAdvancedReview(); 
     
@@ -966,8 +970,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenSetup').style.display = 'block';
   },
 
-  completeSession() {
-    if (!confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.")) return;
+  completeSession(skipConfirm = false) {
+    if (!skipConfirm && !confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.")) return;
     
     // Auto-Export Text Log before wiping memory
     if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
@@ -1019,6 +1023,56 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_manifest_enabled', 'false');
 
     this.saveToArchive('Completed');
+  },
+
+  commitStocktake() {
+    if (!this.currentWorkflowType.includes('Stocktake')) return;
+    
+    let noteEl = document.getElementById('sessionNoteInput');
+    let chkNote = document.getElementById('chkSessionNote');
+    let noteVal = noteEl ? noteEl.value.trim() : '';
+    
+    // Enforce mandatory note for Full Stocktakes
+    if (this.currentWorkflowType === 'Full Stocktake' && (!chkNote.checked || !noteVal)) {
+      alert("A mandatory Session Note is required to commit a Full Stocktake (e.g., 'Q3 Inventory Audit'). Please check 'Add Session Note' and provide a reason.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to commit these quantities to the master database?\n\nMode: ${this.currentWorkflowType}\nScanned Items: ${this.scannedObjects.length}`)) return;
+
+    // Aggregate scanned quantities by REF
+    let scannedTotals = {};
+    this.scannedObjects.forEach(item => {
+      if (!scannedTotals[item.ref]) scannedTotals[item.ref] = 0;
+      scannedTotals[item.ref] += item.qty;
+    });
+
+    // Apply to DB logic
+    if (this.currentWorkflowType === 'Full Stocktake') {
+      // Zero out ALL onHand quantities first
+      DatabaseManager.db.forEach(dbItem => dbItem.onHand = 0);
+    } else {
+      // Selection: Zero out ONLY the scanned REFs before applying the new count
+      Object.keys(scannedTotals).forEach(ref => {
+        let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+        if (dbItem) dbItem.onHand = 0;
+      });
+    }
+
+    // Add the new counts
+    Object.keys(scannedTotals).forEach(ref => {
+      let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+      if (dbItem) {
+        dbItem.onHand = (dbItem.onHand || 0) + scannedTotals[ref];
+      }
+    });
+
+    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+    alert("Stocktake successfully committed to the master database!");
+    
+    // Auto export log for audit trail, then cleanly complete the session
+    AuditManager.exportSessionData('txt');
+    setTimeout(() => { this.completeSession(true); }, 500);
   },
 
   suspendToBackorder() {

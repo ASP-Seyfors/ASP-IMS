@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.5.0
+  Version: 2.6.0
   Date: August 2026
   
   Description:
@@ -155,7 +155,7 @@
 
     <!-- Center: Stocktake & Traceability (4 & 5. Hidden by default unless Advanced is ON) -->
     <div id="centerFooterActions" style="flex: 2; min-width: 250px; text-align: center; display: flex; justify-content: center; gap: 8px;">
-      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="SessionManager.startStocktakeSession()">📋 Perform Stocktake</button>
+      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="UIManager.openStocktakeModal()">📋 Stocktake</button>
       <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="openAuditHub()">📦 Traceability</button>
     </div>
 
@@ -167,6 +167,19 @@
     
   </div>
 </div>
+
+<!-- NEW: STOCKTAKE MODAL -->
+  <div id="stocktakeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
+      <h3 style="margin-top:0; color:#7b1fa2; border-bottom:2px solid #7b1fa2; padding-bottom:8px;">📋 Select Stocktake Mode</h3>
+      <p style="font-size:0.85rem; color:#555;"><strong>Full Stocktake:</strong> A formal session to document and overwrite all current inventory quantities.<br><br><strong>Selection Stocktake:</strong> A lightweight session to gather a list of items or update specific REFs without clearing the rest of the database.</p>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+        <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')">📦 Start Full Stocktake</button>
+        <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff;" onclick="SessionManager.startStocktakeSession('Selection')">🎯 Start Selection Stocktake</button>
+        <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
 <!-- SCREEN 7: SETTINGS PAGE -->
 <div id="screenSettings" style="display: none;" class="card">
@@ -522,6 +535,7 @@
       <div class="input-wrapper" style="display: flex; flex-direction: row; gap: 8px;">
         <select id="exportDropdown" style="flex: 3; padding: 10px; font-weight: bold; text-align: left;">
           <option value="continue" selected>➕ Continue Scanning</option>
+          <option value="commit_stock" id="optCommitStock" style="display:none; color:#7b1fa2; font-weight:bold;">💾 Commit Stocktake to Database</option>
           <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
           <option value="txt">📄 Save Data Log (TXT)</option>
           <option value="backorder">⏳ Pending Backorder (Save & Keep Active)</option>

@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.5.0
+ * Version: 2.6.0
  * Date: August 2026
  * 
  * Description:
@@ -220,6 +220,14 @@ const UIManager = {
         ` : '<div style="font-size:0.8rem; color:#777; font-style:italic;">No active FEFO inventory recorded on shelves.</div>'}
       </div>
     `;
+  },
+
+  openStocktakeModal() {
+    document.getElementById('stocktakeModal').style.display = 'flex';
+  },
+
+  closeStocktakeModal() {
+    document.getElementById('stocktakeModal').style.display = 'none';
   },
 
   loadSavedTheme() {

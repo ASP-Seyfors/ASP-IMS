@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.5.0
+ * Version: 2.6.0
  * Date: August 2026
  * 
  * Description:
@@ -120,6 +120,8 @@ const AuditManager = {
       ScannerManager.resetScanLinesAndFields();
       document.getElementById('screenSummary').style.display = 'none';
       document.getElementById('screenScanning').style.display = 'block';
+    } else if (val === 'commit_stock') {
+      SessionManager.commitStocktake();
     } else if (val === 'cancel') {
       SessionManager.cancelSession();
     } else if (val === 'complete') {
@@ -138,26 +140,50 @@ const AuditManager = {
   // ==========================================================================
 
   buildTXTReportString() {
-    let scannedMap = {};
+    let mfrMap = {};
+    let custMap = {};
+    let unpricedMfrMap = {};
+    let scannedMap = {}; // Used exclusively for manifest shortage/overage tracking
 
     SessionManager.scannedObjects.forEach(item => {
+      let mfr = item.mfr || 'UNKNOWN MANUFACTURER';
       let rKey = item.ref;
       let cleanGtin = this.cleanGtinValue(item.gtin);
-      if (!scannedMap[rKey]) {
-        scannedMap[rKey] = { ref: item.ref, desc: item.desc, mfr: item.mfr, price: item.price, totalScannedQty: 0, byTag: {} };
+      
+      // 1. Map for Scanned Item Details (Grouped by MFR)
+      if (!mfrMap[mfr]) mfrMap[mfr] = {};
+      if (!mfrMap[mfr][rKey]) {
+        mfrMap[mfr][rKey] = { ref: rKey, desc: item.desc, price: item.price, totalScannedQty: 0, byTag: {} };
       }
-      scannedMap[rKey].totalScannedQty += item.qty;
+      mfrMap[mfr][rKey].totalScannedQty += item.qty;
 
       let tKey = item.customerTag || 'UNTAGGED';
-      if (!scannedMap[rKey].byTag[tKey]) scannedMap[rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
-      scannedMap[rKey].byTag[tKey].tagTotalQty += item.qty;
+      if (!mfrMap[mfr][rKey].byTag[tKey]) mfrMap[mfr][rKey].byTag[tKey] = { tagTotalQty: 0, lots: {} };
+      mfrMap[mfr][rKey].byTag[tKey].tagTotalQty += item.qty;
 
       let lotKey = `${item.lot}_${item.exp}`;
-      if (!scannedMap[rKey].byTag[tKey].lots[lotKey]) {
-        scannedMap[rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes: [] };
+      if (!mfrMap[mfr][rKey].byTag[tKey].lots[lotKey]) {
+        mfrMap[mfr][rKey].byTag[tKey].lots[lotKey] = { lot: item.lot, exp: item.exp, qty: 0, notes: [] };
       }
-      scannedMap[rKey].byTag[tKey].lots[lotKey].qty += item.qty;
-      if (item.itemNote) scannedMap[rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
+      mfrMap[mfr][rKey].byTag[tKey].lots[lotKey].qty += item.qty;
+      if (item.itemNote) mfrMap[mfr][rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
+
+      // 2. Map for Routed to Customer Bins
+      if (item.customerTag) {
+        if (!custMap[item.customerTag]) custMap[item.customerTag] = {};
+        if (!custMap[item.customerTag][rKey]) custMap[item.customerTag][rKey] = 0;
+        custMap[item.customerTag][rKey] += item.qty;
+      }
+
+      // 3. Map for Items Requiring Pricing
+      if (!item.price || item.price === "$0.00" || item.price === "0") {
+         if (!unpricedMfrMap[mfr]) unpricedMfrMap[mfr] = new Set();
+         unpricedMfrMap[mfr].add(rKey);
+      }
+
+      // 4. Map for Shortages/Overages
+      if (!scannedMap[rKey]) scannedMap[rKey] = { totalScannedQty: 0 };
+      scannedMap[rKey].totalScannedQty += item.qty;
     });
 
     let sessionTitleHeader = SessionManager.currentSessionName;
@@ -185,34 +211,22 @@ const AuditManager = {
       `          Session End:         ${timeEndStr}`
     ];
     
-    if (sNote) {
-      reportLines.push(`          Session Notes:       ${sNote}`);
-    }
+    if (sNote) reportLines.push(`          Session Notes:       ${sNote}`);
     reportLines.push(`================================================================================\n`);
 
-    // CONDITIONAL SECTION 3: ROUTED TO CUSTOMER BINS
-    let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
-    if (reservedItems.length > 0) {
+    // CONDITIONAL SECTION 1: ROUTED TO CUSTOMER BINS (Grouped by Customer)
+    if (Object.keys(custMap).length > 0) {
       reportLines.push(`--- ROUTED TO CUSTOMER BINS ---`);
-      reservedItems.forEach(r => {
-        reportLines.push(`  * REF: ${r.ref} | Tag: ${r.customerTag} | Qty: ${r.qty}`);
+      Object.keys(custMap).sort().forEach(cTag => {
+         reportLines.push(`  * Customer: ${cTag}`);
+         Object.keys(custMap[cTag]).sort().forEach(ref => {
+             reportLines.push(`      - REF: ${ref} | Qty: ${custMap[cTag][ref]}`);
+         });
       });
       reportLines.push(``);
     }
 
-    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING
-    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
-    if (unpricedItems.length > 0) {
-      reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
-      unpricedItems.forEach(u => {
-        reportLines.push(`  * REF: ${u.ref} | MFR: ${u.mfr} | Qty Scanned: ${u.totalScannedQty}`);
-      });
-      reportLines.push(``);
-    }
-
-    reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
-
-    // CONDITIONAL SECTION 1: SHORTAGES
+    // CONDITIONAL SECTION 2: SHORTAGES
     if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
       let shortages = [];
       SessionManager.expectedManifest.forEach(exp => {
@@ -232,7 +246,7 @@ const AuditManager = {
       }
     }
 
-    // CONDITIONAL SECTION 2: OVERAGES
+    // CONDITIONAL SECTION 3: OVERAGES
     if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
       let overages = [];
       Object.keys(scannedMap).forEach(rKey => {
@@ -253,24 +267,45 @@ const AuditManager = {
       }
     }
 
-    let count = 1;
-    for (let rKey in scannedMap) {
-      let rData = scannedMap[rKey];
-      let descLine = (rData.desc && rData.desc !== "Navigate to vendor website for item description.") ? `    | Description: ${rData.desc}\n` : '';
-      reportLines.push(`[${count}] REF: ${rData.ref}\n${descLine}    | Total Quantity: ${rData.totalScannedQty}`);
-      for (let tKey in rData.byTag) {
-        let tagData = rData.byTag[tKey];
-        if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
-        reportLines.push(`    | Lot & Expiration Breakdowns:`);
-        for (let lKey in tagData.lots) {
-          let lData = tagData.lots[lKey];
-          reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
-          if(lData.notes.length > 0) reportLines.push(`        * Notes: ${lData.notes.join(', ')}`);
+    // MAIN SECTION: SCANNED ITEM DETAILS (Grouped by Manufacturer)
+    reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
+
+    let sortedMfrs = Object.keys(mfrMap).sort();
+    sortedMfrs.forEach(mfr => {
+      reportLines.push(`### MANUFACTURER: ${mfr} ###\n`);
+      
+      let sortedRefs = Object.keys(mfrMap[mfr]).sort();
+      sortedRefs.forEach(rKey => {
+        let rData = mfrMap[mfr][rKey];
+        let descLine = (rData.desc && rData.desc !== "Navigate to vendor website for item description.") ? `    | Description: ${rData.desc}\n` : '';
+        
+        reportLines.push(`[+] REF: ${rData.ref}\n${descLine}    | Total Quantity: ${rData.totalScannedQty}`);
+        
+        for (let tKey in rData.byTag) {
+          let tagData = rData.byTag[tKey];
+          if (tKey !== 'UNTAGGED') reportLines.push(`    | Customer Tag: ${tKey} (Qty: ${tagData.tagTotalQty})`);
+          reportLines.push(`    | Lot & Expiration Breakdowns:`);
+          for (let lKey in tagData.lots) {
+            let lData = tagData.lots[lKey];
+            reportLines.push(`      - Lot: ${lData.lot} | Exp: ${lData.exp} | Qty: ${lData.qty}`);
+            if(lData.notes.length > 0) reportLines.push(`        * Notes: ${lData.notes.join(', ')}`);
+          }
         }
-      }
-      reportLines.push(``); count++;
+        reportLines.push(``); 
+      });
+    });
+
+    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING (Moved below Breakdown)
+    if (Object.keys(unpricedMfrMap).length > 0) {
+      reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
+      Object.keys(unpricedMfrMap).sort().forEach(mfr => {
+        let refList = Array.from(unpricedMfrMap[mfr]).sort().join(', ');
+        reportLines.push(`  * MFR: ${mfr} -> REFs: ${refList}`);
+      });
+      reportLines.push(``);
     }
 
+    // CONDITIONAL SECTION 5: NEW ITEM DETAILS
     if (SessionManager.pendingNewItems.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------\n--- NEW ITEM DETAILS ---\n--------------------------------------------------------------------------------`);
       let nIdx = 1;
@@ -280,6 +315,7 @@ const AuditManager = {
       }); reportLines.push(``);
     }
 
+    // CONDITIONAL SECTION 6: EXISTING ITEM UPDATES
     if (SessionManager.pendingFieldUpdates.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------\n--- EXISTING ITEM UPDATES (${SessionManager.pendingFieldUpdates.length}) ---\n--------------------------------------------------------------------------------`);
       let uIdx = 1;
@@ -288,6 +324,7 @@ const AuditManager = {
       }); reportLines.push(``);
     }
 
+    // CONDITIONAL SECTION 7: RAW BARCODES
     if (SessionManager.scannedObjects.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------\n--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---\n--------------------------------------------------------------------------------\nSession Start Time: ${SessionManager.sessionStartStr || 'N/A'}\n`);
       SessionManager.scannedObjects.forEach(item => {
@@ -301,7 +338,7 @@ const AuditManager = {
 
     reportLines.push(`================================================================================\nEND OF RECEIVING INVENTORY SUMMARY\n================================================================================`);
     return reportLines.join('\n');
-  },
+  }
 
   buildHTMLReportString(filename) {
     let scannedMap = {};
@@ -752,7 +789,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         ref: ref,
         desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
         histQty: skuCounts[ref],
-        onHand: 12, // Will connect to live stocktake baseline later
+        onHand: dbItem ? (dbItem.onHand || 0) : 0, // Now reads live committed stock!
         price: dbItem ? dbItem.price : '$0.00',
         cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'
       });
