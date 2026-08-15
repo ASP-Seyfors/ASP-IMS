@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.8.2
+  Version: 2.8.3
   Date: August 2026
   
   Description:
@@ -57,7 +57,9 @@
 <div id="screenSetup" class="card">
   
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
-    <h2 style="border:none; margin:0; padding:0;">ASP Scanner</h2>
+    <h2 style="border:none; margin:0; padding:0; display:flex; align-items:center; gap:8px;">
+      ASP Scanner <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
+    </h2>
     <label style="font-size: 0.85rem; font-weight: bold; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px;">
       <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> Advanced
     </label>

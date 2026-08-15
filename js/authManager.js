@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.2
+ * Version: 2.8.3
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,
@@ -70,6 +70,14 @@ const AuthManager = {
     let archiveBtn = document.getElementById('btnSessionArchive');
     let lookupBtn = document.getElementById('btnItemLookup');
     let userNameInput = document.getElementById('userNameInput');
+    
+    // Elements to hide for guests
+    let stagedFeed = document.getElementById('panelStagedFeed');
+    let preloadToggle = document.getElementById('rowPreloadToggle');
+    let enterpriseHub = document.getElementById('panelEnterpriseHub');
+    let btnStock = document.getElementById('btnStocktake');
+    let btnTrace = document.getElementById('btnTraceability');
+    let roleBadge = document.getElementById('userRoleBadge');
 
     if (this.isGuest) {
       // LOCKDOWN MODE
@@ -77,6 +85,17 @@ const AuthManager = {
       if (archiveBtn) archiveBtn.style.display = 'none';
       if (lookupBtn) lookupBtn.style.display = 'none';
       if (userNameInput) userNameInput.value = "";
+      
+      if (stagedFeed) stagedFeed.style.display = 'none';
+      if (preloadToggle) preloadToggle.style.display = 'none';
+      if (enterpriseHub) enterpriseHub.style.display = 'none';
+      if (btnStock) btnStock.style.display = 'none';
+      if (btnTrace) btnTrace.style.display = 'none';
+      
+      if (roleBadge) {
+        roleBadge.textContent = "Guest Mode";
+        roleBadge.style.backgroundColor = "#c62828";
+      }
       
       UIManager.toggleAdvancedMode(false); // Force basic mode
       
@@ -92,6 +111,11 @@ const AuthManager = {
       if (archiveBtn) archiveBtn.style.display = 'inline-block';
       if (lookupBtn) lookupBtn.style.display = 'inline-block';
       if (userNameInput) userNameInput.value = this.currentUser.name.split(' ')[0];
+      
+      if (roleBadge) {
+        roleBadge.textContent = "Verified Workspace";
+        roleBadge.style.backgroundColor = "#2e7d32";
+      }
       
       // Restore standard lists
       DatabaseManager.suppliers = JSON.parse(localStorage.getItem('asp_wh_suppliers')) || ["+ Add Supplier"];
