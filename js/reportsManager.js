@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.3
+ * Version: 2.9.4
  * ======================================================================= */
 const ReportsManager = {
 
@@ -103,6 +103,7 @@ const ReportsManager = {
     let totalItems = 0; let uniqueRefs = new Set();
     let newItems = new Set(); let updatedItems = new Set();
     let datesArray = []; // Used to calculate the filename date range
+    let sessionNamesList = []; // NEW: Array to hold parsed session names
 
     let filePromises = Array.from(files).map(file => {
       return new Promise((resolve) => {
@@ -114,8 +115,10 @@ const ReportsManager = {
           
           let parsed = AuditManager.parseTXTExportContent(text, file.name);
           if (parsed) {
-            // Capture the session date for the filename
+            // Capture the session date for the filename and name for the list
             if (parsed.date && parsed.date !== "Unknown") datesArray.push(parsed.date);
+            if (parsed.sessionName) sessionNamesList.push(parsed.sessionName);
+            
             parsed.items.forEach(i => { totalItems += i.qty; uniqueRefs.add(i.ref); });
             (parsed.newItems || []).forEach(n => newItems.add(n.ref));
             (parsed.updatedItems || []).forEach(u => updatedItems.add(u.ref));
@@ -138,7 +141,7 @@ const ReportsManager = {
 
     let generatedDate = new Date().toLocaleDateString();
     
-    let html = `<!DOCTYPE html><html><head><title>${baseFilename}</title>
+    let html = `<!DOCTYPE html><html><head><title>ASP End of Week Report</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
       .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
@@ -149,11 +152,12 @@ const ReportsManager = {
       .kpi-val { font-size: 20px; font-weight: bold; color: #0277bd; display: block; margin-top: 5px; }
       ul { column-count: 2; margin: 0; padding-left: 20px; }
       li { margin-bottom: 4px; font-family: monospace; font-size: 11px; }
+      .session-list { column-count: 1; list-style-type: square; }
     </style></head><body>
 
     <div class="header">
       <div>
-        <h1>End of Week Rollup Report</h1>
+        <h1>End of Week Report</h1>
         <div style="font-size:12px; color:#555; margin-top:4px;">Allied Surgical Products</div>
       </div>
       <div style="text-align:right; font-size:11px; color:#555;">
@@ -174,6 +178,9 @@ const ReportsManager = {
 
     <h3>🔄 EXISTING REFs UPDATED (${updatedItems.size})</h3>
     ${updatedItems.size > 0 ? `<ul>${Array.from(updatedItems).map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No existing REFs updated this week.</p>'}
+
+    <h3>📄 AUDITED SESSIONS (${sessionNamesList.length})</h3>
+    ${sessionNamesList.length > 0 ? `<ul class="session-list">${sessionNamesList.map(s => `<li>${s}</li>`).join('')}</ul>` : '<p>No session names recorded.</p>'}
 
     </body></html>`;
 
