@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.1
+ * Version: 2.8.2
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,
@@ -10,7 +10,7 @@ const AuthManager = {
   
   // NOTE: You will need to replace this with your actual Google Cloud Client ID later.
   // For this weekend, the logic will still function using the Guest/Bypass features.
-  clientId: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+  clientId: "578227168676-721gv6n3bt5qqcd67v1vhi6111c35fcc.apps.googleusercontent.com",
 
   init() {
     let savedSession = localStorage.getItem('asp_auth_session');
