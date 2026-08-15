@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.3
+ * Version: 2.8.4
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,
@@ -71,7 +71,6 @@ const AuthManager = {
     let lookupBtn = document.getElementById('btnItemLookup');
     let userNameInput = document.getElementById('userNameInput');
     
-    // Elements to hide for guests
     let stagedFeed = document.getElementById('panelStagedFeed');
     let preloadToggle = document.getElementById('rowPreloadToggle');
     let enterpriseHub = document.getElementById('panelEnterpriseHub');
