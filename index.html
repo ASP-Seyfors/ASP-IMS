@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.8.0
+  Version: 2.8.1
   Date: August 2026
   
   Description:
@@ -612,7 +612,12 @@
     </div>
   </div>
 
-  <!-- SCREEN 7: SETTINGS PAGE -->
+  <div id="archiveListContainer" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+    <!-- Archive Items Injected Here -->
+  </div>
+</div>
+
+<!-- SCREEN 7: SETTINGS PAGE -->
 <div id="screenSettings" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
     <h2 style="border:none; margin:0; padding:0;">ASP Scanner - Settings</h2>
@@ -732,11 +737,6 @@
 
   <div style="text-align: right;">
     <button class="btn-action btn-save btn-auto" onclick="DatabaseManager.exportGridChanges()">💾 Export Database Update (JSON)</button>
-  </div>
-</div>
-
-  <div id="archiveListContainer" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
-    <!-- Archive Items Injected Here -->
   </div>
 </div>
 
