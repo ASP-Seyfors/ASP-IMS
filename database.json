@@ -18,6 +18,48 @@
               ],
   "items":  [
     {
+      "gtin": "00763000490140",
+      "ref": "MR8-14MH30",
+      "desc": "Medtronic Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 14cm x 3mm MR8-14MH30",
+      "price": "$0.00",
+      "mfr": "MEDTRONIC"
+    },
+    {
+      "gtin": "30705031468102",
+      "ref": "1951S",
+      "desc": "Ethicon SURGICEL® Original Hemostat, 2x14 inches 1951S",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031015665",
+      "ref": "843H",
+      "desc": "Ethicon 2-0 GUT PLA\" YELLOWISH TAN 1X27\" CT-1 (BX/36) 843H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031058914",
+      "ref": "Y346H",
+      "desc": "Ethicon 0 MONOCRYL VIOLET 1X36\" CT-1 (BX/36) Y346H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031043224",
+      "ref": "J839D",
+      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 8X18\" CT-1 CR (BX/12) J839D",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
+      "gtin": "30705031060917",
+      "ref": "Z423H",
+      "desc": "Ethicon 3-0 PDS II UNDYED 1X2\" FS-2 (BX/36) Z423H",
+      "price": "$0.00",
+      "mfr": "ETHICON"
+    },
+    {
       "gtin": "30705031001682",
       "ref": "1661G",
       "desc": "Ethicon 5-0 ETHILON BLACK 1X18\" PS-4 (BX/12) 1661G",
@@ -207,7 +249,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "00801741095337",
       "ref": "1200710",
       "desc": "Bard Phasix St Mesh Rectangle 3.0in X 4.0in 1200710",
       "price": "$700.00",
@@ -284,7 +326,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031468126",
       "ref": "1953S",
       "desc": "ETHICON Ethicon Surgicel Original Absorbable Hemostat 2 in X 3 in 1953S",
       "price": "$375.00",
@@ -410,7 +452,7 @@
       "mfr": "INTUITIVE"
     },
     {
-      "gtin": "",
+      "gtin": "10886874117092",
       "ref": "48345G",
       "desc": "Intuitive da Vinci X / da Vinci Xi Surgical SureForm 45 mm Reload (Green, 6-Row, 4.3 mm) (BX/12) 48345G",
       "price": "$1,225.00",
@@ -438,7 +480,7 @@
       "mfr": "INTUITIVE"
     },
     {
-      "gtin": "",
+      "gtin": "00886874113844",
       "ref": "48360G",
       "desc": "INTUITIVE Da Vinci Stapler Reload, For Sureform 60, Green, 4.3 mm, 6-Row, 1 Firing 48360G",
       "price": "$120.00",
@@ -655,7 +697,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "00840420133687",
       "ref": "84000611",
       "desc": "STRYKER Osteoset Resorbable Mini Bead Kit Fast Cure 5 cc 9.5G 3.0 mL - Slight Dent 84000611",
       "price": "$500.00",
@@ -767,7 +809,7 @@
       "mfr": "ARTHREX"
     },
     {
-      "gtin": "",
+      "gtin": "10888867041292",
       "ref": "AR-7202",
       "desc": "ARTHREX #2 FiberWire, 38\" (Blue) w/ Reverse Cutting Needle, 36.6mm 1/2c AR-7202",
       "price": "$210.00",
@@ -781,7 +823,7 @@
       "mfr": "ARTHREX"
     },
     {
-      "gtin": "",
+      "gtin": "10705036001348",
       "ref": "CB5LT",
       "desc": "ETHICON Ethicon Endopath Xcel Universal Trocar Stability Sleeve CB5LT",
       "price": "$25.00",
@@ -1124,7 +1166,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "20705036002670",
       "ref": "PXW35-43",
       "desc": "ETHICON Ethicon PXW35 Wide Fixed- Head Skin Stapler With 0.58 Diameter (BX/6) PXW35",
       "price": "$115.00",
@@ -1152,7 +1194,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "20817470006630",
       "ref": "RR750",
       "desc": "SMITH & NEPHEW Rapid Rhino Epistaxis Nasal Pac 7.5 cm Ant/Posterior RR750",
       "price": "$25.00",
@@ -1187,7 +1229,7 @@
       "mfr": "COVIDIEN"
     },
     {
-      "gtin": "",
+      "gtin": "10884521543720",
       "ref": "SIG45CTAVM",
       "desc": "Covidien Signia Tri-staple 2.0 Curved Tip Vascular Medium Reload 45.0mm Gold",
       "price": "$92.00",
@@ -1201,7 +1243,7 @@
       "mfr": "COVIDIEN"
     },
     {
-      "gtin": "",
+      "gtin": "10884521808980",
       "ref": "SIG60AVM",
       "desc": "Covidien Tri-Staple 2.0 Intelligent Reload Vascular/Medium SIG60AVM",
       "price": "$135.00",
@@ -1530,7 +1572,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "30705031060641",
       "ref": "Z341H",
       "desc": "ETHICON 1 PDS II Violet 1X27\" CT-1 (BX/36) Z341H",
       "price": "$195.00",
@@ -2195,7 +2237,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "00763000487508",
       "ref": "MR8-10MH17",
       "desc": "MEDTRONIC Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 10 cm X 1.7 mm MR8-10MH17",
       "price": "$95.00",
@@ -2244,7 +2286,7 @@
       "mfr": "ETHICON"
     },
     {
-      "gtin": "",
+      "gtin": "10848782031051",
       "ref": "R340N",
       "desc": "SHARPOINT PDO 0 Violet 1X27\" CT-1 R340N",
       "price": "$65.00",
