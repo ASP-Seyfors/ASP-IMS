@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.8
+ * Version: 2.4.0
  * Date: August 2026
  * 
  * Description:
@@ -113,6 +113,30 @@ const UIManager = {
     let query = document.getElementById('quickLookupInput').value.trim().toUpperCase();
     let resContainer = document.getElementById('quickLookupResult');
     if (!query) return;
+
+    // --- NEW: GS1 BARCODE EXTRACTOR ---
+    let clean = query.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
+    let extractedGtin = "";
+    let idx = 0;
+    while (idx < clean.length) {
+      if (clean.substring(idx, idx + 2) === "17" && clean.length - idx >= 8 && /^\d{6}$/.test(clean.substring(idx + 2, idx + 8))) {
+        let testMm = parseInt(clean.substring(idx + 4, idx + 6), 10);
+        if (testMm >= 1 && testMm <= 12) { idx += 8; } else { idx++; }
+      } else if (clean.substring(idx, idx + 2) === "01" && clean.length - idx >= 16 && /^\d{14}$/.test(clean.substring(idx + 2, idx + 16))) {
+        extractedGtin = clean.substring(idx + 2, idx + 16);
+        idx += 16;
+      } else if (clean.substring(idx, idx + 2) === "10") {
+        break;
+      } else if (/^\d{12,14}$/.test(clean)) {
+        extractedGtin = clean;
+        break;
+      } else {
+        idx++;
+      }
+    }
+    // If a GS1 GTIN was found inside the scan, use that as the search query
+    if (extractedGtin) query = extractedGtin;
+    // ----------------------------------
 
     let item = DatabaseManager.db.find(i => 
       DatabaseManager.getItemSku(i).toUpperCase() === query || 

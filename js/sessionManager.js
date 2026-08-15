@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.3.8
+ * Version: 2.4.0
  * Date: August 2026
  * 
  * Description:
@@ -781,12 +781,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const list = document.getElementById('advancedItemsList');
     if (!card || !list) return;
 
-    // SAFETY GUARD: Ensure pendingNewItems is always an array
     if (!Array.isArray(this.pendingNewItems)) {
       this.pendingNewItems = [];
     }
 
-    // Filter pending items to only those that still have the default placeholder
     let unresolved = this.pendingNewItems.filter(i => i.desc === "Navigate to vendor website for item description." || !i.desc);
     
     if (unresolved.length === 0) {
@@ -811,7 +809,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           <div><strong style="color: #0277bd;">${item.ref}</strong> <span style="font-size:0.8rem; color:#555; margin-left: 6px;">${item.mfr}</span></div>
           <button class="btn-small" style="background-color:#1976d2; color:#ffffff; padding: 4px 10px;" onclick="window.open('${searchUrl}', '_blank')">🔍 Search</button>
         </div>
-        <input type="text" id="advDesc_${index}" class="adv-desc-input" data-ref="${item.ref}" placeholder="Paste description here..." style="width:100%; padding:8px; box-sizing:border-box; border: 1px solid #ccc; border-radius: 4px;">
+        <div style="display:flex; align-items:center; gap:6px; background:#f5f5f5; padding:6px; border-radius:4px; border:1px solid #ccc;">
+          <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.mfr}</span>
+          <input type="text" id="advDesc_${index}" class="adv-desc-input" data-ref="${item.ref}" data-mfr="${item.mfr}" placeholder="Paste website description here..." style="flex:1; padding:6px; border: 1px solid #ccc; border-radius: 4px;">
+          <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.ref}</span>
+        </div>
       `;
       list.appendChild(div);
     });
@@ -822,10 +824,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let updatedCount = 0;
 
     inputs.forEach(input => {
-      let newDesc = input.value.trim();
+      let rawDesc = input.value.trim();
       let ref = input.getAttribute('data-ref');
+      let mfr = input.getAttribute('data-mfr');
       
-      if (newDesc && newDesc !== "Navigate to vendor website for item description.") {
+      if (rawDesc && rawDesc !== "Navigate to vendor website for item description.") {
+        // Automatically inject the Manufacturer and REF into the saved string
+        let newDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
+        
         let pendingItem = this.pendingNewItems.find(i => i.ref === ref);
         if (pendingItem) pendingItem.desc = newDesc;
 
@@ -856,7 +862,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   cancelSession() {
     if (!confirm("Are you sure you want to CANCEL this entire scanning session?\n\nAll items scanned during this session will be discarded.")) return;
     
-    // FIX: Save the cancelled status to the archive BEFORE wiping the arrays
+    // Auto-Export Text Log before wiping memory
+    if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
+      AuditManager.exportSessionData('txt');
+    }
+
     this.saveToArchive('Cancelled');
 
     this.isSessionActive = false; this.isManifestEnabled = false;
@@ -864,11 +874,16 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.scannedObjects = []; this.expectedManifest = [];
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify([])); localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
+    // Fix: Destroy manifest discrepancy UI leak
+    let recList = document.getElementById('manifestReconcileList');
+    let recCard = document.getElementById('manifestReconcileCard');
+    if (recList) recList.innerHTML = '';
+    if (recCard) recCard.style.display = 'none';
+
     if (ScannerManager.isCameraActive) ScannerManager.toggleCameraScanner();
     document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
     UIManager.toggleSessionNote();
 
-    // Reset Pre-Load Checkbox
     const chkPreload = document.getElementById('chkPreloadManifest');
     if (chkPreload) chkPreload.checked = false;
 
@@ -881,6 +896,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   completeSession() {
     if (!confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.")) return;
     
+    // Auto-Export Text Log before wiping memory
+    if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
+      AuditManager.exportSessionData('txt');
+    }
+
     // LIVE FEED PUSH: Background log push & mark order completed in Google Sheets
     if (this.googleFeederUrl && !this.googleFeederUrl.includes("YOUR_COPIED")) {
       let payload = {
@@ -905,6 +925,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.pendingNewItems = []; this.pendingFieldUpdates = [];
     localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
     
+    // Fix: Destroy manifest discrepancy UI leak
+    let recList = document.getElementById('manifestReconcileList');
+    let recCard = document.getElementById('manifestReconcileCard');
+    if (recList) recList.innerHTML = '';
+    if (recCard) recCard.style.display = 'none';
+
     document.getElementById('sessionNoteInput').value = ""; 
     document.getElementById('chkSessionNote').checked = false;
     UIManager.toggleSessionNote();
