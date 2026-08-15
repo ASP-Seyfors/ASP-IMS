@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.8.5
+ * Version: 2.8.6
  * Date: August 2026
  * 
  * Description:
@@ -84,7 +84,7 @@ const DatabaseManager = {
   populateVendors() {
     const sel = document.getElementById('vendorSelect');
     if (!sel) return;
-    sel.innerHTML = '';
+    sel.innerHTML = '<option value="">-- Select Manufacturer --</option>';
     this.vendors.forEach(v => {
       if (v === "+ Create New Vendor") return;
       let opt = document.createElement('option');
@@ -100,13 +100,13 @@ const DatabaseManager = {
     const supSel = document.getElementById('supplierSelect');
     const custSel = document.getElementById('customerSelect');
     if (supSel) {
-      supSel.innerHTML = '';
+      supSel.innerHTML = '<option value="">-- Select Supplier --</option>';
       this.suppliers.forEach(s => {
         let opt = document.createElement('option'); opt.value = s; opt.textContent = s; supSel.appendChild(opt);
       });
     }
     if (custSel) {
-      custSel.innerHTML = '';
+      custSel.innerHTML = '<option value="">-- Select Customer --</option>';
       this.customers.forEach(c => {
         let opt = document.createElement('option'); opt.value = c; opt.textContent = c; custSel.appendChild(opt);
       });
@@ -116,7 +116,7 @@ const DatabaseManager = {
   populateItemCustomerSelect() {
     const sel = document.getElementById('itemCustomerSelect');
     if (!sel) return;
-    sel.innerHTML = '';
+    sel.innerHTML = '<option value="">-- Select Customer --</option>';
     this.customers.forEach(c => {
       let opt = document.createElement('option');
       opt.value = c; opt.textContent = c;
@@ -129,7 +129,10 @@ const DatabaseManager = {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
         this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
-        localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        // SECURITY: Prevent guests from permanently overwriting the verified master list
+        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        }
         this.populatePartners();
         this.populateItemCustomerSelect();
         document.getElementById('itemCustomerSelect').value = newC.trim().toUpperCase();
@@ -144,19 +147,29 @@ const DatabaseManager = {
       let newS = prompt("Enter new Supplier/Vendor name:");
       if (newS) {
         this.suppliers.splice(this.suppliers.length - 1, 0, newS.trim());
-        localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+        // SECURITY: Prevent guests from permanently overwriting the verified master list
+        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+          localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+        }
         this.populatePartners();
         document.getElementById('supplierSelect').value = newS.trim();
-      } else document.getElementById('supplierSelect').selectedIndex = 0;
+      } else {
+        document.getElementById('supplierSelect').selectedIndex = 0;
+      }
     } else if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
         this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
-        localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        // SECURITY: Prevent guests from permanently overwriting the verified master list
+        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        }
         this.populatePartners();
         this.populateItemCustomerSelect();
         document.getElementById('customerSelect').value = newC.trim().toUpperCase();
-      } else document.getElementById('customerSelect').selectedIndex = 0;
+      } else {
+        document.getElementById('customerSelect').selectedIndex = 0;
+      }
     }
   },
 
@@ -165,9 +178,14 @@ const DatabaseManager = {
       let newV = prompt("Enter new Manufacturer/Vendor name:");
       if (newV) {
         this.vendors.splice(this.vendors.length - 1, 0, newV);
-        localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
+        // SECURITY: Prevent guests from permanently overwriting the verified master list
+        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+          localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
+        }
         this.populateVendors();
         document.getElementById('vendorSelect').value = newV;
+      } else {
+        document.getElementById('vendorSelect').selectedIndex = 0;
       }
     } else if (SessionManager.currentMatchedItem && this.getItemVendor(SessionManager.currentMatchedItem).toLowerCase() !== val.toLowerCase()) {
       document.getElementById('btnConfirmMfr').style.display = 'inline-block';
