@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.4
+ * Version: 3.0.5
  * Date: August 2026
  * 
  * Description:
@@ -990,7 +990,14 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   async processAuditFiles(event) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
+
+    const resultsBox = document.getElementById('auditResultsContainer');
+    const container = document.getElementById('auditPreviewContent');
     
+    // Show a loading indicator immediately so the app doesn't look frozen
+    if (resultsBox) resultsBox.style.display = 'block';
+    if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd; font-weight:bold;">⏳ Processing logs... Please wait.</div>';
+
     this.parsedAuditSessions = [];
     let filePromises = Array.from(files).map(file => {
       return new Promise((resolve) => {
@@ -999,7 +1006,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           try {
             let text = e.target.result;
             let sessionData = this.parseTXTExportContent(text, file.name);
-            if (sessionData) this.parsedAuditSessions.push(sessionData);
+            if (sessionData && sessionData.items && sessionData.items.length > 0) {
+              this.parsedAuditSessions.push(sessionData);
+            }
           } catch (err) {
             console.error("Error parsing file " + file.name + ":", err);
           }
@@ -1012,16 +1021,14 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     await Promise.all(filePromises);
 
-    const resultsBox = document.getElementById('auditResultsContainer');
+    // Render results or show a highly visible failure message inside the box
     if (this.parsedAuditSessions.length > 0) {
       this.renderAuditPreviewUI();
-      if (resultsBox) resultsBox.style.display = 'block';
     } else {
-      alert("Could not parse valid session logs from the selected files. Please check that the files are ASP Scanner .txt export logs.");
-      if (resultsBox) resultsBox.style.display = 'none';
+      if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#c62828; font-weight:bold;">⚠️ Could not extract valid scanning data from the selected files.<br><br><span style="font-size:0.85rem; color:#555;">Ensure you are uploading .txt files exported directly from the ASP Scanner app.</span></div>';
     }
     
-    // Reset file input so selecting the same files again triggers onchange
+    // Reset file input so selecting the same files again works
     event.target.value = '';
   },
 
@@ -1524,13 +1531,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       printWin.document.write(fileContent);
       printWin.document.close();
 
+      // FIXED: A single, delayed trigger to prevent the double pop-up
       printWin.onload = () => {
-        printWin.focus();
-        printWin.print();
+        setTimeout(() => {
+          printWin.focus();
+          printWin.print();
+        }, 500);
       };
-      setTimeout(() => {
-        try { printWin.focus(); printWin.print(); } catch(e){}
-      }, 600);
       return;
     }
 
