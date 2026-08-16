@@ -747,9 +747,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let container = document.getElementById('reportItemRowsContainer');
     let rows = container.querySelectorAll('div');
     
+    // <p>Good morning,</p>
+    // <p>We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
     let html = `<div id="flyerCanvasTarget" style="font-family: Arial, sans-serif; font-size: 14px; width: 700px; padding: 20px; background-color: #ffffff; color: #333333;">
-      <p>Good morning,</p>
-      <p>We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
       <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
       <thead>
         <tr style="background-color: #0277bd; color: #ffffff;">
@@ -779,10 +779,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     });
     
     html += `</tbody></table>
-      <p style="font-size: 13px;">If there is something you are looking for that is not listed, feel free to send over the reference number, and I will see if I can bring it in for you.</p>
-      <p style="font-size: 13px;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>
       </div>`;
     
+    // <p style="font-size: 13px;">If there is something you are looking for that is not listed, feel free to send over the reference number, and I will see if I can bring it in for you.</p>
+    // <p style="font-size: 13px;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>
+      
     let tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.top = '-9999px';
