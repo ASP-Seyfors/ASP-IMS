@@ -1,9 +1,13 @@
 /* =======================================================================
+ * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/componentManager.js
- * Description: UI Stitcher for Componentized HTML Architecture
  * Author: Thomas Paul Seyfors
- * Version: 3.0.5
  * Date: August 2026
+ * 
+ * Description: UI Stitcher for Componentized HTML Architecture
+ *
+ * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
  * ======================================================================= */
 const ComponentManager = {
   async loadAllScreens() {

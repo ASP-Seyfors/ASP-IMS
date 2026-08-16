@@ -2,7 +2,6 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.5
  * Date: August 2026
  * 
  * Description:
@@ -40,7 +39,6 @@ const AuditManager = {
     let uniqueRefs = new Set();
 
     SessionManager.scannedObjects.forEach((item, index) => {
-      // Tally unique REFs and total pieces
       totalQty += item.qty;
       uniqueRefs.add(item.ref);
 
@@ -69,7 +67,6 @@ const AuditManager = {
         </div>
         ${noteHtml}
         
-        <!-- Editable Controls -->
         <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; padding:8px; margin-top:8px;">
           <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
             <label style="font-weight:bold; font-size:0.8rem;">Qty:</label>
@@ -88,7 +85,6 @@ const AuditManager = {
       container.appendChild(details);
     });
 
-    // Write final tallies to the header
     if(elUnique) elUnique.textContent = uniqueRefs.size;
     if(elTotal) elTotal.textContent = totalQty;
   },
@@ -106,7 +102,7 @@ const AuditManager = {
 
     let cust = select.value;
     if (title) title.textContent = `Account Selected: ${cust}`;
-    if (controls) controls.style.display = 'block';
+    if (controls) controls.style.display = 'flex';
   },
 
   executeSessionAction() {
@@ -143,14 +139,13 @@ const AuditManager = {
     let mfrMap = {};
     let custMap = {};
     let unpricedMfrMap = {};
-    let scannedMap = {}; // Used exclusively for manifest shortage/overage tracking
+    let scannedMap = {}; 
 
     SessionManager.scannedObjects.forEach(item => {
       let mfr = item.mfr || 'UNKNOWN MANUFACTURER';
       let rKey = item.ref;
       let cleanGtin = this.cleanGtinValue(item.gtin);
       
-      // 1. Map for Scanned Item Details (Grouped by MFR)
       if (!mfrMap[mfr]) mfrMap[mfr] = {};
       if (!mfrMap[mfr][rKey]) {
         mfrMap[mfr][rKey] = { ref: rKey, desc: item.desc, price: item.price, totalScannedQty: 0, byTag: {} };
@@ -168,20 +163,17 @@ const AuditManager = {
       mfrMap[mfr][rKey].byTag[tKey].lots[lotKey].qty += item.qty;
       if (item.itemNote) mfrMap[mfr][rKey].byTag[tKey].lots[lotKey].notes.push(item.itemNote);
 
-      // 2. Map for Routed to Customer Bins
       if (item.customerTag) {
         if (!custMap[item.customerTag]) custMap[item.customerTag] = {};
         if (!custMap[item.customerTag][rKey]) custMap[item.customerTag][rKey] = 0;
         custMap[item.customerTag][rKey] += item.qty;
       }
 
-      // 3. Map for Items Requiring Pricing
       if (!item.price || item.price === "$0.00" || item.price === "0") {
          if (!unpricedMfrMap[mfr]) unpricedMfrMap[mfr] = new Set();
          unpricedMfrMap[mfr].add(rKey);
       }
 
-      // 4. Map for Shortages/Overages
       if (!scannedMap[rKey]) scannedMap[rKey] = { totalScannedQty: 0 };
       scannedMap[rKey].totalScannedQty += item.qty;
     });
@@ -214,7 +206,6 @@ const AuditManager = {
     if (sNote) reportLines.push(`          Session Notes:       ${sNote}`);
     reportLines.push(`================================================================================\n`);
 
-    // CONDITIONAL SECTION 1: ROUTED TO CUSTOMER BINS (Grouped by Customer)
     if (Object.keys(custMap).length > 0) {
       reportLines.push(`--- ROUTED TO CUSTOMER BINS ---`);
       Object.keys(custMap).sort().forEach(cTag => {
@@ -226,7 +217,6 @@ const AuditManager = {
       reportLines.push(``);
     }
 
-    // CONDITIONAL SECTION 2: SHORTAGES
     if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
       let shortages = [];
       SessionManager.expectedManifest.forEach(exp => {
@@ -246,7 +236,6 @@ const AuditManager = {
       }
     }
 
-    // CONDITIONAL SECTION 3: OVERAGES
     if (SessionManager.isManifestEnabled && SessionManager.expectedManifest.length > 0) {
       let overages = [];
       Object.keys(scannedMap).forEach(rKey => {
@@ -267,7 +256,6 @@ const AuditManager = {
       }
     }
 
-    // MAIN SECTION: SCANNED ITEM DETAILS (Grouped by Manufacturer)
     reportLines.push(`--- SCANNED ITEM DETAILS BREAKDOWN ---\n`);
 
     let sortedMfrs = Object.keys(mfrMap).sort();
@@ -295,8 +283,7 @@ const AuditManager = {
       });
     });
 
-    // CONDITIONAL SECTION 4: ITEMS REQUIRING PRICING (Moved below Breakdown)
-    if (Object.keys(unpricedMfrMap).length > 0) {
+    if (SessionManager.currentWorkflowType.includes('Receiving') && Object.keys(unpricedMfrMap).length > 0) {
       reportLines.push(`--- ITEMS REQUIRING PRICING ---`);
       Object.keys(unpricedMfrMap).sort().forEach(mfr => {
         let refList = Array.from(unpricedMfrMap[mfr]).sort().join(', ');
@@ -305,7 +292,6 @@ const AuditManager = {
       reportLines.push(``);
     }
 
-    // CONDITIONAL SECTION 5: NEW ITEM DETAILS
     if (SessionManager.pendingNewItems.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------\n--- NEW ITEM DETAILS ---\n--------------------------------------------------------------------------------`);
       let nIdx = 1;
@@ -315,7 +301,6 @@ const AuditManager = {
       }); reportLines.push(``);
     }
 
-    // CONDITIONAL SECTION 6: EXISTING ITEM UPDATES
     if (SessionManager.pendingFieldUpdates.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------\n--- EXISTING ITEM UPDATES (${SessionManager.pendingFieldUpdates.length}) ---\n--------------------------------------------------------------------------------`);
       let uIdx = 1;
@@ -324,7 +309,6 @@ const AuditManager = {
       }); reportLines.push(``);
     }
 
-    // CONDITIONAL SECTION 7: RAW BARCODES
     if (SessionManager.scannedObjects.length > 0) {
       reportLines.push(`--------------------------------------------------------------------------------\n--- SCANNING SESSION FULL BARCODE REFERENCE DATA ---\n--------------------------------------------------------------------------------\nSession Start Time: ${SessionManager.sessionStartStr || 'N/A'}\n`);
       SessionManager.scannedObjects.forEach(item => {
@@ -480,9 +464,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `</tbody></table></div>`;
     }
 
-    // Only show unpriced items if Receiving
+    // 3. ITEMS REQUIRING PRICING (AT VERY END)
     if (SessionManager.currentWorkflowType.includes('Receiving')) {
-      let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");// 3. ITEMS REQUIRING PRICING (AT VERY END)
       let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
       if (unpricedItems.length > 0) {
         html += `
@@ -677,7 +660,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     let items = this.getHistoricalCustomerData(cust, limit);
     
-    // Remove existing modal if we are re-rendering due to a toggle change
     let existingModal = document.getElementById('stockReportEditorModal');
     if (existingModal) existingModal.remove();
 
@@ -880,7 +862,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let qty = r.querySelector('.rep-qty').value.trim();
       let price = r.querySelector('.rep-price').value.trim();
 
-      // Ensure $ is prepended if it's a numeric price value, leave alone if "Inquire"
       let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Inquire';
 
       if (ref) {
@@ -916,7 +897,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     let resultList = [];
     
-    // Sort SKUs by highest historical quantity
     let sortedSkus = Object.keys(skuCounts).sort((a,b) => skuCounts[b] - skuCounts[a]);
     
     if (limit !== 'all') {
@@ -944,7 +924,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    // Preserve dot notation (YYYY.MM.DD)
     let safeDate = (SessionManager.sessionDateStr || '').trim();
     let cleanSession = (SessionManager.currentSessionName || 'Session').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').trim();
     let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').trim();
@@ -965,7 +944,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       doc.title = baseFilename;
       doc.close();
       
-      // Temporarily lock window title so browser print dialog uses baseFilename
       let originalTitle = document.title;
       document.title = baseFilename;
 
@@ -988,48 +966,49 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   // ==========================================================================
 
   async processAuditFiles(event) {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+    try {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
 
-    const resultsBox = document.getElementById('auditResultsContainer');
-    const container = document.getElementById('auditPreviewContent');
-    
-    // Show a loading indicator immediately so the app doesn't look frozen
-    if (resultsBox) resultsBox.style.display = 'block';
-    if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd; font-weight:bold;">⏳ Processing logs... Please wait.</div>';
+      const resultsBox = document.getElementById('auditResultsContainer');
+      const container = document.getElementById('auditPreviewContent');
+      
+      if (resultsBox) resultsBox.style.display = 'block';
+      if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd; font-weight:bold;">⏳ Processing logs... Please wait.</div>';
 
-    this.parsedAuditSessions = [];
-    let filePromises = Array.from(files).map(file => {
-      return new Promise((resolve) => {
-        let reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            let text = e.target.result;
-            let sessionData = this.parseTXTExportContent(text, file.name);
-            if (sessionData && sessionData.items && sessionData.items.length > 0) {
-              this.parsedAuditSessions.push(sessionData);
+      this.parsedAuditSessions = [];
+      let filePromises = Array.from(files).map(file => {
+        return new Promise((resolve) => {
+          let reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              let text = e.target.result;
+              let sessionData = this.parseTXTExportContent(text, file.name);
+              if (sessionData && sessionData.items && sessionData.items.length > 0) {
+                this.parsedAuditSessions.push(sessionData);
+              }
+            } catch (err) {
+              console.error("Error parsing file " + file.name + ":", err);
             }
-          } catch (err) {
-            console.error("Error parsing file " + file.name + ":", err);
-          }
-          resolve();
-        };
-        reader.onerror = () => resolve();
-        reader.readAsText(file);
+            resolve();
+          };
+          reader.onerror = () => resolve();
+          reader.readAsText(file);
+        });
       });
-    });
 
-    await Promise.all(filePromises);
+      await Promise.all(filePromises);
 
-    // Render results or show a highly visible failure message inside the box
-    if (this.parsedAuditSessions.length > 0) {
-      this.renderAuditPreviewUI();
-    } else {
-      if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#c62828; font-weight:bold;">⚠️ Could not extract valid scanning data from the selected files.<br><br><span style="font-size:0.85rem; color:#555;">Ensure you are uploading .txt files exported directly from the ASP Scanner app.</span></div>';
+      if (this.parsedAuditSessions.length > 0) {
+        this.renderAuditPreviewUI();
+      } else {
+        if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#c62828; font-weight:bold;">⚠️ Could not extract valid scanning data from the selected files.<br><br><span style="font-size:0.85rem; color:#555;">Ensure you are uploading .txt files exported directly from the ASP Scanner app.</span></div>';
+      }
+      
+      event.target.value = '';
+    } catch (error) {
+      alert("Error processing files: " + error.message);
     }
-    
-    // Reset file input so selecting the same files again works
-    event.target.value = '';
   },
 
   clearAuditSessions() {
@@ -1081,7 +1060,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         } else if (trim.includes("Notes:")) {
           currentItemNote = trim.split("Notes:")[1].trim();
         } else if (trim.includes("Lot:") && trim.includes("Exp:") && tempRef) {
-          // Flexible regex to capture Lot, Exp, and Qty
           let lotMatch = trim.match(/Lot:\s*([^|]+)\|\s*Exp:\s*([^|]+)\|\s*Qty:\s*(\d+)/i);
           if (lotMatch) {
             let lotVal = lotMatch[1].trim();
@@ -1172,7 +1150,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     let fileListHtml = sourceFilesList.map(f => `<li>${f}</li>`).join('');
 
-    // Categorize data into clear operational buckets
     let inboundItems = [];
     let shelfItems = [];
     let reservedMap = {};
@@ -1236,7 +1213,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
 
     let html = `
-      <!-- TOP AUDIT SUMMARY CARD -->
       <div class="audit-card" style="background-color:#e3f2fd; border-left:5px solid #0277bd; margin-bottom:15px;">
         <div class="flex-between">
           <h3 style="margin:0; color:#0277bd;">🗓️ Audit Period: ${startDate} – ${endDate}</h3>
@@ -1252,7 +1228,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         </details>
       </div>
 
-      <!-- SECTION 1: INBOUND SHIPMENTS -->
       <div class="card" style="border-left: 5px solid #2e7d32; margin-bottom: 12px;">
         <h3 style="color:#2e7d32; margin:0 0 8px 0; font-size:1rem;">📥 Inbound Stock Received (${inboundItems.reduce((acc, c) => acc + c.inboundQty, 0)} Units)</h3>
         <div style="max-height: 200px; overflow-y: auto;">
@@ -1280,13 +1255,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         </div>
       </div>
 
-      <!-- SECTION 2: RESERVED CUSTOMER BINS -->
       <div class="card" style="border-left: 5px solid #0277bd; margin-bottom: 12px;">
         <h3 style="color:#0277bd; margin:0 0 8px 0; font-size:1rem;">🚩 Active Reserved Bins (Allocated Orders)</h3>
         ${reservedBinsHtml}
       </div>
 
-      <!-- SECTION 3: OUTBOUND ORDERS SHIPPED -->
       <div class="card" style="border-left: 5px solid #e65100; margin-bottom: 12px;">
         <h3 style="color:#e65100; margin:0 0 8px 0; font-size:1rem;">🖐️ Outbound Orders Shipped (${shippedItems.reduce((acc, c) => acc + c.outboundQty, 0)} Units)</h3>
         <div style="max-height: 200px; overflow-y: auto;">
@@ -1394,7 +1367,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   </div>
 </div>
 
-<!-- TABLE 1: MASTER ITEM CATALOG -->
 <div class="section-title">1. MASTER CATALOG & INVENTORY ITEMS</div>
 <table class="audit-table">
 <thead>
@@ -1428,7 +1400,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     html += `</tbody></table>
 
-<!-- TABLE 2: RECEIVING & ALLOCATION STATUS -->
 <div class="section-title">2. RECEIVING & ALLOCATION STATUS</div>
 <table class="audit-table">
 <thead>
@@ -1468,7 +1439,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     html += `</tbody></table>
 
-<!-- TABLE 3: LIFECYCLE TRACEABILITY FLOW -->
 <div class="page-break"></div>
 <div class="section-title">3. LIFECYCLE TRACEABILITY FLOW (CHRONOLOGICAL)</div>`;
 
@@ -1531,7 +1501,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       printWin.document.write(fileContent);
       printWin.document.close();
 
-      // FIXED: A single, delayed trigger to prevent the double pop-up
       printWin.onload = () => {
         setTimeout(() => {
           printWin.focus();
@@ -1591,7 +1560,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     UIManager.triggerShareOrDownload(reportText.join('\n'), filename, 'text/plain');
   },
 
-  // --- THRIVE & DB EXPORTS ---
   exportThriveCreates() {
     let newItemsMap = new Map();
     this.parsedAuditSessions.forEach(sess => { (sess.newItems || []).forEach(item => newItemsMap.set(item.ref, item)); });
