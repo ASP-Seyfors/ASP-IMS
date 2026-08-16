@@ -150,3 +150,4 @@ window.openDbEditor = () => UIManager.openDbEditor();
 window.closeDbEditor = () => UIManager.closeDbEditor();
 window.openHelpScreen = () => UIManager.openHelpScreen();
 window.closeHelpScreen = () => UIManager.closeHelpScreen();
+window.batchPushLegacyLogs = (e) => AuditManager.batchPushLegacyLogs(e);

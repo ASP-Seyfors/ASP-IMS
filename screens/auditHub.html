@@ -25,6 +25,15 @@
     <button class="btn-action btn-clear" style="flex:1; margin-top:0;" onclick="clearAuditSessions()">🧹 Clear</button>
   </div>
 
+  <div style="background-color: #f3e5f5; border: 1px solid #ce93d8; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
+    <h4 style="margin: 0 0 6px 0; color: #7b1fa2;">☁️ Push Historical Logs to Cloud Archive</h4>
+    <p style="font-size: 0.8rem; color: #555; margin: 0 0 10px 0;">Select older <strong>.txt</strong> logs from your device. The app will automatically ignore duplicates and push any missing sessions to the Google Sheet.</p>
+    <label class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; cursor: pointer; display: inline-block; padding: 8px 16px; margin: 0;">
+      ⬆️ Select & Upload Historical Logs
+      <input type="file" multiple accept=".txt" style="display:none;" onchange="batchPushLegacyLogs(event)">
+    </label>
+  </div>
+
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">
     
     <!-- Export Actions Panel -->

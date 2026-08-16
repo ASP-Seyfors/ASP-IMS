@@ -1015,6 +1015,103 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   },
 
+  async batchPushLegacyLogs(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    // Pull the current archive (which mirrors the cloud)
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    
+    let newUploads = 0;
+    let skipped = 0;
+
+    alert(`Starting cloud extraction for ${files.length} historical log(s). Please wait...`);
+
+    let filePromises = Array.from(files).map(file => {
+      return new Promise((resolve) => {
+        let reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            let text = e.target.result;
+            let parsed = AuditManager.parseTXTExportContent(text, file.name);
+            
+            if (parsed && parsed.items && parsed.items.length > 0) {
+              // Create a deterministic ID to track this specific legacy run
+              let safeDate = (parsed.date || 'Unknown').replace(/[^a-zA-Z0-9]/g, '');
+              let safeName = (parsed.sessionName || 'Session').replace(/[^a-zA-Z0-9]/g, '');
+              let detId = `legacy_${safeDate}_${safeName}`;
+              
+              // DEDUPLICATION CHECK: Look for matching ID or exact Name + Date match
+              let exists = archive.find(s => s.id === detId || (s.sessionName === parsed.sessionName && s.dateStr === parsed.date));
+              
+              if (!exists) {
+                // Translate the text data back into a cloud-compatible JSON object
+                let sessionObj = {
+                  id: detId,
+                  status: 'Completed',
+                  userName: parsed.user || 'Legacy User',
+                  sessionName: parsed.sessionName,
+                  orderNum: '',
+                  workflowType: parsed.workflow,
+                  dateStr: parsed.date,
+                  startStr: 'Historical Import',
+                  manifestEnabled: false,
+                  expectedManifest: [],
+                  scannedObjects: parsed.items.map(i => ({
+                     actionTag: i.customerTag ? 'Reserved' : (i.workflow.includes('Pack') ? 'Pack & Ship' : 'Inventory'),
+                     gtin: '',
+                     ref: i.ref,
+                     lot: i.lot,
+                     exp: i.exp,
+                     mfr: 'N/A', 
+                     desc: 'Historical Import',
+                     price: '$0.00',
+                     qty: i.qty,
+                     rawScanLines: [],
+                     isNew: false,
+                     customerTag: i.customerTag || '',
+                     itemNote: i.itemNote || ''
+                  })),
+                  pendingNewItems: parsed.newItems || [],
+                  pendingUpdates: parsed.updatedItems || [],
+                  lastUpdated: Date.now()
+                };
+                
+                // Save to local cache
+                archive.push(sessionObj);
+                
+                // Push sequentially to the cloud endpoint
+                await fetch(SessionManager.cloudArchiveUrl, {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: sessionObj })
+                });
+                
+                newUploads++;
+              } else {
+                skipped++;
+              }
+            }
+          } catch (err) {
+            console.error("Error parsing legacy file " + file.name + ":", err);
+          }
+          resolve();
+        };
+        reader.readAsText(file);
+      });
+    });
+
+    // Wait for all files to be read, checked, and pushed
+    await Promise.all(filePromises);
+    
+    // Update local storage so subsequent clicks remember the new files
+    localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+    
+    alert(`☁️ Cloud Batch Upload Complete!\n\n✅ Successfully Pushed: ${newUploads}\n⏭️ Skipped (Already Existed): ${skipped}`);
+    event.target.value = ''; // Reset input
+  },
+
   clearAuditSessions() {
     this.parsedAuditSessions = [];
     document.getElementById('auditResultsContainer').style.display = 'none';
