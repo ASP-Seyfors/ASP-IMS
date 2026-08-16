@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.2
+ * Version: 3.0.3
  * Date: August 2026
  * 
  * Description:
@@ -180,18 +180,13 @@ const SessionManager = {
         for (let sessionName in this.fetchedStagedData) {
           let sessionObj = this.fetchedStagedData[sessionName];
           let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
-          let isDone = sessionObj.isCompleted === true;
+          let isDone = sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED';
+
+          if (isDone) continue; // Skip completed orders completely
 
           let opt = document.createElement('option');
           opt.value = sessionName;
-          
-          if (isDone) {
-            opt.textContent = `✅ ${sessionName} (COMPLETED - ${items.length} items)`;
-            opt.style.color = '#2e7d32';
-          } else {
-            opt.textContent = `📦 ${sessionName} (${items.length} items)`;
-          }
-
+          opt.textContent = `📦 ${sessionName} (${items.length} items)`;
           select.appendChild(opt);
           count++;
         }

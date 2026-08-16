@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.2
+ * Version: 3.0.3
  * ======================================================================= */
 const ReportsManager = {
 
@@ -92,54 +92,22 @@ const ReportsManager = {
     });
 
     html += `</tbody></table></body></html>`;
+    
+    // --- NEW FILENAME LOGIC START ---
+    let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
+    let filename = `${title}_${safeDate}.pdf`;
+    
     let win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.title = title; win.focus(); setTimeout(() => win.print(), 500); }
+    if (win) { 
+      win.document.write(html); 
+      win.document.title = filename; 
+      win.focus(); 
+      setTimeout(() => win.print(), 500); 
+    }
+    // --- NEW FILENAME LOGIC END ---
     
     let modal = document.getElementById('inventoryReportOptionsModal');
     if (modal) modal.remove();
-  },
-
-  generateExpirationReport() {
-    let months = parseInt(document.getElementById('expirationFilter').value, 10);
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let lotMap = {};
-
-    // Crawl all sessions to find active lots
-    archive.forEach(sess => {
-      if (sess.status === 'Completed' && sess.scannedObjects) {
-        sess.scannedObjects.forEach(s => {
-          let key = `${s.ref}_${s.lot}_${s.exp}`;
-          if (!lotMap[key]) lotMap[key] = { ref: s.ref, lot: s.lot, exp: s.exp, mfr: s.mfr, qty: 0 };
-          if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) lotMap[key].qty += s.qty;
-          else if (sess.workflowType.includes('Packing')) lotMap[key].qty -= s.qty;
-        });
-      }
-    });
-
-    let cutoffDate = new Date();
-    cutoffDate.setMonth(cutoffDate.getMonth() + months);
-
-    let atRisk = Object.values(lotMap).filter(l => l.qty > 0 && new Date(l.exp) <= cutoffDate);
-    atRisk.sort((a,b) => new Date(a.exp) - new Date(b.exp));
-
-    let html = `<!DOCTYPE html><html><head><title>Expiration Warning Report</title>
-    <style>
-      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; }
-      h2 { color: #e65100; border-bottom: 2px solid #e65100; padding-bottom: 8px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-      th { background: #fff3e0; border: 1px solid #ffcc80; padding: 8px; text-align: left; }
-      td { border: 1px solid #eee; padding: 8px; }
-    </style></head><body>
-    <h2>⚠️ Expiration Warning (Next ${months} Months)</h2>
-    <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th>Remaining Qty</th></tr></thead><tbody>`;
-
-    atRisk.forEach(item => {
-      html += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:#d32f2f; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold;">${item.qty}</td></tr>`;
-    });
-
-    html += `</tbody></table></body></html>`;
-    let win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.focus(); setTimeout(() => win.print(), 500); }
   },
 
   generateVarianceReportPDF(varianceData, mode, netFinancialImpact) {
@@ -335,5 +303,59 @@ const ReportsManager = {
       iframe.contentWindow.print();
       setTimeout(() => { document.title = originalTitle; }, 2000);
     }, 500);
+  },
+
+  generateExpirationReport() {
+    let months = parseInt(document.getElementById('expirationFilter').value, 10);
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let lotMap = {};
+
+    // Crawl all sessions to find active lots
+    archive.forEach(sess => {
+      if (sess.status === 'Completed' && sess.scannedObjects) {
+        sess.scannedObjects.forEach(s => {
+          let key = `${s.ref}_${s.lot}_${s.exp}`;
+          if (!lotMap[key]) lotMap[key] = { ref: s.ref, lot: s.lot, exp: s.exp, mfr: s.mfr, qty: 0 };
+          if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) lotMap[key].qty += s.qty;
+          else if (sess.workflowType.includes('Packing')) lotMap[key].qty -= s.qty;
+        });
+      }
+    });
+
+    let cutoffDate = new Date();
+    cutoffDate.setMonth(cutoffDate.getMonth() + months);
+
+    let atRisk = Object.values(lotMap).filter(l => l.qty > 0 && new Date(l.exp) <= cutoffDate);
+    atRisk.sort((a,b) => new Date(a.exp) - new Date(b.exp));
+
+    let html = `<!DOCTYPE html><html><head><title>Expiration Warning Report</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; }
+      h2 { color: #e65100; border-bottom: 2px solid #e65100; padding-bottom: 8px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+      th { background: #fff3e0; border: 1px solid #ffcc80; padding: 8px; text-align: left; }
+      td { border: 1px solid #eee; padding: 8px; }
+    </style></head><body>
+    <h2>⚠️ Expiration Warning (Next ${months} Months)</h2>
+    <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th>Remaining Qty</th></tr></thead><tbody>`;
+
+    atRisk.forEach(item => {
+      html += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:#d32f2f; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold;">${item.qty}</td></tr>`;
+    });
+
+    html += `</tbody></table></body></html>`;
+    
+    // --- NEW FILENAME LOGIC START ---
+    let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
+    let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}.pdf`;
+    
+    let win = window.open('', '_blank');
+    if (win) { 
+      win.document.write(html); 
+      win.document.title = filename; 
+      win.focus(); 
+      setTimeout(() => win.print(), 500); 
+    }
+    // --- NEW FILENAME LOGIC END ---
   }
 };

@@ -1,4 +1,4 @@
-# ASP Scanner v3.0.2 – Operations Guide
+# ASP Scanner v3.0.3 – Operations Guide
 
 Welcome to the Allied Surgical Products (ASP) Scanner application. This platform is a cloud-synchronized, Progressive Web App (PWA) designed for warehouse inventory management, GS1 barcode data extraction, and FEFO (First-Expired-First-Out) traceability.
 

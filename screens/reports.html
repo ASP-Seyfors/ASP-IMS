@@ -1,7 +1,7 @@
 <!-- =======================================================================
  * File: screens/reports.html
  * Author: Thomas Paul Seyfors
- * Version: 3.0.2
+ * Version: 3.0.3
  * Date: August 2026
  * ======================================================================= -->
 <!-- SCREEN 8: REPORTS & ANALYTICS HUB -->
@@ -45,11 +45,10 @@
   <!-- Legacy Customer Reports -->
   <div style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px;">
     <h4 style="margin: 0 0 10px 0; color: #333;">Customer-Specific Reports</h4>
-    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
       <select id="customerReportSelect" style="flex: 1; padding: 6px;"></select>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.loadCustomerReportData()">Load</button>
     </div>
-    <div id="customerReportControls" style="display: none; display: flex; flex-direction: column; gap: 8px;">
+    <div id="customerReportControls" style="display: flex; flex-direction: column; gap: 8px;">
       <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()">📈 Customer Internal Sales</button>
       <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()">📄 Customer Stock Flyer</button>
     </div>

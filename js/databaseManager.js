@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.2
+ * Version: 3.0.3
  * Date: August 2026
  * 
  * Description:
@@ -228,9 +228,28 @@ const DatabaseManager = {
     const tbody = document.getElementById('dbGridBody');
     if (!tbody) return;
     
-    // Ensure item has a category property, sort MFR -> REF
+    // --- NEW FILTER LOGIC START ---
+    let searchQuery = (document.getElementById('dbSearchInput') ? document.getElementById('dbSearchInput').value.toLowerCase().trim() : '');
+    let mfrFilter = (document.getElementById('dbMfrFilter') ? document.getElementById('dbMfrFilter').value : 'ALL');
+
+    // Populate MFR dropdown if empty
+    let mfrDropdown = document.getElementById('dbMfrFilter');
+    if (mfrDropdown && mfrDropdown.options.length <= 1) {
+      let uniqueMfrs = [...new Set(this.db.map(i => i.mfr).filter(Boolean))].sort();
+      uniqueMfrs.forEach(m => {
+        let opt = document.createElement('option'); opt.value = m; opt.textContent = m; mfrDropdown.appendChild(opt);
+      });
+    }
+    // --- NEW FILTER LOGIC END ---
+
+    // Ensure item has a category property, apply filters, then sort MFR -> REF
     let dbCopy = this.db.map(i => ({ ...i, category: i.category || '' }))
-                        .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
+      .filter(i => {
+        let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
+        let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;
+        return matchesSearch && matchesMfr;
+      })
+      .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     
     let html = '';
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
@@ -255,6 +274,11 @@ const DatabaseManager = {
       `;
     });
     tbody.innerHTML = html;
+  },
+
+  backupFullDatabase() {
+    let outJSON = { vendors: this.vendors, items: this.db };
+    UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `ASP_Database_Backup_${Date.now()}.json`, 'application/json');
   },
 
   exportGridChanges() {

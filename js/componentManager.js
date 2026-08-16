@@ -2,7 +2,7 @@
  * File: js/componentManager.js
  * Description: UI Stitcher for Componentized HTML Architecture
  * Author: Thomas Paul Seyfors
- * Version: 3.0.2
+ * Version: 3.0.3
  * Date: August 2026
  * ======================================================================= */
 const ComponentManager = {

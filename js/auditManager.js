@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.2
+ * Version: 3.0.3
  * Date: August 2026
  * 
  * Description:
@@ -472,7 +472,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
     if (reservedItems.length > 0) {
       let totalReservedQty = reservedItems.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
-      html += `<div class="section-title" style="border-color:#0277bd; color:#0277bd;">🚩 ROUTED TO CUSTOMER BINS</div><div class="alert-box alert-tag"><table style="width:100%;"><thead><tr><th>REF</th><th>Customer Tag</th><th style="text-align:center;">Quantity Routed</th></tr></thead><tbody>`;
+      html += `<div class="section-title" style="border-color:#0277bd; color:#0277bd;">🚩 ROUTED TO CUSTOMER BINS</div><div class="alert-box alert-tag"><table style="width:100%;"><thead><tr><th style="text-align:left;">REF</th><th style="text-align:left;">Customer Tag</th><th style="text-align:center;">Quantity Routed</th></tr></thead><tbody>`;
       reservedItems.forEach(r => {
         html += `<tr><td><strong>${r.ref}</strong></td><td>${r.customerTag}</td><td style="text-align:center; font-weight:bold;">${r.qty}</td></tr>`;
       });
@@ -480,24 +480,27 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `</tbody></table></div>`;
     }
 
-    // 3. ITEMS REQUIRING PRICING (AT VERY END)
-    let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
-    if (unpricedItems.length > 0) {
-      html += `
-        <div style="margin-top: 20px; page-break-inside: avoid;">
-          <div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING (${unpricedItems.length})</div>
-          <table class="data-table" style="width:100%;">
-            <thead>
-              <tr style="background-color:#f3e5f5;">
-                <th style="padding:6px; text-align:left;">REF / SKU</th>
-                <th style="padding:6px; text-align:left;">Manufacturer</th>
-              </tr>
-            </thead>
-            <tbody>`;
-      unpricedItems.forEach(u => {
-        html += `<tr><td style="font-weight:bold;">${u.ref}</td><td>${u.mfr}</td></tr>`;
-      });
-      html += `</tbody></table></div>`;
+    // Only show unpriced items if Receiving
+    if (SessionManager.currentWorkflowType.includes('Receiving')) {
+      let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");// 3. ITEMS REQUIRING PRICING (AT VERY END)
+      let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+      if (unpricedItems.length > 0) {
+        html += `
+          <div style="margin-top: 20px; page-break-inside: avoid;">
+            <div class="section-title" style="border-color:#7b1fa2; color:#7b1fa2;">🏷️ ITEMS REQUIRING PRICING (${unpricedItems.length})</div>
+            <table class="data-table" style="width:100%;">
+              <thead>
+                <tr style="background-color:#f3e5f5;">
+                  <th style="padding:6px; text-align:left;">REF / SKU</th>
+                  <th style="padding:6px; text-align:left;">Manufacturer</th>
+                </tr>
+              </thead>
+              <tbody>`;
+        unpricedItems.forEach(u => {
+          html += `<tr><td style="font-weight:bold;">${u.ref}</td><td>${u.mfr}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+      }
     }
 
     // SHORTAGES
@@ -758,11 +761,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let container = document.getElementById('reportItemRowsContainer');
     let rows = container.querySelectorAll('div');
     
-    // Removed hardcoded text colors so the email client can adapt to Light or Dark mode natively
-    let html = `<div style="font-family: Arial, sans-serif; font-size: 14px;">
+    let html = `<div id="flyerCanvasTarget" style="font-family: Arial, sans-serif; font-size: 14px; width: 700px; padding: 20px; background-color: #ffffff; color: #333333;">
       <p>Good morning,</p>
       <p>We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
-      <table style="border-collapse: collapse; width: 100%; max-width: 700px; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
+      <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
       <thead>
         <tr style="background-color: #0277bd; color: #ffffff;">
           <th style="padding: 10px; border: 1px solid #ccc; text-align: left;">Reference</th>
@@ -781,7 +783,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Call for Price';
 
       if (ref) {
-        html += `<tr>
+        html += `<tr style="background-color: #ffffff;">
           <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; color: #0277bd;">${ref}</td>
           ${includeDesc ? `<td style="padding: 10px; border: 1px solid #ccc;">${desc}</td>` : ''}
           ${includeQty ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: center; font-weight: bold;">${qty}</td>` : ''}
@@ -795,23 +797,29 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <p style="font-size: 13px;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>
       </div>`;
     
-    // Secretly copy to clipboard
     let tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
+    tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.top = '-9999px';
     document.body.appendChild(tempDiv);
     
-    let range = document.createRange();
-    range.selectNodeContents(tempDiv);
-    let sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-    document.execCommand('copy');
-    document.body.removeChild(tempDiv);
-    
-    // Updated alert and removed the mailto: trigger
-    alert("✅ Flyer Table copied to your clipboard!\n\nReady to paste (Ctrl+V) into the body of your email to the customer.");
+    let target = document.getElementById('flyerCanvasTarget');
+    if (typeof html2canvas !== 'undefined') {
+      html2canvas(target, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+        canvas.toBlob(blob => {
+          try {
+            navigator.clipboard.write([new window.ClipboardItem({'image/png': blob})]).then(() => {
+              alert("✅ Perfect! The flyer has been copied to your clipboard as a picture.\n\nYou can now safely paste (Ctrl+V) it into your email draft, and it will look beautiful even if the customer uses Dark Mode!");
+            });
+          } catch (e) {
+            alert("Clipboard image copy not fully supported by this browser. Falling back to HTML.");
+          }
+        }, 'image/png');
+        document.body.removeChild(tempDiv);
+      });
+    } else {
+      document.body.removeChild(tempDiv);
+      alert("Image rendering library is loading. Please try again in a few seconds.");
+    }
   },
 
   exportCustomerStockReportPDF(cust) {
@@ -822,7 +830,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let container = document.getElementById('reportItemRowsContainer');
     let rows = container.querySelectorAll('div');
     
-    let filename = `Customer_Stock_Flyer_${cust}_${SessionManager.sessionDateStr}.pdf`;
+    let scopeStr = document.querySelector('input[name="histLimit"]:checked').value === 'all' ? 'All' : 'Top10';
+    let safeDate = SessionManager.sessionDateStr.replace(/\./g, '_');
+    let filename = `Customer_Stock_Flyer_${cust}_${scopeStr}_${safeDate}.pdf`;
 
     let html = `<!DOCTYPE html><html><head><title>${filename}</title>
     <style>
@@ -1209,9 +1219,18 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px; margin-bottom:8px;">
             <div style="font-weight:bold; color:#0277bd; font-size:0.85rem; margin-bottom:4px;">Order / Customer: ${tag}</div>
             <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-              <thead><tr style="text-align:left; color:#555;"><th style="padding:2px 4px;">REF</th><th style="padding:2px 4px;">Lot</th><th style="padding:2px 4px; text-align:center;">Reserved</th><th style="padding:2px 4px; text-align:center;">Packed / Shipped</th></tr></thead>
+              <thead><tr style="text-align:left; color:#555;">
+                <th style="width:25%; padding:2px 4px;">REF</th>
+                <th style="width:25%; padding:2px 4px;">Lot</th>
+                <th style="width:15%; padding:2px 4px; text-align:center;">Reserved</th>
+                <th style="width:15%; padding:2px 4px; text-align:center;">Packed</th>
+                <th style="width:20%; padding:2px 4px; text-align:center; color:#d32f2f;">Remaining</th>
+              </tr></thead>
               <tbody>
-                ${reservedMap[tag].map(r => `<tr><td style="padding:2px 4px; font-weight:bold;">${r.ref}</td><td style="padding:2px 4px;">${r.lot}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:#0277bd;">${r.reservedQty}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:${r.outboundQty >= r.reservedQty ? '#2e7d32' : '#f57f17'};">${r.outboundQty}</td></tr>`).join('')}
+                ${reservedMap[tag].map(r => {
+                  let remaining = r.reservedQty - r.outboundQty;
+                  return `<tr><td style="padding:2px 4px; font-weight:bold;">${r.ref}</td><td style="padding:2px 4px;">${r.lot}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:#0277bd;">${r.reservedQty}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:${r.outboundQty >= r.reservedQty ? '#2e7d32' : '#555'};">${r.outboundQty}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:${remaining > 0 ? '#d32f2f' : '#2e7d32'};">${remaining > 0 ? remaining : '✅'}</td></tr>`;
+                }).join('')}
               </tbody>
             </table>
           </div>
