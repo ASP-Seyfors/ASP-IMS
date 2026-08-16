@@ -146,18 +146,10 @@ const SessionManager = {
     if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
   },
 
-  async fetchStagedSessions() {
+  async fetchStagedSessions(silent = false) {
     if (!this.googleFeederUrl || this.googleFeederUrl.includes("YOUR_COPIED")) {
-      alert("Please paste your Google Apps Script Web App URL into sessionManager.js first!");
+      if (!silent) alert("Please paste your Google Apps Script Web App URL into sessionManager.js first!");
       return;
-    }
-    
-    const syncBtn = event && event.target ? event.target : document.querySelector("button[onclick*='fetchStagedSessions']");
-    const originalBtnText = syncBtn ? syncBtn.textContent : "🔄 Sync Feed";
-    if (syncBtn) {
-      syncBtn.textContent = "⏳ Syncing...";
-      syncBtn.disabled = true;
-      syncBtn.style.opacity = "0.7";
     }
 
     try {
@@ -181,7 +173,7 @@ const SessionManager = {
           let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
           let isDone = sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED';
 
-          if (isDone) continue; // Skip completed orders completely
+          if (isDone) continue;
 
           let opt = document.createElement('option');
           opt.value = sessionName;
@@ -194,21 +186,13 @@ const SessionManager = {
           UIManager.populateCustomerDropdown();
         }
 
-        if (count > 0) {
-          alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
-        } else {
-          alert("Synced successfully, but no staged orders found on the ASP_Scanner_Feed tab.");
+        if (!silent) {
+          if (count > 0) alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
+          else alert("Synced successfully, but no staged orders found on the ASP_Scanner_Feed tab.");
         }
       }
-      
     } catch (err) {
-      alert("Error syncing feed: " + err.message);
-    } finally {
-      if (syncBtn) {
-        syncBtn.textContent = originalBtnText;
-        syncBtn.disabled = false;
-        syncBtn.style.opacity = "1";
-      }
+      if (!silent) alert("Error syncing feed: " + err.message);
     }
   },
 

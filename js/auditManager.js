@@ -669,12 +669,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     let rowsHtml = '';
     items.forEach((it, idx) => {
+      let safeDesc = (it.desc || '').replace(/"/g, '&quot;');
+      let safeRef = (it.ref || '').replace(/"/g, '&quot;');
+      let safePrice = (it.price || '').replace(/"/g, '&quot;');
+
       rowsHtml += `
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;" id="reportEditRow_${idx}">
-          <input type="text" value="${it.ref}" class="rep-ref" style="width:90px; padding:4px; font-weight:bold; text-transform:uppercase;">
-          <input type="text" value="${it.desc}" class="rep-desc" style="flex:1; padding:4px; font-size:0.8rem;">
+          <input type="text" value="${safeRef}" class="rep-ref" style="width:90px; padding:4px; font-weight:bold; text-transform:uppercase;">
+          <input type="text" value="${safeDesc}" class="rep-desc" style="flex:1; padding:4px; font-size:0.8rem;">
           <input type="number" value="${it.onHand}" class="rep-qty" style="width:60px; padding:4px; text-align:center;">
-          <input type="text" value="${it.price}" class="rep-price" style="width:70px; padding:4px; text-align:center;">
+          <input type="text" value="${safePrice}" class="rep-price" style="width:70px; padding:4px; text-align:center;">
           <button onclick="this.parentElement.remove()" style="background:#c62828; color:#fff; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️</button>
         </div>`;
     });

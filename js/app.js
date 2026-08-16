@@ -85,12 +85,13 @@ window.masterSystemSync = async (event) => {
   if (btn) { btn.textContent = "⏳ Syncing All..."; btn.disabled = true; btn.style.opacity = "0.7"; }
   
   try {
-    // Add 'true' as a silent flag to prevent these sub-functions from throwing individual alerts
     if (typeof SessionManager.pushLegacySessionsToCloud === 'function') await SessionManager.pushLegacySessionsToCloud(null, true);
     if (typeof DatabaseManager.syncMasterDatabase === 'function') await DatabaseManager.syncMasterDatabase(null, true);
     if (typeof SessionManager.syncCloudArchive === 'function') await SessionManager.syncCloudArchive(null, true);
+    // NEW: Also sync the shipments & orders feed automatically
+    if (typeof SessionManager.fetchStagedSessions === 'function') await SessionManager.fetchStagedSessions(true);
     
-    if(btn) alert("✅ System fully synchronized! Master catalog and session archives are up to date.");
+    if(btn) alert("✅ System fully synchronized! Master catalog, session archives, and orders feed are up to date.");
   } catch(err) {
     if(btn) alert("Sync error: " + err.message);
   } finally {

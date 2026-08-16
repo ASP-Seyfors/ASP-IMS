@@ -11,13 +11,13 @@
 <!-- SCREEN 9: DATABASE GRID EDITOR -->
 <div id="screenDbEditor" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #00796b; padding-bottom: 6px; margin-bottom: 10px;">
-    <h2 style="border:none; margin:0; padding:0; color: #00796b;">Database Grid Editor</h2>
+    <h2 style="border:none; margin:0; padding:0; color: #00796b;">Database Editor</h2>
     <div style="display:flex; gap:8px;">
-      <button class="btn-small btn-auto" style="background-color: #c62828; color: #fff; margin:0;" onclick="DatabaseManager.factoryResetDatabase()">⚠️ JSON Reset</button>
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0;" onclick="DatabaseManager.syncMasterDatabase(event)">☁️ Sync Updates from DB</button>
       <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()">🔙 Return</button>
     </div>
   </div>
+  <p style="font-size: 0.8rem; color: #555;">Edit fields directly in the table. Click "Export Database Updates" below to save changes for control review.</p>
   
   <div style="display: flex; gap: 10px; margin-bottom: 15px;">
     <input type="text" id="dbSearchInput" placeholder="🔍 Search REF or Desc..." style="flex: 2; padding: 6px; border: 1px solid #ccc; border-radius: 4px;" oninput="DatabaseManager.renderDbGridEditor()">
@@ -27,7 +27,6 @@
   </div>
   
   <div style="overflow-x: auto; max-height: 60vh; border: 1px solid #ccc; margin-bottom: 15px;">
-    <!-- ... Keep your existing <table> ... -->
     <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff;">
       <thead style="position: sticky; top: 0; background: #e0f2f1; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4);">
         <tr>
@@ -35,7 +34,7 @@
           <th style="padding: 8px; border: 1px solid #ccc;">REF / SKU</th>
           <th style="padding: 8px; border: 1px solid #ccc; width: 40%;">Description</th>
           <th style="padding: 8px; border: 1px solid #ccc;">Category</th>
-          <th style="padding: 8px; border: 1px solid #ccc;">GTIN</th>
+          <th style="padding: 8px; border: 1px solid #ccc;">Price</th>
         </tr>
       </thead>
       <tbody id="dbGridBody">
@@ -44,12 +43,8 @@
     </table>
   </div>
 
-  <div style="text-align: right;">
-    <button class="btn-action btn-save btn-auto" onclick="DatabaseManager.exportGridChanges()">💾 Export Database Update (JSON)</button>
-  </div>
-
-  <div class="flex-between">
-    <button class="btn-action btn-start btn-auto" onclick="DatabaseManager.backupFullDatabase()">📥 Backup Full Database (JSON)</button>
-    <button class="btn-action btn-save btn-auto" onclick="DatabaseManager.exportGridChanges()">💾 Export Grid Updates</button>
+  <div class="flex-between" style="margin-top: 10px;">
+    <button class="btn-action btn-start btn-auto" style="background-color:#0277bd;" onclick="DatabaseManager.backupFullDatabase()">📥 Backup Full Database (JSON)</button>
+    <button class="btn-action btn-save btn-auto" onclick="DatabaseManager.exportGridChanges()">💾 Export Database Updates</button>
   </div>
 </div>

@@ -48,34 +48,21 @@ const UIManager = {
   toggleAdvancedMode(forceState = null) {
     let chk = document.getElementById('chkAdvancedMode');
     
-    // If AuthManager forces a state (e.g., Guest Mode = false), uncheck the box
     if (forceState !== null && chk) {
       chk.checked = forceState;
     }
     
     let isAdv = chk ? chk.checked : false;
-
-    // Persist user preference
     localStorage.setItem('asp_advanced_mode', isAdv ? 'true' : 'false');
 
-    // Toggle all advanced UI elements
     let elPreload = document.getElementById('rowPreloadToggle');
     if (elPreload) elPreload.style.display = isAdv ? 'block' : 'none';
 
     let elFeed = document.getElementById('panelStagedFeed');
     if (elFeed) elFeed.style.display = isAdv ? 'block' : 'none';
 
-    let elReports = document.getElementById('cardCustomerReports');
-    if (elReports) elReports.style.display = isAdv ? 'block' : 'none';
-
     let elHub = document.getElementById('panelEnterpriseHub');
     if (elHub) elHub.style.display = isAdv ? 'block' : 'none';
-
-    let btnStock = document.getElementById('btnStocktake');
-    if (btnStock) btnStock.style.display = isAdv ? 'inline-block' : 'none';
-
-    let btnTrace = document.getElementById('btnTraceability');
-    if (btnTrace) btnTrace.style.display = isAdv ? 'inline-block' : 'none';
   },
 
   loadSavedAdvancedMode() {
