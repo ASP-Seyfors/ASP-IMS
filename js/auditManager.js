@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.0
+ * Version: 3.0.1
  * Date: August 2026
  * 
  * Description:
@@ -758,8 +758,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let container = document.getElementById('reportItemRowsContainer');
     let rows = container.querySelectorAll('div');
     
-    let html = `<p style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">Good morning,</p>
-      <p style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
+    // Removed hardcoded text colors so the email client can adapt to Light or Dark mode natively
+    let html = `<div style="font-family: Arial, sans-serif; font-size: 14px;">
+      <p>Good morning,</p>
+      <p>We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
       <table style="border-collapse: collapse; width: 100%; max-width: 700px; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
       <thead>
         <tr style="background-color: #0277bd; color: #ffffff;">
@@ -781,7 +783,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       if (ref) {
         html += `<tr>
           <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; color: #0277bd;">${ref}</td>
-          ${includeDesc ? `<td style="padding: 10px; border: 1px solid #ccc; color: #555;">${desc}</td>` : ''}
+          ${includeDesc ? `<td style="padding: 10px; border: 1px solid #ccc;">${desc}</td>` : ''}
           ${includeQty ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: center; font-weight: bold;">${qty}</td>` : ''}
           ${includePrice ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: right; color: #2e7d32; font-weight: bold;">${formattedPrice}</td>` : ''}
         </tr>`;
@@ -789,8 +791,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     });
     
     html += `</tbody></table>
-      <p style="font-family: Arial, sans-serif; font-size: 13px; color: #555;">If there is something you are looking for that is not listed, feel free to send over the reference number, and I will see if I can bring it in for you.</p>
-      <p style="font-family: Arial, sans-serif; font-size: 13px; color: #555;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>`;
+      <p style="font-size: 13px;">If there is something you are looking for that is not listed, feel free to send over the reference number, and I will see if I can bring it in for you.</p>
+      <p style="font-size: 13px;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>
+      </div>`;
     
     // Secretly copy to clipboard
     let tempDiv = document.createElement('div');
@@ -807,10 +810,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     document.execCommand('copy');
     document.body.removeChild(tempDiv);
     
-    alert("✅ Flyer Table copied to your clipboard!\n\nYour email client will now open. Just right-click and Paste (or press Ctrl+V) into the body of the email.");
-    
-    let subject = encodeURIComponent(`Available Inventory Update - ${cust}`);
-    window.location.href = `mailto:?subject=${subject}`;
+    // Updated alert and removed the mailto: trigger
+    alert("✅ Flyer Table copied to your clipboard!\n\nReady to paste (Ctrl+V) into the body of your email to the customer.");
   },
 
   exportCustomerStockReportPDF(cust) {
