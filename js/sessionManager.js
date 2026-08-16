@@ -12,7 +12,6 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
   pendingNewItems: JSON.parse(localStorage.getItem('asp_pending_new_items')) || [],
@@ -41,14 +40,14 @@ const SessionManager = {
   cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
 
   pushToCloudArchive(sessionObj) {
-    if (!this.cloudArchiveUrl) return;
+    if (!this.googleFeederUrl) return;
     
     let payload = {
       action: "ARCHIVE_SESSION",
       payload: sessionObj
     };
 
-    fetch(this.cloudArchiveUrl, {
+    fetch(this.googleFeederUrl, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -127,7 +126,7 @@ const SessionManager = {
           payload: session
         };
 
-        await fetch(this.cloudArchiveUrl, {
+        await fetch(this.googleFeederUrl, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },

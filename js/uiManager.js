@@ -12,7 +12,6 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-
 const UIManager = {
   // POPULATE CUSTOMER REPORT SELECTOR FROM MASTER CUSTOMER LIST
   populateCustomerDropdown() {

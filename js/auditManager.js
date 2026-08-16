@@ -12,7 +12,6 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-
 const AuditManager = {
   parsedAuditSessions: [],
 
@@ -1082,8 +1081,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                 // Save to local cache
                 archive.push(sessionObj);
                 
-                // Push sequentially to the cloud endpoint
-                await fetch(SessionManager.cloudArchiveUrl, {
+                // Push sequentially to the Orders sheet endpoint
+                await fetch(SessionManager.googleFeederUrl, {
                   method: 'POST',
                   mode: 'no-cors',
                   headers: { 'Content-Type': 'text/plain;charset=utf-8' },
