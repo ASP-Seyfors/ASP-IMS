@@ -12,6 +12,7 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
+
 const AuditManager = {
   parsedAuditSessions: [],
 

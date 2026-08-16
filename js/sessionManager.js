@@ -12,6 +12,7 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
+
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
   pendingNewItems: JSON.parse(localStorage.getItem('asp_pending_new_items')) || [],

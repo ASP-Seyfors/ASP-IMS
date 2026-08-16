@@ -12,6 +12,7 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
+
 async function checkAppUpdates() {
   // Show an immediate visual feedback loading indicator
   const btn = event ? event.target : null;
