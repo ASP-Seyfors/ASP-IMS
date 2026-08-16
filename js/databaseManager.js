@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.9
+ * Version: 3.0.0
  * Date: August 2026
  * 
  * Description:
@@ -234,11 +234,13 @@ const DatabaseManager = {
     
     let html = '';
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
-    let priceInputHtml = isAdmin 
-      ? `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px;">` 
-      : `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to change pricing.">`;
 
     dbCopy.forEach((item, idx) => {
+      // THE FIX: This logic MUST be inside the loop!
+      let priceInputHtml = isAdmin 
+        ? `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px;">` 
+        : `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to change pricing.">`;
+
       html += `
         <tr style="border-bottom: 1px solid #eee;">
           <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:100px; padding:4px;"></td>
