@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.7
+ * Version: 2.9.8
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,
@@ -12,8 +12,12 @@ const AuthManager = {
   // For this weekend, the logic will still function using the Guest/Bypass features.
   clientId: "578227168676-721gv6n3bt5qqcd67v1vhi6111c35fcc.apps.googleusercontent.com",
 
+  // Add your authorized admin emails here
+  ADMIN_EMAILS: ['jessica@alliedsurgicalproducts.com', 'thomas@alliedsurgicalproducts.com'],
+
   init() {
-    let savedSession = localStorage.getItem('asp_auth_session');
+    // SECURITY UPGRADE: Use sessionStorage so it clears when the app/tab is closed
+    let savedSession = sessionStorage.getItem('asp_auth_session');
     if (savedSession) {
       this.currentUser = JSON.parse(savedSession);
       this.isGuest = false;
@@ -47,12 +51,18 @@ const AuthManager = {
     
     // Domain Verification Lockdown
     if (payload.email && payload.email.endsWith('@alliedsurgicalproducts.com')) {
-      this.currentUser = { name: payload.name, email: payload.email, verified: true };
+      
+      // RBAC Check for Price/Cost Editing
+      let isAdmin = this.ADMIN_EMAILS.includes(payload.email.toLowerCase());
+      
+      this.currentUser = { name: payload.name, email: payload.email, verified: true, isAdmin: isAdmin };
       this.isGuest = false;
-      localStorage.setItem('asp_auth_session', JSON.stringify(this.currentUser));
+      
+      // Save to sessionStorage instead of localStorage
+      sessionStorage.setItem('asp_auth_session', JSON.stringify(this.currentUser));
       this.unlockApp();
     } else {
-      alert("Access Denied: You must use an authorized @alliedsurgicalproducts.com email address.");
+      alert("Access Denied: You must be an authorized Allied Surgical Products employee.");
     }
   },
 
@@ -133,6 +143,7 @@ const AuthManager = {
     this.currentUser = null;
     this.isGuest = false;
     localStorage.removeItem('asp_auth_session');
+    sessionStorage.removeItem('asp_auth_session');
     window.location.reload();
   },
 

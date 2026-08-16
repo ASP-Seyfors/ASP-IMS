@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.7
+ * Version: 2.9.8
  * ======================================================================= */
 const ReportsManager = {
 
@@ -140,6 +140,71 @@ const ReportsManager = {
     html += `</tbody></table></body></html>`;
     let win = window.open('', '_blank');
     if (win) { win.document.write(html); win.focus(); setTimeout(() => win.print(), 500); }
+  },
+
+  generateVarianceReportPDF(varianceData, mode, netFinancialImpact) {
+    let filename = `Stocktake_Variance_Report_${SessionManager.sessionDateStr}.pdf`;
+    let financialColor = netFinancialImpact >= 0 ? '#2e7d32' : '#c62828';
+    let impactStr = netFinancialImpact >= 0 ? `+$${netFinancialImpact.toFixed(2)}` : `-$${Math.abs(netFinancialImpact).toFixed(2)}`;
+
+    let html = `<!DOCTYPE html><html><head><title>${filename}</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
+      .header { border-bottom:3px solid #7b1fa2; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+      th { background: #f3e5f5; border: 1px solid #ce93d8; padding: 8px; text-align: left; }
+      td { border: 1px solid #eee; padding: 8px; vertical-align: top; }
+      .impact-box { background: #f5f5f5; border: 1px solid #ccc; padding: 15px; text-align: center; border-radius: 6px; font-size: 16px; margin-bottom: 20px;}
+    </style></head><body>
+    
+    <div class="header">
+      <div>
+        <h1 style="margin:0; color:#7b1fa2; font-size:20px; text-transform:uppercase;">Stocktake Variance Report</h1>
+        <div style="font-size:12px; font-weight:bold; color:#555; margin-top:4px;">Mode: ${mode}</div>
+      </div>
+      <div style="text-align:right; font-size:11px; color:#555;">
+        <div>Date: ${SessionManager.sessionDateStr}</div>
+        <div>User: ${SessionManager.currentUserName}</div>
+      </div>
+    </div>
+
+    <div class="impact-box">
+      Total Net Financial Variance: <strong style="color:${financialColor}; font-size: 22px; margin-left: 10px;">${impactStr}</strong>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>REF / SKU</th>
+          <th>Manufacturer</th>
+          <th style="text-align:center;">System Expected</th>
+          <th style="text-align:center;">Actual Counted</th>
+          <th style="text-align:center;">Variance (Qty)</th>
+          <th style="text-align:right;">Variance Value ($)</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    varianceData.sort((a,b) => a.variance - b.variance).forEach(v => {
+      let vColor = v.variance > 0 ? '#2e7d32' : '#c62828';
+      let vSign = v.variance > 0 ? '+' : '';
+      let fColor = v.financialImpact > 0 ? '#2e7d32' : (v.financialImpact < 0 ? '#c62828' : '#555');
+      let fSign = v.financialImpact > 0 ? '+$' : (v.financialImpact < 0 ? '-$' : '$');
+      
+      html += `<tr>
+        <td style="font-weight:bold;">${v.ref}</td>
+        <td>${v.mfr}</td>
+        <td style="text-align:center;">${v.expected}</td>
+        <td style="text-align:center; font-weight:bold;">${v.counted}</td>
+        <td style="text-align:center; font-weight:bold; color:${vColor};">${vSign}${v.variance}</td>
+        <td style="text-align:right; font-weight:bold; color:${fColor};">${fSign}${Math.abs(v.financialImpact).toFixed(2)}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></body></html>`;
+
+    let win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 800); }
   },
 
   async processEndOfWeekReport(event) {

@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/sessionManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.7
+ * Version: 2.9.8
  * Date: August 2026
  * 
  * Description:
@@ -56,7 +56,7 @@ const SessionManager = {
     }).catch(err => console.warn("Background Cloud Archive push failed:", err));
   },
 
-  async syncCloudArchive(event) {
+  async syncCloudArchive(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "☁️ Sync Cloud";
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
@@ -87,12 +87,13 @@ const SessionManager = {
         
         this.renderArchiveList();
 
-        // NEW: Also import the Master Database silently while syncing the archive
+       // NEW: Also import the Master Database silently while syncing the archive
         if (data.db && typeof DatabaseManager !== 'undefined') {
           DatabaseManager.importCloudDatabase(data.db);
         }
 
-        alert(`Cloud Sync Complete! Retrieved ${data.archive.length} global sessions.\n${newCount} new/updated sessions merged into your device.`);
+        // Wrap the alert
+        if (!silent) alert(`Cloud Sync Complete! Retrieved ${data.archive.length} global sessions.\n${newCount} new/updated sessions merged into your device.`);
       } else {
         alert("Sync failed: " + (data.message || "Unknown error"));
       }
@@ -104,7 +105,7 @@ const SessionManager = {
   },
 
   // ---------------------------------------
-  async pushLegacySessionsToCloud(event) {
+  async pushLegacySessionsToCloud(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "⬆️ Upload Local History";
     if (btn) { btn.textContent = "⏳ Uploading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
@@ -113,7 +114,8 @@ const SessionManager = {
     let completedSessions = archive.filter(s => s.status === 'Completed');
 
     if (completedSessions.length === 0) {
-      alert("No completed sessions found in local memory to upload.");
+      // Wrap the "No sessions found" alert
+      if (!silent) alert("No completed sessions found in local memory to upload.");
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
       return;
     }
@@ -140,7 +142,8 @@ const SessionManager = {
       }
     }
 
-    alert(`Successfully pushed ${successCount} legacy session(s) to the Cloud Archive!`);
+    // Wrap the success alert
+    if (!silent) alert(`Successfully pushed ${successCount} legacy session(s) to the Cloud Archive!`);
     if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
   },
 
@@ -1147,11 +1150,33 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     if (!confirm(`Are you sure you want to commit these quantities to the master database?\n\nMode: ${this.currentWorkflowType}\nScanned Items: ${this.scannedObjects.length}`)) return;
 
-    // Aggregate scanned quantities by REF
     let scannedTotals = {};
     this.scannedObjects.forEach(item => {
       if (!scannedTotals[item.ref]) scannedTotals[item.ref] = 0;
       scannedTotals[item.ref] += item.qty;
+    });
+
+    // NEW: CALCULATE VARIANCE
+    let varianceData = [];
+    let netFinancialImpact = 0;
+
+    DatabaseManager.db.forEach(dbItem => {
+      let sku = (dbItem.sku || dbItem.ref || '').toUpperCase();
+      let expected = dbItem.onHand || 0;
+      let counted = scannedTotals[sku] || 0;
+      
+      // If it's a Selection stocktake, ignore items we didn't count
+      if (this.currentWorkflowType !== 'Full Stocktake' && scannedTotals[sku] === undefined) return;
+
+      let variance = counted - expected;
+      if (variance !== 0) {
+        let costStr = dbItem.cost && dbItem.cost !== "$0.00" ? dbItem.cost : (dbItem.price || "0");
+        let costVal = parseFloat(costStr.replace(/[^0-9.-]+/g,"")) || 0;
+        let financialVar = variance * costVal;
+        netFinancialImpact += financialVar;
+        
+        varianceData.push({ ref: sku, desc: dbItem.desc, mfr: dbItem.mfr, expected: expected, counted: counted, variance: variance, financialImpact: financialVar });
+      }
     });
 
     // Apply to DB logic
@@ -1177,8 +1202,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
     alert("Stocktake successfully committed to the master database!");
     
-    // Auto export log for audit trail, then cleanly complete the session
+    // Auto export TXT log, generate Variance PDF, then cleanly complete
     AuditManager.exportSessionData('txt');
+    if (varianceData.length > 0) {
+      ReportsManager.generateVarianceReportPDF(varianceData, this.currentWorkflowType, netFinancialImpact);
+    }
+    
     setTimeout(() => { this.completeSession(true); }, 500);
   },
 

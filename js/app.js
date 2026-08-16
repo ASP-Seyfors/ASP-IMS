@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/app.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.7
+ * Version: 2.9.8
  * Date: August 2026
  * 
  * Description:
@@ -53,7 +53,7 @@ async function checkAppUpdates() {
   }
 
   // If no new update was detected on the server
-  alert("✓ You are already running the latest version of ASP Scanner (v2.0)!");
+  alert("✓ You are already running the latest version of ASP Scanner!");
   if (btn) btn.textContent = "🔄 Check for Updates";
 }
 
@@ -71,6 +71,25 @@ window.onload = () => {
   // TRIGGER AUTHENTICATION GATEKEEPER
   if (typeof AuthManager !== 'undefined') {
     AuthManager.init();
+  }
+};
+
+window.masterSystemSync = async (event) => {
+  const btn = event ? event.target : null;
+  const originalText = btn ? btn.textContent : "🔄 Sync System";
+  if (btn) { btn.textContent = "⏳ Syncing All..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+  
+  try {
+    // Add 'true' as a silent flag to prevent these sub-functions from throwing individual alerts
+    if (typeof SessionManager.pushLegacySessionsToCloud === 'function') await SessionManager.pushLegacySessionsToCloud(null, true);
+    if (typeof DatabaseManager.syncMasterDatabase === 'function') await DatabaseManager.syncMasterDatabase(null, true);
+    if (typeof SessionManager.syncCloudArchive === 'function') await SessionManager.syncCloudArchive(null, true);
+    
+    if(btn) alert("✅ System fully synchronized! Master catalog and session archives are up to date.");
+  } catch(err) {
+    if(btn) alert("Sync error: " + err.message);
+  } finally {
+    if(btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
   }
 };
 window.changeAppTheme = (val) => UIManager.changeAppTheme(val);

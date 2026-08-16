@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/databaseManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.7
+ * Version: 2.9.8
  * Date: August 2026
  * 
  * Description:
@@ -233,6 +233,11 @@ const DatabaseManager = {
                         .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     
     let html = '';
+    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
+    let priceInputHtml = isAdmin 
+      ? `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px;">` 
+      : `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to change pricing.">`;
+
     dbCopy.forEach((item, idx) => {
       html += `
         <tr style="border-bottom: 1px solid #eee;">
@@ -242,7 +247,7 @@ const DatabaseManager = {
             <textarea id="grid_desc_${idx}" style="width:100%; padding:4px; resize:vertical; min-height:40px; font-family:inherit; font-size:0.85rem; line-height:1.2;">${item.desc || ''}</textarea>
           </td>
           <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:100px; padding:4px;"></td>
-          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_gtin_${idx}" value="${item.gtin || ''}" style="width:120px; padding:4px;"></td>
+          <td style="padding:4px; vertical-align:top;">${priceInputHtml}</td>
           <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
         </tr>
       `;
@@ -262,13 +267,17 @@ const DatabaseManager = {
       let cat = document.getElementById(`grid_cat_${idx}`).value.trim();
       let gtin = document.getElementById(`grid_gtin_${idx}`).value.trim();
 
+      let price = document.getElementById(`grid_price_${idx}`).value.trim();
+
       let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
       if (dbItem) {
-        if (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.gtin !== gtin) {
+        // ADDED THE PRICE CHECK TO THIS LINE
+        if (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.gtin !== gtin || dbItem.price !== price) {
           dbItem.mfr = mfr;
           dbItem.desc = desc;
           dbItem.category = cat;
           dbItem.gtin = gtin;
+          dbItem.price = price;
           updatedCount++;
         }
       }
@@ -358,7 +367,7 @@ const DatabaseManager = {
   getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || '',
 
   // --- NEW: CLOUD DATABASE SYNC ENGINE ---
-  async syncMasterDatabase(event) {
+  async syncMasterDatabase(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "☁️ Sync Updates from DB";
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
@@ -388,7 +397,9 @@ const DatabaseManager = {
       
       if (data.status === "success" && data.db) {
          this.importCloudDatabase(data.db);
-         alert("Master Database successfully synchronized with the cloud!");
+         
+         // Wrap the alert
+         if (!silent) alert("Master Database successfully synchronized with the cloud!");
          
          // Refresh the grid UI instantly if the user is looking at it
          if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
