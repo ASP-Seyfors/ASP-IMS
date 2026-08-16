@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.3
+ * Version: 3.0.4
  * Date: August 2026
  * 
  * Description:
@@ -1182,6 +1182,52 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       if (t.outboundQty > 0) shippedItems.push(t);
     });
 
+    let reservedBinsHtml = '';
+    let resKeys = Object.keys(reservedMap);
+
+    if (resKeys.length > 0) {
+      resKeys.forEach(tag => {
+        let rows = reservedMap[tag].map(r => {
+          let remaining = r.reservedQty - r.outboundQty;
+          let remBadge = remaining > 0 
+            ? `<span style="color:#d32f2f; font-weight:bold;">${remaining}</span>` 
+            : `<span style="color:#2e7d32; font-weight:bold;">✅ 0</span>`;
+          
+          return `
+            <tr style="border-bottom: 1px solid #e0e0e0;">
+              <td style="width:25%; padding:4px 6px; font-weight:bold; color:#0277bd;">${r.ref}</td>
+              <td style="width:25%; padding:4px 6px;">${r.lot}</td>
+              <td style="width:15%; padding:4px 6px; text-align:center; font-weight:bold; color:#0277bd;">${r.reservedQty}</td>
+              <td style="width:15%; padding:4px 6px; text-align:center; font-weight:bold; color:${r.outboundQty >= r.reservedQty ? '#2e7d32' : '#555'};">${r.outboundQty}</td>
+              <td style="width:20%; padding:4px 6px; text-align:center;">${remBadge}</td>
+            </tr>`;
+        }).join('');
+
+        reservedBinsHtml += `
+          <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px; margin-bottom:10px;">
+            <div style="font-weight:bold; color:#0277bd; font-size:0.85rem; margin-bottom:6px; border-bottom:1px solid #bfe0fb; padding-bottom:3px;">
+              Order / Customer: ${tag}
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:0.8rem; table-layout:fixed;">
+              <thead>
+                <tr style="text-align:left; color:#555; background:#e1f5fe;">
+                  <th style="width:25%; padding:4px 6px;">REF</th>
+                  <th style="width:25%; padding:4px 6px;">Lot</th>
+                  <th style="width:15%; padding:4px 6px; text-align:center;">Reserved</th>
+                  <th style="width:15%; padding:4px 6px; text-align:center;">Packed</th>
+                  <th style="width:20%; padding:4px 6px; text-align:center; color:#d32f2f;">Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>`;
+      });
+    } else {
+      reservedBinsHtml = '<div style="font-size:0.8rem; color:#777; padding:8px;">No active customer allocations found in uploaded logs.</div>';
+    }
+
     let html = `
       <!-- TOP AUDIT SUMMARY CARD -->
       <div class="audit-card" style="background-color:#e3f2fd; border-left:5px solid #0277bd; margin-bottom:15px;">
@@ -1203,10 +1249,25 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <div class="card" style="border-left: 5px solid #2e7d32; margin-bottom: 12px;">
         <h3 style="color:#2e7d32; margin:0 0 8px 0; font-size:1rem;">📥 Inbound Stock Received (${inboundItems.reduce((acc, c) => acc + c.inboundQty, 0)} Units)</h3>
         <div style="max-height: 200px; overflow-y: auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-            <thead><tr style="background:#e8f5e9; text-align:left;"><th style="padding:4px;">REF</th><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty</th><th style="padding:4px;">Received Date</th></tr></thead>
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem; table-layout:fixed;">
+            <thead>
+              <tr style="background:#e8f5e9; text-align:left;">
+                <th style="width:25%; padding:4px 6px;">REF</th>
+                <th style="width:25%; padding:4px 6px;">Lot</th>
+                <th style="width:20%; padding:4px 6px;">Exp</th>
+                <th style="width:15%; padding:4px 6px; text-align:center;">Qty</th>
+                <th style="width:15%; padding:4px 6px;">Received</th>
+              </tr>
+            </thead>
             <tbody>
-              ${inboundItems.map(i => `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px; font-weight:bold; color:#0277bd;">${i.ref}</td><td style="padding:4px;">${i.lot}</td><td style="padding:4px;">${i.exp}</td><td style="padding:4px; text-align:center; font-weight:bold;">${i.inboundQty}</td><td style="padding:4px;">${i.receivedDate}</td></tr>`).join('')}
+              ${inboundItems.map(i => `
+                <tr style="border-bottom:1px solid #eee;">
+                  <td style="padding:4px 6px; font-weight:bold; color:#0277bd;">${i.ref}</td>
+                  <td style="padding:4px 6px;">${i.lot}</td>
+                  <td style="padding:4px 6px;">${i.exp}</td>
+                  <td style="padding:4px 6px; text-align:center; font-weight:bold;">${i.inboundQty}</td>
+                  <td style="padding:4px 6px;">${i.receivedDate}</td>
+                </tr>`).join('')}
             </tbody>
           </table>
         </div>
@@ -1215,36 +1276,30 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <!-- SECTION 2: RESERVED CUSTOMER BINS -->
       <div class="card" style="border-left: 5px solid #0277bd; margin-bottom: 12px;">
         <h3 style="color:#0277bd; margin:0 0 8px 0; font-size:1rem;">🚩 Active Reserved Bins (Allocated Orders)</h3>
-        ${Object.keys(reservedMap).length > 0 ? Object.keys(reservedMap).map(tag => `
-          <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px; margin-bottom:8px;">
-            <div style="font-weight:bold; color:#0277bd; font-size:0.85rem; margin-bottom:4px;">Order / Customer: ${tag}</div>
-            <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-              <thead><tr style="text-align:left; color:#555;">
-                <th style="width:25%; padding:2px 4px;">REF</th>
-                <th style="width:25%; padding:2px 4px;">Lot</th>
-                <th style="width:15%; padding:2px 4px; text-align:center;">Reserved</th>
-                <th style="width:15%; padding:2px 4px; text-align:center;">Packed</th>
-                <th style="width:20%; padding:2px 4px; text-align:center; color:#d32f2f;">Remaining</th>
-              </tr></thead>
-              <tbody>
-                ${reservedMap[tag].map(r => {
-                  let remaining = r.reservedQty - r.outboundQty;
-                  return `<tr><td style="padding:2px 4px; font-weight:bold;">${r.ref}</td><td style="padding:2px 4px;">${r.lot}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:#0277bd;">${r.reservedQty}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:${r.outboundQty >= r.reservedQty ? '#2e7d32' : '#555'};">${r.outboundQty}</td><td style="padding:2px 4px; text-align:center; font-weight:bold; color:${remaining > 0 ? '#d32f2f' : '#2e7d32'};">${remaining > 0 ? remaining : '✅'}</td></tr>`;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>
-        `).join('') : '<div style="font-size:0.8rem; color:#777;">No active customer allocations in this dataset.</div>'}
+        ${reservedBinsHtml}
       </div>
 
       <!-- SECTION 3: OUTBOUND ORDERS SHIPPED -->
       <div class="card" style="border-left: 5px solid #e65100; margin-bottom: 12px;">
         <h3 style="color:#e65100; margin:0 0 8px 0; font-size:1rem;">🖐️ Outbound Orders Shipped (${shippedItems.reduce((acc, c) => acc + c.outboundQty, 0)} Units)</h3>
         <div style="max-height: 200px; overflow-y: auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-            <thead><tr style="background:#fff3e0; text-align:left;"><th style="padding:4px;">REF</th><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty Shipped</th></tr></thead>
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem; table-layout:fixed;">
+            <thead>
+              <tr style="background:#fff3e0; text-align:left;">
+                <th style="width:30%; padding:4px 6px;">REF</th>
+                <th style="width:30%; padding:4px 6px;">Lot</th>
+                <th style="width:20%; padding:4px 6px;">Exp</th>
+                <th style="width:20%; padding:4px 6px; text-align:center;">Qty Shipped</th>
+              </tr>
+            </thead>
             <tbody>
-              ${shippedItems.map(s => `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px; font-weight:bold; color:#0277bd;">${s.ref}</td><td style="padding:4px;">${s.lot}</td><td style="padding:4px;">${s.exp}</td><td style="padding:4px; text-align:center; font-weight:bold; color:#e65100;">${s.outboundQty}</td></tr>`).join('')}
+              ${shippedItems.map(s => `
+                <tr style="border-bottom:1px solid #eee;">
+                  <td style="padding:4px 6px; font-weight:bold; color:#0277bd;">${s.ref}</td>
+                  <td style="padding:4px 6px;">${s.lot}</td>
+                  <td style="padding:4px 6px;">${s.exp}</td>
+                  <td style="padding:4px 6px; text-align:center; font-weight:bold; color:#e65100;">${s.outboundQty}</td>
+                </tr>`).join('')}
             </tbody>
           </table>
         </div>

@@ -2,14 +2,13 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/authManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.3
+ * Version: 3.0.4
  * ======================================================================= */
 const AuthManager = {
   currentUser: null,
   isGuest: false,
   
-  // NOTE: You will need to replace this with your actual Google Cloud Client ID later.
-  // For this weekend, the logic will still function using the Guest/Bypass features.
+  // NOTE: This is the actual Google Cloud Client ID to allow secure Google Sign-in.
   clientId: "578227168676-721gv6n3bt5qqcd67v1vhi6111c35fcc.apps.googleusercontent.com",
 
   // Add your authorized admin emails here
