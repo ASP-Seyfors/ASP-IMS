@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.5
+ * Version: 2.9.6
  * Date: August 2026
  * 
  * Description:
@@ -548,13 +548,49 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   // ==========================================================================
   // CUSTOMER INTERNAL SALES REPORT ENGINE
   // ==========================================================================
-  generateInternalSalesReport() {
+  openInternalSalesReportOptions() {
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
 
-    let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}.pdf`;
+    let modal = document.createElement('div');
+    modal.id = 'internalReportOptionsModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
-    // Aggregate top historical items for this customer from archive
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #388e3c; padding-bottom:8px; margin-bottom:15px;">
+          <h3 style="margin:0; color:#388e3c;">📈 Internal Sales Report Options</h3>
+          <button onclick="document.getElementById('internalReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div style="margin-bottom:15px; font-size:0.85rem;">Account: <strong>${cust}</strong><br>Select the columns you want to include in the PDF export:</div>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#fafafa; border:1px solid #ddd; padding:12px; border-radius:4px;">
+          <label style="cursor:pointer;"><input type="checkbox" id="chkIntDesc" checked> Description</label>
+          <label style="cursor:pointer;"><input type="checkbox" id="chkIntHist" checked> Historical Vol.</label>
+          <label style="cursor:pointer;"><input type="checkbox" id="chkIntOnHand" checked> On-Hand Stock</label>
+          <label style="cursor:pointer;"><input type="checkbox" id="chkIntPrice" checked> Selling Price</label>
+          <label style="cursor:pointer;"><input type="checkbox" id="chkIntCost" checked> Unit Cost</label>
+          <label style="cursor:pointer;"><input type="checkbox" id="chkIntMargin" checked> Gross Margin %</label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="document.getElementById('internalReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button onclick="AuditManager.generateInternalSalesReport('${cust}')" style="background:#388e3c; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  generateInternalSalesReport(cust) {
+    if (!cust) return;
+    
+    let incDesc = document.getElementById('chkIntDesc') ? document.getElementById('chkIntDesc').checked : true;
+    let incHist = document.getElementById('chkIntHist') ? document.getElementById('chkIntHist').checked : true;
+    let incOnHand = document.getElementById('chkIntOnHand') ? document.getElementById('chkIntOnHand').checked : true;
+    let incPrice = document.getElementById('chkIntPrice') ? document.getElementById('chkIntPrice').checked : true;
+    let incCost = document.getElementById('chkIntCost') ? document.getElementById('chkIntCost').checked : true;
+    let incMargin = document.getElementById('chkIntMargin') ? document.getElementById('chkIntMargin').checked : true;
+
+    let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}.pdf`;
     let skuMap = this.getHistoricalCustomerData(cust);
     
     let html = `<!DOCTYPE html><html><head><title>${filename}</title>
@@ -590,30 +626,33 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <thead>
         <tr>
           <th>REF / SKU</th>
-          <th>Description</th>
-          <th>Historical Vol.</th>
-          <th>On-Hand Stock</th>
-          <th>Selling Price</th>
-          <th>Unit Cost</th>
-          <th>Gross Margin %</th>
+          ${incDesc ? '<th>Description</th>' : ''}
+          ${incHist ? '<th>Historical Vol.</th>' : ''}
+          ${incOnHand ? '<th>On-Hand Stock</th>' : ''}
+          ${incPrice ? '<th>Selling Price</th>' : ''}
+          ${incCost ? '<th>Unit Cost</th>' : ''}
+          ${incMargin ? '<th>Gross Margin %</th>' : ''}
         </tr>
       </thead>
       <tbody>`;
 
     skuMap.forEach(item => {
-      let pVal = parseFloat((item.price || '0').replace('$', '')) || 0;
-      let cVal = parseFloat((item.cost || '0').replace('$', '')) || 0;
+      let pVal = parseFloat((item.price || '0').replace(/[^0-9.-]+/g,"")) || 0;
+      let cVal = parseFloat((item.cost || '0').replace(/[^0-9.-]+/g,"")) || 0;
       let margin = pVal > 0 ? (((pVal - cVal) / pVal) * 100).toFixed(1) + '%' : 'N/A';
+      
+      let formattedPrice = item.price ? (item.price.startsWith('$') ? item.price : '$' + item.price) : '$0.00';
+      let formattedCost = item.cost ? (item.cost.startsWith('$') ? item.cost : '$' + item.cost) : '$0.00';
 
       html += `
         <tr>
           <td class="ref-cell">${item.ref}</td>
-          <td class="desc-cell">${item.desc}</td>
-          <td><strong>${item.histQty} units</strong></td>
-          <td style="color:${item.onHand > 0 ? '#2e7d32' : '#c62828'}; font-weight:bold;">${item.onHand} boxes</td>
-          <td>${item.price}</td>
-          <td>${item.cost}</td>
-          <td style="font-weight:bold; color:#0277bd;">${margin}</td>
+          ${incDesc ? `<td class="desc-cell">${item.desc}</td>` : ''}
+          ${incHist ? `<td><strong>${item.histQty} units</strong></td>` : ''}
+          ${incOnHand ? `<td style="color:${item.onHand > 0 ? '#2e7d32' : '#c62828'}; font-weight:bold;">${item.onHand}</td>` : ''}
+          ${incPrice ? `<td>${formattedPrice}</td>` : ''}
+          ${incCost ? `<td>${formattedCost}</td>` : ''}
+          ${incMargin ? `<td style="font-weight:bold; color:#0277bd;">${margin}</td>` : ''}
         </tr>`;
     });
 
@@ -621,6 +660,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     let win = window.open('', '_blank');
     if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 500); }
+    
+    let modal = document.getElementById('internalReportOptionsModal');
+    if (modal) modal.remove();
   },
 
   // ==========================================================================
@@ -660,10 +702,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           Customize the SKUs, descriptions, stock quantities, and pricing options below before exporting the final flyer for your buyer.
         </div>
 
-        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px;">
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;">
-            <input type="checkbox" id="chkIncludePriceInReport" checked> 💵 Include Selling Price Column on Customer Report
-          </label>
+        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:10px;">
+          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeDescFlyer" checked> Include Description</label>
+          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeQtyFlyer" checked> Include Quantity</label>
+          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludePriceInReport" checked> Include Unit Price</label>
         </div>
 
         <div style="font-weight:bold; font-size:0.85rem; color:#555; margin-bottom:6px;">Report Line Items:</div>
@@ -695,7 +737,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   exportCustomerStockReportPDF(cust) {
-    let includePrice = document.getElementById('chkIncludePriceInReport').checked;
+    let includeDesc = document.getElementById('chkIncludeDescFlyer') ? document.getElementById('chkIncludeDescFlyer').checked : true;
+    let includeQty = document.getElementById('chkIncludeQtyFlyer') ? document.getElementById('chkIncludeQtyFlyer').checked : true;
+    let includePrice = document.getElementById('chkIncludePriceInReport') ? document.getElementById('chkIncludePriceInReport').checked : true;
+    
     let container = document.getElementById('reportItemRowsContainer');
     let rows = container.querySelectorAll('div');
     
@@ -734,8 +779,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <thead>
         <tr>
           <th>REF / Product Code</th>
-          <th>Description</th>
-          <th style="text-align:center;">Quantity Available</th>
+          ${includeDesc ? '<th>Description</th>' : ''}
+          ${includeQty ? '<th style="text-align:center;">Quantity Available</th>' : ''}
           ${includePrice ? '<th style="text-align:right;">Unit Price</th>' : ''}
         </tr>
       </thead>
@@ -747,13 +792,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let qty = r.querySelector('.rep-qty').value.trim();
       let price = r.querySelector('.rep-price').value.trim();
 
+      // Ensure $ is prepended if it's a numeric price value, leave alone if "Inquire"
+      let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Inquire';
+
       if (ref) {
         html += `
           <tr>
             <td class="ref-col">${ref}</td>
-            <td class="desc-col">${desc || 'Surgical Specialty Item'}</td>
-            <td style="text-align:center;"><span class="qty-badge">${qty} Box(es)</span></td>
-            ${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${price || 'Inquire'}</td>` : ''}
+            ${includeDesc ? `<td class="desc-col">${desc || 'Surgical Specialty Item'}</td>` : ''}
+            ${includeQty ? `<td style="text-align:center;"><span class="qty-badge">${qty}</span></td>` : ''}
+            ${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}
           </tr>`;
       }
     });
