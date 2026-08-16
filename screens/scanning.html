@@ -1,0 +1,180 @@
+/* =======================================================================
+ * File: screens/scanning.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 2: ACTIVE SCANNING & ENTRY PHASE -->
+<div id="screenScanning" style="display: none;">
+  
+  <div class="header-banner">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="text-align: left; font-size: 0.85rem; width: 25%;"><strong>User:</strong><br><span id="hdrUser">--</span></div>
+      <div style="text-align: center; width: 50%;">
+        <h3 id="hdrTitle" style="margin: 0; font-size: 1.1rem; color: #0277bd;">Customer (Order)</h3>
+        <div id="hdrWorkflow" style="font-size: 0.85rem; font-weight: bold; color: #555; margin-top: 4px;">Workflow</div>
+      </div>
+      <div style="text-align: right; font-size: 0.85rem; width: 25%;">
+        <strong>Date:</strong> <span id="hdrDate">--</span><br><strong>Start:</strong> <span id="hdrTime">--</span>
+      </div>
+    </div>
+    <div style="text-align: right; margin-top: 10px;">
+      <button class="btn-action btn-stop btn-auto" style="padding: 6px 12px !important; margin: 0;" onclick="goToSummaryScreen()">Review Session</button>
+    </div>
+  </div>
+
+  <div id="manifestProgressBanner" class="progress-banner" style="display:none;">
+    Progress: <span id="manifestScannedQty">0</span> / <span id="manifestTotalQty">0</span> Expected 
+    <span id="manifestUnexpectedStats"></span>
+  </div>
+
+  <!-- REF / SKU LOOKUP SECTION -->
+  <div class="card" style="text-align: center;">
+    <div class="form-label" style="color: #000000; font-size: 0.95rem; width: 100%; margin-bottom: 6px;">REF / SKU Lookup:</div>
+    <input list="dbRefs" type="text" id="refInput" class="input-center" style="width: 50%;" placeholder="Scan or Type REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
+    <datalist id="dbRefs"></datalist>
+  </div>
+
+  <!-- RAW BARCODES SECTION -->
+  <div class="card">
+    <div class="raw-section">
+      <div class="flex-between" style="margin-bottom: 8px;">
+        <button class="btn-small btn-clear btn-auto" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
+        <button class="btn-small btn-cam btn-auto" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera</button>
+        <!-- UPLOAD COMMENTED OUT <button class="btn-small btn-upload" onclick="...">📁 Upload Image</button> -->
+      </div>
+      <h2 style="margin-top: 10px;">Raw Barcode Scans</h2>
+
+      <div id="cameraContainer">
+        <div class="cam-status-overlay">
+          <span id="tagGtin" class="status-tag">GTIN</span>
+          <span id="tagLot" class="status-tag">LOT</span>
+          <span id="tagExp" class="status-tag">EXP</span>
+          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()">📸 Snap</button>
+        </div>
+        <div id="cameraViewfinder"></div>
+      </div>
+
+      <div class="form-row" id="rowScan1">
+        <div class="form-label">Barcode Line 1:</div>
+        <div class="input-wrapper"><input type="text" id="rawScan1" placeholder="Scan Primary Barcode" oninput="processAllScans()"></div>
+      </div>
+      <div class="form-row" id="rowScan2" style="display: none;">
+        <div class="form-label">Barcode Line 2:</div>
+        <div class="input-wrapper"><input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()"></div>
+      </div>
+      <div class="form-row" id="rowScan3" style="display: none;">
+        <div class="form-label">Barcode Line 3:</div>
+        <div class="input-wrapper"><input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()"></div>
+      </div>
+      <div class="form-row" id="rowScan4" style="display: none;">
+        <div class="form-label">Barcode Line 4:</div>
+        <div class="input-wrapper"><input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()"></div>
+      </div>
+
+      <div style="text-align: center; margin-top: 8px;">
+        <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARSED DETAILS SECTION -->
+  <div class="card">
+    <h2>Parsed & Captured Item Details</h2>
+
+    <div id="liveMatchPreview" class="match-preview-box" style="display: none;">
+      <div style="font-weight: bold; color: #2e7d32;">✓ Database Match Found</div>
+      <div id="prevDescText" style="margin-top: 2px;">--</div>
+    </div>
+
+    <!-- 1. Destination -->
+    <div class="form-row" id="rowItemDestination" style="display: none;">
+      <div class="form-label">Item Destination:</div>
+      <div class="input-wrapper">
+        <div class="action-selector" style="justify-content: flex-start;">
+          <div id="actBtnInv" class="action-btn selected-inv btn-auto" onclick="setItemAction('Inventory')">Inventory</div>
+          <div id="actBtnRes" class="action-btn btn-auto" onclick="setItemAction('Reserved')">Reserved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Customer Tag -->
+    <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
+      <div class="form-label" style="color: #0277bd;">Customer Tag:</div>
+      <div class="input-wrapper" style="display: flex; gap: 6px;">
+        <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value)"></select>
+        <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;">
+      </div>
+    </div>
+
+    <!-- 3. Quantity -->
+    <div class="form-row">
+      <div class="form-label">Quantity Scanned:</div>
+      <div class="input-wrapper">
+        <input type="number" id="qtyInput" value="1" min="1" class="input-micro">
+      </div>
+    </div>
+
+    <!-- All Inputs Uniform Width -->
+    <div class="form-row">
+      <div class="form-label">Manufacturer:</div>
+      <div class="input-wrapper">
+        <select id="vendorSelect" class="needs-attention input-short" onchange="handleVendorSelect(this.value); evaluateFieldAttention();"></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">GTIN Barcode:</div>
+      <div class="input-wrapper">
+        <input type="text" id="gtinInput" class="needs-attention input-short" placeholder="GTIN" oninput="runMasterLookup(); evaluateFieldAttention();">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">Lot Number:</div>
+      <div class="input-wrapper">
+        <input type="text" id="lotInput" class="needs-attention input-short" placeholder="Lot" oninput="evaluateFieldAttention();">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">Expiration Date:</div>
+      <div class="input-wrapper">
+        <input type="text" id="expInput" class="needs-attention input-short" placeholder="YYYY-MM-DD" onchange="formatExpDate(this)" oninput="evaluateFieldAttention();">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
+      </div>
+    </div>
+
+    <!-- Item Note Checkbox moved to bottom -->
+    <div style="text-align: left; width: 100%; margin-bottom: 10px; margin-top: 10px;">
+      <label style="font-size:0.85rem; font-weight:bold; color:#d32f2f; cursor:pointer;">
+        <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()"> ⚠️ Add Item Issue / Note
+      </label>
+    </div>
+    <div class="form-row" id="rowItemNote" style="display:none;">
+      <div class="form-label" style="color:#d32f2f;">Item Note:</div>
+      <div class="input-wrapper">
+        <input type="text" id="itemNoteInput" placeholder="e.g. Box damaged...">
+      </div>
+    </div>
+
+    <!-- Bottom Buttons Layout -->
+    <div class="flex-between" style="margin-top: 15px;">
+      <button class="btn-action btn-clear btn-auto" onclick="resetScanLinesAndFields()">Clear Fields</button>
+      <button class="btn-action btn-continue btn-auto" onclick="goToReviewStage()">Continue</button>
+    </div>
+  </div>
+
+  <!-- NEW: PINNED MANIFEST TRACKER -->
+  <div id="liveManifestTracker" class="card" style="display:none; margin-top: 12px; background-color: #f8f9fa; border-color: #0277bd;">
+    <div style="font-size: 0.9rem; font-weight: bold; color: #0277bd; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px;">
+      📋 Expected Items Tracker
+    </div>
+    <div id="liveManifestList" style="max-height: 180px; overflow-y: auto; font-size: 0.85rem;">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+
+</div>

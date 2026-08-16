@@ -1,0 +1,19 @@
+/* =======================================================================
+ * File: screens/manifestReview.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 1C: MANIFEST REVIEW & VERIFICATION -->
+<div id="screenManifestReview" style="display: none;" class="card">
+  <h2>Verify Expected Order</h2>
+  
+  <div id="manifestReviewSummaryContainer">
+    <!-- Summary Injected via JS -->
+  </div>
+
+  <div class="flex-between" style="margin-top: 16px;">
+    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin:0;" onclick="returnToManifestEdit()">🔙 Return to Pre-Loading</button>
+    <button class="btn-action btn-save btn-auto" style="margin:0;" onclick="confirmManifestAndStart()">✅ Confirm & Begin Scanning</button>
+  </div>
+</div>

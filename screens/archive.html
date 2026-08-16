@@ -1,0 +1,40 @@
+/* =======================================================================
+ * File: screens/archive.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 6: SESSION ARCHIVE -->
+<div id="screenArchive" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
+    <h2 style="border:none; margin:0; padding:0;">Session Archive</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeArchive()">🔙 Return</button>
+  </div>
+  
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+    <p style="font-size: 0.85rem; color: #555; margin:0; flex:1; min-width:200px;">Restore local sessions to continue scanning, or sync completed runs with the master database.</p>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-action btn-auto" style="background-color: #388e3c; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.pushLegacySessionsToCloud(event)">⬆️ Upload Local History</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.syncCloudArchive(event)">☁️ Sync Cloud</button>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-label" style="color: #0277bd;">Filter & View:</div>
+    <div class="input-wrapper" style="display:flex; flex-direction:column; gap:8px;">
+      <select id="archiveFilter" onchange="SessionManager.renderArchiveList()" style="border: 2px solid #0277bd; font-weight: bold; width:100%;">
+        <option value="today">Today (Last 24 Hrs)</option>
+        <option value="week">This Week (Last 7 Days)</option>
+        <option value="month" selected>This Month (Last 30 Days)</option>
+      </select>
+      <div style="display:flex; gap:10px; font-size:0.85rem; color:#555;">
+        <label style="cursor:pointer;"><input type="checkbox" id="chkHideCancelled" onchange="SessionManager.renderArchiveList()" checked> Hide Cancelled</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkOnlyActive" onchange="SessionManager.renderArchiveList()"> Only Active</label>
+      </div>
+    </div>
+  </div>
+
+  <div id="archiveListContainer" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+    <!-- Archive Items Injected Here -->
+  </div>
+</div>

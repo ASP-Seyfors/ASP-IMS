@@ -1,0 +1,57 @@
+/* =======================================================================
+ * File: screens/reports.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 8: REPORTS & ANALYTICS HUB -->
+<div id="screenReports" style="display: none;" class="card">
+  <div class="flex-between" style="border-bottom: 2px solid #7b1fa2; padding-bottom: 6px; margin-bottom: 15px;">
+    <h2 style="border:none; margin:0; padding:0; color: #7b1fa2;">Reports & Analytics Hub</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()">🔙 Return</button>
+  </div>
+
+  <!-- General Inventory Reports -->
+  <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')">📦 Full On-Hand Stock</button>
+      <button class="btn-small btn-auto" style="background-color: #c62828; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Out of Stock Items</button>
+      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Missing Price / Cost</button>
+    </div>
+  </div>
+
+  <!-- Expiration Warnings -->
+  <div style="background: #fff3e0; border: 1px solid #ffcc80; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #e65100;">Expiration Risk Reports (FEFO)</h4>
+    <div style="display: flex; gap: 8px;">
+      <select id="expirationFilter" style="flex: 1; padding: 6px;">
+        <option value="6">Expiring in next 6 Months</option>
+        <option value="12">Expiring in next 12 Months</option>
+        <option value="24">Expiring in next 24 Months</option>
+      </select>
+      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateExpirationReport()">⚠️ Run Report</button>
+    </div>
+  </div>
+
+  <!-- End of Week Rollup -->
+  <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #0277bd;">End of Week Rollup Report</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0;">Upload all raw .txt session logs for the week to generate a master KPI summary.</p>
+    <input type="file" id="endOfWeekUpload" accept=".txt" multiple style="display:none;" onchange="ReportsManager.processEndOfWeekReport(event)">
+    <button class="btn-action btn-start btn-auto" style="margin:0; width:100%; padding: 8px;" onclick="document.getElementById('endOfWeekUpload').click()">📁 Select TXT Logs & Generate</button>
+  </div>
+
+  <!-- Legacy Customer Reports -->
+  <div style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px;">
+    <h4 style="margin: 0 0 10px 0; color: #333;">Customer-Specific Reports</h4>
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <select id="customerReportSelect" style="flex: 1; padding: 6px;"></select>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.loadCustomerReportData()">Load</button>
+    </div>
+    <div id="customerReportControls" style="display: none; display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()">📈 Customer Internal Sales</button>
+      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()">📄 Customer Stock Flyer</button>
+    </div>
+  </div>
+</div>

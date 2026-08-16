@@ -1,0 +1,138 @@
+/* =======================================================================
+ * File: screens/setup.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 1: SESSION SETUP PHASE -->
+<div id="screenSetup" class="card">
+  
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
+    <h2 style="border:none; margin:0; padding:0; display:flex; align-items:center; gap:8px;">
+      ASP Scanner <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
+    </h2>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 4px 10px;" onclick="masterSystemSync(event)">🔄 Sync System</button>
+      <label style="font-size: 0.85rem; font-weight: bold; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> Advanced
+      </label>
+    </div>
+  </div>
+  
+  <div class="form-row">
+    <div class="form-label">Session Type:</div>
+    <div class="input-wrapper" style="justify-content: space-around;">
+      <label style="cursor:pointer; font-weight:bold;">
+        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> 📦 Shipment
+      </label>
+      <label style="cursor:pointer; font-weight:bold;">
+        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> 🛒 Order
+      </label>
+    </div>
+  </div>
+
+  <div class="form-row" id="rowSupplier">
+    <div class="form-label">Supplier / Vendor:</div>
+    <div class="input-wrapper">
+      <select id="supplierSelect" onchange="handlePartnerSelect(this.value, 'supplier')"></select>
+    </div>
+  </div>
+
+  <div class="form-row" id="rowCustomer" style="display: none;">
+    <div class="form-label">Customer:</div>
+    <div class="input-wrapper">
+      <select id="customerSelect" onchange="handlePartnerSelect(this.value, 'customer')"></select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-label">Order Details:</div>
+    <div class="input-wrapper">
+      <input type="text" id="orderDetailsInput" placeholder="e.g. PO# 795037269 or Invoice#">
+    </div>
+  </div>
+  
+  <div class="form-row">
+    <div class="form-label">User Name:</div>
+    <div class="input-wrapper">
+      <input type="text" id="userNameInput" placeholder="e.g. Thomas">
+    </div>
+  </div>
+
+  <div class="form-row" id="rowProcess" style="display: none;">
+    <div class="form-label">Process:</div>
+    <div class="input-wrapper">
+      <select id="workflowTypeSelect">
+        <option value="Reserving">🚩 Reserving</option>
+        <option value="Picking & Packing">🖐️ Picking & Packing</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 1. Pre-Load Toggle (Hidden by default unless Advanced is ON) -->
+  <div id="rowPreloadToggle" style="text-align: center; margin-top: 15px; margin-bottom: 20px; display: none;">
+    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
+      <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
+    </label>
+  </div>
+
+  <!-- 2. Shipments & Orders Feed (Hidden by default unless Advanced is ON) -->
+  <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 12px; margin-top: 15px; margin-bottom: 15px; text-align: center; display: none;">
+    <div style="font-size: 0.85rem; font-weight: bold; color: #0277bd; margin-bottom: 6px;">☁️ Shipments & Orders Feed</div>
+    <div style="display: flex; gap: 6px;">
+      <select id="stagedOrdersSelect" style="flex: 1; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)">
+        <option value="">-- Select Staged Order --</option>
+      </select>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="SessionManager.fetchStagedSessions()">🔄 Sync Feed</button>
+    </div>
+  </div>
+
+  <!-- Start Button Compacted & Centered -->
+  <div style="text-align: center; margin-bottom: 15px; margin-top: 15px;">
+    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; width: 80%; max-width: 300px;" onclick="startSession()">Start Scanning Session</button>
+  </div>
+
+  <!-- 3. Enterprise Data Hub (Hidden by default unless Advanced is ON) -->
+  <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
+    <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📈 Enterprise Data Hub</h3>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #fff; flex: 1; margin:0;" onclick="UIManager.openReportsHub()">📊 Reports Hub</button>
+      <button class="btn-action btn-auto" style="background-color: #00796b; color: #fff; flex: 1; margin:0;" onclick="UIManager.openDbEditor()">🗄️ Database Grid Editor</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation & Utility Footer Grid -->
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px; gap: 10px;">
+    
+    <!-- Left: Session Archive -->
+    <div style="flex: 1; min-width: 120px; text-align: left;">
+      <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()">Session Archive</button>
+    </div>
+
+    <!-- Center: Stocktake & Traceability (4 & 5. Hidden by default unless Advanced is ON) -->
+    <div id="centerFooterActions" style="flex: 2; min-width: 250px; text-align: center; display: flex; justify-content: center; gap: 8px;">
+      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="UIManager.openStocktakeModal()">📋 Stocktake</button>
+      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem; display: none;" onclick="openAuditHub()">📦 Traceability</button>
+    </div>
+
+    <!-- Right: Item Lookup & Settings -->
+    <div style="flex: 1; min-width: 160px; text-align: right; display: flex; justify-content: flex-end; gap: 8px;">
+      <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #00796b; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem;" onclick="UIManager.openQuickLookupModal()">🔍 Item Lookup</button>
+      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 10px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
+    </div>
+    
+  </div>
+</div>
+
+<!-- NEW: STOCKTAKE MODAL -->
+  <div id="stocktakeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
+      <h3 style="margin-top:0; color:#7b1fa2; border-bottom:2px solid #7b1fa2; padding-bottom:8px;">📋 Select Stocktake Mode</h3>
+      <p style="font-size:0.85rem; color:#555;"><strong>Full Stocktake:</strong> A formal session to document and overwrite all current inventory quantities.<br><br><strong>Selection Stocktake:</strong> A lightweight session to gather a list of items or update specific REFs without clearing the rest of the database.</p>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+        <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')">📦 Start Full Stocktake</button>
+        <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff;" onclick="SessionManager.startStocktakeSession('Selection')">🎯 Start Selection Stocktake</button>
+        <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>

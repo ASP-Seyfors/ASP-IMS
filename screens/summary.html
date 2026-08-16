@@ -1,0 +1,78 @@
+/* =======================================================================
+ * File: screens/summary.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 4: SESSION SUMMARY PHASE -->
+<div id="screenSummary" style="display: none;">
+  
+  <div class="header-banner">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="text-align: left; font-size: 0.85rem; width: 25%;"><strong>User:</strong><br><span id="hdrUserSum">--</span></div>
+      <div style="text-align: center; width: 50%;">
+        <h3 id="hdrTitleSum" style="margin: 0; font-size: 1.1rem; color: #0277bd;">Customer (Order)</h3>
+        <div id="hdrWorkflowSum" style="font-size: 0.85rem; font-weight: bold; color: #555; margin-top: 4px;">Workflow</div>
+      </div>
+      <div style="text-align: right; font-size: 0.85rem; width: 25%;">
+        <strong>Date:</strong> <span id="hdrDateSum">--</span><br><strong>Start:</strong> <span id="hdrTimeSum">--</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="export-panel">
+    <h4>Actions</h4>
+    <div class="form-row" style="margin-bottom: 0;">
+      <div class="input-wrapper" style="display: flex; flex-direction: row; gap: 8px;">
+        <select id="exportDropdown" style="flex: 3; padding: 10px; font-weight: bold; text-align: left;">
+          <option value="continue" selected>➕ Continue Scanning</option>
+          <option value="commit_stock" id="optCommitStock" style="display:none; color:#7b1fa2; font-weight:bold;">💾 Commit Stocktake to Database</option>
+          <option value="pdf">🖨️ Print Session (or Save as PDF)</option>
+          <option value="txt">📄 Save Data Log (TXT)</option>
+          <option value="backorder">⏳ Pending Backorder (Save & Keep Active)</option>
+          <option value="cancel">❌ Discard & Cancel Scanning Session</option>
+          <option value="complete">✅ Session Complete (Return Home)</option>
+        </select>
+        <button class="btn-action btn-start btn-auto" style="margin: 0; padding: 10px;" onclick="executeAction()">Go ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="manifestReconcileCard" style="display: none; border-color: #f57f17; background-color: #fffde7;">
+    <h3 style="color: #f57f17; margin: 0; border: none; padding: 0;">⚠️ Discrepancies Detected</h3>
+    <p style="font-size:0.85rem; color:#555; margin:6px 0 10px 0;">Discrepancies found between expected manifest and scanned items. Review scanned logs below or update expected values:</p>
+    <div id="manifestReconcileList"></div>
+    <div style="text-align: right; margin-top: 10px;">
+      <button class="btn-action btn-save btn-auto" style="background-color:#f57f17;" onclick="SessionManager.saveManifestReconciliation()">🔄 Update Manifest & Recalculate</button>
+    </div>
+  </div>
+
+  <div class="card" id="advancedReviewCard" style="display: none; border-color: #1976d2; background-color: #e3f2fd;">
+    <h3 style="color: #1976d2; margin: 0; border: none; padding: 0;">🛠️ Resolve New Items</h3>
+    <div id="advancedItemsList" style="margin-top:10px;"></div>
+    <div style="text-align: right; margin-top: 10px;">
+      <button class="btn-action btn-save btn-auto" onclick="SessionManager.saveAdvancedDescriptions()">💾 Save</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:4px;">
+      <span>Current Session Logs</span>
+      <div style="text-align: right; font-size: 0.85rem; font-weight: normal; color: #555; line-height: 1.3;">
+        <div>Unique REFs: <strong id="sumUniqueRefs" style="color:#0277bd;">0</strong></div>
+        <div>Total Qty: <strong id="sumTotalQty" style="color:#0277bd;">0</strong></div>
+      </div>
+    </h2>
+    <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#f57f17; display:block; margin-bottom:10px;">
+      <input type="checkbox" id="chkSessionNote" onchange="toggleSessionNote()"> 📝 Add Session Note
+    </label>
+    <div id="rowSessionNote" style="display:none; margin-bottom:15px;">
+      <textarea id="sessionNoteInput" rows="2" style="width:100%; resize:none; padding:8px;" placeholder="Missing items, extra items, etc..."></textarea>
+    </div>
+    
+    <div id="summaryListContainer">
+      <!-- Injected via JavaScript -->
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,37 @@
+/* =======================================================================
+ * File: screens/manifestEntry.html
+ * Author: Thomas Paul Seyfors
+ * Version: 2.9.9
+ * Date: August 2026
+ * ======================================================================= */
+<!-- SCREEN 1B: MANIFEST PRE-LOAD ENTRY -->
+<div id="screenManifestEntry" style="display: none;" class="card">
+  <h2>Pre-Load Shipment or Order Details</h2>
+  
+  <!-- AI VISION COMMENTED OUT 
+  <div style="margin-bottom: 15px; background-color: #f3e5f5; border: 1px solid #7b1fa2; padding: 10px; border-radius: 4px;">...</div>
+  -->
+
+  <div style="margin-bottom: 15px; border-bottom: 1px dashed #8b8589; padding-bottom: 15px; text-align: center;">
+    <textarea id="pasteManifestArea" rows="4" placeholder="Copy & Paste the item details, including the header row, from your spreadsheet to here..." style="width: 100%; font-size: 0.85rem; padding: 8px; resize: vertical; margin-bottom:6px;"></textarea>
+    <button class="btn-action btn-auto" style="background-color: #1976d2; color: #ffffff;" onclick="processPastedSpreadsheet()">Parse Source Data</button>
+  </div>
+
+  <!-- Clear List button moved above first item, left aligned -->
+  <div style="margin-bottom: 8px; text-align: left;">
+    <button class="btn-small btn-clear btn-auto" onclick="clearManifestList()">🧹 Clear List</button>
+  </div>
+
+  <div id="manifestRowsContainer">
+    <!-- Dynamic Manifest Rows Injected via JS -->
+  </div>
+
+  <div style="text-align: center; margin-top: 10px;">
+    <button class="btn-small btn-auto" onclick="addManifestRow()">+ Add an Item</button>
+  </div>
+
+  <div class="flex-between" style="margin-top: 20px;">
+    <button class="btn-action btn-cancel btn-auto" onclick="cancelManifestEntry()">Cancel</button>
+    <button class="btn-action btn-continue btn-auto" onclick="goToManifestReview()">Review Expected Items</button>
+  </div>
+</div>
