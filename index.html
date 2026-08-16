@@ -2,7 +2,7 @@
   ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
   File: index.html
   Author: Thomas Paul Seyfors
-  Version: 2.9.6
+  Version: 2.9.7
   Date: August 2026
   
   Description:
@@ -662,7 +662,7 @@
     <div class="form-label">App Version:</div>
     <div class="input-wrapper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
       <div>
-        <span style="font-weight: bold; color: #0277bd;">v2.9.6</span>
+        <span style="font-weight: bold; color: #0277bd;">v2.9.7</span>
         <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; margin-left: 10px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
       </div>
       <button class="btn-small btn-cancel btn-auto" onclick="AuthManager.logout()">🚪 Log Out</button>
@@ -681,7 +681,7 @@
   <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateInventoryReport('in_stock')">📦 Full On-Hand Stock</button>
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')">📦 Full On-Hand Stock</button>
       <button class="btn-small btn-auto" style="background-color: #c62828; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Out of Stock Items</button>
       <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Missing Price / Cost</button>
     </div>

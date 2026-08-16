@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/auditManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.6
+ * Version: 2.9.7
  * Date: August 2026
  * 
  * Description:
@@ -668,12 +668,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   // ==========================================================================
   // CUSTOMER INVENTORY STOCK REPORT EDITOR (CUSTOMER-FACING)
   // ==========================================================================
-  openCustomerStockReportEditor() {
+  openCustomerStockReportEditor(limit = '10') {
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
 
-    let items = this.getHistoricalCustomerData(cust);
+    let items = this.getHistoricalCustomerData(cust, limit);
     
+    // Remove existing modal if we are re-rendering due to a toggle change
+    let existingModal = document.getElementById('stockReportEditorModal');
+    if (existingModal) existingModal.remove();
+
     let modal = document.createElement('div');
     modal.id = 'stockReportEditorModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
@@ -690,6 +694,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         </div>`;
     });
 
+    let top10Checked = limit === '10' ? 'checked' : '';
+    let allChecked = limit === 'all' ? 'checked' : '';
+
     modal.innerHTML = `
       <div style="background:#fff; border-radius:8px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #7b1fa2; padding-bottom:8px; margin-bottom:15px;">
@@ -699,23 +706,30 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
         <div style="background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px; padding:10px; margin-bottom:15px; font-size:0.85rem;">
           <strong>Account:</strong> ${cust}<br>
-          Customize the SKUs, descriptions, stock quantities, and pricing options below before exporting the final flyer for your buyer.
+          Customize the SKUs, descriptions, stock quantities, and pricing below before exporting.
         </div>
 
-        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:10px;">
+        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:15px;">
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeDescFlyer" checked> Include Description</label>
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeQtyFlyer" checked> Include Quantity</label>
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludePriceInReport" checked> Include Unit Price</label>
         </div>
 
-        <div style="font-weight:bold; font-size:0.85rem; color:#555; margin-bottom:6px;">Report Line Items:</div>
-        <div id="reportItemRowsContainer">${rowsHtml}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div style="font-weight:bold; font-size:0.85rem; color:#555;">Report Line Items:</div>
+          <div style="font-size:0.8rem; display:flex; gap:10px;">
+            <label style="cursor:pointer;"><input type="radio" name="histLimit" value="10" ${top10Checked} onchange="AuditManager.openCustomerStockReportEditor('10')"> Top 10 Items</label>
+            <label style="cursor:pointer;"><input type="radio" name="histLimit" value="all" ${allChecked} onchange="AuditManager.openCustomerStockReportEditor('all')"> All Historical Items</label>
+          </div>
+        </div>
 
+        <div id="reportItemRowsContainer">${rowsHtml}</div>
         <button onclick="AuditManager.addBlankRowToReportEditor()" style="background:#0277bd; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.8rem; margin-top:8px; cursor:pointer;">+ Add Item to Flyer</button>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
           <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.exportCustomerStockReportPDF('${cust}')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export Customer PDF</button>
+          <button onclick="AuditManager.exportCustomerStockReportPDF('${cust}')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
+          <button onclick="AuditManager.draftEmailFlyer('${cust}')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📧 Copy to Email</button>
         </div>
       </div>
     `;
@@ -734,6 +748,69 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <button onclick="this.parentElement.remove()" style="background:#c62828; color:#fff; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️</button>
     `;
     container.appendChild(div);
+  },
+
+  draftEmailFlyer(cust) {
+    let includeDesc = document.getElementById('chkIncludeDescFlyer') ? document.getElementById('chkIncludeDescFlyer').checked : true;
+    let includeQty = document.getElementById('chkIncludeQtyFlyer') ? document.getElementById('chkIncludeQtyFlyer').checked : true;
+    let includePrice = document.getElementById('chkIncludePriceInReport') ? document.getElementById('chkIncludePriceInReport').checked : true;
+    
+    let container = document.getElementById('reportItemRowsContainer');
+    let rows = container.querySelectorAll('div');
+    
+    let html = `<p style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">Good morning,</p>
+      <p style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
+      <table style="border-collapse: collapse; width: 100%; max-width: 700px; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
+      <thead>
+        <tr style="background-color: #0277bd; color: #ffffff;">
+          <th style="padding: 10px; border: 1px solid #ccc; text-align: left;">Reference</th>
+          ${includeDesc ? '<th style="padding: 10px; border: 1px solid #ccc; text-align: left;">Description</th>' : ''}
+          ${includeQty ? '<th style="padding: 10px; border: 1px solid #ccc; text-align: center;">Quantity On Hand</th>' : ''}
+          ${includePrice ? '<th style="padding: 10px; border: 1px solid #ccc; text-align: right;">Price</th>' : ''}
+        </tr>
+      </thead>
+      <tbody>`;
+      
+    rows.forEach(r => {
+      let ref = r.querySelector('.rep-ref').value.trim();
+      let desc = r.querySelector('.rep-desc').value.trim();
+      let qty = r.querySelector('.rep-qty').value.trim();
+      let price = r.querySelector('.rep-price').value.trim();
+      let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Call for Price';
+
+      if (ref) {
+        html += `<tr>
+          <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; color: #0277bd;">${ref}</td>
+          ${includeDesc ? `<td style="padding: 10px; border: 1px solid #ccc; color: #555;">${desc}</td>` : ''}
+          ${includeQty ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: center; font-weight: bold;">${qty}</td>` : ''}
+          ${includePrice ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: right; color: #2e7d32; font-weight: bold;">${formattedPrice}</td>` : ''}
+        </tr>`;
+      }
+    });
+    
+    html += `</tbody></table>
+      <p style="font-family: Arial, sans-serif; font-size: 13px; color: #555;">If there is something you are looking for that is not listed, feel free to send over the reference number, and I will see if I can bring it in for you.</p>
+      <p style="font-family: Arial, sans-serif; font-size: 13px; color: #555;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>`;
+    
+    // Secretly copy to clipboard
+    let tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    let range = document.createRange();
+    range.selectNodeContents(tempDiv);
+    let sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand('copy');
+    document.body.removeChild(tempDiv);
+    
+    alert("✅ Flyer Table copied to your clipboard!\n\nYour email client will now open. Just right-click and Paste (or press Ctrl+V) into the body of the email.");
+    
+    let subject = encodeURIComponent(`Available Inventory Update - ${cust}`);
+    window.location.href = `mailto:?subject=${subject}`;
   },
 
   exportCustomerStockReportPDF(cust) {
@@ -822,14 +899,18 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     document.getElementById('stockReportEditorModal').remove();
   },
 
-  getHistoricalCustomerData(cust) {
+  getHistoricalCustomerData(cust, limit = '10') {
     let analytics = JSON.parse(localStorage.getItem('asp_remote_analytics')) || {};
     let skuCounts = analytics[cust.toUpperCase()] || {}; 
 
     let resultList = [];
     
-    // Sort SKUs by highest historical quantity and slice top 10
-    let sortedSkus = Object.keys(skuCounts).sort((a,b) => skuCounts[b] - skuCounts[a]).slice(0, 10);
+    // Sort SKUs by highest historical quantity
+    let sortedSkus = Object.keys(skuCounts).sort((a,b) => skuCounts[b] - skuCounts[a]);
+    
+    if (limit !== 'all') {
+      sortedSkus = sortedSkus.slice(0, parseInt(limit, 10));
+    }
     
     sortedSkus.forEach(ref => {
       let dbItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === ref);
@@ -837,7 +918,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         ref: ref,
         desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
         histQty: skuCounts[ref],
-        onHand: dbItem ? (dbItem.onHand || 0) : 0, // Now reads live committed stock!
+        onHand: dbItem ? (dbItem.onHand || 0) : 0, 
         price: dbItem ? dbItem.price : '$0.00',
         cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'
       });

@@ -2,14 +2,50 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 2.9.6
+ * Version: 2.9.7
  * ======================================================================= */
 const ReportsManager = {
+
+  openInventoryReportOptions(type) {
+    if (type !== 'in_stock') {
+      this.generateInventoryReport(type); // Route out-of-stock and pricing directly
+      return;
+    }
+
+    let modal = document.createElement('div');
+    modal.id = 'inventoryReportOptionsModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2e7d32; padding-bottom:8px; margin-bottom:15px;">
+          <h3 style="margin:0; color:#2e7d32;">📦 Full On-Hand Stock Options</h3>
+          <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div style="margin-bottom:15px; font-size:0.85rem;">Select the columns to include in your inventory report:</div>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#f1f8e9; border:1px solid #c8e6c9; padding:12px; border-radius:4px;">
+          <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvMfr" checked> Manufacturer</label>
+          <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvDesc" checked> Description</label>
+          <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvPrice" checked> Selling Price</label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button onclick="ReportsManager.generateInventoryReport('in_stock')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Generate Report</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
 
   generateInventoryReport(type) {
     let db = DatabaseManager.db.slice().sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     let filtered = [];
     let title = "";
+
+    // Grab toggles if they exist, otherwise default to true
+    let incMfr = document.getElementById('chkInvMfr') ? document.getElementById('chkInvMfr').checked : true;
+    let incDesc = document.getElementById('chkInvDesc') ? document.getElementById('chkInvDesc').checked : true;
+    let incPrice = document.getElementById('chkInvPrice') ? document.getElementById('chkInvPrice').checked : true;
 
     if (type === 'in_stock') {
       filtered = db.filter(i => i.onHand && i.onHand > 0);
@@ -33,22 +69,34 @@ const ReportsManager = {
     <h2>${title}</h2>
     <p>Generated: ${new Date().toLocaleDateString()}</p>
     <table>
-      <thead><tr><th>Manufacturer</th><th>REF / SKU</th><th>Description</th><th>On-Hand</th><th>Price</th></tr></thead>
+      <thead>
+        <tr>
+          ${incMfr ? '<th>Manufacturer</th>' : ''}
+          <th>REF / SKU</th>
+          ${incDesc ? '<th>Description</th>' : ''}
+          <th>On-Hand</th>
+          ${incPrice ? '<th>Price</th>' : ''}
+        </tr>
+      </thead>
       <tbody>`;
 
     filtered.forEach(item => {
+      let formattedPrice = item.price ? (item.price.startsWith('$') || isNaN(parseFloat(item.price.replace(/[^0-9.-]+/g,""))) ? item.price : '$' + item.price) : '$0.00';
       html += `<tr>
-        <td>${item.mfr || 'UNKNOWN'}</td>
-        <td style="font-weight:bold;">${item.ref || item.sku}</td>
-        <td style="font-size:11px; color:#555;">${item.desc || '--'}</td>
-        <td style="text-align:center; font-weight:bold;">${item.onHand || 0}</td>
-        <td>${item.price || '$0.00'}</td>
+        ${incMfr ? `<td>${item.mfr || 'UNKNOWN'}</td>` : ''}
+        <td style="font-weight:bold; color:#0277bd;">${item.ref || item.sku}</td>
+        ${incDesc ? `<td style="font-size:11px; color:#555;">${item.desc || '--'}</td>` : ''}
+        <td style="text-align:center; font-weight:bold; font-size:14px;">${item.onHand || 0}</td>
+        ${incPrice ? `<td>${formattedPrice}</td>` : ''}
       </tr>`;
     });
 
     html += `</tbody></table></body></html>`;
     let win = window.open('', '_blank');
     if (win) { win.document.write(html); win.document.title = title; win.focus(); setTimeout(() => win.print(), 500); }
+    
+    let modal = document.getElementById('inventoryReportOptionsModal');
+    if (modal) modal.remove();
   },
 
   generateExpirationReport() {
