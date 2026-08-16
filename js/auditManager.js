@@ -1084,7 +1084,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                 await fetch(SessionManager.cloudArchiveUrl, {
                   method: 'POST',
                   mode: 'no-cors',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                   body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: sessionObj })
                 });
                 

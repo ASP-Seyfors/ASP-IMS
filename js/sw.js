@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: sw.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.9
+ * Version: 3.1.
  * Date: August 2026
  * 
  * Description:
@@ -12,7 +12,7 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-const CACHE_NAME = 'asp-scanner-v3.0.9';
+const CACHE_NAME = 'asp-scanner-v3.1.0';
 
 
 const ASSETS_TO_CACHE = [

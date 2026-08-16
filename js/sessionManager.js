@@ -49,8 +49,8 @@ const SessionManager = {
 
     fetch(this.cloudArchiveUrl, {
       method: 'POST',
-      mode: 'no-cors', // Bypasses strict CORS restrictions for background logging
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     }).catch(err => console.warn("Background Cloud Archive push failed:", err));
   },
@@ -113,7 +113,6 @@ const SessionManager = {
     let completedSessions = archive.filter(s => s.status === 'Completed');
 
     if (completedSessions.length === 0) {
-      // Wrap the "No sessions found" alert
       if (!silent) alert("No completed sessions found in local memory to upload.");
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
       return;
@@ -127,11 +126,10 @@ const SessionManager = {
           payload: session
         };
 
-        // Use await to prevent overwhelming the Google Apps Script endpoint with simultaneous requests
         await fetch(this.cloudArchiveUrl, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
         
@@ -141,7 +139,6 @@ const SessionManager = {
       }
     }
 
-    // Wrap the success alert
     if (!silent) alert(`Successfully pushed ${successCount} legacy session(s) to the Cloud Archive!`);
     if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
   },
