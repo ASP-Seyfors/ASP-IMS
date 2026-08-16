@@ -1,7 +1,7 @@
 <!-- =======================================================================
  * File: screens/settings.html
  * Author: Thomas Paul Seyfors
- * Version: 3.0.1
+ * Version: 3.0.2
  * Date: August 2026
  * ======================================================================= -->
 <!-- SCREEN 7: SETTINGS PAGE -->
@@ -33,11 +33,18 @@
     </div>
   </div>
 
+  <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+    <div class="form-label">User Manual:</div>
+    <div class="input-wrapper">
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; width: 100%; padding: 8px;" onclick="UIManager.openHelpScreen()">📖 Operations Guide</button>
+    </div>
+  </div>
+
   <div class="form-row" style="margin-top: 20px;">
     <div class="form-label">App Version:</div>
     <div class="input-wrapper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
       <div>
-        <span style="font-weight: bold; color: #0277bd;">v3.0.1</span>
+        <span style="font-weight: bold; color: #0277bd;">v3.0.2</span>
         <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; margin-left: 10px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
       </div>
       <button class="btn-small btn-cancel btn-auto" onclick="AuthManager.logout()">🚪 Log Out</button>

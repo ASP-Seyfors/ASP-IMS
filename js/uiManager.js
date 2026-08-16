@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/uiManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.1
+ * Version: 3.0.2
  * Date: August 2026
  * 
  * Description:
@@ -382,26 +382,51 @@ const UIManager = {
   },
 
   async triggerShareOrDownload(content, filename, mimeType) {
-    if (window.showSaveFilePicker) {
-      try {
-        const handle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Export Document', accept: { [mimeType]: [filename.substring(filename.lastIndexOf('.'))] } }] });
-        const writable = await handle.createWritable();
-        await writable.write(content);
-        await writable.close();
-        alert("Export successful!");
-        return;
-      } catch (err) { if (err.name === 'AbortError') return; }
-    }
-    let file = new File([content], filename, { type: mimeType });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: filename }); return; } catch (e) { console.warn("Share fallback."); }
-    }
     try {
-        let blob = new Blob([content], { type: mimeType });
-        let a = document.createElement('a'); let url = window.URL.createObjectURL(blob);
-        a.style.display = 'none'; a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); document.body.removeChild(a);
-        alert("Export successfully saved to Downloads!");
-    } catch (e) { alert("Export failed: " + e.message); }
+      // Create a Blob and generate an object URL
+      let blob = new Blob([content], { type: mimeType });
+      let a = document.createElement('a');
+      let url = window.URL.createObjectURL(blob);
+      
+      // Assign download attributes and trigger silently
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up DOM and memory
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      alert("Export failed: " + e.message);
+    }
+  },
+
+  async openHelpScreen() {
+    document.getElementById('screenSettings').style.display = 'none';
+    document.getElementById('screenHelp').style.display = 'block';
+
+    const container = document.getElementById('helpContentContainer');
+    try {
+      let res = await fetch('Help.md');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      let mdText = await res.text();
+      
+      if (typeof showdown !== 'undefined') {
+        let converter = new showdown.Converter({ tables: true, strikethrough: true, tasklists: true });
+        container.innerHTML = converter.makeHtml(mdText);
+      } else {
+        // Fallback if CDN is offline
+        container.innerHTML = `<pre style="white-space:pre-wrap; font-family:inherit;">${mdText}</pre>`;
+      }
+    } catch (err) {
+      container.innerHTML = `<div style="color:#c62828; padding:10px;">Failed to load Help.md: ${err.message}</div>`;
+    }
+  },
+
+  closeHelpScreen() {
+    document.getElementById('screenHelp').style.display = 'none';
+    document.getElementById('screenSettings').style.display = 'block';
   }
 };

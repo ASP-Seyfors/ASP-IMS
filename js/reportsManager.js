@@ -2,7 +2,7 @@
  * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
  * File: js/reportsManager.js
  * Author: Thomas Paul Seyfors
- * Version: 3.0.1
+ * Version: 3.0.2
  * ======================================================================= */
 const ReportsManager = {
 
