@@ -194,6 +194,17 @@ const SessionManager = {
     }
   },
 
+  async triggerQboSync() {
+    // Double-check security at the function level
+    if (typeof AuthManager === 'undefined' || !AuthManager.currentUser || !AuthManager.currentUser.isAdmin) {
+      alert("Access Denied: You must be an Administrator to run QuickBooks automations.");
+      return;
+    }
+    
+    alert("QBO Sync Initiated! (Wiring to Apps Script pending...)");
+    // We will put the Google Apps Script fetch call here once the script is ready
+  },
+
   loadSelectedStagedOrder(sessionName) {
     if (!sessionName || !this.fetchedStagedData[sessionName]) return;
     

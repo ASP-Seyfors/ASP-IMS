@@ -94,6 +94,7 @@ const AuthManager = {
     let btnStock = document.getElementById('btnStocktake');
     let btnTrace = document.getElementById('btnTraceability');
     let roleBadge = document.getElementById('userRoleBadge');
+    let rowQboSync = document.getElementById('rowQboSync');
 
     if (this.isGuest) {
       // LOCKDOWN MODE
@@ -107,6 +108,8 @@ const AuthManager = {
       if (enterpriseHub) enterpriseHub.style.display = 'none';
       if (btnStock) btnStock.style.display = 'none';
       if (btnTrace) btnTrace.style.display = 'none';
+
+      if (rowQboSync) rowQboSync.style.display = 'none';
       
       if (roleBadge) {
         roleBadge.textContent = "Guest Mode";
@@ -130,7 +133,12 @@ const AuthManager = {
       if (archiveBtn) archiveBtn.style.display = 'inline-block';
       if (lookupBtn) lookupBtn.style.display = 'inline-block';
       if (userNameInput) userNameInput.value = this.currentUser.name.split(' ')[0];
-      
+
+      // Strict Admin Check for QBO Sync
+      if (rowQboSync) {
+        rowQboSync.style.display = this.currentUser.isAdmin ? 'flex' : 'none';
+      }
+
       if (roleBadge) {
         roleBadge.textContent = "Verified Workspace";
         roleBadge.style.backgroundColor = "#2e7d32";
