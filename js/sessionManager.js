@@ -196,15 +196,34 @@ const SessionManager = {
     }
   },
 
-  async triggerQboSync() {
-    // Double-check security at the function level
+  async triggerQboSync(event) {
     if (typeof AuthManager === 'undefined' || !AuthManager.currentUser || !AuthManager.currentUser.isAdmin) {
       alert("Access Denied: You must be an Administrator to run QuickBooks automations.");
       return;
     }
     
-    alert("QBO Sync Initiated! (Wiring to Apps Script pending...)");
-    // We will put the Google Apps Script fetch call here once the script is ready
+    const btn = event ? event.target : null;
+    const originalText = btn ? btn.textContent : "Fetch QBO";
+    if (btn) { btn.textContent = "⏳ Fetching QBO..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    try {
+      // 1. Trigger the Apps Script backend to pull open invoices from QBO Sandbox into ASP_Scanner_Feed
+      let res = await fetch(this.googleFeederUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: "FETCH_QBO" })
+      });
+
+      // 2. Fetch the newly populated staged feed into the app
+      await this.fetchStagedSessions(true);
+
+      alert("✅ QuickBooks Sync Complete! Check the Shipments & Orders Feed dropdown above.");
+    } catch (err) {
+      alert("Error triggering QBO Sync: " + err.message);
+    } finally {
+      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+    }
   },
 
   loadSelectedStagedOrder(sessionName) {
