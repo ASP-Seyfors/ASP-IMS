@@ -126,7 +126,8 @@ const SessionManager = {
           payload: session
         };
 
-        await fetch(this.googleFeederUrl, {
+        // TARGET: ASP_SCANNER_DATABASE (Cloud_Archive tab)
+        await fetch(this.cloudArchiveUrl, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
