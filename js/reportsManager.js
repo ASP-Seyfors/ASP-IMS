@@ -319,7 +319,21 @@ const ReportsManager = {
       if (sess.status === 'Completed' && sess.scannedObjects) {
         sess.scannedObjects.forEach(s => {
           let key = `${s.ref}_${s.lot}_${s.exp}`;
-          if (!lotMap[key]) lotMap[key] = { ref: s.ref, lot: s.lot, exp: s.exp, mfr: s.mfr, qty: 0 };
+          
+          // --- FIX: Lookup MFR from Master DB if missing from legacy logs ---
+          let displayMfr = s.mfr;
+          if (!displayMfr || displayMfr === 'N/A' || displayMfr === 'UNKNOWN MANUFACTURER') {
+             if (typeof DatabaseManager !== 'undefined') {
+                 let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (s.ref || '').toUpperCase());
+                 if (dbMatch && dbMatch.mfr) {
+                     displayMfr = dbMatch.mfr;
+                 } else {
+                     displayMfr = 'Unknown';
+                 }
+             }
+          }
+
+          if (!lotMap[key]) lotMap[key] = { ref: s.ref, lot: s.lot, exp: s.exp, mfr: displayMfr, qty: 0 };
           if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) lotMap[key].qty += s.qty;
           else if (sess.workflowType.includes('Packing')) lotMap[key].qty -= s.qty;
         });
@@ -349,7 +363,6 @@ const ReportsManager = {
 
     html += `</tbody></table></body></html>`;
     
-    // --- NEW FILENAME LOGIC START ---
     let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
     let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}.pdf`;
     
@@ -360,6 +373,5 @@ const ReportsManager = {
       win.focus(); 
       setTimeout(() => win.print(), 500); 
     }
-    // --- NEW FILENAME LOGIC END ---
   }
 };
