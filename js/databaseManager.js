@@ -222,16 +222,14 @@ const DatabaseManager = {
     });
   },
 
-  // --- UPDATED: TEXT-WRAP GRID EDITOR ---
+  // --- UPDATED: TEXT-WRAP GRID EDITOR WITH ADMIN-LOCKED COST & PRICE ---
   renderDbGridEditor() {
     const tbody = document.getElementById('dbGridBody');
     if (!tbody) return;
     
-    // --- NEW FILTER LOGIC START ---
     let searchQuery = (document.getElementById('dbSearchInput') ? document.getElementById('dbSearchInput').value.toLowerCase().trim() : '');
     let mfrFilter = (document.getElementById('dbMfrFilter') ? document.getElementById('dbMfrFilter').value : 'ALL');
 
-    // Populate MFR dropdown if empty
     let mfrDropdown = document.getElementById('dbMfrFilter');
     if (mfrDropdown && mfrDropdown.options.length <= 1) {
       let uniqueMfrs = [...new Set(this.db.map(i => i.mfr).filter(Boolean))].sort();
@@ -239,10 +237,8 @@ const DatabaseManager = {
         let opt = document.createElement('option'); opt.value = m; opt.textContent = m; mfrDropdown.appendChild(opt);
       });
     }
-    // --- NEW FILTER LOGIC END ---
 
-    // Ensure item has a category property, apply filters, then sort MFR -> REF
-    let dbCopy = this.db.map(i => ({ ...i, category: i.category || '' }))
+    let dbCopy = this.db.map(i => ({ ...i, category: i.category || '', cost: i.cost || '$0.00' }))
       .filter(i => {
         let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
         let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;
@@ -254,20 +250,25 @@ const DatabaseManager = {
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
 
     dbCopy.forEach((item, idx) => {
-      // THE FIX: This logic MUST be inside the loop!
+      // SECURITY: Restrict both Price and Cost editing to Admin accounts (Jessica & Thomas)
       let priceInputHtml = isAdmin 
-        ? `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px;">` 
-        : `<input type="text" id="grid_price_${idx}" value="${item.price || ''}" style="width:80px; padding:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to change pricing.">`;
+        ? `<input type="text" id="grid_price_${idx}" value="${item.price || '$0.00'}" style="width:75px; padding:4px;">` 
+        : `<input type="text" id="grid_price_${idx}" value="${item.price || '$0.00'}" style="width:75px; padding:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to edit pricing.">`;
+
+      let costInputHtml = isAdmin 
+        ? `<input type="text" id="grid_cost_${idx}" value="${item.cost || '$0.00'}" style="width:75px; padding:4px;">` 
+        : `<input type="text" id="grid_cost_${idx}" value="***" style="width:75px; padding:4px; background-color:#f5f5f5; color:#999; text-align:center;" readonly title="Restricted Admin Data">`;
 
       html += `
         <tr style="border-bottom: 1px solid #eee;">
-          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:100px; padding:4px;"></td>
+          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:90px; padding:4px;"></td>
           <td style="padding:4px; font-weight:bold; vertical-align:top;">${item.ref || item.sku}</td>
           <td style="padding:4px; vertical-align:top;">
             <textarea id="grid_desc_${idx}" style="width:100%; padding:4px; resize:vertical; min-height:40px; font-family:inherit; font-size:0.85rem; line-height:1.2;">${item.desc || ''}</textarea>
           </td>
-          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:100px; padding:4px;"></td>
+          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:90px; padding:4px;"></td>
           <td style="padding:4px; vertical-align:top;">${priceInputHtml}</td>
+          <td style="padding:4px; vertical-align:top;">${costInputHtml}</td>
           <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
         </tr>
       `;
@@ -284,25 +285,28 @@ const DatabaseManager = {
     const tbody = document.getElementById('dbGridBody');
     let rows = tbody.querySelectorAll('tr');
     let updatedCount = 0;
+    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
 
     rows.forEach((row, idx) => {
       let ref = document.getElementById(`grid_ref_${idx}`).value;
       let mfr = document.getElementById(`grid_mfr_${idx}`).value.trim();
       let desc = document.getElementById(`grid_desc_${idx}`).value.trim();
       let cat = document.getElementById(`grid_cat_${idx}`).value.trim();
-      let gtin = document.getElementById(`grid_gtin_${idx}`).value.trim();
-
       let price = document.getElementById(`grid_price_${idx}`).value.trim();
+      let costEl = document.getElementById(`grid_cost_${idx}`);
+      let cost = (isAdmin && costEl) ? costEl.value.trim() : null;
 
       let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
       if (dbItem) {
-        // ADDED THE PRICE CHECK TO THIS LINE
-        if (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.gtin !== gtin || dbItem.price !== price) {
+        let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
+        if (changed) {
           dbItem.mfr = mfr;
           dbItem.desc = desc;
           dbItem.category = cat;
-          dbItem.gtin = gtin;
-          dbItem.price = price;
+          if (isAdmin) {
+            dbItem.price = price;
+            if (cost !== null) dbItem.cost = cost;
+          }
           updatedCount++;
         }
       }

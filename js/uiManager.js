@@ -148,8 +148,9 @@ const UIManager = {
     let ref = DatabaseManager.getItemSku(item);
     let mfr = DatabaseManager.getItemVendor(item) || 'ETHICON';
     let desc = DatabaseManager.getItemDesc(item) || 'No description available.';
+    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
     let price = item.price || '$0.00';
-    let cost = item.cost || '$0.00';
+    let cost = isAdmin ? (item.cost || '$0.00') : '<span style="color:#999; font-style:italic;">Admin Only</span>';
     
     // Parse On-Hand FEFO Inventory
     let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];

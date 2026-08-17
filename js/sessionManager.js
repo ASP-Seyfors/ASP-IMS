@@ -876,7 +876,15 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let isNewRef = false;
     if (!this.currentMatchedItem && ref) {
       isNewRef = true;
-      let newItem = { gtin: (gtin === "N/A" ? "" : gtin), sku: ref, ref: ref, desc: desc, price: "$0.00", mfr: vendor };
+      let newItem = { 
+        gtin: (gtin === "N/A" ? "" : gtin), 
+        sku: ref, 
+        ref: ref, 
+        desc: desc, 
+        price: "$0.00", 
+        cost: "$0.00", // <-- Initialize default cost for newly scanned SKUs
+        mfr: vendor 
+      };
       DatabaseManager.db.push(newItem);
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       this.pendingNewItems.push(newItem);
