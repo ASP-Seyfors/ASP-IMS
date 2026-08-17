@@ -62,6 +62,9 @@ const ReportsManager = {
       title = "Items Requiring Pricing or Cost";
     }
 
+    // --- ADD THIS NEW SORTING LINE ---
+    filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
+    
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
