@@ -538,6 +538,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
 
+    // Read the scope selected in screens/reports.html
+    let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
+    let limit = scopeRadio ? scopeRadio.value : '10';
+
     let modal = document.createElement('div');
     modal.id = 'internalReportOptionsModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
@@ -549,6 +553,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           <button onclick="document.getElementById('internalReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         <div style="margin-bottom:15px; font-size:0.85rem;">Account: <strong>${cust}</strong><br>Select the columns you want to include in the PDF export:</div>
+        
         <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#fafafa; border:1px solid #ddd; padding:12px; border-radius:4px;">
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntDesc" checked> Description</label>
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntHist" checked> Historical Vol.</label>
@@ -557,9 +562,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntCost" checked> Unit Cost</label>
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntMargin" checked> Gross Margin %</label>
         </div>
+
         <div style="display:flex; justify-content:flex-end; gap:10px;">
           <button onclick="document.getElementById('internalReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.generateInternalSalesReport('${cust}')" style="background:#388e3c; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
+          <!-- Pass the limit variable straight into generateInternalSalesReport -->
+          <button onclick="AuditManager.generateInternalSalesReport('${cust}', '${limit}')" style="background:#388e3c; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
         </div>
       </div>
     `;
@@ -569,6 +576,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   generateInternalSalesReport(cust) {
     if (!cust) return;
     
+    // Read the limit selection from the modal radio buttons
+    let limitRadio = document.querySelector('input[name="internalReportScope"]:checked');
+    let limit = limitRadio ? limitRadio.value : '10';
+
     let incDesc = document.getElementById('chkIntDesc') ? document.getElementById('chkIntDesc').checked : true;
     let incHist = document.getElementById('chkIntHist') ? document.getElementById('chkIntHist').checked : true;
     let incOnHand = document.getElementById('chkIntOnHand') ? document.getElementById('chkIntOnHand').checked : true;
@@ -576,8 +587,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let incCost = document.getElementById('chkIntCost') ? document.getElementById('chkIntCost').checked : true;
     let incMargin = document.getElementById('chkIntMargin') ? document.getElementById('chkIntMargin').checked : true;
 
+    let scopeTitle = limit === 'all' ? 'All Historical Items' : 'Top 10 Items';
     let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}.pdf`;
-    let skuMap = this.getHistoricalCustomerData(cust);
+    
+    // Pass the limit parameter here!
+    let skuMap = this.getHistoricalCustomerData(cust, limit); 
     
     let html = `<!DOCTYPE html><html><head><title>${filename}</title>
     <style>
@@ -605,7 +619,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     </div>
 
     <div class="summary-box">
-      <strong>Internal Strategy Brief:</strong> Top 10 historical purchasing trends and live warehouse stock availability for account <strong>${cust}</strong>.
+      <strong>Internal Strategy Brief:</strong> ${scopeTitle} purchasing trends and live warehouse stock availability for account <strong>${cust}</strong>.
     </div>
 
     <table>
