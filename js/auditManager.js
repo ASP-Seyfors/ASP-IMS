@@ -1099,12 +1099,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                 });
 
                 // Also push to Medline/Suture Orders backend
-                await fetch(SessionManager.googleFeederUrl, {
-                  method: 'POST',
-                  mode: 'no-cors',
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: sessionObj })
-                });
+                // await fetch(SessionManager.googleFeederUrl, {
+                //  method: 'POST',
+                //  mode: 'no-cors',
+                //  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                //  body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: sessionObj })
+                //});
                 
                 newUploads++;
               } else {

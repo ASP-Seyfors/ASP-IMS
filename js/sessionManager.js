@@ -40,14 +40,16 @@ const SessionManager = {
   cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
 
   pushToCloudArchive(sessionObj) {
-    if (!this.googleFeederUrl) return;
+    // UPDATED: Now checking and using cloudArchiveUrl instead of googleFeederUrl
+    if (!this.cloudArchiveUrl) return; 
     
     let payload = {
       action: "ARCHIVE_SESSION",
       payload: sessionObj
     };
 
-    fetch(this.googleFeederUrl, {
+    // UPDATED: Push strictly to the ASP_SCANNER_DATABASE backend
+    fetch(this.cloudArchiveUrl, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
