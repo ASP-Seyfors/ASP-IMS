@@ -932,7 +932,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.updateManifestProgressUI();
     this.returnToEdit();
 
-    this.saveToArchive('Active');
+    this.saveToArchive('Pending');
   },
 
   goToSummaryScreen() {
@@ -1240,14 +1240,15 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_session_is_active', 'false'); 
     localStorage.setItem('asp_manifest_enabled', 'false');
 
-    this.saveToArchive('Pending Backorder');
+    this.saveToArchive('Pending');
   },
 
   // ==========================================
   // SESSION ARCHIVE ENGINE
   // ==========================================
-  saveToArchive(status = 'Active') {
+  saveToArchive(status = 'Pending') { 
     if (!this.sessionId || this.scannedObjects.length === 0) return;
+    // ... rest of the function remains the same
     
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     let sessionObj = {
@@ -1346,7 +1347,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
     this.updateManifestProgressUI();
-    this.saveToArchive('Active');
+    this.saveToArchive('Pending');
     
     alert(`Updated REF ${this.scannedObjects[index].ref} (Qty: ${newQty}${newTag ? ', Tag: ' + newTag : ''})`);
     AuditManager.updateSessionSummaryView();
@@ -1363,7 +1364,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.scannedObjects.splice(index, 1);
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
     this.updateManifestProgressUI();
-    this.saveToArchive('Active');
+    this.saveToArchive('Pending');
 
     AuditManager.updateSessionSummaryView();
     this.renderManifestReconciliation();
@@ -1412,7 +1413,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let filtered = archive.filter(s => {
       if (s.lastUpdated < cutoff) return false;
       if (hideCancelled && s.status === 'Cancelled') return false;
-      if (onlyActive && s.status !== 'Active') return false;
+      // UPDATED: Now filters for 'Pending' instead of 'Active'
+      if (onlyActive && s.status !== 'Pending') return false; 
       return true;
     });
 
@@ -1423,7 +1425,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let html = '';
     filtered.forEach(s => {
-      let statusColor = s.status === 'Completed' ? '#2e7d32' : (s.status === 'Cancelled' ? '#d32f2f' : (s.status === 'Active' ? '#0277bd' : '#f57f17'));
+      // UPDATED: Map 'Pending' to the blue color
+      let statusColor = s.status === 'Completed' ? '#2e7d32' : (s.status === 'Cancelled' ? '#d32f2f' : (s.status === 'Pending' ? '#0277bd' : '#f57f17'));
       
       let itemsPreview = s.scannedObjects.map(item => `<li>${item.qty}x ${item.ref}</li>`).join('');
       if(!itemsPreview) itemsPreview = '<li>No items scanned</li>';
