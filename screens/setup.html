@@ -11,11 +11,13 @@
 <!-- SCREEN 1: SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
   
-  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
+  <<div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
     <h2 style="border:none; margin:0; padding:0; display:flex; align-items:center; gap:8px;">
       ASP Scanner <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
     </h2>
     <div style="display: flex; gap: 10px; align-items: center;">
+      <span id="syncIndicator" style="display:none; color:#c62828; font-weight:bold; font-size:0.85rem;">🔴 Updates Pending</span>
+      
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 4px 10px;" onclick="masterSystemSync(event)">🔄 Sync System</button>
       <label style="font-size: 0.85rem; font-weight: bold; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px;">
         <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> Advanced
@@ -93,7 +95,7 @@
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; width: 80%; max-width: 300px;" onclick="startSession()">Start Scanning Session</button>
   </div>
 
-  <!-- 3. Enterprise Data Hub (Contains Reports, Database Editor, Stocktake, Traceability) -->
+  <!-- 3. Enterprise Data Hub (Contains Reports, Database Editor, Stocktake, Traceability, Lookup, QBO) -->
   <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
     <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📈 Enterprise Data Hub</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -101,17 +103,15 @@
       <button class="btn-action btn-auto" style="background-color: #00796b; color: #fff; margin:0;" onclick="UIManager.openDbEditor()">🗄️ Database Editor</button>
       <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #c67d00; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()">📋 Stocktake</button>
       <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">📦 Traceability</button>
+      <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #00897b; color: #ffffff; margin: 0;" onclick="UIManager.openQuickLookupModal()">🔍 Item Lookup</button>
+      <button id="btnQBO" class="btn-action btn-auto" style="background-color: #1565c0; color: #ffffff; margin: 0;" onclick="UIManager.openQboModal()">☁️ QBO</button>
     </div>
   </div>
 
-  <!-- Bottom Navigation & Utility Footer Grid -->
+  <!-- Bottom Navigation & Utility Footer Grid (Cleaned Up) -->
   <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px; gap: 10px;">
     <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()">Session Archive</button>
-    
-    <div style="display: flex; gap: 8px;">
-      <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #00796b; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="UIManager.openQuickLookupModal()">🔍 Item Lookup</button>
-      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
-    </div>
+    <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
   </div>
 </div>
 
@@ -125,17 +125,5 @@
       <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff;" onclick="SessionManager.startStocktakeSession('Selection')">🎯 Start Selection Stocktake</button>
       <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
     </div>
-  </div>
-</div>
-
-<!-- QBO Sandbox Sync Button -->
-<div class="setup-row" id="rowQboSync" style="display:none;">
-  <div class="setup-icon">☁️</div>
-  <div class="setup-content">
-    <div class="setup-title" style="color: #0277bd;">QBO Sandbox Sync (Admin Only)</div>
-    <div class="setup-desc">Fetch staged orders from QuickBooks Sandbox.</div>
-  </div>
-  <div class="setup-action">
-    <button class="btn-action" style="background-color: #0277bd;" onclick="triggerQboSync()">Fetch QBO</button>
   </div>
 </div>

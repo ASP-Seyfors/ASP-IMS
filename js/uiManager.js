@@ -390,6 +390,53 @@ const UIManager = {
     }
   },
 
+  openQboModal() {
+    let modal = document.getElementById('qboModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'qboModal';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+      
+      modal.innerHTML = `
+        <div style="background:#fff; border-radius:8px; width:100%; max-width:480px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1565c0; padding-bottom:8px; margin-bottom:15px;">
+            <h3 style="margin:0; color:#1565c0;">☁️ QuickBooks Online Sync</h3>
+            <button onclick="document.getElementById('qboModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+          </div>
+          
+          <p style="font-size:0.85rem; color:#555; margin-bottom:20px;">
+            Fetch open invoices from QuickBooks Online and stage them in the Shipments & Orders Feed for picking and fulfillment.
+          </p>
+
+          <div style="text-align:center; margin-bottom: 20px;">
+            <button class="btn-action btn-auto" style="background-color: #1565c0; color: #fff; width: 100%; padding: 12px; font-size: 1rem;" onclick="triggerQboSync(event); document.getElementById('qboModal').style.display='none';">Fetch QBO Orders</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+  },
+
+  evaluateSyncIndicator() {
+    let indicator = document.getElementById('syncIndicator');
+    if (!indicator) return;
+
+    // Check if we have un-pushed completed sessions
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let unpushedCompleted = archive.filter(s => s.status === 'Completed').length > 0;
+    
+    // Check if we have un-pushed database changes (New Items or Field Updates)
+    let pendingNew = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
+    let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
+
+    if (unpushedCompleted || pendingNew.length > 0 || pendingUpd.length > 0) {
+      indicator.style.display = 'inline-block';
+    } else {
+      indicator.style.display = 'none';
+    }
+  },
+
   async openHelpScreen() {
     document.getElementById('screenSettings').style.display = 'none';
     document.getElementById('screenHelp').style.display = 'block';

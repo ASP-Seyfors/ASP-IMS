@@ -57,45 +57,95 @@ async function checkAppUpdates() {
 }
 
 window.onload = async () => { 
-  // 1. STITCH THE UI TOGETHER FIRST
   if (typeof ComponentManager !== 'undefined') {
     await ComponentManager.loadAllScreens();
   }
 
-  // 2. BOOT THE APP LOGIC
   UIManager.loadSavedTheme(); 
   DatabaseManager.init(); 
   SessionManager.init();
   UIManager.toggleSessionType(); 
   
-  // LOAD ADVANCED MODE STATE
   if (typeof UIManager.loadSavedAdvancedMode === 'function') {
     UIManager.loadSavedAdvancedMode();
   }
 
-  // TRIGGER AUTHENTICATION GATEKEEPER
   if (typeof AuthManager !== 'undefined') {
     AuthManager.init();
+  }
+
+  // NEW: Check if we need to show the red dot on load
+  if (typeof UIManager.evaluateSyncIndicator === 'function') {
+    UIManager.evaluateSyncIndicator();
   }
 };
 
 window.masterSystemSync = async (event) => {
-  const btn = event ? event.target : null;
-  const originalText = btn ? btn.textContent : "🔄 Sync System";
-  if (btn) { btn.textContent = "⏳ Syncing All..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+  // 1. Create and show the progress modal
+  let modal = document.getElementById('syncProgressModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'syncProgressModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    document.body.appendChild(modal);
+  }
   
+  modal.innerHTML = `
+    <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+      <h3 style="margin:0 0 15px 0; color:#0277bd; text-align:center;">🔄 Master System Sync</h3>
+      <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Uploading Local History...</div>
+      <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Syncing Master Database...</div>
+      <div id="syncStep3" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 3. Downloading Cloud Archive...</div>
+      <div id="syncStep4" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 4. Fetching Orders Feed...</div>
+      <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+        <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+  
+  const updateStep = (stepNum, text, progress) => {
+    let el = document.getElementById(`syncStep${stepNum}`);
+    if (el) {
+      el.innerHTML = `✅ <span style="color:#2e7d32;">${text}</span>`;
+    }
+    document.getElementById('syncProgressBar').style.width = `${progress}%`;
+  };
+
   try {
-    if (typeof SessionManager.pushLegacySessionsToCloud === 'function') await SessionManager.pushLegacySessionsToCloud(null, true);
-    if (typeof DatabaseManager.syncMasterDatabase === 'function') await DatabaseManager.syncMasterDatabase(null, true);
-    if (typeof SessionManager.syncCloudArchive === 'function') await SessionManager.syncCloudArchive(null, true);
-    // NEW: Also sync the shipments & orders feed automatically
-    if (typeof SessionManager.fetchStagedSessions === 'function') await SessionManager.fetchStagedSessions(true);
-    
-    if(btn) alert("✅ System fully synchronized! Master catalog, session archives, and orders feed are up to date.");
+    if (typeof SessionManager.pushLegacySessionsToCloud === 'function') {
+      await SessionManager.pushLegacySessionsToCloud(null, true);
+    }
+    updateStep(1, "Local History Uploaded", 25);
+
+    if (typeof DatabaseManager.syncMasterDatabase === 'function') {
+      await DatabaseManager.syncMasterDatabase(null, true);
+    }
+    updateStep(2, "Master Database Synced", 50);
+
+    if (typeof SessionManager.syncCloudArchive === 'function') {
+      await SessionManager.syncCloudArchive(null, true);
+    }
+    updateStep(3, "Cloud Archive Downloaded", 75);
+
+    if (typeof SessionManager.fetchStagedSessions === 'function') {
+      await SessionManager.fetchStagedSessions(true);
+    }
+    updateStep(4, "Orders Feed Fetched", 100);
+
+    setTimeout(() => {
+      modal.style.display = 'none';
+      if (typeof UIManager.evaluateSyncIndicator === 'function') UIManager.evaluateSyncIndicator();
+      alert("✅ System fully synchronized! Master catalog, session archives, and orders feed are up to date.");
+    }, 600);
+
   } catch(err) {
-    if(btn) alert("Sync error: " + err.message);
-  } finally {
-    if(btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center;">
+        <h3 style="color:#c62828;">❌ Sync Error</h3>
+        <p style="color:#555; font-size:0.9rem;">${err.message}</p>
+        <button onclick="document.getElementById('syncProgressModal').style.display='none'" style="background:#0277bd; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-weight:bold;">Close</button>
+      </div>`;
   }
 };
 window.changeAppTheme = (val) => UIManager.changeAppTheme(val);
@@ -152,3 +202,4 @@ window.openHelpScreen = () => UIManager.openHelpScreen();
 window.closeHelpScreen = () => UIManager.closeHelpScreen();
 window.batchPushLegacyLogs = (e) => AuditManager.batchPushLegacyLogs(e);
 window.triggerQboSync = () => SessionManager.triggerQboSync();
+window.openQboModal = () => UIManager.openQboModal();
