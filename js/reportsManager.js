@@ -78,7 +78,9 @@ const ReportsManager = {
           ${incMfr ? '<th>Manufacturer</th>' : ''}
           <th>REF / SKU</th>
           ${incDesc ? '<th>Description</th>' : ''}
-          <th>On-Hand</th>
+          <th style="text-align:center;">Total Qty</th>
+          <th style="text-align:center;">Reserved</th>
+          <th style="text-align:center; color:#2e7d32;">Available</th>
           ${incPrice ? '<th>Price</th>' : ''}
         </tr>
       </thead>
@@ -90,7 +92,9 @@ const ReportsManager = {
         ${incMfr ? `<td>${item.mfr || 'UNKNOWN'}</td>` : ''}
         <td style="font-weight:bold; color:#0277bd;">${item.ref || item.sku}</td>
         ${incDesc ? `<td style="font-size:11px; color:#555;">${item.desc || '--'}</td>` : ''}
-        <td style="text-align:center; font-weight:bold; font-size:14px;">${item.onHand || 0}</td>
+        <td style="text-align:center; font-weight:bold; color:#555;">${item.onHand || 0}</td>
+        <td style="text-align:center; font-weight:bold; color:#d32f2f;">${item.reservedQty || 0}</td>
+        <td style="text-align:center; font-weight:bold; font-size:14px; color:#2e7d32;">${item.availableQty || 0}</td>
         ${incPrice ? `<td>${formattedPrice}</td>` : ''}
       </tr>`;
     });
