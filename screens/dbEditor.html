@@ -24,6 +24,9 @@
     <select id="dbMfrFilter" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px;" onchange="DatabaseManager.renderDbGridEditor()">
       <option value="ALL">All Manufacturers</option>
     </select>
+    <label style="font-weight:bold; cursor:pointer; margin-left: 15px; color: #d32f2f;">
+      <input type="checkbox" id="chkNeedsPrice" onchange="DatabaseManager.renderDbGridEditor()"> Show Needs Price/Cost Only
+    </label>
   </div>
   
   <div style="overflow-x: auto; max-height: 60vh; border: 1px solid #ccc; margin-bottom: 15px;">

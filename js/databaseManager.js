@@ -229,6 +229,9 @@ const DatabaseManager = {
     
     let searchQuery = (document.getElementById('dbSearchInput') ? document.getElementById('dbSearchInput').value.toLowerCase().trim() : '');
     let mfrFilter = (document.getElementById('dbMfrFilter') ? document.getElementById('dbMfrFilter').value : 'ALL');
+    
+    // NEW: Check the toggle state
+    let needsPriceFilter = document.getElementById('chkNeedsPrice') ? document.getElementById('chkNeedsPrice').checked : false;
 
     let mfrDropdown = document.getElementById('dbMfrFilter');
     if (mfrDropdown && mfrDropdown.options.length <= 1) {
@@ -242,7 +245,13 @@ const DatabaseManager = {
       .filter(i => {
         let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
         let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;
-        return matchesSearch && matchesMfr;
+        
+        // CORRECTION: Filter out items if they have both a valid price AND a valid cost
+        let matchesPrice = needsPriceFilter ? 
+          (!i.price || i.price === '$0.00' || i.price === '0' || !i.cost || i.cost === '$0.00' || i.cost === '0') 
+          : true;
+        
+        return matchesSearch && matchesMfr && matchesPrice;
       })
       .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     
@@ -268,8 +277,10 @@ const DatabaseManager = {
           </td>
           <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:90px; padding:4px;"></td>
           <td style="padding:4px; vertical-align:top;">${priceInputHtml}</td>
-          <td style="padding:4px; vertical-align:top;">${costInputHtml}</td>
-          <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
+          <td style="padding:4px; vertical-align:top;">
+             ${costInputHtml}
+             <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
+          </td>
         </tr>
       `;
     });
