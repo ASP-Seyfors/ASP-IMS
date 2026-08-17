@@ -1020,15 +1020,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Pull the current archive (which mirrors the cloud)
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    
     let newUploads = 0;
     let skipped = 0;
 
     alert(`Starting cloud extraction for ${files.length} historical log(s). Please wait...`);
 
-    let filePromises = Array.from(files).map(file => {
+    let filePromises = Array.from(files).map((file, fileIdx) => {
       return new Promise((resolve) => {
         let reader = new FileReader();
         reader.onload = async (e) => {
@@ -1037,24 +1035,36 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             let parsed = AuditManager.parseTXTExportContent(text, file.name);
             
             if (parsed && parsed.items && parsed.items.length > 0) {
-              // Create a deterministic ID to track this specific legacy run
-              let safeDate = (parsed.date || 'Unknown').replace(/[^a-zA-Z0-9]/g, '');
-              let safeName = (parsed.sessionName || 'Session').replace(/[^a-zA-Z0-9]/g, '');
-              let detId = `legacy_${safeDate}_${safeName}`;
-              
-              // DEDUPLICATION CHECK: Look for matching ID or exact Name + Date match
-              let exists = archive.find(s => s.id === detId || (s.sessionName === parsed.sessionName && s.dateStr === parsed.date));
+              // 1. Normalize Date to standard YYYY.MM.DD
+              let rawDate = (parsed.date || '2026.01.01').trim();
+              let dateParts = rawDate.split(/[\.\-\/]/);
+              let normalizedDateStr = rawDate;
+              if (dateParts.length === 3) {
+                if (dateParts[0].length === 4) {
+                  normalizedDateStr = `${dateParts[0]}.${dateParts[1].padStart(2, '0')}.${dateParts[2].padStart(2, '0')}`;
+                } else {
+                  normalizedDateStr = `${dateParts[2]}.${dateParts[0].padStart(2, '0')}.${dateParts[1].padStart(2, '0')}`;
+                }
+              }
+
+              // 2. Generate clean 13-digit numeric timestamp ID
+              let baseTimestamp = new Date(normalizedDateStr.replace(/\./g, '-')).getTime();
+              if (isNaN(baseTimestamp)) baseTimestamp = Date.now();
+              // Offset slightly by file index to guarantee absolute uniqueness
+              let cleanNumericId = (baseTimestamp + (fileIdx * 60000) + Math.floor(Math.random() * 1000)).toString();
+
+              // Check deduplication against current archive
+              let exists = archive.find(s => s.sessionName === parsed.sessionName && s.dateStr === normalizedDateStr);
               
               if (!exists) {
-                // Translate the text data back into a cloud-compatible JSON object
                 let sessionObj = {
-                  id: detId,
+                  id: cleanNumericId,
                   status: 'Completed',
-                  userName: parsed.user || 'Legacy User',
+                  userName: (parsed.user && parsed.user !== 'N/A') ? parsed.user : 'Thomas',
                   sessionName: parsed.sessionName,
                   orderNum: '',
                   workflowType: parsed.workflow,
-                  dateStr: parsed.date,
+                  dateStr: normalizedDateStr,
                   startStr: 'Historical Import',
                   manifestEnabled: false,
                   expectedManifest: [],
@@ -1075,13 +1085,20 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                   })),
                   pendingNewItems: parsed.newItems || [],
                   pendingUpdates: parsed.updatedItems || [],
-                  lastUpdated: Date.now()
+                  lastUpdated: baseTimestamp
                 };
                 
-                // Save to local cache
                 archive.push(sessionObj);
                 
-                // Push sequentially to the Orders sheet endpoint
+                // Push to ASP_SCANNER_DATABASE backend
+                await fetch(SessionManager.cloudArchiveUrl, {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: sessionObj })
+                });
+
+                // Also push to Medline/Suture Orders backend
                 await fetch(SessionManager.googleFeederUrl, {
                   method: 'POST',
                   mode: 'no-cors',
@@ -1103,14 +1120,14 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       });
     });
 
-    // Wait for all files to be read, checked, and pushed
     await Promise.all(filePromises);
     
-    // Update local storage so subsequent clicks remember the new files
+    // Sort archive newest first and save
+    archive.sort((a,b) => b.lastUpdated - a.lastUpdated);
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
     
     alert(`☁️ Cloud Batch Upload Complete!\n\n✅ Successfully Pushed: ${newUploads}\n⏭️ Skipped (Already Existed): ${skipped}`);
-    event.target.value = ''; // Reset input
+    event.target.value = '';
   },
 
   clearAuditSessions() {
