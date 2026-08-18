@@ -956,24 +956,29 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').trim();
     let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
 
-    if (format === 'pdf') {
-      let element = document.createElement('div');
-      element.innerHTML = printHtml;
-      document.body.appendChild(element);
+    if (formatType === 'pdf') {
+      let fileContent = this.buildHTMLReportString(baseFilename);
+      
+      let printWin = window.open('', '_blank');
+      if (!printWin) { 
+        alert("Pop-up blocked! Please allow pop-ups to generate the PDF."); 
+        return; 
+      }
 
-      let opt = {
-        margin:       0.5,
-        filename:     filename + '.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      printWin.document.open();
+      printWin.document.write(fileContent);
+      printWin.document.close();
+
+      // Ensure the browser tab title matches the desired YYYY.MM.DD filename
+      printWin.document.title = baseFilename;
+
+      printWin.onload = () => {
+        setTimeout(() => {
+          printWin.focus();
+          printWin.print();
+        }, 500);
       };
-
-      // NEW: Bypass html2pdf's dot-truncation bug by using jsPDF's native save
-      html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-        pdf.save(filename + '.pdf');
-        setTimeout(() => { document.body.removeChild(element); }, 1000);
-      });
+      
       return;
     }
 
