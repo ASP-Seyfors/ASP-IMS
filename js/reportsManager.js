@@ -122,6 +122,7 @@ const ReportsManager = {
   },
 
   generateVarianceReportPDF(varianceData, mode, netFinancialImpact) {
+    // Keep your standard YYYY.MM.DD formatting
     let filename = `Stocktake_Variance_Report_${SessionManager.sessionDateStr}.pdf`;
     let financialColor = netFinancialImpact >= 0 ? '#2e7d32' : '#c62828';
     let impactStr = netFinancialImpact >= 0 ? `+$${netFinancialImpact.toFixed(2)}` : `-$${Math.abs(netFinancialImpact).toFixed(2)}`;

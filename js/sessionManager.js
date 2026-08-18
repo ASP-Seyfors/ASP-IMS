@@ -353,10 +353,16 @@ const SessionManager = {
     localStorage.setItem('asp_session_start_str', this.sessionStartStr);
     localStorage.setItem('asp_session_date_str', this.sessionDateStr);
     
+    // NEW: Clear the local memory and expected manifest list
     this.scannedObjects = [];
+    this.expectedManifest = [];
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
+    localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
     this.updateHeaderBanners();
+    
+    // NEW: Force the UI to hide the old manifest tracker
+    this.updateManifestProgressUI();
     
     if (typeof UIManager !== 'undefined' && UIManager.closeStocktakeModal) UIManager.closeStocktakeModal();
     document.getElementById('screenSetup').style.display = 'none';
@@ -1215,7 +1221,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       scannedTotals[item.ref] += item.qty;
     });
 
-    // NEW: CALCULATE VARIANCE
+    // CALCULATE VARIANCE
     let varianceData = [];
     let netFinancialImpact = 0;
 
@@ -1240,10 +1246,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     // Apply to DB logic
     if (this.currentWorkflowType === 'Full Stocktake') {
-      // Zero out ALL onHand quantities first
       DatabaseManager.db.forEach(dbItem => dbItem.onHand = 0);
     } else {
-      // Selection: Zero out ONLY the scanned REFs before applying the new count
       Object.keys(scannedTotals).forEach(ref => {
         let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
         if (dbItem) dbItem.onHand = 0;
@@ -1261,12 +1265,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
     alert("Stocktake successfully committed to the master database!");
     
-    // Auto export TXT log, generate Variance PDF, then cleanly complete
-    AuditManager.exportSessionData('txt');
+    // Generate ONLY the Variance Report PDF (no multi-download conflicts)
     if (varianceData.length > 0) {
       ReportsManager.generateVarianceReportPDF(varianceData, this.currentWorkflowType, netFinancialImpact);
+    } else {
+      alert("No variances detected! Your physical counts match the system perfectly.");
     }
     
+    // Cleanly close the session without triggering another export
     setTimeout(() => { this.completeSession(true); }, 500);
   },
 
