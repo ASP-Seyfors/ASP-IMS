@@ -437,6 +437,28 @@ const UIManager = {
     }
   },
 
+  async checkForCloudUpdates() {
+    let indicator = document.getElementById('syncIndicator');
+    if (!indicator) return;
+
+    try {
+      let localLastSync = parseInt(localStorage.getItem('asp_last_cloud_sync') || '0', 10);
+      
+      // Fast lightweight ping (does NOT download the database)
+      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=CHECK_VERSION`);
+      let data = await res.json();
+
+      if (data && data.lastUpdated) {
+        if (data.lastUpdated > localLastSync) {
+          indicator.textContent = "🔴 Cloud Updates Available";
+          indicator.style.display = 'inline-block';
+        }
+      }
+    } catch (err) {
+      console.warn("Could not check cloud version:", err);
+    }
+  },
+
   async openHelpScreen() {
     document.getElementById('screenSettings').style.display = 'none';
     document.getElementById('screenHelp').style.display = 'block';

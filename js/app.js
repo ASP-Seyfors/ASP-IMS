@@ -74,6 +74,11 @@ window.onload = async () => {
     AuthManager.init();
   }
 
+  // Check for inbound updates from Google Sheets
+  if (typeof UIManager.checkForCloudUpdates === 'function') {
+    UIManager.checkForCloudUpdates();
+  }
+
   // NEW: Check if we need to show the red dot on load
   if (typeof UIManager.evaluateSyncIndicator === 'function') {
     UIManager.evaluateSyncIndicator();
@@ -121,8 +126,6 @@ window.masterSystemSync = async (event) => {
     }
     updateStep(2, "Master Database Synced", 66);
 
-    // Skipped the massive Cloud Archive download!
-
     if (typeof SessionManager.fetchStagedSessions === 'function') {
       await SessionManager.fetchStagedSessions(true);
     }
@@ -130,8 +133,16 @@ window.masterSystemSync = async (event) => {
 
     setTimeout(() => {
       modal.style.display = 'none';
-      if (typeof UIManager.evaluateSyncIndicator === 'function') UIManager.evaluateSyncIndicator();
-      // Optional: alert("✅ System fully synchronized!"); 
+      
+      // NEW: Stamp the current time so the app knows it is fully up to date
+      localStorage.setItem('asp_last_cloud_sync', Date.now().toString());
+      
+      if (typeof UIManager.evaluateSyncIndicator === 'function') {
+        UIManager.evaluateSyncIndicator();
+        // Hide the cloud update badge immediately
+        let ind = document.getElementById('syncIndicator');
+        if (ind) ind.style.display = 'none';
+      }
     }, 600);
 
   } catch(err) {
