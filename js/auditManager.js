@@ -969,8 +969,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       printWin.document.write(fileContent);
       printWin.document.close();
 
-      // Ensure the browser tab title matches the desired YYYY.MM.DD filename
-      printWin.document.title = baseFilename;
+      // NEW: The "Magic Dot" Trick 
+      // Replaces standard periods with a Unicode Dot Leader (\u2024) to bypass the OS extension bug
+      let safeTitle = baseFilename.replace(/\./g, '\u2024');
+      printWin.document.title = safeTitle;
 
       printWin.onload = () => {
         setTimeout(() => {
