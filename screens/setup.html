@@ -91,8 +91,9 @@
   </div>
 
   <!-- Start Button -->
-  <div style="text-align: center; margin-bottom: 15px; margin-top: 15px;">
-    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; width: 80%; max-width: 300px;" onclick="startSession()">Start Scanning Session</button>
+   <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px auto; width: 100%; max-width: 420px;">
+    <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #ffffff; color: #000000; border: 1px solid #000000; padding: 10px 14px !important; margin: 0; font-weight: bold; white-space: nowrap;" onclick="UIManager.openQuickLookupModal()">🔍 Item Lookup</button>
+    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; margin: 0; flex: 1;" onclick="startSession()">Start Scanning Session</button>
   </div>
 
   <!-- 3. Enterprise Data Hub (Contains Reports, Database Editor, Stocktake, Traceability, Lookup, QBO) -->
@@ -103,8 +104,6 @@
       <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0;" onclick="UIManager.openDbEditor()">🗄️ Database Editor</button>
       <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #c67d00; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()">📋 Stocktake</button>
       <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">📦 Traceability</button>
-      <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #e6a100; color: #ffffff; margin: 0;" onclick="UIManager.openQuickLookupModal()">🔍 Item Lookup</button>
-      <button id="btnQBO" class="btn-action btn-auto" style="background-color: #00796b; color: #ffffff; margin: 0;" onclick="UIManager.openQboModal()">☁️ QBO</button>
     </div>
   </div>
 
@@ -113,8 +112,7 @@
     <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()">Session Archive</button>
     <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()">⚙️ Settings</button>
   </div>
-</div>
-
+  
 <!-- STOCKTAKE MODAL -->
 <div id="stocktakeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
   <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
