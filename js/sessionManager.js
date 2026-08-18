@@ -114,10 +114,13 @@ const SessionManager = {
     if (btn) { btn.textContent = "⏳ Uploading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let completedSessions = archive.filter(s => s.status === 'Completed');
+    let completedSessions = archive.filter(s => s.status === 'Completed' && !s.isSynced);
 
     if (completedSessions.length === 0) {
-      if (!silent) alert("No completed sessions found in local memory to upload.");
+      // Clear pending queue if all completed sessions are already uploaded
+      localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
+      localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+      if (!silent) alert("All completed sessions are already synchronized with the Cloud Archive.");
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
       return;
     }
@@ -130,7 +133,6 @@ const SessionManager = {
           payload: session
         };
 
-        // TARGET: ASP_SCANNER_DATABASE (Cloud_Archive tab)
         await fetch(this.cloudArchiveUrl, {
           method: 'POST',
           mode: 'no-cors',
@@ -138,13 +140,19 @@ const SessionManager = {
           body: JSON.stringify(payload)
         });
         
+        session.isSynced = true;
         successCount++;
       } catch (err) {
         console.warn(`Failed to push session: ${session.sessionName}`, err);
       }
     }
 
-    if (!silent) alert(`Successfully pushed ${successCount} legacy session(s) to the Cloud Archive!`);
+    // Save synced flags back to local storage
+    localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+    localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
+    localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+
+    if (!silent) alert(`Successfully pushed ${successCount} session(s) to the Cloud Archive!`);
     if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
   },
 

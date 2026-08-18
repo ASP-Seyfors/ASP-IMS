@@ -422,11 +422,11 @@ const UIManager = {
     let indicator = document.getElementById('syncIndicator');
     if (!indicator) return;
 
-    // Check if we have un-pushed completed sessions
+    // Check if we have un-synced completed sessions
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let unpushedCompleted = archive.filter(s => s.status === 'Completed').length > 0;
+    let unpushedCompleted = archive.filter(s => s.status === 'Completed' && !s.isSynced).length > 0;
     
-    // Check if we have un-pushed database changes (New Items or Field Updates)
+    // Check if we have un-pushed database changes
     let pendingNew = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
     let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
 
