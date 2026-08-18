@@ -32,6 +32,8 @@ const SessionManager = {
 
   sessionId: localStorage.getItem('asp_session_id') || "",
 
+  currentArchiveTab: 'local',
+
   // Paste your Web App URL here
   googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
   fetchedStagedData: {},
@@ -57,9 +59,28 @@ const SessionManager = {
     }).catch(err => console.warn("Background Cloud Archive push failed:", err));
   },
 
+  switchArchiveTab(tabName) {
+    this.currentArchiveTab = tabName;
+    let btnLocal = document.getElementById('tabLocalArchive');
+    let btnCloud = document.getElementById('tabCloudArchive');
+    
+    if (tabName === 'local') {
+      btnLocal.style.backgroundColor = '#0277bd'; btnLocal.style.color = '#fff'; btnLocal.style.border = '1px solid #0277bd';
+      btnCloud.style.backgroundColor = '#f5f5f5'; btnCloud.style.color = '#555'; btnCloud.style.border = '1px solid #ccc';
+    } else {
+      btnCloud.style.backgroundColor = '#0277bd'; btnCloud.style.color = '#fff'; btnCloud.style.border = '1px solid #0277bd';
+      btnLocal.style.backgroundColor = '#f5f5f5'; btnLocal.style.color = '#555'; btnLocal.style.border = '1px solid #ccc';
+      
+      // Auto-fetch if the directory is empty
+      let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+      if (dir.length === 0) this.syncCloudArchive();
+    }
+    this.renderArchiveList();
+  },
+
   async syncCloudArchive(event, silent = false) {
     const btn = event ? event.target : null;
-    const originalText = btn ? btn.textContent : "☁️ Sync Cloud";
+    const originalText = btn ? btn.textContent : "☁️ Sync Directory";
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
@@ -67,39 +88,20 @@ const SessionManager = {
       let data = await res.json();
       
       if (data.status === "success" && data.archive) {
-        let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-        let newCount = 0;
-        
-        // Intelligently merge cloud data into local memory
-        data.archive.forEach(remoteSess => {
-          let existingIdx = localArchive.findIndex(local => local.id === remoteSess.id);
-          if (existingIdx === -1) {
-            localArchive.push(remoteSess);
-            newCount++;
-          } else if (remoteSess.lastUpdated > localArchive[existingIdx].lastUpdated) {
-            localArchive[existingIdx] = remoteSess;
-            newCount++;
-          }
-        });
-        
-        // Sort by newest first
-        localArchive.sort((a,b) => b.lastUpdated - a.lastUpdated);
-        localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
-        
-        this.renderArchiveList();
+        // Save the lightweight directory payload
+        localStorage.setItem('asp_cloud_directory', JSON.stringify(data.archive));
 
-       // NEW: Also import the Master Database silently while syncing the archive
         if (data.db && typeof DatabaseManager !== 'undefined') {
           DatabaseManager.importCloudDatabase(data.db);
         }
-
-        // Wrap the alert
-        if (!silent) alert(`Cloud Sync Complete! Retrieved ${data.archive.length} global sessions.\n${newCount} new/updated sessions merged into your device.`);
+        
+        if (this.currentArchiveTab === 'cloud') this.renderArchiveList();
+        if (!silent) alert(`Cloud Directory Synced! Found ${data.archive.length} total sessions in the vault.`);
       } else {
         alert("Sync failed: " + (data.message || "Unknown error"));
       }
     } catch (err) {
-      alert("Error connecting to Cloud Archive: " + err.message);
+      alert("Error connecting to Cloud Vault: " + err.message);
     } finally {
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
     }
@@ -144,6 +146,39 @@ const SessionManager = {
 
     if (!silent) alert(`Successfully pushed ${successCount} legacy session(s) to the Cloud Archive!`);
     if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+  },
+
+  async offloadAndPurgeHistory(event) {
+    const btn = event ? event.target : null;
+    const originalText = btn ? btn.textContent : "🧹 Offload & Purge Local History";
+    if (btn) { btn.textContent = "⏳ Processing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    try {
+      // 1. Force a silent upload of any unsynced completed sessions first
+      await this.pushLegacySessionsToCloud(null, true);
+
+      // 2. Read the local archive
+      let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+
+      // 3. Filter out Completed and Cancelled, keeping ONLY Pending
+      let initialCount = archive.length;
+      let retainedArchive = archive.filter(s => s.status === 'Pending');
+      let purgedCount = initialCount - retainedArchive.length;
+
+      // 4. Save the lean archive back to local memory
+      localStorage.setItem('asp_session_archive', JSON.stringify(retainedArchive));
+
+      // 5. Update UI Indicators
+      if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
+        UIManager.evaluateSyncIndicator();
+      }
+
+      alert(`✅ Offload Complete!\n\nSuccessfully pushed any missing data to the cloud and purged ${purgedCount} old sessions from local memory. Your device storage is now optimized.`);
+    } catch (err) {
+      alert("Error during offload and purge: " + err.message);
+    } finally {
+      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+    }
   },
 
   async fetchStagedSessions(silent = false) {
@@ -1413,10 +1448,17 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   renderArchiveList() {
     const container = document.getElementById('archiveListContainer');
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     
-    if (archive.length === 0) {
-      container.innerHTML = '<div style="text-align:center; padding:20px; color:#555;">No archived sessions found.</div>';
+    // Choose source based on the active tab
+    let rawList = [];
+    if (this.currentArchiveTab === 'local') {
+      rawList = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    } else {
+      rawList = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+    }
+    
+    if (rawList.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:#555;">No ${this.currentArchiveTab} sessions found.</div>`;
       return;
     }
 
@@ -1427,12 +1469,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let cutoff = 0;
     if (filterVal === 'today') cutoff = Date.now() - (24 * 60 * 60 * 1000);
     else if (filterVal === 'week') cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    else cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    else if (filterVal === 'month') cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    else cutoff = 0; // 'all' time
 
-    let filtered = archive.filter(s => {
-      if (s.lastUpdated < cutoff) return false;
+    let filtered = rawList.filter(s => {
+      // Allow legacy/cloud sessions without a strict lastUpdated timestamp to bypass the cutoff
+      if (cutoff > 0 && s.lastUpdated && s.lastUpdated < cutoff) return false;
       if (hideCancelled && s.status === 'Cancelled') return false;
-      // UPDATED: Now filters for 'Pending' instead of 'Active'
       if (onlyActive && s.status !== 'Pending') return false; 
       return true;
     });
@@ -1444,11 +1487,26 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let html = '';
     filtered.forEach(s => {
-      // UPDATED: Map 'Pending' to the blue color
       let statusColor = s.status === 'Completed' ? '#2e7d32' : (s.status === 'Cancelled' ? '#d32f2f' : (s.status === 'Pending' ? '#0277bd' : '#f57f17'));
       
-      let itemsPreview = s.scannedObjects.map(item => `<li>${item.qty}x ${item.ref}</li>`).join('');
-      if(!itemsPreview) itemsPreview = '<li>No items scanned</li>';
+      let itemsPreview = '';
+      let isCloud = s.isCloud === true;
+
+      // Local sessions have item details; Cloud directory is lightweight
+      if (!isCloud && s.scannedObjects) {
+        itemsPreview = s.scannedObjects.map(item => `<li>${item.qty}x ${item.ref}</li>`).join('');
+        if(!itemsPreview) itemsPreview = '<li>No items scanned</li>';
+      } else {
+        itemsPreview = '<li style="color:#0277bd; font-style:italic;">Payload stored safely in Cloud Vault. Restore to view items.</li>';
+      }
+
+      let deleteBtnHtml = isCloud 
+        ? `<div style="font-size:0.8rem; color:#777; font-style:italic;">Locked (Cloud)</div>` 
+        : `<button class="btn-small btn-cancel btn-auto" onclick="SessionManager.deleteArchivedSession('${s.id}')">🗑️ Delete</button>`;
+
+      let restoreBtnHtml = isCloud
+        ? `<button class="btn-action btn-auto" style="margin:0; padding:6px 12px; background-color:#1565c0; color:#fff;" onclick="SessionManager.restoreArchivedSession('${s.id}', true)">☁️ Download & Restore</button>`
+        : `<button class="btn-action btn-save btn-auto" style="margin:0; padding:6px 12px;" onclick="SessionManager.restoreArchivedSession('${s.id}', false)">🔄 Restore Local</button>`;
 
       html += `
         <div class="audit-card" style="border-left: 5px solid ${statusColor};">
@@ -1458,11 +1516,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           </div>
           
           <details style="font-size: 0.85rem; color: #555; margin-bottom: 10px;">
-            <summary style="cursor:pointer; font-weight:bold; color:#333; margin-bottom:6px;">[+] View Details (${s.scannedObjects.length} Items)</summary>
+            <summary style="cursor:pointer; font-weight:bold; color:#333; margin-bottom:6px;">[+] View Details</summary>
             <div style="padding-left: 12px; margin-top: 6px; border-left: 2px solid #eee;">
-              <div><strong>Date:</strong> ${s.dateStr} | <strong>Start:</strong> ${s.startStr}</div>
-              <div><strong>Workflow:</strong> ${s.workflowType}</div>
-              <div style="margin-top:6px;"><strong>Scanned Items:</strong></div>
+              <div><strong>Date:</strong> ${s.dateStr} | <strong>User:</strong> ${s.userName}</div>
+              ${s.workflowType ? `<div><strong>Workflow:</strong> ${s.workflowType}</div>` : ''}
+              <div style="margin-top:6px;"><strong>Items:</strong></div>
               <ul style="margin:4px 0 0 0; padding-left:16px; max-height:80px; overflow-y:auto;">
                 ${itemsPreview}
               </ul>
@@ -1470,8 +1528,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           </details>
           
           <div class="flex-between">
-            <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.deleteArchivedSession('${s.id}')">🗑️ Delete</button>
-            <button class="btn-action btn-save btn-auto" style="margin:0; padding:6px 12px;" onclick="SessionManager.restoreArchivedSession('${s.id}')">🔄 Restore Session</button>
+            ${deleteBtnHtml}
+            ${restoreBtnHtml}
           </div>
         </div>
       `;
@@ -1479,27 +1537,65 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     container.innerHTML = html;
   },
 
-  restoreArchivedSession(id) {
-    if (!confirm("Restore this session? This will override your current unsaved session if you have one active.")) return;
+  async restoreArchivedSession(id, isCloud = false) {
+    let confirmMsg = isCloud 
+      ? "Download and restore this session from the Cloud Vault?\n\nThis will override your current unsaved session if you have one active." 
+      : "Restore this local session?\n\nThis will override your current unsaved session if you have one active.";
     
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let s = archive.find(x => x.id === id);
-    if (!s) return;
+    if (!confirm(confirmMsg)) return;
+    
+    let sessionData = null;
 
-    this.sessionId = s.id;
+    if (isCloud) {
+      // Target Fetch via Google Apps Script
+      try {
+        let overlay = document.createElement('div');
+        overlay.id = 'downloadOverlay';
+        overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; color:#fff; font-size:1.2rem; font-weight:bold; flex-direction:column;';
+        overlay.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">☁️</div><div>Downloading session payload...</div>`;
+        document.body.appendChild(overlay);
+
+        let res = await fetch(`${this.cloudArchiveUrl}?action=GET_SESSION&id=${id}`);
+        sessionData = await res.json();
+        
+        document.body.removeChild(overlay);
+
+        if (!sessionData || sessionData.status === "error") {
+          alert("Failed to download payload: " + (sessionData ? sessionData.message : "Unknown error"));
+          return;
+        }
+      } catch (err) {
+        let overlay = document.getElementById('downloadOverlay');
+        if (overlay) document.body.removeChild(overlay);
+        alert("Network error downloading session: " + err.message);
+        return;
+      }
+    } else {
+      // Local Fetch
+      let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+      sessionData = archive.find(x => x.id === id);
+    }
+
+    if (!sessionData) {
+      alert("Session data could not be found.");
+      return;
+    }
+
+    this.sessionId = sessionData.id;
     this.isSessionActive = true;
-    this.currentUserName = s.userName;
-    this.currentSessionName = s.sessionName;
-    this.currentOrderNum = s.orderNum;
-    this.currentWorkflowType = s.workflowType;
-    this.sessionDateStr = s.dateStr;
-    this.sessionStartStr = s.startStr;
-    this.isManifestEnabled = s.manifestEnabled;
-    this.expectedManifest = s.expectedManifest;
-    this.scannedObjects = s.scannedObjects;
-    this.pendingNewItems = s.pendingNewItems;
-    this.pendingFieldUpdates = s.pendingUpdates;
+    this.currentUserName = sessionData.userName;
+    this.currentSessionName = sessionData.sessionName;
+    this.currentOrderNum = sessionData.orderNum;
+    this.currentWorkflowType = sessionData.workflowType;
+    this.sessionDateStr = sessionData.dateStr;
+    this.sessionStartStr = sessionData.startStr;
+    this.isManifestEnabled = sessionData.manifestEnabled;
+    this.expectedManifest = sessionData.expectedManifest || [];
+    this.scannedObjects = sessionData.scannedObjects || [];
+    this.pendingNewItems = sessionData.pendingNewItems || [];
+    this.pendingFieldUpdates = sessionData.pendingUpdates || [];
 
+    // Save everything locally so they can work on it
     localStorage.setItem('asp_session_id', this.sessionId);
     localStorage.setItem('asp_session_is_active', 'true');
     localStorage.setItem('asp_user_name', this.currentUserName);

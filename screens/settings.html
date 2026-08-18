@@ -44,7 +44,13 @@
     </div>
   </div>
 
-  <!-- NEW: JSON DATABASE RESET LOCATION -->
+  <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+    <div class="form-label">Storage Optimization:</div>
+    <div class="input-wrapper">
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; width: 100%; padding: 8px;" onclick="offloadAndPurgeHistory(event)">🧹 Offload & Purge Local History</button>
+    </div>
+  </div>
+
   <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
     <div class="form-label">Catalog Cache:</div>
     <div class="input-wrapper">
@@ -56,7 +62,7 @@
     <div class="form-label">App Version:</div>
     <div class="input-wrapper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
       <div>
-        <span style="font-weight: bold; color: #0277bd;">v3.2.5</span>
+        <span style="font-weight: bold; color: #0277bd;">v3.2.6</span>
         <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; margin-left: 10px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>
       </div>
       <button class="btn-small btn-cancel btn-auto" onclick="AuthManager.logout()">🚪 Log Out</button>

@@ -81,7 +81,6 @@ window.onload = async () => {
 };
 
 window.masterSystemSync = async (event) => {
-  // 1. Create and show the progress modal
   let modal = document.getElementById('syncProgressModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -95,8 +94,7 @@ window.masterSystemSync = async (event) => {
       <h3 style="margin:0 0 15px 0; color:#0277bd; text-align:center;">🔄 Master System Sync</h3>
       <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Uploading Local History...</div>
       <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Syncing Master Database...</div>
-      <div id="syncStep3" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 3. Downloading Cloud Archive...</div>
-      <div id="syncStep4" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 4. Fetching Orders Feed...</div>
+      <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Fetching Orders Feed...</div>
       <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
         <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
       </div>
@@ -116,27 +114,24 @@ window.masterSystemSync = async (event) => {
     if (typeof SessionManager.pushLegacySessionsToCloud === 'function') {
       await SessionManager.pushLegacySessionsToCloud(null, true);
     }
-    updateStep(1, "Local History Uploaded", 25);
+    updateStep(1, "Local History Uploaded", 33);
 
     if (typeof DatabaseManager.syncMasterDatabase === 'function') {
       await DatabaseManager.syncMasterDatabase(null, true);
     }
-    updateStep(2, "Master Database Synced", 50);
+    updateStep(2, "Master Database Synced", 66);
 
-    if (typeof SessionManager.syncCloudArchive === 'function') {
-      await SessionManager.syncCloudArchive(null, true);
-    }
-    updateStep(3, "Cloud Archive Downloaded", 75);
+    // Skipped the massive Cloud Archive download!
 
     if (typeof SessionManager.fetchStagedSessions === 'function') {
       await SessionManager.fetchStagedSessions(true);
     }
-    updateStep(4, "Orders Feed Fetched", 100);
+    updateStep(3, "Orders Feed Fetched", 100);
 
     setTimeout(() => {
       modal.style.display = 'none';
       if (typeof UIManager.evaluateSyncIndicator === 'function') UIManager.evaluateSyncIndicator();
-      alert("✅ System fully synchronized! Master catalog, session archives, and orders feed are up to date.");
+      // Optional: alert("✅ System fully synchronized!"); 
     }, 600);
 
   } catch(err) {
@@ -203,3 +198,4 @@ window.closeHelpScreen = () => UIManager.closeHelpScreen();
 window.batchPushLegacyLogs = (e) => AuditManager.batchPushLegacyLogs(e);
 window.triggerQboSync = () => SessionManager.triggerQboSync();
 window.openQboModal = () => UIManager.openQboModal();
+window.offloadAndPurgeHistory = (e) => SessionManager.offloadAndPurgeHistory(e);

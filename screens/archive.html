@@ -16,11 +16,16 @@
   </div>
   
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
-    <p style="font-size: 0.85rem; color: #555; margin:0; flex:1; min-width:200px;">Restore local sessions to continue scanning, or sync completed runs with the master database.</p>
+    <p style="font-size: 0.85rem; color: #555; margin:0; flex:1; min-width:200px;">Restore local sessions, or browse the global cloud directory to pull down historical logs.</p>
     <div style="display:flex; gap:8px;">
-      <button class="btn-action btn-auto" style="background-color: #388e3c; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.pushLegacySessionsToCloud(event)">⬆️ Upload Local History</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.syncCloudArchive(event)">☁️ Sync Cloud</button>
+      <button class="btn-action btn-auto" style="display:none; background-color: #388e3c; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.pushLegacySessionsToCloud(event)">⬆️ Upload Local History</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding:8px 12px; font-weight:bold;" onclick="SessionManager.syncCloudArchive(event)">☁️ Sync Directory</button>
     </div>
+  </div>
+
+  <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:2px solid #ccc; padding-bottom:10px;">
+    <button id="tabLocalArchive" class="btn-action btn-auto" style="flex:1; margin:0; background-color:#0277bd; color:#fff;" onclick="SessionManager.switchArchiveTab('local')">📱 Local Device</button>
+    <button id="tabCloudArchive" class="btn-action btn-auto" style="flex:1; margin:0; background-color:#f5f5f5; color:#555; border:1px solid #ccc;" onclick="SessionManager.switchArchiveTab('cloud')">☁️ Cloud Vault</button>
   </div>
 
   <div class="form-row">
@@ -30,15 +35,15 @@
         <option value="today">Today (Last 24 Hrs)</option>
         <option value="week">This Week (Last 7 Days)</option>
         <option value="month" selected>This Month (Last 30 Days)</option>
+        <option value="all">All Time</option>
       </select>
       <div style="display:flex; gap:10px; font-size:0.85rem; color:#555;">
         <label style="cursor:pointer;"><input type="checkbox" id="chkHideCancelled" onchange="SessionManager.renderArchiveList()" checked> Hide Cancelled</label>
-        <label style="cursor:pointer;"><input type="checkbox" id="chkOnlyActive" onchange="SessionManager.renderArchiveList()"> Only Active</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="chkOnlyActive" onchange="SessionManager.renderArchiveList()"> Only Pending</label>
       </div>
     </div>
   </div>
 
   <div id="archiveListContainer" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
-    <!-- Archive Items Injected Here -->
-  </div>
+    </div>
 </div>
