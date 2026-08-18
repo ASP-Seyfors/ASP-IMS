@@ -38,6 +38,9 @@ const AuditManager = {
     let totalQty = 0;
     let uniqueRefs = new Set();
 
+    // Check if the current workflow needs Customer Tags
+    let isTagWorkflow = !SessionManager.currentWorkflowType.includes('Stocktake') && !SessionManager.currentWorkflowType.includes('Packing');
+
     SessionManager.scannedObjects.forEach((item, index) => {
       totalQty += item.qty;
       uniqueRefs.add(item.ref);
@@ -59,6 +62,12 @@ const AuditManager = {
       content.style.fontSize = '0.85rem';
       content.style.color = '#555';
       
+      // Dynamically build the tag input or hide it
+      let tagHtml = isTagWorkflow ? `
+        <label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Customer Tag:</label>
+        <input type="text" id="editTag_${index}" value="${item.customerTag || ''}" placeholder="e.g. SURGISHOP" style="flex:1; padding:4px; text-transform:uppercase;">
+      ` : `<input type="hidden" id="editTag_${index}" value="">`;
+
       content.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
           <span><strong>Lot:</strong> ${item.lot}</span>
@@ -72,8 +81,7 @@ const AuditManager = {
             <label style="font-weight:bold; font-size:0.8rem;">Qty:</label>
             <input type="number" id="editQty_${index}" value="${item.qty}" min="0" style="width:60px; padding:4px; text-align:center;">
             
-            <label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Customer Tag:</label>
-            <input type="text" id="editTag_${index}" value="${item.customerTag || ''}" placeholder="e.g. SURGISHOP" style="flex:1; padding:4px; text-transform:uppercase;">
+            ${tagHtml}
           </div>
           <div class="flex-between" style="margin-top:6px;">
             <button class="btn-small btn-cancel btn-auto" style="padding:3px 8px;" onclick="SessionManager.deleteScannedItem(${index})">🗑️ Delete Entry</button>
@@ -948,29 +956,24 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let cleanWorkflow = (SessionManager.currentWorkflowType || 'Workflow').replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_\-\(\)\&\s]/g, '_').trim();
     let baseFilename = `${safeDate} - ${cleanSession} - ${cleanWorkflow}`;
 
-    if (formatType === 'pdf') {
-      let fileContent = this.buildHTMLReportString(baseFilename);
-      let iframe = document.getElementById('pdfPrintFrame');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.id = 'pdfPrintFrame';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-      let doc = iframe.contentWindow.document;
-      doc.open();
-      doc.write(fileContent);
-      doc.title = baseFilename;
-      doc.close();
-      
-      let originalTitle = document.title;
-      document.title = baseFilename;
+    if (format === 'pdf') {
+      let element = document.createElement('div');
+      element.innerHTML = printHtml;
+      document.body.appendChild(element);
 
-      setTimeout(() => {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        setTimeout(() => { document.title = originalTitle; }, 2000);
-      }, 500);
+      let opt = {
+        margin:       0.5,
+        filename:     filename + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      // NEW: Bypass html2pdf's dot-truncation bug by using jsPDF's native save
+      html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+        pdf.save(filename + '.pdf');
+        setTimeout(() => { document.body.removeChild(element); }, 1000);
+      });
       return;
     }
 
