@@ -70,7 +70,7 @@ const AuditManager = {
         <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; padding:8px; margin-top:8px;">
           <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
             <label style="font-weight:bold; font-size:0.8rem;">Qty:</label>
-            <input type="number" id="editQty_${index}" value="${item.qty}" min="1" style="width:60px; padding:4px; text-align:center;">
+            <input type="number" id="editQty_${index}" value="${item.qty}" min="0" style="width:60px; padding:4px; text-align:center;">
             
             <label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Customer Tag:</label>
             <input type="text" id="editTag_${index}" value="${item.customerTag || ''}" placeholder="e.g. SURGISHOP" style="flex:1; padding:4px; text-transform:uppercase;">
