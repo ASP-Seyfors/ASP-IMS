@@ -68,7 +68,7 @@ const ReportsManager = {
         let avail = total - res;
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
-        return avail >= 0 && numPrice > 0;
+        return avail > 0 && numPrice > 0; // STRICT: Only show positive available stock & price
       });
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
@@ -82,25 +82,39 @@ const ReportsManager = {
 
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
     
-    let totalItemsCount = filtered.reduce((acc, i) => acc + (parseInt(i.onHand, 10) - parseInt(i.reservedQty, 10)), 0);
+    // Calculate total units available across filtered items
+    let totalUnits = filtered.reduce((acc, i) => acc + ((parseInt(i.onHand, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)), 0);
 
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
-      .logo { font-size:24px; font-weight:bold; color:#0277bd; margin-bottom:5px; }
-      h1 { color: #333; margin: 0; font-size: 20px; }
-      h2 { color: #0277bd; margin: 5px 0 15px 0; border-bottom: 2px solid #0277bd; padding-bottom: 8px; }
-      .meta-line { color: #666; font-size: 11px; margin-bottom: 15px; }
+      .header-container { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0277bd; padding-bottom: 10px; margin-bottom: 15px; }
+      .brand-section { display: flex; align-items: center; gap: 15px; }
+      .logo-img { height: 45px; object-fit: contain; }
+      .company-name { font-size: 16px; font-weight: bold; color: #333; margin: 0; }
+      h2 { color: #0277bd; margin: 4px 0 0 0; font-size: 20px; }
+      .meta-right { text-align: right; font-size: 11px; color: #555; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
       th { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; text-align: left; }
       td { border: 1px solid #eee; padding: 8px; vertical-align: top; }
       .qty-avail { text-align:center; font-weight:bold; font-size:13px; color:#2e7d32; }
       .qty-sub { text-align:center; font-weight:normal; color:#666; font-size:11px; }
     </style></head><body>
-    <div class="logo">ASP</div>
-    <div style="font-weight:bold; font-size:14px;">Allied Surgical Products</div>
-    <h2>${title}</h2>
-    <div class="meta-line">Generated: ${new Date().toLocaleDateString()}</div>
+
+    <div class="header-container">
+      <div class="brand-section">
+        <img src="https://raw.githubusercontent.com/ASP-Seyfors/ASP-Scanner/main/ASP_Icon_192.png" class="logo-img" alt="ASP Logo">
+        <div>
+          <div class="company-name">Allied Surgical Products</div>
+          <h2>${title}</h2>
+        </div>
+      </div>
+      <div class="meta-right">
+        <div>Generated: ${new Date().toLocaleDateString()}</div>
+        <div style="margin-top: 4px; font-weight: bold; color: #2e7d32; font-size: 12px;">Total Available Items: ${totalUnits}</div>
+      </div>
+    </div>
+
     <table>
       <thead>
         <tr>
@@ -109,13 +123,13 @@ const ReportsManager = {
           ${incDesc ? '<th>Description</th>' : ''}
           ${incTotal ? '<th style="text-align:center;">Total Qty</th>' : ''}
           ${incRes ? '<th style="text-align:center;">Reserved</th>' : ''}
-          ${incAvail ? '<th style="text-align:center;">Total Items<br>Available Qty</th>' : ''}
+          ${incAvail ? '<th style="text-align:center;">Available Qty</th>' : ''}
           ${incPrice ? '<th style="text-align:right;">Price</th>' : ''}
         </tr>
       </thead>
       <tbody>`;
 
-    filtered.forEach(item => {
+    filtered.export = filtered.forEach(item => {
       let priceRaw = String(item.price || '');
       let cleanNum = parseFloat(priceRaw.replace(/[^0-9.-]+/g, '')) || 0;
       let formattedPrice = cleanNum > 0 ? '$' + cleanNum.toFixed(2) : '$0.00';
