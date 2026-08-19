@@ -68,8 +68,9 @@ const ReportsManager = {
         let res = parseInt(i.reservedQty, 10) || 0;
         let avail = total - res;
         
-        let cleanPrice = (i.price || '').replace(/[^0-9.-]+/g, '');
-        let numPrice = parseFloat(cleanPrice) || 0;
+        // Type-safe string coercion for price check
+        let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
+        let numPrice = parseFloat(priceStr) || 0;
         let hasValidPrice = numPrice > 0;
 
         return avail > 0 && hasValidPrice;
@@ -79,7 +80,11 @@ const ReportsManager = {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
       title = "Out of Stock Items Report";
     } else if (type === 'pricing') {
-      filtered = db.filter(i => !i.price || i.price === "$0.00" || i.price === "0");
+      filtered = db.filter(i => {
+        let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
+        let numPrice = parseFloat(priceStr) || 0;
+        return numPrice === 0;
+      });
       title = "Items Requiring Pricing or Cost";
     }
 
@@ -113,7 +118,10 @@ const ReportsManager = {
       <tbody>`;
 
     filtered.forEach(item => {
-      let formattedPrice = item.price ? (item.price.startsWith('$') || isNaN(parseFloat(item.price.replace(/[^0-9.-]+/g,""))) ? item.price : '$' + item.price) : '$0.00';
+      let priceRaw = String(item.price || '');
+      let cleanNum = parseFloat(priceRaw.replace(/[^0-9.-]+/g, '')) || 0;
+      let formattedPrice = cleanNum > 0 ? '$' + cleanNum.toFixed(2) : '$0.00';
+      
       let total = parseInt(item.onHand, 10) || 0;
       let res = parseInt(item.reservedQty, 10) || 0;
       let avail = total - res;
