@@ -68,7 +68,6 @@ const ReportsManager = {
         let res = parseInt(i.reservedQty, 10) || 0;
         let avail = total - res;
         
-        // Ensure valid price
         let cleanPrice = (i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(cleanPrice) || 0;
         let hasValidPrice = numPrice > 0;
@@ -115,14 +114,16 @@ const ReportsManager = {
 
     filtered.forEach(item => {
       let formattedPrice = item.price ? (item.price.startsWith('$') || isNaN(parseFloat(item.price.replace(/[^0-9.-]+/g,""))) ? item.price : '$' + item.price) : '$0.00';
-      let avail = item.availableQty !== undefined ? item.availableQty : (item.onHand || 0);
+      let total = parseInt(item.onHand, 10) || 0;
+      let res = parseInt(item.reservedQty, 10) || 0;
+      let avail = total - res;
       
       html += `<tr>
         ${incMfr ? `<td>${item.mfr || 'UNKNOWN'}</td>` : ''}
         <td style="font-weight:bold; color:#0277bd;">${item.ref || item.sku}</td>
         ${incDesc ? `<td style="font-size:11px; color:#555;">${item.desc || '--'}</td>` : ''}
-        ${incTotal ? `<td class="qty-sub">${item.onHand || 0}</td>` : ''}
-        ${incRes ? `<td class="qty-sub" style="color:#d32f2f;">${item.reservedQty || 0}</td>` : ''}
+        ${incTotal ? `<td class="qty-sub">${total}</td>` : ''}
+        ${incRes ? `<td class="qty-sub" style="color:#d32f2f;">${res}</td>` : ''}
         ${incAvail ? `<td class="qty-avail">${avail}</td>` : ''}
         ${incPrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}
       </tr>`;
