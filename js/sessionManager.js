@@ -1152,13 +1152,18 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let ref = item.ref.toUpperCase();
       let tag = item.customerTag; 
 
-      // If Picking & Packing from a staged order, the customer tag might be in the manifest
+      // If Picking & Packing, the customer tag might be in the manifest or session name
       if (this.currentWorkflowType.includes('Packing') && !tag) {
          let manifestItem = this.expectedManifest.find(m => m.ref === ref);
          if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) {
              tag = manifestItem.allocations[0].customerTag;
          } else {
-             tag = this.currentSessionName; // Fallback to the session's selected customer
+             // SMART EXTRACTOR: Get base customer name from session (e.g. "AHS - 23472 (INV-123)" -> "AHS - 23472")
+             let baseCustomer = this.currentSessionName.split(' (')[0].trim();
+             
+             // Check memory bank for an exact or partial match
+             let fuzzyMatch = Object.keys(allocations).find(k => k.includes(baseCustomer) || baseCustomer.includes(k));
+             tag = fuzzyMatch || baseCustomer;
          }
       }
 
