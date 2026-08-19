@@ -68,7 +68,7 @@ const ReportsManager = {
         let avail = total - res;
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
-        return avail > 0 && numPrice > 0; // STRICT: Only show positive available stock & price
+        return avail > 0 && numPrice > 0; // Strict filter: only positive available stock and valid price
       });
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
@@ -82,17 +82,17 @@ const ReportsManager = {
 
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
     
-    // Calculate total units available across filtered items
+    // Calculate total available units across the filtered items
     let totalUnits = filtered.reduce((acc, i) => acc + ((parseInt(i.onHand, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)), 0);
 
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
-      .header-container { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0277bd; padding-bottom: 10px; margin-bottom: 15px; }
-      .brand-section { display: flex; align-items: center; gap: 15px; }
-      .logo-img { height: 45px; object-fit: contain; }
-      .company-name { font-size: 16px; font-weight: bold; color: #333; margin: 0; }
-      h2 { color: #0277bd; margin: 4px 0 0 0; font-size: 20px; }
+      .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0277bd; padding-bottom: 10px; margin-bottom: 15px; }
+      .brand-section { display: flex; align-items: center; gap: 12px; }
+      .logo-img { height: 40px; object-fit: contain; }
+      .company-name { font-size: 14px; font-weight: bold; color: #555; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+      h2 { color: #0277bd; margin: 2px 0 0 0; font-size: 20px; }
       .meta-right { text-align: right; font-size: 11px; color: #555; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
       th { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; text-align: left; }
@@ -129,7 +129,7 @@ const ReportsManager = {
       </thead>
       <tbody>`;
 
-    filtered.export = filtered.forEach(item => {
+    filtered.forEach(item => {
       let priceRaw = String(item.price || '');
       let cleanNum = parseFloat(priceRaw.replace(/[^0-9.-]+/g, '')) || 0;
       let formattedPrice = cleanNum > 0 ? '$' + cleanNum.toFixed(2) : '$0.00';
