@@ -52,9 +52,8 @@ const ReportsManager = {
   generateInventoryReport(type) {
     let db = DatabaseManager.db.slice().sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     let filtered = [];
-    let title = "";
+    let title = "On-Hand Stock Report";
 
-    // Grab toggles if they exist, otherwise default logically
     let incMfr = document.getElementById('chkInvMfr') ? document.getElementById('chkInvMfr').checked : true;
     let incDesc = document.getElementById('chkInvDesc') ? document.getElementById('chkInvDesc').checked : true;
     let incAvail = document.getElementById('chkInvAvail') ? document.getElementById('chkInvAvail').checked : true;
@@ -67,33 +66,30 @@ const ReportsManager = {
         let total = parseInt(i.onHand, 10) || 0;
         let res = parseInt(i.reservedQty, 10) || 0;
         let avail = total - res;
-        
-        // Type-safe string coercion for price check
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
-        let hasValidPrice = numPrice > 0;
-
-        return avail > 0 && hasValidPrice;
+        return avail >= 0 && numPrice > 0;
       });
-      title = "Full On-Hand Stock Report";
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
-      title = "Out of Stock Items Report";
     } else if (type === 'pricing') {
       filtered = db.filter(i => {
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
         return numPrice === 0;
       });
-      title = "Items Requiring Pricing or Cost";
     }
 
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
     
+    let totalItemsCount = filtered.reduce((acc, i) => acc + (parseInt(i.onHand, 10) - parseInt(i.reservedQty, 10)), 0);
+
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
-      h2 { color: #0277bd; border-bottom: 2px solid #0277bd; padding-bottom: 8px; margin-bottom: 4px; }
+      .logo { font-size:24px; font-weight:bold; color:#0277bd; margin-bottom:5px; }
+      h1 { color: #333; margin: 0; font-size: 20px; }
+      h2 { color: #0277bd; margin: 5px 0 15px 0; border-bottom: 2px solid #0277bd; padding-bottom: 8px; }
       .meta-line { color: #666; font-size: 11px; margin-bottom: 15px; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
       th { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; text-align: left; }
@@ -101,8 +97,10 @@ const ReportsManager = {
       .qty-avail { text-align:center; font-weight:bold; font-size:13px; color:#2e7d32; }
       .qty-sub { text-align:center; font-weight:normal; color:#666; font-size:11px; }
     </style></head><body>
+    <div class="logo">ASP</div>
+    <div style="font-weight:bold; font-size:14px;">Allied Surgical Products</div>
     <h2>${title}</h2>
-    <div class="meta-line">Allied Surgical Products | Generated: ${new Date().toLocaleDateString()}</div>
+    <div class="meta-line">Generated: ${new Date().toLocaleDateString()}</div>
     <table>
       <thead>
         <tr>
@@ -111,7 +109,7 @@ const ReportsManager = {
           ${incDesc ? '<th>Description</th>' : ''}
           ${incTotal ? '<th style="text-align:center;">Total Qty</th>' : ''}
           ${incRes ? '<th style="text-align:center;">Reserved</th>' : ''}
-          ${incAvail ? '<th style="text-align:center;">Available Qty</th>' : ''}
+          ${incAvail ? '<th style="text-align:center;">Total Items<br>Available Qty</th>' : ''}
           ${incPrice ? '<th style="text-align:right;">Price</th>' : ''}
         </tr>
       </thead>
@@ -139,8 +137,8 @@ const ReportsManager = {
 
     html += `</tbody></table></body></html>`;
     
-    let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
-    let filename = `${title}_${safeDate}.pdf`;
+    let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+    let filename = `ASP - On-Hand Stock Report (${dateStr}).pdf`;
     
     let win = window.open('', '_blank');
     if (win) { 
