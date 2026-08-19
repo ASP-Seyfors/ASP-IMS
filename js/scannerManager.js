@@ -253,7 +253,14 @@ const ScannerManager = {
           if (!gtin) gtin = clean.substring(idx + 2, idx + 16);
           idx += 16;
         } else if (clean.substring(idx, idx + 2) === "10") {
-          if (!lot) lot = clean.substring(idx + 2);
+          let rem = clean.substring(idx + 2);
+          // Look for 11 (Prod Date), 17 (Exp Date), or 21 (Serial) as strict lot boundaries
+          let breakIdx = rem.search(/(11\d{6}|17\d{6}|21[a-zA-Z0-9]{4,})/);
+          if (breakIdx > 1) {
+            lot = rem.substring(0, breakIdx);
+          } else {
+            lot = rem;
+          }
           break;
         } else if (/^\d{12,14}$/.test(clean)) {
           if (!gtin) gtin = clean;

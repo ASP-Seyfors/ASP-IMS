@@ -109,7 +109,8 @@ const AuthManager = {
       if (btnStock) btnStock.style.display = 'none';
       if (btnTrace) btnTrace.style.display = 'none';
 
-      if (rowQboSync) rowQboSync.style.display = 'none';
+      let rowQboSettings = document.getElementById('rowQboSettings');
+      if (rowQboSettings) rowQboSettings.style.display = 'none';
       
       if (roleBadge) {
         roleBadge.textContent = "Guest Mode";
@@ -133,6 +134,9 @@ const AuthManager = {
       if (archiveBtn) archiveBtn.style.display = 'inline-block';
       if (lookupBtn) lookupBtn.style.display = 'inline-block';
       if (userNameInput) userNameInput.value = this.currentUser.name.split(' ')[0];
+
+      let rowQboSettings = document.getElementById('rowQboSettings');
+      if (rowQboSettings) rowQboSettings.style.display = this.currentUser.isAdmin ? 'flex' : 'none';
 
       // Strict Admin Check for QBO Sync
       if (rowQboSync) {

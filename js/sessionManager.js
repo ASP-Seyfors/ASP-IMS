@@ -1603,11 +1603,26 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.currentWorkflowType = sessionData.workflowType;
     this.sessionDateStr = sessionData.dateStr;
     this.sessionStartStr = sessionData.startStr;
+    
+    // NEW: Replace generic legacy timestamps with the actual current time
+    if (this.sessionStartStr === 'Historical Import') {
+      this.sessionStartStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     this.isManifestEnabled = sessionData.manifestEnabled;
     this.expectedManifest = sessionData.expectedManifest || [];
     this.scannedObjects = sessionData.scannedObjects || [];
     this.pendingNewItems = sessionData.pendingNewItems || [];
     this.pendingFieldUpdates = sessionData.pendingUpdates || [];
+
+    // NEW: Reset the internal action state to match the restored workflow
+    if (this.currentWorkflowType.includes('Packing')) {
+      this.currentItemAction = 'Pack & Ship';
+    } else if (this.currentWorkflowType.includes('Reserving')) {
+      this.currentItemAction = 'Reserved';
+    } else {
+      this.currentItemAction = 'Inventory';
+    }
 
     // Save everything locally so they can work on it
     localStorage.setItem('asp_session_id', this.sessionId);
