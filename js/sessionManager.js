@@ -1141,7 +1141,88 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   completeSession(skipConfirm = false) {
-    if (!skipConfirm && !confirm("Are you ready to complete this session?\n\nThis will close the session and return you to the home screen.")) return;
+    if (!skipConfirm && !confirm("Are you ready to complete this session?\n\nThis will close the session, apply inventory math, and return you to the home screen.")) return;
+
+    // --- 1. AUTOMATED MASTER DATABASE & ALLOCATION MATH ---
+    let onHandChanges = {};
+    let reservedChanges = {};
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+
+    this.scannedObjects.forEach(item => {
+      let ref = item.ref.toUpperCase();
+      let tag = item.customerTag; 
+
+      // If Picking & Packing from a staged order, the customer tag might be in the manifest
+      if (this.currentWorkflowType.includes('Packing') && !tag) {
+         let manifestItem = this.expectedManifest.find(m => m.ref === ref);
+         if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) {
+             tag = manifestItem.allocations[0].customerTag;
+         } else {
+             tag = this.currentSessionName; // Fallback to the session's selected customer
+         }
+      }
+
+      if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
+      
+      if (tag) {
+         if (!allocations[tag]) allocations[tag] = {};
+         if (!allocations[tag][ref]) allocations[tag][ref] = 0;
+      }
+
+      if (this.currentWorkflowType.includes('Receiving & Reserving')) {
+        onHandChanges[ref] += item.qty;
+        if (item.actionTag === 'Reserved') {
+            reservedChanges[ref] += item.qty;
+            if (tag) allocations[tag][ref] += item.qty;
+        }
+      } else if (this.currentWorkflowType.includes('Receiving')) {
+        onHandChanges[ref] += item.qty;
+      } else if (this.currentWorkflowType.includes('Reserving')) {
+        reservedChanges[ref] += item.qty;
+        if (tag) allocations[tag][ref] += item.qty;
+      } else if (this.currentWorkflowType.includes('Packing') || this.currentWorkflowType.includes('Pack & Ship')) {
+        onHandChanges[ref] -= item.qty;
+        
+        // Intelligent Reserved Bin Deduction
+        if (tag && allocations[tag] && allocations[tag][ref] > 0) {
+            let deduct = Math.min(item.qty, allocations[tag][ref]);
+            reservedChanges[ref] -= deduct;
+            allocations[tag][ref] -= deduct;
+            if (allocations[tag][ref] <= 0) delete allocations[tag][ref];
+        }
+      }
+    });
+
+    // Cleanup empty tags
+    Object.keys(allocations).forEach(t => {
+       if (Object.keys(allocations[t]).length === 0) delete allocations[t];
+    });
+    localStorage.setItem('asp_allocations', JSON.stringify(allocations));
+
+    // Apply the math to the local DatabaseManager
+    if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
+      DatabaseManager.db.forEach(dbItem => {
+        let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
+        if (onHandChanges[ref] || reservedChanges[ref]) {
+          dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0);
+          dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
+          
+          if (dbItem.onHand < 0) dbItem.onHand = 0;
+          if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
+        }
+      });
+      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+      
+      // Background push to Google Sheets Database backend
+      if (this.cloudArchiveUrl) {
+          let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
+          fetch(this.cloudArchiveUrl, {
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(dbPayload)
+          }).catch(err => console.warn("Background DB Sync failed:", err));
+      }
+    }
+    // --- END AUTOMATED MATH ---
 
     // LIVE FEED PUSH: Background log push & mark order completed in Google Sheets
     if (this.googleFeederUrl && !this.googleFeederUrl.includes("YOUR_COPIED")) {
@@ -1157,9 +1238,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       };
 
       fetch(this.googleFeederUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).catch(err => console.warn("Background log push failed:", err));
     }
@@ -1167,7 +1246,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.pendingNewItems = []; this.pendingFieldUpdates = [];
     localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
     
-    // Fix: Destroy manifest discrepancy UI leak
     let recList = document.getElementById('manifestReconcileList');
     let recCard = document.getElementById('manifestReconcileCard');
     if (recList) recList.innerHTML = '';
