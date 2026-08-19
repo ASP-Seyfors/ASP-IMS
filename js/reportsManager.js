@@ -52,7 +52,11 @@ const ReportsManager = {
     let incPrice = document.getElementById('chkInvPrice') ? document.getElementById('chkInvPrice').checked : true;
 
     if (type === 'in_stock') {
-      filtered = db.filter(i => i.onHand && i.onHand > 0);
+      filtered = db.filter(i => {
+        let hasStock = i.onHand && i.onHand > 0;
+        let hasValidPrice = i.price && i.price !== "$0.00" && i.price !== "0" && i.price.trim() !== "";
+        return hasStock && hasValidPrice;
+      });
       title = "Full On-Hand Stock Report";
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
