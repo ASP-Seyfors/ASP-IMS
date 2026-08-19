@@ -21,17 +21,25 @@ const ReportsManager = {
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
     modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2e7d32; padding-bottom:8px; margin-bottom:15px;">
           <h3 style="margin:0; color:#2e7d32;">📦 Full On-Hand Stock Options</h3>
           <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
-        <div style="margin-bottom:15px; font-size:0.85rem;">Select the columns to include in your inventory report:</div>
+        <div style="margin-bottom:15px; font-size:0.85rem; color:#555;">Select the columns you want to include in the PDF export:</div>
+        
         <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#f1f8e9; border:1px solid #c8e6c9; padding:12px; border-radius:4px;">
           <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvMfr" checked> Manufacturer</label>
           <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvDesc" checked> Description</label>
+          <label style="cursor:pointer; font-weight:bold; color:#0277bd;"><input type="checkbox" id="chkInvAvail" checked> Available Quantity (Sales)</label>
           <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvPrice" checked> Selling Price</label>
+          
+          <div style="border-top:1px dashed #a5d6a7; margin:4px 0; padding-top:6px;"></div>
+          
+          <label style="cursor:pointer; font-size:0.85rem; color:#555;"><input type="checkbox" id="chkInvTotal"> Total Physical Qty (Internal)</label>
+          <label style="cursor:pointer; font-size:0.85rem; color:#555;"><input type="checkbox" id="chkInvRes"> Reserved Qty (Internal)</label>
         </div>
+
         <div style="display:flex; justify-content:flex-end; gap:10px;">
           <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
           <button onclick="ReportsManager.generateInventoryReport('in_stock')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Generate Report</button>
@@ -46,14 +54,18 @@ const ReportsManager = {
     let filtered = [];
     let title = "";
 
-    // Grab toggles if they exist, otherwise default to true
+    // Grab toggles if they exist, otherwise default logically
     let incMfr = document.getElementById('chkInvMfr') ? document.getElementById('chkInvMfr').checked : true;
     let incDesc = document.getElementById('chkInvDesc') ? document.getElementById('chkInvDesc').checked : true;
+    let incAvail = document.getElementById('chkInvAvail') ? document.getElementById('chkInvAvail').checked : true;
     let incPrice = document.getElementById('chkInvPrice') ? document.getElementById('chkInvPrice').checked : true;
+    let incTotal = document.getElementById('chkInvTotal') ? document.getElementById('chkInvTotal').checked : false;
+    let incRes = document.getElementById('chkInvRes') ? document.getElementById('chkInvRes').checked : false;
 
     if (type === 'in_stock') {
+      // Strictly priced items with available stock
       filtered = db.filter(i => {
-        let hasStock = i.onHand && i.onHand > 0;
+        let hasStock = (i.availableQty !== undefined ? i.availableQty : i.onHand) > 0;
         let hasValidPrice = i.price && i.price !== "$0.00" && i.price !== "0" && i.price.trim() !== "";
         return hasStock && hasValidPrice;
       });
@@ -66,49 +78,52 @@ const ReportsManager = {
       title = "Items Requiring Pricing or Cost";
     }
 
-    // --- ADD THIS NEW SORTING LINE ---
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
     
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
-      h2 { color: #0277bd; border-bottom: 2px solid #0277bd; padding-bottom: 8px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+      h2 { color: #0277bd; border-bottom: 2px solid #0277bd; padding-bottom: 8px; margin-bottom: 4px; }
+      .meta-line { color: #666; font-size: 11px; margin-bottom: 15px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
       th { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; text-align: left; }
       td { border: 1px solid #eee; padding: 8px; vertical-align: top; }
+      .qty-avail { text-align:center; font-weight:bold; font-size:13px; color:#2e7d32; }
+      .qty-sub { text-align:center; font-weight:normal; color:#666; font-size:11px; }
     </style></head><body>
     <h2>${title}</h2>
-    <p>Generated: ${new Date().toLocaleDateString()}</p>
+    <div class="meta-line">Allied Surgical Products | Generated: ${new Date().toLocaleDateString()}</div>
     <table>
       <thead>
         <tr>
           ${incMfr ? '<th>Manufacturer</th>' : ''}
           <th>REF / SKU</th>
           ${incDesc ? '<th>Description</th>' : ''}
-          <th style="text-align:center;">Total Qty</th>
-          <th style="text-align:center;">Reserved</th>
-          <th style="text-align:center; color:#2e7d32;">Available</th>
-          ${incPrice ? '<th>Price</th>' : ''}
+          ${incTotal ? '<th style="text-align:center;">Total Qty</th>' : ''}
+          ${incRes ? '<th style="text-align:center;">Reserved</th>' : ''}
+          ${incAvail ? '<th style="text-align:center;">Available Qty</th>' : ''}
+          ${incPrice ? '<th style="text-align:right;">Price</th>' : ''}
         </tr>
       </thead>
       <tbody>`;
 
     filtered.forEach(item => {
       let formattedPrice = item.price ? (item.price.startsWith('$') || isNaN(parseFloat(item.price.replace(/[^0-9.-]+/g,""))) ? item.price : '$' + item.price) : '$0.00';
+      let avail = item.availableQty !== undefined ? item.availableQty : (item.onHand || 0);
+      
       html += `<tr>
         ${incMfr ? `<td>${item.mfr || 'UNKNOWN'}</td>` : ''}
         <td style="font-weight:bold; color:#0277bd;">${item.ref || item.sku}</td>
         ${incDesc ? `<td style="font-size:11px; color:#555;">${item.desc || '--'}</td>` : ''}
-        <td style="text-align:center; font-weight:bold; color:#555;">${item.onHand || 0}</td>
-        <td style="text-align:center; font-weight:bold; color:#d32f2f;">${item.reservedQty || 0}</td>
-        <td style="text-align:center; font-weight:bold; font-size:14px; color:#2e7d32;">${item.availableQty || 0}</td>
-        ${incPrice ? `<td>${formattedPrice}</td>` : ''}
+        ${incTotal ? `<td class="qty-sub">${item.onHand || 0}</td>` : ''}
+        ${incRes ? `<td class="qty-sub" style="color:#d32f2f;">${item.reservedQty || 0}</td>` : ''}
+        ${incAvail ? `<td class="qty-avail">${avail}</td>` : ''}
+        ${incPrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}
       </tr>`;
     });
 
     html += `</tbody></table></body></html>`;
     
-    // --- NEW FILENAME LOGIC START ---
     let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
     let filename = `${title}_${safeDate}.pdf`;
     
@@ -119,7 +134,6 @@ const ReportsManager = {
       win.focus(); 
       setTimeout(() => win.print(), 500); 
     }
-    // --- NEW FILENAME LOGIC END ---
     
     let modal = document.getElementById('inventoryReportOptionsModal');
     if (modal) modal.remove();
