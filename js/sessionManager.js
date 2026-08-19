@@ -1113,11 +1113,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   cancelSession() {
     if (!confirm("Are you sure you want to CANCEL this entire scanning session?\n\nAll items scanned during this session will be discarded.")) return;
-    
-    // Auto-Export Text Log before wiping memory
-    if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
-      AuditManager.exportSessionData('txt');
-    }
 
     this.saveToArchive('Cancelled');
 
@@ -1134,7 +1129,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     if (ScannerManager.isCameraActive) ScannerManager.toggleCameraScanner();
     document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
-    UIManager.toggleSessionNote();
+    if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
 
     const chkPreload = document.getElementById('chkPreloadManifest');
     if (chkPreload) chkPreload.checked = false;
@@ -1146,12 +1141,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   completeSession(skipConfirm = false) {
-    if (!skipConfirm && !confirm("Are you ready to complete this session?\n\nMake sure you have saved or exported your data first. This will close the session and return you to the home screen.")) return;
-    
-    // Auto-Export Text Log before wiping memory
-    if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
-      AuditManager.exportSessionData('txt');
-    }
+    if (!skipConfirm && !confirm("Are you ready to complete this session?\n\nThis will close the session and return you to the home screen.")) return;
 
     // LIVE FEED PUSH: Background log push & mark order completed in Google Sheets
     if (this.googleFeederUrl && !this.googleFeederUrl.includes("YOUR_COPIED")) {
@@ -1185,7 +1175,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     document.getElementById('sessionNoteInput').value = ""; 
     document.getElementById('chkSessionNote').checked = false;
-    UIManager.toggleSessionNote();
+    if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
 
     const chkPreload = document.getElementById('chkPreloadManifest');
     if (chkPreload) chkPreload.checked = false;
@@ -1280,12 +1270,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   suspendToBackorder() {
-    if (!confirm("Suspend session to Pending Backorder?\n\nThis will export your logs so far and keep the session in the archive to be resumed later.")) return;
-    
-    // Auto-Export Text Log before wiping memory
-    if (this.scannedObjects.length > 0 || this.pendingNewItems.length > 0 || this.pendingFieldUpdates.length > 0) {
-      AuditManager.exportSessionData('txt');
-    }
+    if (!confirm("Suspend session to Pending Backorder?\n\nThis will keep the session in the archive to be resumed later.")) return;
     
     this.pendingNewItems = []; this.pendingFieldUpdates = [];
     localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
@@ -1299,7 +1284,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     document.getElementById('sessionNoteInput').value = ""; 
     document.getElementById('chkSessionNote').checked = false;
-    UIManager.toggleSessionNote();
+    if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
     const chkPreload = document.getElementById('chkPreloadManifest');
     if (chkPreload) chkPreload.checked = false;
 
