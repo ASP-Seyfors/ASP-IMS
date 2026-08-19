@@ -63,11 +63,17 @@ const ReportsManager = {
     let incRes = document.getElementById('chkInvRes') ? document.getElementById('chkInvRes').checked : false;
 
     if (type === 'in_stock') {
-      // Strictly priced items with available stock
       filtered = db.filter(i => {
-        let hasStock = (i.availableQty !== undefined ? i.availableQty : i.onHand) > 0;
-        let hasValidPrice = i.price && i.price !== "$0.00" && i.price !== "0" && i.price.trim() !== "";
-        return hasStock && hasValidPrice;
+        let total = parseInt(i.onHand, 10) || 0;
+        let res = parseInt(i.reservedQty, 10) || 0;
+        let avail = total - res;
+        
+        // Ensure valid price
+        let cleanPrice = (i.price || '').replace(/[^0-9.-]+/g, '');
+        let numPrice = parseFloat(cleanPrice) || 0;
+        let hasValidPrice = numPrice > 0;
+
+        return avail > 0 && hasValidPrice;
       });
       title = "Full On-Hand Stock Report";
     } else if (type === 'out_of_stock') {
