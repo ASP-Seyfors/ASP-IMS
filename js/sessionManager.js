@@ -1244,9 +1244,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       }
     });
 
-    // Apply to DB logic
+    // Apply to DB logic (Reset counts & clear legacy reservations on Full Stocktake)
     if (this.currentWorkflowType === 'Full Stocktake') {
-      DatabaseManager.db.forEach(dbItem => dbItem.onHand = 0);
+      DatabaseManager.db.forEach(dbItem => {
+        dbItem.onHand = 0;
+        dbItem.reservedQty = 0; // <--- Clears old customer reservation tags on full stocktake
+      });
     } else {
       Object.keys(scannedTotals).forEach(ref => {
         let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
