@@ -68,7 +68,7 @@ const ReportsManager = {
         let avail = total - res;
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
-        return avail > 0 && numPrice > 0; // Strict filter: only positive available stock and valid price
+        return avail > 0 && numPrice > 0;
       });
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
@@ -82,7 +82,6 @@ const ReportsManager = {
 
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
     
-    // Calculate total available units across the filtered items
     let totalUnits = filtered.reduce((acc, i) => acc + ((parseInt(i.onHand, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)), 0);
 
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
