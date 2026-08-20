@@ -123,7 +123,8 @@ const SessionManager = {
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      let res = await fetch(this.cloudArchiveUrl);
+      // FIX: Pass an explicit action parameter so Apps Script routes the GET request cleanly
+      let res = await fetch(`${this.cloudArchiveUrl}?action=SYNC_DIRECTORY`);
       let data = await res.json();
       
       if (data.status === "success" && data.archive) {
