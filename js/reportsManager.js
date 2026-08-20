@@ -451,7 +451,8 @@ const ReportsManager = {
     filtered.forEach(item => {
       let mfr = String(item.mfr || 'UNKNOWN').replace(/"/g, '""');
       let ref = String(item.ref || item.sku || '').replace(/"/g, '""');
-      let desc = String(item.desc || item.Description || '').replace(/"/g, '""');
+      // SANITIZE: Replace carriage returns and newlines with spaces so CSV rows remain intact
+      let desc = String(item.desc || item.Description || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
       let gtin = String(item.gtin || '').replace(/"/g, '""');
       let price = String(item.price || item.Price || '0.00');
       let cost = String(item.cost || item.Cost || '0.00');
