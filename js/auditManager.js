@@ -132,6 +132,11 @@ const AuditManager = {
       SessionManager.completeSession();
     } else if (val === 'backorder') {
       SessionManager.suspendToBackorder();
+    } else if (val === 'exit_restored') {
+      document.getElementById('screenSummary').style.display = 'none';
+      document.getElementById('screenSetup').style.display = 'block';
+      SessionManager.isSessionActive = false;
+      return;
     } else if (val === 'pdf' || val === 'txt') {
       this.exportSessionData(val);
     }
@@ -680,7 +685,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
 
-    let items = this.getHistoricalCustomerData(cust, limit);
+    let items = this.getHistoricalCustomerData(cust, limit).filter(i => {
+      let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+      return numPrice > 0;
+    });
     
     let existingModal = document.getElementById('stockReportEditorModal');
     if (existingModal) existingModal.remove();

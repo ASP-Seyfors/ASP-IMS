@@ -1204,6 +1204,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     });
     localStorage.setItem('asp_allocations', JSON.stringify(allocations));
 
+    // --- MERGE NEW GTINS AND NEW ITEMS ---
+    if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
+      this.pendingFieldUpdates.forEach(update => {
+        let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase());
+        if (dbItem && update.field) dbItem[update.field] = update.value; 
+      });
+    }
+
+    if (this.pendingNewItems && this.pendingNewItems.length > 0) {
+      this.pendingNewItems.forEach(newItem => {
+        let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase());
+        if (!exists) DatabaseManager.db.push(newItem);
+      });
+    }
+    
+    // -------------------------------------
     // Apply the math to the local DatabaseManager
     if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
       DatabaseManager.db.forEach(dbItem => {
