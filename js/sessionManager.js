@@ -78,6 +78,45 @@ const SessionManager = {
     this.renderArchiveList();
   },
 
+  async syncAllocationsToCloud() {
+    let rawAllocations = localStorage.getItem('asp_allocations') || '{}';
+    let allocationsObj = JSON.parse(rawAllocations);
+    
+    let payload = {
+      action: "SYNC_ALLOCATIONS",
+      allocations: allocationsObj
+    };
+
+    try {
+      await fetch(this.cloudArchiveUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn("Background allocation sync failed:", err);
+    }
+  },
+
+  async fetchAllocationsFromCloud() {
+    try {
+      let res = await fetch(`${this.cloudArchiveUrl}?action=GET_ALLOCATIONS`);
+      let data = await res.json();
+      if (data.status === "success" && data.allocations) {
+        // Rebuild local nested map from flat rows if needed
+        let allocMap = {};
+        data.allocations.forEach(a => {
+          if (!allocMap[a.customerName]) allocMap[a.customerName] = {};
+          allocMap[a.customerName][a.ref] = a.qty;
+        });
+        localStorage.setItem('asp_allocations', JSON.stringify(allocMap));
+      }
+    } catch (err) {
+      console.warn("Failed to fetch cloud allocations:", err);
+    }
+  },
+
   async syncCloudArchive(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "☁️ Sync Directory";
@@ -95,6 +134,8 @@ const SessionManager = {
           DatabaseManager.importCloudDatabase(data.db);
         }
         
+        await this.fetchAllocationsFromCloud();
+
         if (this.currentArchiveTab === 'cloud') this.renderArchiveList();
         if (!silent) alert(`Cloud Directory Synced! Found ${data.archive.length} total sessions in the vault.`);
       } else {
@@ -1203,6 +1244,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
        if (Object.keys(allocations[t]).length === 0) delete allocations[t];
     });
     localStorage.setItem('asp_allocations', JSON.stringify(allocations));
+
+    this.syncAllocationsToCloud();
 
     // --- MERGE NEW GTINS AND NEW ITEMS ---
     if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {

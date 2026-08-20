@@ -427,6 +427,50 @@ const ReportsManager = {
     }
   },
 
+  exportInventoryCSV(mode = 'onhand') {
+    let db = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db : [];
+    if (db.length === 0) {
+      alert("No inventory data loaded in memory.");
+      return;
+    }
+
+    let filtered = db;
+    if (mode === 'onhand') {
+      filtered = db.filter(item => {
+        let total = parseInt(item.onHand || item.TotalQty, 10) || 0;
+        let res = parseInt(item.reservedQty, 10) || 0;
+        let avail = total - res;
+        let priceStr = String(item.price || item.Price || '').replace(/[^0-9.-]+/g, '');
+        let numPrice = parseFloat(priceStr) || 0;
+        return avail > 0 && numPrice > 0;
+      });
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,MANUFACTURER,REF/SKU,DESCRIPTION,GTIN,PRICE,COST,TOTAL QTY,RESERVED QTY,AVAILABLE QTY\r\n";
+    
+    filtered.forEach(item => {
+      let mfr = String(item.mfr || 'UNKNOWN').replace(/"/g, '""');
+      let ref = String(item.ref || item.sku || '').replace(/"/g, '""');
+      let desc = String(item.desc || item.Description || '').replace(/"/g, '""');
+      let gtin = String(item.gtin || '').replace(/"/g, '""');
+      let price = String(item.price || item.Price || '0.00');
+      let cost = String(item.cost || item.Cost || '0.00');
+      let total = parseInt(item.onHand || item.TotalQty, 10) || 0;
+      let res = parseInt(item.reservedQty, 10) || 0;
+      let avail = total - res;
+
+      csvContent += `"${mfr}","${ref}","${desc}","${gtin}","${price}","${cost}",${total},${res},${avail}\r\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `ASP_Inventory_${mode}_Export_${new Date().toLocaleDateString().replace(/\//g, '.')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+
   // --- REV-MED / DOT-MED DUAL-MODE REPORT ---
   openRevMedReportModal() {
     let localSessions = [];
