@@ -425,5 +425,117 @@ const ReportsManager = {
       win.focus(); 
       setTimeout(() => win.print(), 500); 
     }
+  },
+
+  // --- REV-MED / DOT-MED DUAL-MODE REPORT ---
+  openRevMedReportModal() {
+    let localSessions = [];
+    try {
+      localSessions = JSON.parse(localStorage.getItem('asp_session_archive') || '[]');
+    } catch(e) { localSessions = []; }
+
+    let sessionOptionsHtml = localSessions.length > 0 
+      ? localSessions.map(s => `<option value="${s.id}">${s.sessionName || 'Session'} (${s.dateStr || 'Recent'})</option>`).join('')
+      : `<option value="">No local sessions found</option>`;
+
+    let modal = document.createElement('div');
+    modal.id = 'revmedReportModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px; font-family:sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0277bd; padding-bottom:8px; margin-bottom:15px;">
+          <h3 style="margin:0; color:#0277bd;">📋 RevMed / DotMed Report</h3>
+          <button onclick="document.getElementById('revmedReportModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:0.85rem; font-weight:bold; color:#333; margin-bottom:4px;">Report Mode:</label>
+          <select id="reportModeSelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" onchange="ReportsManager.toggleReportSource()">
+            <option value="onhand">All On-Hand Inventory (Available Qty > 0)</option>
+            <option value="session">Specific Local Device Session</option>
+          </select>
+        </div>
+
+        <div id="sessionSourceContainer" style="margin-bottom:20px; display:none;">
+          <label style="display:block; font-size:0.85rem; font-weight:bold; color:#333; margin-bottom:4px;">Select Local Session:</label>
+          <select id="targetSessionSelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            ${sessionOptionsHtml}
+          </select>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="document.getElementById('revmedReportModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button onclick="ReportsManager.generateRevMedReportExport()" style="background:#0277bd; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📥 Export CSV</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  toggleReportSource() {
+    const mode = document.getElementById('reportModeSelect').value;
+    const container = document.getElementById('sessionSourceContainer');
+    if (container) {
+      container.style.display = mode === 'session' ? 'block' : 'none';
+    }
+  },
+
+  generateRevMedReportExport() {
+    const mode = document.getElementById('reportModeSelect').value;
+    let reportData = [];
+
+    if (mode === 'onhand') {
+      let db = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db : [];
+      reportData = db
+        .filter(i => {
+          let total = parseInt(i.onHand || i.TotalQty, 10) || 0;
+          let res = parseInt(i.reservedQty, 10) || 0;
+          return (total - res) > 0;
+        })
+        .map(i => ({
+          ref: i.ref || i.sku || i['REF / SKU'],
+          desc: i.desc || i.Description || 'N/A',
+          exp: i.exp || 'N/A',
+          price: i.price || i.Price || '$0.00',
+          qty: (parseInt(i.onHand || i.TotalQty, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)
+        }));
+    } else {
+      const selectedId = document.getElementById('targetSessionSelect').value;
+      let localSessions = [];
+      try {
+        localSessions = JSON.parse(localStorage.getItem('asp_session_archive') || '[]');
+      } catch(e) {}
+
+      const targetSession = localSessions.find(s => String(s.id) === String(selectedId));
+      if (!targetSession || !targetSession.scannedObjects) {
+        alert('Selected session contains no scanned items.');
+        return;
+      }
+
+      reportData = targetSession.scannedObjects.map(obj => ({
+        ref: obj.ref || 'N/A',
+        desc: obj.desc || 'N/A',
+        exp: obj.exp || 'N/A',
+        price: obj.price || '$0.00',
+        qty: obj.qty || 1
+      }));
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,REF/SKU,DESCRIPTION,EXPIRATION,PRICE,AVAILABLE QTY\r\n";
+    reportData.forEach(row => {
+      csvContent += `"${row.ref}","${String(row.desc).replace(/"/g, '""')}","${row.exp}","${row.price}",${row.qty}\r\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `RevMed_DotMed_Report_${mode}_${new Date().toLocaleDateString().replace(/\//g, '.')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    let modal = document.getElementById('revmedReportModal');
+    if (modal) modal.remove();
   }
 };

@@ -42,14 +42,19 @@ const AuthManager = {
 
   renderGoogleButton() {
     if (window.google && window.google.accounts) {
+      // Inside your Google Auth initialization script
       google.accounts.id.initialize({
-        client_id: this.clientId,
-        callback: this.handleCredentialResponse.bind(this)
-      });
-      google.accounts.id.renderButton(
-        document.getElementById("googleAuthButton"),
-        { theme: "outline", size: "large", width: "100%" }
-      );
+      client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+      callback: handleCredentialResponse,
+      auto_select: false,         // Keep false so it doesn't force-login blindly
+      prompt: 'select_account',   // <-- THIS FORCES THE ACCOUNT CHOOSER POPUP
+      cancel_on_tap_outside: true
+  });
+
+  google.accounts.id.renderButton(
+    document.getElementById('buttonDiv'),
+    { theme: 'outline', size: 'large', width: '100%' }
+  );
     }
   },
 
