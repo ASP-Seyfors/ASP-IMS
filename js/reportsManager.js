@@ -609,13 +609,17 @@ const ReportsManager = {
           let res = parseInt(i.reservedQty, 10) || 0;
           return (total - res) > 0;
         })
-        .map(i => ({
-          ref: i.ref || i.sku || i['REF / SKU'],
-          desc: i.desc || i.Description || 'N/A',
-          exp: i.exp || 'N/A',
-          price: i.price || i.Price || '$0.00',
-          qty: (parseInt(i.onHand || i.TotalQty, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)
-        }));
+        .map(i => {
+          let total = parseInt(i.onHand || i.TotalQty, 10) || 0;
+          let res = parseInt(i.reservedQty, 10) || 0;
+          return {
+            ref: i.ref || i.sku || i['REF / SKU'],
+            desc: i.desc || i.Description || 'N/A',
+            exp: i.exp || 'N/A',
+            price: i.price || i.Price || '$0.00',
+            qty: total - res
+          };
+        });
     } else {
       const selectedId = document.getElementById('targetSessionSelect').value;
       let localSessions = [];

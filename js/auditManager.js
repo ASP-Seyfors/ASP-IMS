@@ -1075,11 +1075,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `<table><thead><tr><th>REF / Product Code</th>${includeDesc ? '<th>Description</th>' : ''}${includeQty ? '<th style="text-align:center;">Quantity Available</th>' : ''}${includePrice ? '<th style="text-align:right;">Unit Price</th>' : ''}</tr></thead><tbody>`;
 
     rows.forEach(r => {
-      let chk = r.querySelector('.flyer-chk');
-      if (chk && !chk.checked) return;
-
-      let ref = r.querySelector('.rep-ref').value.trim(); let desc = r.querySelector('.rep-desc').value.trim();
-      let qty = r.querySelector('.rep-qty').value.trim(); let price = r.querySelector('.rep-price').value.trim();
+      let ref = r.querySelector('.rep-ref').value.trim(); 
+      let desc = r.querySelector('.rep-desc').value.trim();
+      let qty = r.querySelector('.rep-qty').value.trim(); 
+      let price = r.querySelector('.rep-price').value.trim();
       let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Inquire';
 
       if (ref) {
