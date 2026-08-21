@@ -123,12 +123,18 @@ const SessionManager = {
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      // FIX: Pass an explicit action parameter so Apps Script routes the GET request cleanly
-      let res = await fetch(`${this.cloudArchiveUrl}?action=SYNC_DIRECTORY`);
-      let data = await res.json();
+      let res = await fetch(`${this.cloudArchiveUrl}?action=SYNC_DIRECTORY&t=${Date.now()}`);
+      let text = await res.text();
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("Google Apps Script returned HTML instead of JSON:", text);
+        throw new Error("Cloud Vault returned an HTML error page. Check your Apps Script deployment permissions ('Execute as: Me', 'Who has access: Anyone').");
+      }
       
       if (data.status === "success" && data.archive) {
-        // Save the lightweight directory payload
         localStorage.setItem('asp_cloud_directory', JSON.stringify(data.archive));
 
         if (data.db && typeof DatabaseManager !== 'undefined') {
@@ -143,7 +149,8 @@ const SessionManager = {
         alert("Sync failed: " + (data.message || "Unknown error"));
       }
     } catch (err) {
-      alert("Error connecting to Cloud Vault: " + err.message);
+      if (!silent) alert("Error connecting to Cloud Vault: " + err.message);
+      else console.warn("Cloud Vault sync warning:", err.message);
     } finally {
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
     }
