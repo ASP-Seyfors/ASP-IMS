@@ -1349,7 +1349,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
     
     // Cleanly close the session without triggering another export
-    setTimeout(() => { this.completeSession(true); }, 500);
+    setTimeout(() => { this.completeSession(true); }, UIManager.printTimeout);
   },
 
   suspendToBackorder() {

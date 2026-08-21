@@ -47,9 +47,8 @@
   <!-- End of Week Rollup -->
   <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #0277bd;">End of Week Rollup Report</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0;">Upload all raw .txt session logs for the week to generate a master KPI summary.</p>
-    <input type="file" id="endOfWeekUpload" accept=".txt" multiple style="display:none;" onchange="ReportsManager.processEndOfWeekReport(event)">
-    <button class="btn-action btn-start btn-auto" style="margin:0; width:100%; padding: 8px;" onclick="document.getElementById('endOfWeekUpload').click()">📁 Select TXT Logs & Generate</button>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
+    <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()">📊 Generate Cloud Report (Last 7 Days)</button>
   </div>
 
   <!-- Legacy Customer Reports -->

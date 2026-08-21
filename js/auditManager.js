@@ -82,6 +82,128 @@ const AuditManager = {
     if(elUnique) elUnique.textContent = uniqueRefs.size; if(elTotal) elTotal.textContent = totalQty;
   },
 
+  cloudTraceData: null,
+
+  async fetchAndCompileTraceability() {
+    let timeframe = document.getElementById('traceTimeframe').value;
+    let btn = document.getElementById('btnGenerateTrace');
+    let origText = btn.textContent;
+    btn.textContent = "⏳ Fetching Cloud Ledger..."; 
+    btn.disabled = true;
+
+    document.getElementById('auditResultsContainer').style.display = 'block';
+    document.getElementById('auditPreviewContent').innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd; font-weight:bold;">⏳ Processing live ledger from the cloud... Please wait.</div>';
+
+    try {
+      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let text = await res.text();
+      let responseData = JSON.parse(text);
+      if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
+
+      let auditLog = responseData.data;
+
+      // Filter by timeframe
+      let cutoffDate = new Date();
+      if (timeframe === '24h') cutoffDate.setDate(cutoffDate.getDate() - 1);
+      else if (timeframe === '7d') cutoffDate.setDate(cutoffDate.getDate() - 7);
+      else if (timeframe === '30d') cutoffDate.setDate(cutoffDate.getDate() - 30);
+      else if (timeframe === '90d') cutoffDate.setDate(cutoffDate.getDate() - 90);
+      else cutoffDate = new Date(2000, 0, 1); // all time
+
+      let filteredLogs = auditLog.filter(row => {
+        let rowDate = new Date(row['Timestamp']);
+        return rowDate >= cutoffDate;
+      });
+
+      let lotTraceMap = {};
+      let totalItemsScanned = 0;
+      let uniqueRefs = new Set();
+      let datesArray = [];
+
+      filteredLogs.forEach(row => {
+        let ref = row['REF / SKU'];
+        let lot = row['Lot'];
+        let exp = row['Exp Date'];
+        let qty = parseInt(row['Qty Moved'], 10) || 0;
+        let workflow = row['Workflow'] || '';
+        let dest = row['Destination / Action'] || '';
+        let sessionName = row['Session / Reason'] || '';
+        let user = row['User'] || '';
+        let rawDate = row['Timestamp'] || '';
+        
+        if (!ref || !lot || lot === 'N/A') return;
+
+        uniqueRefs.add(ref);
+        totalItemsScanned += qty;
+        
+        let dateOnly = rawDate.split(' ')[0];
+        if (dateOnly && !datesArray.includes(dateOnly)) datesArray.push(dateOnly);
+
+        let key = `${ref}_${lot}`;
+        if (!lotTraceMap[key]) {
+          let match = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) : null;
+          lotTraceMap[key] = {
+            ref: ref, lot: lot, exp: exp,
+            desc: match ? (match.desc || '') : '',
+            mfr: match ? (match.mfr || '') : '',
+            gtin: match ? (match.gtin || 'N/A') : 'N/A',
+            price: match ? (match.price || '$0.00') : '$0.00',
+            inboundQty: 0, reservedQty: 0, outboundQty: 0, damagedQty: 0,
+            receivedDate: 'N/A', reservedForTag: '', timeline: []
+          };
+        }
+
+        let customerTag = '';
+        if (dest.includes('Reserved for:')) {
+           customerTag = dest.replace('Reserved for:', '').trim();
+        } else if (workflow.includes('Pack') && dest && dest !== 'Pack & Ship') {
+           customerTag = dest;
+        }
+
+        if (dest.toLowerCase().includes('damage') || dest.toLowerCase().includes('note:')) {
+          lotTraceMap[key].damagedQty += qty;
+        }
+
+        if (workflow.includes('Receiving') || workflow.includes('Stocktake')) {
+          lotTraceMap[key].inboundQty += qty;
+          if (lotTraceMap[key].receivedDate === 'N/A') lotTraceMap[key].receivedDate = dateOnly;
+        }
+        if (workflow.includes('Reserving')) {
+          lotTraceMap[key].reservedQty += qty;
+          if (customerTag) lotTraceMap[key].reservedForTag = customerTag;
+        }
+        if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) {
+          lotTraceMap[key].outboundQty += qty;
+        }
+
+        lotTraceMap[key].timeline.push({
+          date: rawDate, workflow: workflow, qty: qty, sessionName: sessionName, fileName: 'Cloud Ledger', customerTag: customerTag, itemNote: dest, user: user
+        });
+      });
+
+      datesArray.sort((a,b) => new Date(a) - new Date(b));
+      let startDate = datesArray.length > 0 ? datesArray[0] : new Date().toLocaleDateString();
+      let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : new Date().toLocaleDateString();
+      
+      let sortedTraceList = Object.values(lotTraceMap).sort((a, b) => { 
+        if (a.ref < b.ref) return -1; if (a.ref > b.ref) return 1; 
+        if (a.lot < b.lot) return -1; if (a.lot > b.lot) return 1; 
+        return 0; 
+      });
+      
+      // Cache the result for exports
+      this.cloudTraceData = { sortedTraceList, totalItemsScanned, uniqueRefsCount: uniqueRefs.size, startDate, endDate, sourceFilesList: ["Master Cloud Audit Ledger"] };
+
+      this.renderAuditPreviewUI();
+
+    } catch (err) {
+      alert("Error generating traceability report: " + err.message);
+      document.getElementById('auditPreviewContent').innerHTML = '';
+    } finally {
+      btn.textContent = origText; btn.disabled = false;
+    }
+  }, 
+
   loadCustomerReportData() {
     let select = document.getElementById('customerReportSelect');
     let controls = document.getElementById('customerReportControls');
@@ -126,7 +248,7 @@ const AuditManager = {
       this.exportSessionData(val);
     }
 
-    setTimeout(() => { document.getElementById('exportDropdown').value = "continue"; }, 500);
+    setTimeout(() => { document.getElementById('exportDropdown').value = "continue"; }, UIManager.printTimeout);
   },
 
   // ==========================================================================
@@ -586,8 +708,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let incMargin = document.getElementById('chkIntMargin') ? document.getElementById('chkIntMargin').checked : true;
 
     let scopeTitle = limit === 'all' ? 'All Historical Items' : 'Top 10 Items';
-    let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}.pdf`;
-    
+    // Remove the .pdf here
+    let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}`;
+
     // Pass the limit parameter here!
     let skuMap = this.getHistoricalCustomerData(cust, limit); 
     
@@ -662,7 +785,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let safeTitle = filename.replace(/\./g, '\u2024');
       win.document.title = safeTitle; 
       win.focus(); 
-      setTimeout(() => win.print(), 500); 
+      setTimeout(() => win.print(), UIManager.printTimeout); // Increased timeout
     }
     
     let modal = document.getElementById('internalReportOptionsModal');
@@ -747,11 +870,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   openCustomSalesFlyer() {
-    let cust = document.getElementById('customerReportSelect').value;
-    if (!cust) { UIManager.showCustomAlert("Notice", "Please select a customer first to load their historical data scope.", false); return; }
-    
-    let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
-    let limit = scopeRadio ? scopeRadio.value : '10';
+    // 1. Remove the strict customer requirement. Use "PROMO" if the dropdown is blank.
+    let custInput = document.getElementById('customerReportSelect');
+    let cust = (custInput && custInput.value) ? custInput.value : 'PROMO';
 
     let existingModal = document.getElementById('stockReportEditorModal');
     if (existingModal) existingModal.remove();
@@ -760,14 +881,33 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     modal.id = 'stockReportEditorModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
-    let availableItems = this.getHistoricalCustomerData(cust, limit).filter(i => i.onHand > 0);
+    // 2. Pull ALL available inventory directly from the master database
+    let availableItems = [];
+    if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
+      availableItems = DatabaseManager.db.filter(dbItem => {
+        let total = parseInt(dbItem.onHand, 10) || 0;
+        let res = parseInt(dbItem.reservedQty, 10) || 0;
+        return (total - res) > 0;
+      }).map(dbItem => {
+        return {
+          ref: DatabaseManager.getItemSku(dbItem),
+          desc: DatabaseManager.getItemDesc(dbItem),
+          onHand: (parseInt(dbItem.onHand, 10) || 0) - (parseInt(dbItem.reservedQty, 10) || 0),
+          price: dbItem.price || '$0.00'
+        };
+      }).sort((a, b) => a.ref.localeCompare(b.ref));
+    }
 
     let rowsHtml = '';
     availableItems.forEach((it, idx) => {
-      let safeDesc = (it.desc || '').replace(/"/g, '&quot;'); let safeRef = (it.ref || '').replace(/"/g, '&quot;'); let safePrice = (it.price || '').replace(/"/g, '&quot;');
+      let safeDesc = String(it.desc || '').replace(/"/g, '&quot;'); 
+      let safeRef = String(it.ref || '').replace(/"/g, '&quot;'); 
+      let safePrice = String(it.price || '').replace(/"/g, '&quot;');
+      
+      // Removed the "checked" attribute so you don't have to uncheck hundreds of items manually
       rowsHtml += `
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px; padding:6px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;" class="flyer-item-row">
-          <input type="checkbox" class="flyer-chk" checked style="width:20px; height:20px; cursor:pointer;">
+          <input type="checkbox" class="flyer-chk" style="width:20px; height:20px; cursor:pointer;">
           <input type="text" value="${safeRef}" class="rep-ref" readonly style="width:90px; padding:4px; font-weight:bold; background:#e0e0e0; border:1px solid #ccc; color:#555;">
           <input type="text" value="${safeDesc}" class="rep-desc" style="flex:1; padding:4px; font-size:0.8rem;">
           <input type="number" value="${it.onHand}" max="${it.onHand}" min="1" class="rep-qty" style="width:60px; padding:4px; text-align:center;" onchange="if(this.value > ${it.onHand}) { UIManager.showCustomAlert('Limit Reached', 'Cannot exceed available quantity of ${it.onHand}'); this.value = ${it.onHand}; }">
@@ -782,7 +922,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         <div style="background:#fff3e0; border:1px solid #ffcc80; border-radius:4px; padding:10px; margin-bottom:15px; font-size:0.85rem;">
-          Build a custom flyer based on <strong>${cust}'s</strong> history. Select items and set quantities below.
+          Build a custom flyer from the <strong>Full Warehouse Inventory</strong>. Select items and set quantities below.
         </div>
         <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:15px;">
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeDescFlyer" checked> Include Description</label>
@@ -801,12 +941,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           </div>
         </div>
         <div id="reportItemRowsContainer" style="max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:6px; border-radius:4px; background:#fff;">
-          ${rowsHtml.length > 0 ? rowsHtml : '<div style="text-align:center; padding:10px; color:#777;">No items currently available in stock for this scope.</div>'}
+          ${rowsHtml.length > 0 ? rowsHtml : '<div style="text-align:center; padding:10px; color:#777;">No items currently available in stock.</div>'}
         </div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
           <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.exportCustomerStockReportPDF('CUSTOM_PROMO')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
-          <button onclick="AuditManager.draftEmailFlyer('CUSTOM_PROMO')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📧 Copy to Email</button>
+          <button onclick="AuditManager.exportCustomerStockReportPDF('${cust}')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
+          <button onclick="AuditManager.draftEmailFlyer('${cust}')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📧 Copy to Email</button>
         </div>
       </div>
     `;
@@ -899,7 +1039,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let container = document.getElementById('reportItemRowsContainer');
     let rows = container.querySelectorAll('.flyer-item-row');
     let safeDate = SessionManager.sessionDateStr.replace(/\./g, '_');
-    let filename = `Customer_Stock_Flyer_${cust}_${safeDate}.pdf`;
+    // Remove the .pdf here
+    let filename = `Customer_Stock_Flyer_${cust}_${safeDate}`;
 
     let html = `<!DOCTYPE html><html><head><title>${filename}</title>
     <style>
@@ -956,8 +1097,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let safeTitle = filename.replace(/\./g, '\u2024');
       win.document.title = safeTitle; 
       win.focus(); 
-      setTimeout(() => win.print(), 500); 
+      setTimeout(() => win.print(), UIManager.printTimeout); // Increased timeout
     }
+
     document.getElementById('stockReportEditorModal').remove();
   },
 
@@ -980,14 +1122,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     Object.keys(remoteSkuCounts).forEach(ref => {
       skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + remoteSkuCounts[ref];
     });
-
-    // 3. Fallback: If absolutely no history/allocations exist, just pull the top available items
-    if (Object.keys(skuVolumeMap).length === 0 && typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
-      DatabaseManager.db.forEach(dbItem => {
-        let avail = (parseInt(dbItem.onHand, 10) || 0) - (parseInt(dbItem.reservedQty, 10) || 0);
-        if (avail > 0) skuVolumeMap[DatabaseManager.getItemSku(dbItem)] = avail;
-      });
-    }
 
     let resultList = [];
     let sortedSkus = Object.keys(skuVolumeMap).sort((a,b) => skuVolumeMap[b] - skuVolumeMap[a]);
@@ -1044,7 +1178,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         setTimeout(() => {
           printWin.focus();
           printWin.print();
-        }, 500);
+        }, UIManager.printTimeout);
       };
       
       return;
@@ -1325,30 +1459,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   compileTraceabilityData() {
-    let lotTraceMap = {}; let totalItemsScanned = 0; let uniqueRefs = new Set(); let datesArray = []; let sourceFilesList = [];
-    this.parsedAuditSessions.forEach(session => {
-      if (session.fileName && !sourceFilesList.includes(session.fileName)) sourceFilesList.push(session.fileName);
-      session.items.forEach(item => {
-        uniqueRefs.add(item.ref); totalItemsScanned += item.qty;
-        if (item.date && item.date !== "Unknown") datesArray.push(item.date.replace(/\./g, '-'));
-        let key = `${item.ref}_${item.lot}`;
-        if (!lotTraceMap[key]) {
-          let match = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === item.ref);
-          lotTraceMap[key] = { ref: item.ref, lot: item.lot, exp: item.exp, desc: match ? DatabaseManager.getItemDesc(match) : '', mfr: match ? DatabaseManager.getItemVendor(match) : '', gtin: match ? match.gtin : 'N/A', price: match ? match.price : '$0.00', inboundQty: 0, reservedQty: 0, outboundQty: 0, damagedQty: 0, receivedDate: 'N/A', reservedForTag: '', timeline: [] };
-        }
-        if (item.itemNote) lotTraceMap[key].damagedQty += item.qty;
-        if (item.workflow.includes('Receiving')) { lotTraceMap[key].inboundQty += item.qty; if (lotTraceMap[key].receivedDate === 'N/A') lotTraceMap[key].receivedDate = item.date; }
-        if (item.workflow.includes('Reserving')) { lotTraceMap[key].reservedQty += item.qty; if (item.customerTag) lotTraceMap[key].reservedForTag = item.customerTag; }
-        if (item.workflow.includes('Packing')) { lotTraceMap[key].outboundQty += item.qty; }
-        lotTraceMap[key].timeline.push({ date: item.date, workflow: item.workflow, qty: item.qty, sessionName: item.sessionName, fileName: item.fileName, customerTag: item.customerTag, itemNote: item.itemNote, user: item.user });
-      });
-    });
-    datesArray.sort();
-    let startDate = datesArray.length > 0 ? datesArray[0] : SessionManager.sessionDateStr;
-    let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : SessionManager.sessionDateStr;
-    let sortedTraceList = Object.values(lotTraceMap).sort((a, b) => { if (a.ref < b.ref) return -1; if (a.ref > b.ref) return 1; if (a.lot < b.lot) return -1; if (a.lot > b.lot) return 1; return 0; });
-    sortedTraceList.forEach(trace => { trace.timeline.sort((a, b) => new Date(a.date.replace(/\./g, '-')) - new Date(b.date.replace(/\./g, '-'))); });
-    return { sortedTraceList, totalItemsScanned, uniqueRefsCount: uniqueRefs.size, startDate, endDate, sourceFilesList };
+    return this.cloudTraceData;
   },
 
   renderAuditPreviewUI() {
@@ -1714,7 +1825,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         setTimeout(() => {
           printWin.focus();
           printWin.print();
-        }, 500);
+        }, UIManager.printTimeout);
       };
       return;
     }

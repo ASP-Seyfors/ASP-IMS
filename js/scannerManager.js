@@ -56,7 +56,7 @@ const ScannerManager = {
       let camBox = document.getElementById('cameraViewfinder');
       if (camBox) {
           camBox.classList.add('scan-success');
-          setTimeout(() => camBox.classList.remove('scan-success'), 450);
+          setTimeout(() => camBox.classList.remove('scan-success'), 600);
       }
       document.getElementById(`rawScan${targetLine}`).value = cleanText;
       this.processAllScans();

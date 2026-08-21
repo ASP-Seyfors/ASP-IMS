@@ -16,22 +16,21 @@
   </div>
   
   <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">
-    Select and upload multi-session <code>.txt</code> export logs to compile a comprehensive lifecycle audit, FEFO traceability report, or Thrive batch exports.
+    Select a timeframe below to pull a comprehensive lifecycle audit, FEFO traceability report, or Thrive batch exports directly from the live Cloud Ledger.
   </p>
 
-  <div class="btn-flex-row">
-    <input type="file" id="auditFilesUpload" accept=".txt" multiple style="display:none;" onchange="processAuditFiles(event)">
-    <button class="btn-action btn-start" style="flex:2; margin-top:0;" onclick="document.getElementById('auditFilesUpload').click()">📁 Select / Upload Logs</button>
-    <button class="btn-action btn-clear" style="flex:1; margin-top:0;" onclick="clearAuditSessions()">🧹 Clear</button>
-  </div>
-
-  <div style="background-color: #f3e5f5; border: 1px solid #ce93d8; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
-    <h4 style="margin: 0 0 6px 0; color: #7b1fa2;">☁️ Push Historical Logs to Cloud Archive</h4>
-    <p style="font-size: 0.8rem; color: #555; margin: 0 0 10px 0;">Select older <strong>.txt</strong> logs from your device. The app will automatically ignore duplicates and push any missing sessions to the Google Sheet.</p>
-    <label class="btn-action btn-auto" style="background-color: #7b1fa2; color: #ffffff; cursor: pointer; display: inline-block; padding: 8px 16px; margin: 0;">
-      ⬆️ Select & Upload Historical Logs
-      <input type="file" multiple accept=".txt" style="display:none;" onchange="batchPushLegacyLogs(event)">
-    </label>
+  <div class="form-row" style="margin-bottom: 20px;">
+    <div class="form-label" style="color: #0277bd;">Timeframe:</div>
+    <div class="input-wrapper" style="display:flex; gap:8px;">
+      <select id="traceTimeframe" style="flex:2; border: 2px solid #0277bd; font-weight: bold; padding: 10px; border-radius: 4px;">
+        <option value="24h">Today (Last 24 Hours)</option>
+        <option value="7d" selected>Last 7 Days (End of Week)</option>
+        <option value="30d">Last 30 Days (Monthly)</option>
+        <option value="90d">Last 90 Days (Quarterly)</option>
+        <option value="all">Year-to-Date / All Time</option>
+      </select>
+      <button id="btnGenerateTrace" class="btn-action btn-auto" style="margin:0; flex:1; background-color: #0277bd; color: #fff; padding: 10px;" onclick="AuditManager.fetchAndCompileTraceability()">🔍 Generate Traceability</button>
+    </div>
   </div>
 
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">

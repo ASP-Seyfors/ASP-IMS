@@ -11,7 +11,7 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-const CACHE_NAME = 'asp-scanner-v3.6.3';
+const CACHE_NAME = 'asp-scanner-v3.6.4';
 
 
 const ASSETS_TO_CACHE = [

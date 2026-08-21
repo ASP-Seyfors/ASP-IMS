@@ -12,7 +12,9 @@
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-const UIManager = {
+const UIManager = {// GLOBAL CONFIGURATIONS
+  printTimeout: 1200,
+  
   // POPULATE CUSTOMER REPORT SELECTOR FROM MASTER CUSTOMER LIST
   populateCustomerDropdown() {
     let select = document.getElementById('customerReportSelect');

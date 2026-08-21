@@ -161,15 +161,16 @@ const ReportsManager = {
     
     // 3. Fix the Filename and Print Truncation
     let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
-    let filename = `ASP_${fileSuffix}_Report_(${dateStr}).pdf`;
-    let safeTitle = filename.replace(/\./g, '\u2024'); // Magic Dot Trick
+    // Remove the .pdf here
+    let filename = `ASP_${fileSuffix}_Report_(${dateStr})`; 
+    let safeTitle = filename.replace(/\./g, '\u2024'); 
     
     let win = window.open('', '_blank');
     if (win) { 
       win.document.write(html); 
       win.document.title = safeTitle; 
       win.focus(); 
-      setTimeout(() => win.print(), 500); 
+      setTimeout(() => win.print(), UIManager.printTimeout); // Increased timeout
     }
     
     let modal = document.getElementById('inventoryReportOptionsModal');
@@ -244,138 +245,154 @@ const ReportsManager = {
       let safeTitle = filename.replace(/\./g, '\u2024');
       win.document.title = safeTitle; 
       win.focus(); 
-      setTimeout(() => win.print(), 800); 
+      setTimeout(() => win.print(), UIManager.printTimeout); 
     }
   },
 
-  async processEndOfWeekReport(event) {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+  async generateEndOfWeekReport() {
+    let btn = document.getElementById('btnEndOfWeek');
+    let origText = btn ? btn.textContent : "📊 Generate Cloud Report (Last 7 Days)";
+    if (btn) { btn.textContent = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
 
-    let sessionsCount = files.length;
-    let inboundCount = 0; let outboundCount = 0;
-    let totalItems = 0; let uniqueRefs = new Set();
-    let newItems = new Set(); let updatedItems = new Set();
-    let datesArray = []; 
-    let sessionsByDate = {}; // NEW: Object to group files by date
+    try {
+      // 1. Fetch live ledger
+      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let text = await res.text();
+      let responseData = JSON.parse(text);
 
-    let filePromises = Array.from(files).map(file => {
-      return new Promise((resolve) => {
-        let reader = new FileReader();
-        reader.onload = (e) => {
-          let text = e.target.result;
-          if (text.includes('Receiving & Reserving') || text.includes('Receiving')) inboundCount++;
-          if (text.includes('Picking & Packing') || text.includes('Packing & Shipping')) outboundCount++;
-          
-          let parsed = AuditManager.parseTXTExportContent(text, file.name);
-          if (parsed) {
-            let sDate = (parsed.date && parsed.date !== "Unknown") ? parsed.date : "Unknown Date";
-            if (sDate !== "Unknown Date") datesArray.push(sDate);
-            
-            // Group by date
-            if (!sessionsByDate[sDate]) sessionsByDate[sDate] = [];
-            sessionsByDate[sDate].push(parsed.fileName);
-            
-            parsed.items.forEach(i => { totalItems += i.qty; uniqueRefs.add(i.ref); });
-            (parsed.newItems || []).forEach(n => newItems.add(n.ref));
-            (parsed.updatedItems || []).forEach(u => updatedItems.add(u.ref));
-          }
-          resolve();
-        };
-        reader.readAsText(file);
+      if (responseData.status !== "success" || !responseData.data) {
+        throw new Error(responseData.message || "Failed to load audit log from cloud.");
+      }
+
+      let auditLog = responseData.data;
+
+      // 2. Filter for the last 7 days
+      let cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - 7);
+      cutoffDate.setHours(0,0,0,0);
+
+      let filteredLogs = auditLog.filter(row => {
+        let rowDate = new Date(row['Timestamp']);
+        return rowDate >= cutoffDate;
       });
-    });
 
-    await Promise.all(filePromises);
-    event.target.value = '';
+      if (filteredLogs.length === 0) {
+        alert("No warehouse activity logged in the last 7 days.");
+        return;
+      }
 
-    // Calculate Date Range for Filename
-    datesArray.sort();
-    let startDate = datesArray.length > 0 ? datesArray[0] : new Date().toLocaleDateString().replace(/\//g, '.');
-    let endDate = datesArray.length > 0 ? datesArray[datesArray.length - 1] : new Date().toLocaleDateString().replace(/\//g, '.');
-    let dateRangeStr = startDate === endDate ? startDate : `${startDate}-${endDate}`;
-    let baseFilename = `ASP_End_of_Week_Report_(${dateRangeStr})`;
+      // 3. Calculate KPIs
+      let sessionsSet = new Set();
+      let inboundSessions = new Set();
+      let outboundSessions = new Set();
+      let totalItems = 0;
+      let uniqueRefs = new Set();
+      let sessionsByDate = {};
 
-    let generatedDate = new Date().toLocaleDateString();
+      filteredLogs.forEach(row => {
+        let sessionName = row['Session / Reason'] || 'Unknown Session';
+        let workflow = row['Workflow'] || '';
+        let dateStr = row['Timestamp'].split(' ')[0];
+        let qty = parseInt(row['Qty Moved'], 10) || 0;
+        let ref = row['REF / SKU'] || '';
 
-    // Build the grouped session list HTML
-    let auditedSessionsHtml = '';
-    let sortedDates = Object.keys(sessionsByDate).sort();
-    sortedDates.forEach(d => {
-      auditedSessionsHtml += `<h4 style="margin: 10px 0 4px 0; color: #333; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 2px;">📅 ${d}</h4><ul class="session-list">`;
-      sessionsByDate[d].sort().forEach(f => {
-        auditedSessionsHtml += `<li>${f}</li>`;
+        sessionsSet.add(sessionName);
+        if (workflow.includes('Receiving')) inboundSessions.add(sessionName);
+        if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) outboundSessions.add(sessionName);
+        
+        if (ref && ref !== 'N/A') {
+          totalItems += Math.abs(qty);
+          uniqueRefs.add(ref);
+        }
+
+        if (!sessionsByDate[dateStr]) sessionsByDate[dateStr] = new Set();
+        sessionsByDate[dateStr].add(sessionName);
       });
-      auditedSessionsHtml += `</ul>`;
-    });
-    if (!auditedSessionsHtml) auditedSessionsHtml = '<p>No session files recorded.</p>';
-    
-    let html = `<!DOCTYPE html><html><head><title>ASP End of Week Report</title>
-    <style>
-      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
-      .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
-      h1 { margin:0; color:#0277bd; font-size:20px; text-transform:uppercase; }
-      h3 { color: #0277bd; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 20px;}
-      .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-      .kpi-box { background: #f0f8ff; border: 1px solid #bfe0fb; padding: 15px; border-radius: 6px; text-align: center; }
-      .kpi-val { font-size: 20px; font-weight: bold; color: #0277bd; display: block; margin-top: 5px; }
-      ul { column-count: 2; margin: 0; padding-left: 20px; }
-      li { margin-bottom: 4px; font-family: monospace; font-size: 11px; }
-      .session-list { column-count: 1; list-style-type: square; }
-    </style></head><body>
 
-    <div class="header">
-      <div>
-        <h1>End of Week Report</h1>
-        <div style="font-size:12px; color:#555; margin-top:4px;">Allied Surgical Products</div>
+      // 4. Build the HTML output
+      let auditedSessionsHtml = '';
+      let sortedDates = Object.keys(sessionsByDate).sort().reverse(); // Newest first
+      sortedDates.forEach(d => {
+        auditedSessionsHtml += `<h4 style="margin: 10px 0 4px 0; color: #333; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 2px;">📅 ${d}</h4><ul class="session-list">`;
+        Array.from(sessionsByDate[d]).sort().forEach(s => {
+          auditedSessionsHtml += `<li>${s}</li>`;
+        });
+        auditedSessionsHtml += `</ul>`;
+      });
+
+      let generatedDate = new Date().toLocaleDateString();
+      let dateRangeStr = `${sortedDates[sortedDates.length - 1]} to ${sortedDates[0]}`;
+      // Note: We intentionally do NOT append ".pdf" here so Chrome handles the extension correctly
+      let baseFilename = `ASP_End_of_Week_Report_(${dateRangeStr.replace(/\//g, '.')})`;
+
+      let html = `<!DOCTYPE html><html><head><title>ASP End of Week Report</title>
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
+        .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+        h1 { margin:0; color:#0277bd; font-size:20px; text-transform:uppercase; }
+        h3 { color: #0277bd; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 20px;}
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .kpi-box { background: #f0f8ff; border: 1px solid #bfe0fb; padding: 15px; border-radius: 6px; text-align: center; }
+        .kpi-val { font-size: 20px; font-weight: bold; color: #0277bd; display: block; margin-top: 5px; }
+        ul { column-count: 2; margin: 0; padding-left: 20px; }
+        li { margin-bottom: 4px; font-family: monospace; font-size: 11px; color: #555; }
+        .session-list { column-count: 1; list-style-type: square; }
+      </style></head><body>
+
+      <div class="header">
+        <div>
+          <h1>End of Week Report</h1>
+          <div style="font-size:12px; color:#555; margin-top:4px;">Allied Surgical Products</div>
+        </div>
+        <div style="text-align:right; font-size:11px; color:#555;">
+          <div>Generated: <strong>${generatedDate}</strong></div>
+        </div>
       </div>
-      <div style="text-align:right; font-size:11px; color:#555;">
-        <div>Generated: <strong>${generatedDate}</strong></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-box">Sessions Logged<span class="kpi-val">${sessionsSet.size}</span></div>
+        <div class="kpi-box">Incoming Shipments<span class="kpi-val">${inboundSessions.size}</span></div>
+        <div class="kpi-box">Outgoing Orders<span class="kpi-val">${outboundSessions.size}</span></div>
+        <div class="kpi-box">Total Items Handled<span class="kpi-val">${totalItems}</span></div>
+        <div class="kpi-box">Unique REFs Touched<span class="kpi-val">${uniqueRefs.size}</span></div>
       </div>
-    </div>
 
-    <div class="kpi-grid">
-      <div class="kpi-box">Sessions Logged<span class="kpi-val">${sessionsCount}</span></div>
-      <div class="kpi-box">Incoming Shipments<span class="kpi-val">${inboundCount}</span></div>
-      <div class="kpi-box">Outgoing Orders<span class="kpi-val">${outboundCount}</span></div>
-      <div class="kpi-box">Total Items Handled<span class="kpi-val">${totalItems}</span></div>
-      <div class="kpi-box">Unique REFs Touched<span class="kpi-val">${uniqueRefs.size}</span></div>
-    </div>
+      <h3>📄 AUDITED SESSIONS (${sessionsSet.size})</h3>
+      ${auditedSessionsHtml}
 
-    <h3>🆕 NEW REFs DISCOVERED (${newItems.size})</h3>
-    ${newItems.size > 0 ? `<ul>${Array.from(newItems).map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No new REFs discovered this week.</p>'}
+      </body></html>`;
 
-    <h3>🔄 EXISTING REFs UPDATED (${updatedItems.size})</h3>
-    ${updatedItems.size > 0 ? `<ul>${Array.from(updatedItems).map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No existing REFs updated this week.</p>'}
+      // 5. Trigger the hidden iframe print with Magic Dot Title
+      let iframe = document.getElementById('pdfPrintFrame');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'pdfPrintFrame';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+      
+      let safeTitle = baseFilename.replace(/\./g, '\u2024'); // Magic Dot implementation
+      
+      let doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.title = safeTitle;
+      doc.close();
+      
+      let originalTitle = document.title;
+      document.title = safeTitle;
 
-    <h3>📄 AUDITED SESSIONS (${sessionsCount})</h3>
-    ${auditedSessionsHtml}
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(() => { document.title = originalTitle; }, 2000);
+      }, UIManager.printTimeout);
 
-    </body></html>`;
-
-    // Hidden Iframe PDF Print Trigger
-    let iframe = document.getElementById('pdfPrintFrame');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.id = 'pdfPrintFrame';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+    } catch(err) {
+      alert("Error generating End of Week Report: " + err.message);
+    } finally {
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
     }
-    let doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(html);
-    doc.title = baseFilename;
-    doc.close();
-    
-    // Temporarily lock window title so browser print dialog uses baseFilename
-    let originalTitle = document.title;
-    document.title = baseFilename;
-
-    setTimeout(() => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-      setTimeout(() => { document.title = originalTitle; }, 2000);
-    }, 500);
   },
 
   async generateExpirationReport() {
@@ -463,15 +480,16 @@ const ReportsManager = {
       html += `</tbody></table></body></html>`;
       
       let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
-      let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}.pdf`;
-      let safeTitle = filename.replace(/\./g, '\u2024'); // Magic Dot implementation
+      // Remove the .pdf here
+      let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}`;
+      let safeTitle = filename.replace(/\./g, '\u2024'); 
       
       let win = window.open('', '_blank');
       if (win) { 
         win.document.write(html); 
         win.document.title = safeTitle; 
         win.focus(); 
-        setTimeout(() => win.print(), 500); 
+        setTimeout(() => win.print(), UIManager.printTimeout); // Increased timeout
       }
 
     } catch (err) {

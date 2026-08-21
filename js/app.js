@@ -152,7 +152,7 @@ window.masterSystemSync = async (event) => {
         let ind = document.getElementById('syncIndicator');
         if (ind) ind.style.display = 'none';
       }
-    }, 600);
+    }, UIManager.printTimeout);
 
   } catch(err) {
     modal.innerHTML = `
