@@ -962,12 +962,35 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   getHistoricalCustomerData(cust, limit = '10') {
+    let cleanCust = cust.toUpperCase().trim();
+    let skuVolumeMap = {};
+
+    // 1. Primary Source: Aggregate directly from active master allocations
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+    let custAllocations = allocations[cleanCust] || {};
+    
+    // Add any actively reserved items to the map
+    Object.keys(custAllocations).forEach(ref => {
+      skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + custAllocations[ref];
+    });
+
+    // 2. Layer in remote analytics if present (for historical context)
     let analytics = JSON.parse(localStorage.getItem('asp_remote_analytics')) || {};
-    let skuCounts = analytics[cust.toUpperCase()] || {}; 
+    let remoteSkuCounts = analytics[cleanCust] || {};
+    Object.keys(remoteSkuCounts).forEach(ref => {
+      skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + remoteSkuCounts[ref];
+    });
+
+    // 3. Fallback: If absolutely no history/allocations exist, just pull the top available items
+    if (Object.keys(skuVolumeMap).length === 0 && typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
+      DatabaseManager.db.forEach(dbItem => {
+        let avail = (parseInt(dbItem.onHand, 10) || 0) - (parseInt(dbItem.reservedQty, 10) || 0);
+        if (avail > 0) skuVolumeMap[DatabaseManager.getItemSku(dbItem)] = avail;
+      });
+    }
 
     let resultList = [];
-    
-    let sortedSkus = Object.keys(skuCounts).sort((a,b) => skuCounts[b] - skuCounts[a]);
+    let sortedSkus = Object.keys(skuVolumeMap).sort((a,b) => skuVolumeMap[b] - skuVolumeMap[a]);
     
     if (limit !== 'all') {
       sortedSkus = sortedSkus.slice(0, parseInt(limit, 10));
@@ -978,7 +1001,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       resultList.push({
         ref: ref,
         desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
-        histQty: skuCounts[ref],
+        histQty: skuVolumeMap[ref] || 0,
         onHand: dbItem ? (dbItem.onHand || 0) : 0, 
         price: dbItem ? dbItem.price : '$0.00',
         cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'

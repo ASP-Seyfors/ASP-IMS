@@ -378,69 +378,106 @@ const ReportsManager = {
     }, 500);
   },
 
-  generateExpirationReport() {
+  async generateExpirationReport() {
     let months = parseInt(document.getElementById('expirationFilter').value, 10);
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let lotMap = {};
+    let btn = document.querySelector('button[onclick="ReportsManager.generateExpirationReport()"]');
+    let origText = btn ? btn.textContent : "⚠️ Run Report";
+    if (btn) { btn.textContent = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
 
-    // Crawl all sessions to find active lots
-    archive.forEach(sess => {
-      if (sess.status === 'Completed' && sess.scannedObjects) {
-        sess.scannedObjects.forEach(s => {
-          let key = `${s.ref}_${s.lot}_${s.exp}`;
-          
-          // --- FIX: Lookup MFR from Master DB if missing from legacy logs ---
-          let displayMfr = s.mfr;
-          if (!displayMfr || displayMfr === 'N/A' || displayMfr === 'UNKNOWN MANUFACTURER') {
-             if (typeof DatabaseManager !== 'undefined') {
-                 let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (s.ref || '').toUpperCase());
-                 if (dbMatch && dbMatch.mfr) {
-                     displayMfr = dbMatch.mfr;
-                 } else {
-                     displayMfr = 'Unknown';
-                 }
-             }
-          }
+    try {
+      // 1. Fetch the live audit log directly from the master Google Sheet
+      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let text = await res.text();
+      let responseData;
+      
+      try {
+        responseData = JSON.parse(text);
+      } catch(e) { 
+        throw new Error("Connection blocked by Google. Check Apps Script permissions."); 
+      }
 
-          if (!lotMap[key]) lotMap[key] = { ref: s.ref, lot: s.lot, exp: s.exp, mfr: displayMfr, qty: 0 };
-          if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) lotMap[key].qty += s.qty;
-          else if (sess.workflowType.includes('Packing')) lotMap[key].qty -= s.qty;
+      if (responseData.status !== "success" || !responseData.data) {
+        throw new Error(responseData.message || "Failed to load audit log from cloud.");
+      }
+
+      let auditLog = responseData.data;
+      let lotMap = {};
+
+      // 2. Crunch the ledger math to find active lots
+      auditLog.forEach(row => {
+        let ref = row['REF / SKU'];
+        let lot = row['Lot'];
+        let exp = row['Exp Date'];
+        let qty = parseInt(row['Qty Moved'], 10) || 0;
+        let workflow = row['Workflow'] || '';
+        
+        // Skip invalid rows or items without expiration tracking
+        if (!ref || !lot || lot === 'N/A' || !exp || exp === 'N/A' || exp === 'NO_EXP') return;
+
+        let key = `${ref}_${lot}_${exp}`;
+        if (!lotMap[key]) {
+          // Cross-reference with master catalog to get the Manufacturer name
+          let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
+            ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) 
+            : null;
+          let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
+          lotMap[key] = { ref, lot, exp, mfr, qty: 0 };
+        }
+
+        // FEFO Math: Add inbound receiving, subtract outbound packing
+        if (workflow.includes('Receiving') || workflow.includes('Stocktake')) {
+          lotMap[key].qty += qty;
+        } else if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) {
+          lotMap[key].qty -= qty;
+        }
+      });
+
+      // 3. Filter against the selected timeframe
+      let cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() + months);
+
+      // Only show lots that actually have remaining physical stock > 0
+      let atRisk = Object.values(lotMap).filter(l => l.qty > 0 && new Date(l.exp) <= cutoffDate);
+      atRisk.sort((a,b) => new Date(a.exp) - new Date(b.exp));
+
+      // 4. Build and Print the PDF
+      let html = `<!DOCTYPE html><html><head><title>Expiration Warning Report</title>
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; }
+        h2 { color: #e65100; border-bottom: 2px solid #e65100; padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #fff3e0; border: 1px solid #ffcc80; padding: 8px; text-align: left; }
+        td { border: 1px solid #eee; padding: 8px; }
+      </style></head><body>
+      <h2>⚠️ Expiration Warning (Next ${months} Months)</h2>
+      <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th style="text-align:center;">Remaining Qty</th></tr></thead><tbody>`;
+
+      if (atRisk.length === 0) {
+        html += `<tr><td colspan="5" style="text-align:center; color:#555; padding:15px; font-style:italic;">No active inventory is expiring within this timeframe.</td></tr>`;
+      } else {
+        atRisk.forEach(item => {
+          html += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:#d32f2f; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold; font-size:14px;">${item.qty}</td></tr>`;
         });
       }
-    });
 
-    let cutoffDate = new Date();
-    cutoffDate.setMonth(cutoffDate.getMonth() + months);
+      html += `</tbody></table></body></html>`;
+      
+      let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
+      let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}.pdf`;
+      let safeTitle = filename.replace(/\./g, '\u2024'); // Magic Dot implementation
+      
+      let win = window.open('', '_blank');
+      if (win) { 
+        win.document.write(html); 
+        win.document.title = safeTitle; 
+        win.focus(); 
+        setTimeout(() => win.print(), 500); 
+      }
 
-    let atRisk = Object.values(lotMap).filter(l => l.qty > 0 && new Date(l.exp) <= cutoffDate);
-    atRisk.sort((a,b) => new Date(a.exp) - new Date(b.exp));
-
-    let html = `<!DOCTYPE html><html><head><title>Expiration Warning Report</title>
-    <style>
-      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; }
-      h2 { color: #e65100; border-bottom: 2px solid #e65100; padding-bottom: 8px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-      th { background: #fff3e0; border: 1px solid #ffcc80; padding: 8px; text-align: left; }
-      td { border: 1px solid #eee; padding: 8px; }
-    </style></head><body>
-    <h2>⚠️ Expiration Warning (Next ${months} Months)</h2>
-    <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th>Remaining Qty</th></tr></thead><tbody>`;
-
-    atRisk.forEach(item => {
-      html += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:#d32f2f; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold;">${item.qty}</td></tr>`;
-    });
-
-    html += `</tbody></table></body></html>`;
-    
-    let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
-    let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}.pdf`;
-    
-    let win = window.open('', '_blank');
-    if (win) { 
-      win.document.write(html); 
-      win.document.title = filename; 
-      win.focus(); 
-      setTimeout(() => win.print(), 500); 
+    } catch (err) {
+      alert("Error generating expiration report: " + err.message);
+    } finally {
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
     }
   },
 
@@ -589,11 +626,10 @@ const ReportsManager = {
       csvContent += `"${row.ref}","${safeDesc}","${row.exp}","${row.price}",${row.qty}\r\n`;
     });
 
-    // OVERWRITE FROM HERE DOWN
     let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
     let filename = `RevMed_DotMed_Report_${mode}_${dateStr}.csv`;
 
-    // Route through the secure Blob API
+    // Route through the secure Blob API (No Magic Dot needed for direct CSV downloads)
     UIManager.triggerShareOrDownload(csvContent, filename, 'text/csv');
 
     let modal = document.getElementById('revmedReportModal');
