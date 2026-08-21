@@ -181,9 +181,7 @@ const ScannerManager = {
     let liveMatch = document.getElementById('liveMatchPreview');
     if (liveMatch) liveMatch.style.display = 'none';
 
-    if (refInp) {
-      setTimeout(() => { try { refInp.focus(); } catch(e){} }, 50);
-    }
+    if (refInp) { setTimeout(() => { try { document.getElementById('rawScan1').focus(); } catch(e){} }, 50); }
   },
 
   captureViewfinderFrame() {

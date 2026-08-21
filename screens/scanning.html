@@ -32,13 +32,6 @@
     <span id="manifestUnexpectedStats"></span>
   </div>
 
-  <!-- REF / SKU LOOKUP SECTION -->
-  <div class="card" style="text-align: center;">
-    <div class="form-label" style="color: #000000; font-size: 0.95rem; width: 100%; margin-bottom: 6px;">REF / SKU Lookup:</div>
-    <input list="dbRefs" type="text" id="refInput" class="input-center" style="width: 50%;" placeholder="Scan or Type REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
-    <datalist id="dbRefs"></datalist>
-  </div>
-
   <!-- RAW BARCODES SECTION -->
   <div class="card">
     <div class="raw-section">
@@ -80,6 +73,13 @@
         <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
       </div>
     </div>
+  </div>
+
+  <!-- REF / SKU LOOKUP SECTION -->
+  <div class="card" style="text-align: center;">
+    <div class="form-label" style="color: #000000; font-size: 0.95rem; width: 100%; margin-bottom: 6px;">REF / SKU Lookup:</div>
+    <input list="dbRefs" type="text" id="refInput" class="input-center" style="width: 50%;" placeholder="Scan or Type REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
+    <datalist id="dbRefs"></datalist>
   </div>
 
   <!-- PARSED DETAILS SECTION -->

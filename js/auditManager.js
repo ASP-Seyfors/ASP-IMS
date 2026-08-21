@@ -24,77 +24,62 @@ const AuditManager = {
     let container = document.getElementById('summaryListContainer');
     let elUnique = document.getElementById('sumUniqueRefs');
     let elTotal = document.getElementById('sumTotalQty');
-
-    if (!container) return;
-    container.innerHTML = '';
+    if (!container) return; container.innerHTML = '';
 
     if (SessionManager.scannedObjects.length === 0) {
       container.innerHTML = '<div style="text-align:center; padding: 14px; color: #555;">No items scanned in this session yet.</div>';
-      if(elUnique) elUnique.textContent = '0';
-      if(elTotal) elTotal.textContent = '0';
-      return;
+      if(elUnique) elUnique.textContent = '0'; if(elTotal) elTotal.textContent = '0'; return;
     }
 
-    let totalQty = 0;
-    let uniqueRefs = new Set();
-
-    // Check if the current workflow needs Customer Tags
+    let totalQty = 0; let uniqueRefs = new Set();
     let isTagWorkflow = !SessionManager.currentWorkflowType.includes('Stocktake') && !SessionManager.currentWorkflowType.includes('Packing');
 
+    let grouped = {};
     SessionManager.scannedObjects.forEach((item, index) => {
-      totalQty += item.qty;
-      uniqueRefs.add(item.ref);
+      totalQty += item.qty; uniqueRefs.add(item.ref);
+      if (!grouped[item.ref]) grouped[item.ref] = { total: 0, scans: [] };
+      grouped[item.ref].total += item.qty;
+      grouped[item.ref].scans.push({ ...item, originalIndex: index });
+    });
 
-      let statusIcon = item.actionTag === 'Reserved' ? '🚩' : (item.actionTag === 'Pack & Ship' ? '🖐️' : '📦');
-      let noteHtml = item.itemNote ? `<div style="font-size:0.8rem; color:#d32f2f; margin-top:6px;"><em>Note: ${item.itemNote}</em></div>` : '';
-
+    Object.keys(grouped).forEach((ref, gIndex) => {
+      let group = grouped[ref];
       let details = document.createElement('details');
       details.className = 'summary-item-card';
-
       let summary = document.createElement('summary');
-      summary.innerHTML = `<span style="color:#0277bd;">[+] ${index + 1}. REF: ${item.ref}</span> <span>Qty: ${item.qty}</span>`;
+      summary.innerHTML = `<span style="color:#0277bd;">[+] ${gIndex + 1}. REF: ${ref}</span> <span style="font-weight:bold;">Total Qty: ${group.total}</span>`;
       details.appendChild(summary);
 
       let content = document.createElement('div');
-      content.style.paddingTop = '10px';
-      content.style.marginTop = '10px';
-      content.style.borderTop = '1px solid #eee';
-      content.style.fontSize = '0.85rem';
-      content.style.color = '#555';
-      
-      // Dynamically build the tag input or hide it
-      let tagHtml = isTagWorkflow ? `
-        <label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Customer Tag:</label>
-        <input type="text" id="editTag_${index}" value="${item.customerTag || ''}" placeholder="e.g. CUSTOMER" style="flex:1; padding:4px; text-transform:uppercase;">
-      ` : `<input type="hidden" id="editTag_${index}" value="">`;
+      content.style.paddingTop = '10px'; content.style.marginTop = '10px'; content.style.borderTop = '1px solid #eee'; content.style.fontSize = '0.85rem';
 
-      content.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <span><strong>Lot:</strong> ${item.lot}</span>
-          <span><strong>Exp:</strong> ${item.exp}</span>
-          <span>Status: ${statusIcon} ${item.actionTag}</span>
-        </div>
-        ${noteHtml}
-        
-        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; padding:8px; margin-top:8px;">
-          <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-            <label style="font-weight:bold; font-size:0.8rem;">Qty:</label>
-            <input type="number" id="editQty_${index}" value="${item.qty}" min="0" style="width:60px; padding:4px; text-align:center;">
-            
-            ${tagHtml}
+      group.scans.forEach(scan => {
+        let statusIcon = scan.actionTag === 'Reserved' ? '🚩' : (scan.actionTag === 'Pack & Ship' ? '🖐️' : '📦');
+        let noteHtml = scan.itemNote ? `<div style="font-size:0.8rem; color:#d32f2f; margin-top:6px;"><em>Note: ${scan.itemNote}</em></div>` : '';
+        let tagHtml = isTagWorkflow ? `<label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Tag:</label><input type="text" id="editTag_${scan.originalIndex}" value="${scan.customerTag || ''}" style="flex:1; padding:4px; text-transform:uppercase;">` : `<input type="hidden" id="editTag_${scan.originalIndex}" value="">`;
+
+        content.innerHTML += `
+          <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; padding:8px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span><strong>Lot:</strong> ${scan.lot}</span><span><strong>Exp:</strong> ${scan.exp}</span><span>${statusIcon} ${scan.actionTag}</span>
+            </div>
+            ${noteHtml}
+            <div style="display:flex; gap:6px; align-items:center; margin-top:6px;">
+              <label style="font-weight:bold; font-size:0.8rem;">Qty:</label>
+              <input type="number" id="editQty_${scan.originalIndex}" value="${scan.qty}" min="0" style="width:60px; padding:4px; text-align:center;">
+              ${tagHtml}
+            </div>
+            <div class="flex-between" style="margin-top:6px;">
+              <button class="btn-small btn-cancel btn-auto" style="padding:3px 8px;" onclick="SessionManager.deleteScannedItem(${scan.originalIndex})">🗑️ Delete</button>
+              <button class="btn-small btn-save btn-auto" style="padding:3px 12px; background-color:#1976d2;" onclick="SessionManager.updateScannedItem(${scan.originalIndex})">💾 Save</button>
+            </div>
           </div>
-          <div class="flex-between" style="margin-top:6px;">
-            <button class="btn-small btn-cancel btn-auto" style="padding:3px 8px;" onclick="SessionManager.deleteScannedItem(${index})">🗑️ Delete Entry</button>
-            <button class="btn-small btn-save btn-auto" style="padding:3px 12px; background-color:#1976d2;" onclick="SessionManager.updateScannedItem(${index})">💾 Save Changes</button>
-          </div>
-        </div>
-      `;
-      details.appendChild(content);
-      container.appendChild(details);
+        `;
+      });
+      details.appendChild(content); container.appendChild(details);
     });
 
-    if(elUnique) elUnique.textContent = uniqueRefs.size;
-    if(elTotal) elTotal.textContent = totalQty;
+    if(elUnique) elUnique.textContent = uniqueRefs.size; if(elTotal) elTotal.textContent = totalQty;
   },
 
   loadCustomerReportData() {
@@ -756,6 +741,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   openCustomSalesFlyer() {
+    let cust = document.getElementById('customerReportSelect').value;
+    if (!cust) { UIManager.showCustomAlert("Notice", "Please select a customer first to load their historical data scope.", false); return; }
+    
+    let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
+    let limit = scopeRadio ? scopeRadio.value : '10';
+
     let existingModal = document.getElementById('stockReportEditorModal');
     if (existingModal) existingModal.remove();
 
@@ -763,26 +754,49 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     modal.id = 'stockReportEditorModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
+    let availableItems = this.getHistoricalCustomerData(cust, limit).filter(i => i.onHand > 0);
+
+    let rowsHtml = '';
+    availableItems.forEach((it, idx) => {
+      let safeDesc = (it.desc || '').replace(/"/g, '&quot;'); let safeRef = (it.ref || '').replace(/"/g, '&quot;'); let safePrice = (it.price || '').replace(/"/g, '&quot;');
+      rowsHtml += `
+        <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px; padding:6px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;" class="flyer-item-row">
+          <input type="checkbox" class="flyer-chk" checked style="width:20px; height:20px; cursor:pointer;">
+          <input type="text" value="${safeRef}" class="rep-ref" readonly style="width:90px; padding:4px; font-weight:bold; background:#e0e0e0; border:1px solid #ccc; color:#555;">
+          <input type="text" value="${safeDesc}" class="rep-desc" style="flex:1; padding:4px; font-size:0.8rem;">
+          <input type="number" value="${it.onHand}" max="${it.onHand}" min="1" class="rep-qty" style="width:60px; padding:4px; text-align:center;" onchange="if(this.value > ${it.onHand}) { UIManager.showCustomAlert('Limit Reached', 'Cannot exceed available quantity of ${it.onHand}'); this.value = ${it.onHand}; }">
+          <input type="text" value="${safePrice}" class="rep-price" style="width:70px; padding:4px; text-align:center;">
+        </div>`;
+    });
+
     modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; padding:20px;">
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f57f17; padding-bottom:8px; margin-bottom:15px;">
           <h3 style="margin:0; color:#f57f17;">✨ Custom Promotional Flyer</h3>
           <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
-
         <div style="background:#fff3e0; border:1px solid #ffcc80; border-radius:4px; padding:10px; margin-bottom:15px; font-size:0.85rem;">
-          Build a custom promotional flyer to paste into an email draft. Add items below.
+          Build a custom flyer based on <strong>${cust}'s</strong> history. Select items and set quantities below.
         </div>
-
         <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:15px;">
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeDescFlyer" checked> Include Description</label>
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeQtyFlyer" checked> Include Quantity</label>
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludePriceInReport" checked> Include Unit Price</label>
         </div>
-
-        <div id="reportItemRowsContainer"></div>
-        <button onclick="AuditManager.addBlankRowToReportEditor()" style="background:#0277bd; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.8rem; margin-top:8px; cursor:pointer;">+ Add Item to Flyer</button>
-
+        <div style="margin-bottom:10px;">
+          <label style="font-size:0.85rem; font-weight:bold; color:#0277bd;">📝 Add Flyer Note / Intro Text:</label>
+          <textarea id="flyerNoteInput" rows="3" style="width:100%; padding:8px; font-size:0.85rem; resize:vertical;" placeholder="e.g. Good morning, we have the following items in stock..."></textarea>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding: 0 4px;">
+          <strong style="font-size:0.9rem; color:#333;">Available Inventory (${availableItems.length} items)</strong>
+          <div>
+            <button class="btn-small btn-auto" style="background:#0277bd; color:#fff; padding:4px 8px;" onclick="document.querySelectorAll('.flyer-chk').forEach(c => c.checked = true)">Select All</button>
+            <button class="btn-small btn-auto" style="background:#757575; color:#fff; padding:4px 8px;" onclick="document.querySelectorAll('.flyer-chk').forEach(c => c.checked = false)">Deselect All</button>
+          </div>
+        </div>
+        <div id="reportItemRowsContainer" style="max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:6px; border-radius:4px; background:#fff;">
+          ${rowsHtml.length > 0 ? rowsHtml : '<div style="text-align:center; padding:10px; color:#777;">No items currently available in stock for this scope.</div>'}
+        </div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
           <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
           <button onclick="AuditManager.exportCustomerStockReportPDF('CUSTOM_PROMO')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
@@ -791,7 +805,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       </div>
     `;
     document.body.appendChild(modal);
-    this.addBlankRowToReportEditor();
   },
 
   addBlankRowToReportEditor() {
@@ -812,14 +825,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let includeDesc = document.getElementById('chkIncludeDescFlyer') ? document.getElementById('chkIncludeDescFlyer').checked : true;
     let includeQty = document.getElementById('chkIncludeQtyFlyer') ? document.getElementById('chkIncludeQtyFlyer').checked : true;
     let includePrice = document.getElementById('chkIncludePriceInReport') ? document.getElementById('chkIncludePriceInReport').checked : true;
+    let flyerNote = document.getElementById('flyerNoteInput') ? document.getElementById('flyerNoteInput').value.trim() : '';
     
     let container = document.getElementById('reportItemRowsContainer');
-    let rows = container.querySelectorAll('div');
+    let rows = container.querySelectorAll('.flyer-item-row');
     
-    // <p>Good morning,</p>
-    // <p>We are happy to inform you that we have the following products you have purchased in the past currently in stock.</p>
-    let html = `<div id="flyerCanvasTarget" style="font-family: Arial, sans-serif; font-size: 14px; width: 700px; padding: 20px; background-color: #ffffff; color: #333333;">
-      <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
+    let html = `<div id="flyerCanvasTarget" style="font-family: Arial, sans-serif; font-size: 14px; width: 700px; padding: 20px; background-color: #ffffff; color: #333333;">`;
+    
+    if (flyerNote) { html += `<div style="white-space: pre-wrap; margin-bottom: 15px; font-size: 13px;">${flyerNote}</div>`; }
+
+    html += `<table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 13px; margin-top: 15px; margin-bottom: 15px;">
       <thead>
         <tr style="background-color: #0277bd; color: #ffffff;">
           <th style="padding: 10px; border: 1px solid #ccc; text-align: left;">Reference</th>
@@ -831,10 +846,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       <tbody>`;
       
     rows.forEach(r => {
-      let ref = r.querySelector('.rep-ref').value.trim();
-      let desc = r.querySelector('.rep-desc').value.trim();
-      let qty = r.querySelector('.rep-qty').value.trim();
-      let price = r.querySelector('.rep-price').value.trim();
+      let chk = r.querySelector('.flyer-chk');
+      if (chk && !chk.checked) return;
+
+      let ref = r.querySelector('.rep-ref').value.trim(); let desc = r.querySelector('.rep-desc').value.trim();
+      let qty = r.querySelector('.rep-qty').value.trim(); let price = r.querySelector('.rep-price').value.trim();
       let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Call for Price';
 
       if (ref) {
@@ -847,14 +863,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       }
     });
     
-    html += `</tbody></table>
-      </div>`;
-    
-    // <p style="font-size: 13px;">If there is something you are looking for that is not listed, feel free to send over the reference number, and I will see if I can bring it in for you.</p>
-    // <p style="font-size: 13px;">Quantities are reserved on a first-come, first-served basis. Also, if pricing is an issue, just let me know where I need to be, and I will make it happen!</p>
+    html += `</tbody></table></div>`;
       
-    let tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
+    let tempDiv = document.createElement('div'); tempDiv.innerHTML = html;
     tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.top = '-9999px';
     document.body.appendChild(tempDiv);
     
@@ -864,31 +875,25 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         canvas.toBlob(blob => {
           try {
             navigator.clipboard.write([new window.ClipboardItem({'image/png': blob})]).then(() => {
-              alert("✅ Perfect! The flyer has been copied to your clipboard as a picture.\n\nYou can now safely paste (Ctrl+V) it into your email draft, and it will look beautiful even if the customer uses Dark Mode!");
+              UIManager.showCustomAlert("Success", "✅ The flyer has been copied to your clipboard as a picture. You can now safely paste it into your email draft.");
             });
-          } catch (e) {
-            alert("Clipboard image copy not fully supported by this browser. Falling back to HTML.");
-          }
+          } catch (e) { UIManager.showCustomAlert("Notice", "Clipboard image copy not fully supported by this browser. Falling back to HTML."); }
         }, 'image/png');
         document.body.removeChild(tempDiv);
       });
-    } else {
-      document.body.removeChild(tempDiv);
-      alert("Image rendering library is loading. Please try again in a few seconds.");
-    }
+    } else { document.body.removeChild(tempDiv); UIManager.showCustomAlert("Loading", "Image rendering library is loading. Please try again in a few seconds."); }
   },
 
   exportCustomerStockReportPDF(cust) {
     let includeDesc = document.getElementById('chkIncludeDescFlyer') ? document.getElementById('chkIncludeDescFlyer').checked : true;
     let includeQty = document.getElementById('chkIncludeQtyFlyer') ? document.getElementById('chkIncludeQtyFlyer').checked : true;
     let includePrice = document.getElementById('chkIncludePriceInReport') ? document.getElementById('chkIncludePriceInReport').checked : true;
+    let flyerNote = document.getElementById('flyerNoteInput') ? document.getElementById('flyerNoteInput').value.trim() : '';
     
     let container = document.getElementById('reportItemRowsContainer');
-    let rows = container.querySelectorAll('div');
-    
-    let scopeStr = document.querySelector('input[name="histLimit"]:checked').value === 'all' ? 'All' : 'Top10';
+    let rows = container.querySelectorAll('.flyer-item-row');
     let safeDate = SessionManager.sessionDateStr.replace(/\./g, '_');
-    let filename = `Customer_Stock_Flyer_${cust}_${scopeStr}_${safeDate}.pdf`;
+    let filename = `Customer_Stock_Flyer_${cust}_${safeDate}.pdf`;
 
     let html = `<!DOCTYPE html><html><head><title>${filename}</title>
     <style>
@@ -916,52 +921,31 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         <div style="font-size:11px; color:#777;">Date: ${SessionManager.sessionDateStr}</div>
       </div>
     </div>
+    <div class="flyer-title">📦 AVAILABLE INVENTORY - READY TO SHIP</div>`;
 
-    <div class="flyer-title">📦 AVAILABLE INVENTORY - READY TO SHIP</div>
+    if (flyerNote) { html += `<div style="white-space: pre-wrap; font-size: 13px; margin-bottom: 20px; color: #333;">${flyerNote}</div>`; }
 
-    <table>
-      <thead>
-        <tr>
-          <th>REF / Product Code</th>
-          ${includeDesc ? '<th>Description</th>' : ''}
-          ${includeQty ? '<th style="text-align:center;">Quantity Available</th>' : ''}
-          ${includePrice ? '<th style="text-align:right;">Unit Price</th>' : ''}
-        </tr>
-      </thead>
-      <tbody>`;
+    html += `<table><thead><tr><th>REF / Product Code</th>${includeDesc ? '<th>Description</th>' : ''}${includeQty ? '<th style="text-align:center;">Quantity Available</th>' : ''}${includePrice ? '<th style="text-align:right;">Unit Price</th>' : ''}</tr></thead><tbody>`;
 
     rows.forEach(r => {
-      let ref = r.querySelector('.rep-ref').value.trim();
-      let desc = r.querySelector('.rep-desc').value.trim();
-      let qty = r.querySelector('.rep-qty').value.trim();
-      let price = r.querySelector('.rep-price').value.trim();
+      let chk = r.querySelector('.flyer-chk');
+      if (chk && !chk.checked) return;
 
+      let ref = r.querySelector('.rep-ref').value.trim(); let desc = r.querySelector('.rep-desc').value.trim();
+      let qty = r.querySelector('.rep-qty').value.trim(); let price = r.querySelector('.rep-price').value.trim();
       let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Inquire';
 
       if (ref) {
-        html += `
-          <tr>
-            <td class="ref-col">${ref}</td>
-            ${includeDesc ? `<td class="desc-col">${desc || 'Surgical Specialty Item'}</td>` : ''}
-            ${includeQty ? `<td style="text-align:center;"><span class="qty-badge">${qty}</span></td>` : ''}
-            ${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}
-          </tr>`;
+        html += `<tr><td class="ref-col">${ref}</td>${includeDesc ? `<td class="desc-col">${desc || 'Surgical Specialty Item'}</td>` : ''}${includeQty ? `<td style="text-align:center;"><span class="qty-badge">${qty}</span></td>` : ''}${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}</tr>`;
       }
     });
 
-    html += `
-      </tbody>
-    </table>
-
-    <div class="footer-note">
-      Quantities are reserved on a first-come, first-served basis. Contact your Allied Surgical Products representative to place your order.
-    </div>
-
+    html += `</tbody></table>
+    <div class="footer-note">Quantities are reserved on a first-come, first-served basis. Contact your Allied Surgical Products representative to place your order.</div>
     </body></html>`;
 
     let win = window.open('', '_blank');
     if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 500); }
-    
     document.getElementById('stockReportEditorModal').remove();
   },
 

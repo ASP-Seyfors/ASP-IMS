@@ -19,7 +19,7 @@
   </div>
   <p style="font-size: 0.8rem; color: #555;">Edit fields directly in the table. Click "Export Database Updates" below to save changes for control review.</p>
   
-  <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
     <input type="text" id="dbSearchInput" placeholder="🔍 Search REF or Desc..." style="flex: 2; padding: 6px; border: 1px solid #ccc; border-radius: 4px;" oninput="DatabaseManager.renderDbGridEditor()">
     <select id="dbMfrFilter" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px;" onchange="DatabaseManager.renderDbGridEditor()">
       <option value="ALL">All Manufacturers</option>

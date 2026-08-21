@@ -111,7 +111,6 @@ const UIManager = {
     let resContainer = document.getElementById('quickLookupResult');
     if (!query) return;
 
-    // --- NEW: GS1 BARCODE EXTRACTOR ---
     let clean = query.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
     let extractedGtin = "";
     let idx = 0;
@@ -120,25 +119,14 @@ const UIManager = {
         let testMm = parseInt(clean.substring(idx + 4, idx + 6), 10);
         if (testMm >= 1 && testMm <= 12) { idx += 8; } else { idx++; }
       } else if (clean.substring(idx, idx + 2) === "01" && clean.length - idx >= 16 && /^\d{14}$/.test(clean.substring(idx + 2, idx + 16))) {
-        extractedGtin = clean.substring(idx + 2, idx + 16);
-        idx += 16;
-      } else if (clean.substring(idx, idx + 2) === "10") {
-        break;
-      } else if (/^\d{12,14}$/.test(clean)) {
-        extractedGtin = clean;
-        break;
-      } else {
-        idx++;
-      }
+        extractedGtin = clean.substring(idx + 2, idx + 16); idx += 16;
+      } else if (clean.substring(idx, idx + 2) === "10") { break;
+      } else if (/^\d{12,14}$/.test(clean)) { extractedGtin = clean; break;
+      } else { idx++; }
     }
-    // If a GS1 GTIN was found inside the scan, use that as the search query
     if (extractedGtin) query = extractedGtin;
-    // ----------------------------------
 
-    let item = DatabaseManager.db.find(i => 
-      DatabaseManager.getItemSku(i).toUpperCase() === query || 
-      (i.gtin && i.gtin.toUpperCase() === query)
-    );
+    let item = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i).toUpperCase() === query || (i.gtin && i.gtin.toUpperCase() === query));
 
     if (!item) {
       resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" is not in the local database catalog.</div>`;
@@ -146,16 +134,18 @@ const UIManager = {
     }
 
     let ref = DatabaseManager.getItemSku(item);
-    let mfr = DatabaseManager.getItemVendor(item) || 'ETHICON';
+    let mfr = DatabaseManager.getItemVendor(item) || 'UNKNOWN';
     let desc = DatabaseManager.getItemDesc(item) || 'No description available.';
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
     let price = item.price || '$0.00';
     let cost = isAdmin ? (item.cost || '$0.00') : '<span style="color:#999; font-style:italic;">Admin Only</span>';
     
-    // Parse On-Hand FEFO Inventory
+    let dbOnHand = parseInt(item.onHand || item.TotalQty, 10) || 0;
+    let dbReserved = parseInt(item.reservedQty, 10) || 0;
+    let dbAvailable = dbOnHand - dbReserved;
+
     let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     let lotMap = {};
-    let totalOnHand = 0;
 
     allSessions.forEach(sess => {
       if (sess.status === 'Completed' && sess.scannedObjects) {
@@ -163,11 +153,8 @@ const UIManager = {
           if (s.ref === ref) {
             let key = `${s.lot}_${s.exp}`;
             if (!lotMap[key]) lotMap[key] = { lot: s.lot, exp: s.exp, qty: 0 };
-            if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) {
-              lotMap[key].qty += s.qty;
-            } else if (sess.workflowType.includes('Packing')) {
-              lotMap[key].qty -= s.qty;
-            }
+            if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) { lotMap[key].qty += s.qty;
+            } else if (sess.workflowType.includes('Packing')) { lotMap[key].qty -= s.qty; }
           }
         });
       }
@@ -175,19 +162,10 @@ const UIManager = {
 
     let lotRows = '';
     Object.values(lotMap).filter(l => l.qty > 0).sort((a,b) => new Date(a.exp) - new Date(b.exp)).forEach(l => {
-      totalOnHand += l.qty;
       let expDate = new Date(l.exp);
       let monthsLeft = (expDate - new Date()) / (1000 * 60 * 60 * 24 * 30);
-      let alertBadge = monthsLeft <= 6 ? '<span style="color:#d32f2f; font-weight:bold;">🚨 Short-Dated (<6 Mo)</span>' : 
-                        (monthsLeft <= 12 ? '<span style="color:#f57f17; font-weight:bold;">⚠️ Short-Dated (<12 Mo)</span>' : '');
-      
-      lotRows += `
-        <tr style="border-bottom:1px solid #eee;">
-          <td style="padding:4px;"><strong>${l.lot}</strong></td>
-          <td style="padding:4px;">${l.exp}</td>
-          <td style="padding:4px; text-align:center; font-weight:bold;">${l.qty}</td>
-          <td style="padding:4px; text-align:right; font-size:0.75rem;">${alertBadge}</td>
-        </tr>`;
+      let alertBadge = monthsLeft <= 6 ? '<span style="color:#d32f2f; font-weight:bold;">🚨 Short-Dated (<6 Mo)</span>' : (monthsLeft <= 12 ? '<span style="color:#f57f17; font-weight:bold;">⚠️ Short-Dated (<12 Mo)</span>' : '');
+      lotRows += `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px;"><strong>${l.lot}</strong></td><td style="padding:4px;">${l.exp}</td><td style="padding:4px; text-align:center; font-weight:bold;">${l.qty}</td><td style="padding:4px; text-align:right; font-size:0.75rem;">${alertBadge}</td></tr>`;
     });
 
     resContainer.innerHTML = `
@@ -195,27 +173,15 @@ const UIManager = {
         <div style="font-size:1.1rem; font-weight:bold; color:#00796b;">REF: ${ref}</div>
         <div style="font-size:0.85rem; color:#555; margin-bottom:8px;">Manufacturer: <strong>${mfr}</strong></div>
         <div style="font-size:0.85rem; color:#333; margin-bottom:10px;">${desc}</div>
-        
         <div style="background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.85rem;">
           <span>Selling Price: <strong style="color:#2e7d32;">${price}</strong></span>
           <span>Unit Cost: <strong style="color:#555;">${cost}</strong></span>
         </div>
-
-        <div style="font-weight:bold; font-size:0.85rem; color:#0277bd; margin-bottom:6px;">
-          Warehouse Stock On-Hand: ${totalOnHand} Box(es)
+        <div style="font-weight:bold; font-size:0.85rem; color:#0277bd; margin-bottom:6px; display:flex; justify-content:space-between;">
+          <span>Total On-Hand: ${dbOnHand}</span>
+          <span style="color:${dbAvailable > 0 ? '#2e7d32' : '#c62828'};">Available to Sell: ${dbAvailable}</span>
         </div>
-        
-        ${totalOnHand > 0 ? `
-          <table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd;">
-            <tr style="background:#eee; text-align:left;">
-              <th style="padding:4px;">Lot</th>
-              <th style="padding:4px;">Exp</th>
-              <th style="padding:4px; text-align:center;">Qty</th>
-              <th style="padding:4px; text-align:right;">Status</th>
-            </tr>
-            ${lotRows}
-          </table>
-        ` : '<div style="font-size:0.8rem; color:#777; font-style:italic;">No active FEFO inventory recorded on shelves.</div>'}
+        ${lotRows ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd;"><tr style="background:#eee; text-align:left;"><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty</th><th style="padding:4px; text-align:right;">Status</th></tr>${lotRows}</table>` : '<div style="font-size:0.8rem; color:#777; font-style:italic;">No active FEFO lot history stored on local device.</div>'}
       </div>
     `;
   },
@@ -405,7 +371,7 @@ const UIManager = {
           </div>
           
           <p style="font-size:0.85rem; color:#555; margin-bottom:20px;">
-            Fetch open invoices from QuickBooks Online and stage them in the Shipments & Orders Feed for picking and fulfillment.
+            Fetch open invoices from QuickBooks Online.
           </p>
 
           <div style="text-align:center; margin-bottom: 20px;">
@@ -435,6 +401,35 @@ const UIManager = {
     } else {
       indicator.style.display = 'none';
     }
+  },
+
+  showCustomAlert(title, message, isError = false) {
+    let modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    let color = isError ? '#c62828' : '#0277bd';
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <h3 style="color:${color}; margin-top:0;">${title}</h3>
+        <p style="color:#555; font-size:0.95rem; margin-bottom:20px;">${message}</p>
+        <button onclick="this.parentElement.parentElement.remove()" style="background:${color}; color:#fff; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">OK</button>
+      </div>`;
+    document.body.appendChild(modal);
+  },
+
+  showCustomConfirm(title, message, onConfirmCallback) {
+    let modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <h3 style="color:#0277bd; margin-top:0;">${title}</h3>
+        <p style="color:#555; font-size:0.95rem; margin-bottom:20px;">${message}</p>
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+          <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button id="btnConfirmAction" style="flex:1; background:#0277bd; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">Confirm</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('btnConfirmAction').onclick = () => { modal.remove(); onConfirmCallback(); };
   },
 
   async checkForCloudUpdates() {

@@ -904,7 +904,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     // Item Note Row Guard
     if (document.getElementById('revItemNoteRow')) {
       document.getElementById('revItemNoteRow').style.display = iNote ? 'flex' : 'none';
-      if (document.getElementById('revItemNote')) document.getElementById('revItemNote').textContent = iNote;
+      if (document.getElementById('revItemNote')) document.getElementById('revItemNote').textContent = ' ' + iNote;
     }
 
     if (document.getElementById('revDesc')) {
@@ -927,7 +927,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let revTagRow = document.getElementById('revCustomerTagRow');
     if (tagRow && tagRow.style.display !== 'none' && revTagRow) {
       revTagRow.style.display = 'flex'; 
-      if (document.getElementById('revCustomerTag')) document.getElementById('revCustomerTag').textContent = cTag || 'NONE';
+      if (document.getElementById('revCustomerTag')) document.getElementById('revCustomerTag').textContent = ' ' + (cTag || 'NONE');
     } else if (revTagRow) { 
       revTagRow.style.display = 'none'; 
     }
@@ -1154,183 +1154,116 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   cancelSession() {
-    if (!confirm("Are you sure you want to CANCEL this entire scanning session?\n\nAll items scanned during this session will be discarded.")) return;
+    UIManager.showCustomConfirm("Cancel Session", "Are you sure you want to CANCEL this scanning session? All items scanned during this session will be discarded.", () => {
+      this.saveToArchive('Cancelled');
+      this.isSessionActive = false; this.isManifestEnabled = false;
+      localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
+      this.scannedObjects = []; this.expectedManifest = [];
+      localStorage.setItem('asp_session_scanned_objects', JSON.stringify([])); localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
-    this.saveToArchive('Cancelled');
+      let recList = document.getElementById('manifestReconcileList');
+      let recCard = document.getElementById('manifestReconcileCard');
+      if (recList) recList.innerHTML = '';
+      if (recCard) recCard.style.display = 'none';
 
-    this.isSessionActive = false; this.isManifestEnabled = false;
-    localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
-    this.scannedObjects = []; this.expectedManifest = [];
-    localStorage.setItem('asp_session_scanned_objects', JSON.stringify([])); localStorage.setItem('asp_active_manifest', JSON.stringify([]));
+      if (ScannerManager.isCameraActive) ScannerManager.toggleCameraScanner();
+      document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
+      document.getElementById('orderDetailsInput').value = ""; 
+      if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
 
-    // Fix: Destroy manifest discrepancy UI leak
-    let recList = document.getElementById('manifestReconcileList');
-    let recCard = document.getElementById('manifestReconcileCard');
-    if (recList) recList.innerHTML = '';
-    if (recCard) recCard.style.display = 'none';
+      const chkPreload = document.getElementById('chkPreloadManifest');
+      if (chkPreload) chkPreload.checked = false;
 
-    if (ScannerManager.isCameraActive) ScannerManager.toggleCameraScanner();
-    document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
-    if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
-
-    const chkPreload = document.getElementById('chkPreloadManifest');
-    if (chkPreload) chkPreload.checked = false;
-
-    document.getElementById('screenScanning').style.display = 'none';
-    document.getElementById('screenReview').style.display = 'none';
-    document.getElementById('screenSummary').style.display = 'none';
-    document.getElementById('screenSetup').style.display = 'block';
+      document.getElementById('screenScanning').style.display = 'none';
+      document.getElementById('screenReview').style.display = 'none';
+      document.getElementById('screenSummary').style.display = 'none';
+      document.getElementById('screenSetup').style.display = 'block';
+    });
   },
 
   completeSession(skipConfirm = false) {
-    if (!skipConfirm && !confirm("Are you ready to complete this session?\n\nThis will close the session, apply inventory math, and return you to the home screen.")) return;
+    const executeCompletion = () => {
+      let onHandChanges = {}; let reservedChanges = {}; let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
 
-    // --- 1. AUTOMATED MASTER DATABASE & ALLOCATION MATH ---
-    let onHandChanges = {};
-    let reservedChanges = {};
-    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+      this.scannedObjects.forEach(item => {
+        let ref = item.ref.toUpperCase(); let tag = item.customerTag; 
+        if (this.currentWorkflowType.includes('Packing') && !tag) {
+           let manifestItem = this.expectedManifest.find(m => m.ref === ref);
+           if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { tag = manifestItem.allocations[0].customerTag; } 
+           else { let baseCustomer = this.currentSessionName.split(' (')[0].trim(); tag = Object.keys(allocations).find(k => k.includes(baseCustomer) || baseCustomer.includes(k)) || baseCustomer; }
+        }
+        if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
+        if (tag) { if (!allocations[tag]) allocations[tag] = {}; if (!allocations[tag][ref]) allocations[tag][ref] = 0; }
 
-    this.scannedObjects.forEach(item => {
-      let ref = item.ref.toUpperCase();
-      let tag = item.customerTag; 
+        if (this.currentWorkflowType.includes('Receiving & Reserving')) {
+          onHandChanges[ref] += item.qty;
+          if (item.actionTag === 'Reserved') { reservedChanges[ref] += item.qty; if (tag) allocations[tag][ref] += item.qty; }
+        } else if (this.currentWorkflowType.includes('Receiving')) { onHandChanges[ref] += item.qty;
+        } else if (this.currentWorkflowType.includes('Reserving')) { reservedChanges[ref] += item.qty; if (tag) allocations[tag][ref] += item.qty;
+        } else if (this.currentWorkflowType.includes('Packing') || this.currentWorkflowType.includes('Pack & Ship')) {
+          onHandChanges[ref] -= item.qty;
+          if (tag && allocations[tag] && allocations[tag][ref] > 0) {
+              let deduct = Math.min(item.qty, allocations[tag][ref]);
+              reservedChanges[ref] -= deduct; allocations[tag][ref] -= deduct;
+              if (allocations[tag][ref] <= 0) delete allocations[tag][ref];
+          }
+        }
+      });
 
-      // If Picking & Packing, the customer tag might be in the manifest or session name
-      if (this.currentWorkflowType.includes('Packing') && !tag) {
-         let manifestItem = this.expectedManifest.find(m => m.ref === ref);
-         if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) {
-             tag = manifestItem.allocations[0].customerTag;
-         } else {
-             // SMART EXTRACTOR: Get base customer name from session (e.g. "AHS - 23472 (INV-123)" -> "AHS - 23472")
-             let baseCustomer = this.currentSessionName.split(' (')[0].trim();
-             
-             // Check memory bank for an exact or partial match
-             let fuzzyMatch = Object.keys(allocations).find(k => k.includes(baseCustomer) || baseCustomer.includes(k));
-             tag = fuzzyMatch || baseCustomer;
-         }
+      Object.keys(allocations).forEach(t => { if (Object.keys(allocations[t]).length === 0) delete allocations[t]; });
+      localStorage.setItem('asp_allocations', JSON.stringify(allocations));
+      this.syncAllocationsToCloud();
+
+      if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
+        this.pendingFieldUpdates.forEach(update => { let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); if (dbItem && update.field) dbItem[update.field] = update.value; });
       }
-
-      if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
+      if (this.pendingNewItems && this.pendingNewItems.length > 0) {
+        this.pendingNewItems.forEach(newItem => { let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); if (!exists) DatabaseManager.db.push(newItem); });
+      }
       
-      if (tag) {
-         if (!allocations[tag]) allocations[tag] = {};
-         if (!allocations[tag][ref]) allocations[tag][ref] = 0;
-      }
-
-      if (this.currentWorkflowType.includes('Receiving & Reserving')) {
-        onHandChanges[ref] += item.qty;
-        if (item.actionTag === 'Reserved') {
-            reservedChanges[ref] += item.qty;
-            if (tag) allocations[tag][ref] += item.qty;
-        }
-      } else if (this.currentWorkflowType.includes('Receiving')) {
-        onHandChanges[ref] += item.qty;
-      } else if (this.currentWorkflowType.includes('Reserving')) {
-        reservedChanges[ref] += item.qty;
-        if (tag) allocations[tag][ref] += item.qty;
-      } else if (this.currentWorkflowType.includes('Packing') || this.currentWorkflowType.includes('Pack & Ship')) {
-        onHandChanges[ref] -= item.qty;
-        
-        // Intelligent Reserved Bin Deduction
-        if (tag && allocations[tag] && allocations[tag][ref] > 0) {
-            let deduct = Math.min(item.qty, allocations[tag][ref]);
-            reservedChanges[ref] -= deduct;
-            allocations[tag][ref] -= deduct;
-            if (allocations[tag][ref] <= 0) delete allocations[tag][ref];
+      if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
+        DatabaseManager.db.forEach(dbItem => {
+          let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
+          if (onHandChanges[ref] || reservedChanges[ref]) {
+            dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
+            if (dbItem.onHand < 0) dbItem.onHand = 0; if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
+          }
+        });
+        localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+        if (this.cloudArchiveUrl) {
+            let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
+            fetch(this.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
         }
       }
-    });
 
-    // Cleanup empty tags
-    Object.keys(allocations).forEach(t => {
-       if (Object.keys(allocations[t]).length === 0) delete allocations[t];
-    });
-    localStorage.setItem('asp_allocations', JSON.stringify(allocations));
-
-    this.syncAllocationsToCloud();
-
-    // --- MERGE NEW GTINS AND NEW ITEMS ---
-    if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
-      this.pendingFieldUpdates.forEach(update => {
-        let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase());
-        if (dbItem && update.field) dbItem[update.field] = update.value; 
-      });
-    }
-
-    if (this.pendingNewItems && this.pendingNewItems.length > 0) {
-      this.pendingNewItems.forEach(newItem => {
-        let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase());
-        if (!exists) DatabaseManager.db.push(newItem);
-      });
-    }
-    
-    // -------------------------------------
-    // Apply the math to the local DatabaseManager
-    if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
-      DatabaseManager.db.forEach(dbItem => {
-        let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
-        if (onHandChanges[ref] || reservedChanges[ref]) {
-          dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0);
-          dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
-          
-          if (dbItem.onHand < 0) dbItem.onHand = 0;
-          if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
-        }
-      });
-      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+      this.pendingNewItems = []; this.pendingFieldUpdates = [];
+      localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
       
-      // Background push to Google Sheets Database backend
-      if (this.cloudArchiveUrl) {
-          let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
-          fetch(this.cloudArchiveUrl, {
-            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(dbPayload)
-          }).catch(err => console.warn("Background DB Sync failed:", err));
-      }
+      let recList = document.getElementById('manifestReconcileList');
+      let recCard = document.getElementById('manifestReconcileCard');
+      if (recList) recList.innerHTML = '';
+      if (recCard) recCard.style.display = 'none';
+
+      document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
+      document.getElementById('orderDetailsInput').value = ""; 
+      if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
+
+      const chkPreload = document.getElementById('chkPreloadManifest');
+      if (chkPreload) chkPreload.checked = false;
+      
+      document.getElementById('screenSummary').style.display = 'none';
+      document.getElementById('screenSetup').style.display = 'block';
+      this.isSessionActive = false; this.isManifestEnabled = false;
+      localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
+
+      this.saveToArchive('Completed');
+    };
+
+    if (!skipConfirm) {
+      UIManager.showCustomConfirm("Complete Session", "Are you ready to complete this session? This will apply inventory math and return you to the home screen.", executeCompletion);
+    } else {
+      executeCompletion();
     }
-    // --- END AUTOMATED MATH ---
-
-    // LIVE FEED PUSH: Background log push & mark order completed in Google Sheets
-    if (this.googleFeederUrl && !this.googleFeederUrl.includes("YOUR_COPIED")) {
-      let payload = {
-        action: "COMPLETE_SESSION",
-        sessionName: this.currentSessionName,
-        orderNum: this.currentOrderNum,
-        workflowType: this.currentWorkflowType,
-        userName: this.currentUserName,
-        uniqueRefs: new Set(this.scannedObjects.map(i => i.ref)).size,
-        totalQty: this.scannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0),
-        sessionNotes: document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : ''
-      };
-
-      fetch(this.googleFeederUrl, {
-        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(err => console.warn("Background log push failed:", err));
-    }
-
-    this.pendingNewItems = []; this.pendingFieldUpdates = [];
-    localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-    
-    let recList = document.getElementById('manifestReconcileList');
-    let recCard = document.getElementById('manifestReconcileCard');
-    if (recList) recList.innerHTML = '';
-    if (recCard) recCard.style.display = 'none';
-
-    document.getElementById('sessionNoteInput').value = ""; 
-    document.getElementById('chkSessionNote').checked = false;
-    if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
-
-    const chkPreload = document.getElementById('chkPreloadManifest');
-    if (chkPreload) chkPreload.checked = false;
-
-    document.getElementById('screenSummary').style.display = 'none';
-    document.getElementById('screenSetup').style.display = 'block';
-    this.isSessionActive = false; 
-    this.isManifestEnabled = false;
-    localStorage.setItem('asp_session_is_active', 'false'); 
-    localStorage.setItem('asp_manifest_enabled', 'false');
-
-    this.saveToArchive('Completed');
   },
 
   commitStocktake() {

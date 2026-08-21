@@ -569,7 +569,8 @@ const ReportsManager = {
 
     let csvContent = "data:text/csv;charset=utf-8,REF/SKU,DESCRIPTION,EXPIRATION,PRICE,AVAILABLE QTY\r\n";
     reportData.forEach(row => {
-      csvContent += `"${row.ref}","${String(row.desc).replace(/"/g, '""')}","${row.exp}","${row.price}",${row.qty}\r\n`;
+      let safeDesc = String(row.desc).replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
+      csvContent += `"${row.ref}","${safeDesc}","${row.exp}","${row.price}",${row.qty}\r\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
