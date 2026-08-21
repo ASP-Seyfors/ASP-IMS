@@ -99,7 +99,8 @@ window.masterSystemSync = async (event) => {
       <h3 style="margin:0 0 15px 0; color:#0277bd; text-align:center;">🔄 Master System Sync</h3>
       <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Uploading Local History...</div>
       <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Syncing Master Database...</div>
-      <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Fetching Orders Feed...</div>
+      <div id="syncStep3" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 3. Syncing Cloud Vault...</div>
+      <div id="syncStep4" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 4. Fetching Orders & QBO Feed...</div>
       <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
         <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
       </div>
@@ -119,27 +120,35 @@ window.masterSystemSync = async (event) => {
     if (typeof SessionManager.pushLegacySessionsToCloud === 'function') {
       await SessionManager.pushLegacySessionsToCloud(null, true);
     }
-    updateStep(1, "Local History Uploaded", 33);
+    updateStep(1, "Local History Uploaded", 25);
 
     if (typeof DatabaseManager.syncMasterDatabase === 'function') {
       await DatabaseManager.syncMasterDatabase(null, true);
     }
-    updateStep(2, "Master Database Synced", 66);
+    updateStep(2, "Master Database Synced", 50);
 
-    if (typeof SessionManager.fetchStagedSessions === 'function') {
+    // NEW: Sync the Cloud Archive directory
+    if (typeof SessionManager.syncCloudArchive === 'function') {
+      await SessionManager.syncCloudArchive(null, true);
+    }
+    updateStep(3, "Cloud Vault Directory Synced", 75);
+
+    // NEW: Trigger QBO if admin, otherwise just fetch staged sessions
+    let isAdmin = typeof AuthManager !== 'undefined' && AuthManager.currentUser && AuthManager.currentUser.isAdmin;
+    if (isAdmin && typeof SessionManager.triggerQboSync === 'function') {
+      await SessionManager.triggerQboSync(null, true);
+    } else if (typeof SessionManager.fetchStagedSessions === 'function') {
       await SessionManager.fetchStagedSessions(true);
     }
-    updateStep(3, "Orders Feed Fetched", 100);
+    updateStep(4, "Orders & QBO Feed Fetched", 100);
 
     setTimeout(() => {
       modal.style.display = 'none';
       
-      // NEW: Stamp the current time so the app knows it is fully up to date
       localStorage.setItem('asp_last_cloud_sync', Date.now().toString());
       
       if (typeof UIManager.evaluateSyncIndicator === 'function') {
         UIManager.evaluateSyncIndicator();
-        // Hide the cloud update badge immediately
         let ind = document.getElementById('syncIndicator');
         if (ind) ind.style.display = 'none';
       }

@@ -413,41 +413,49 @@ const DatabaseManager = {
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      // PRE-SYNC FILTER: Strip out the "+ Add..." UI buttons before sending to the database
       let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
       let cleanSuppliers = this.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
       let cleanVendors = this.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
 
-      // 1. PUSH local device additions to the Google Sheet (Upsert/Append Only)
       let pushPayload = {
         action: "SYNC_LOCAL_DB",
         payload: { items: this.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }
       };
       
+      // 1. PUSH local device additions (Forced text/plain to bypass browser CORS limits)
       await fetch(SessionManager.cloudArchiveUrl, {
         method: 'POST', 
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(pushPayload)
       });
 
-      // 2. PULL the fresh, consolidated master database back down
-      let res = await fetch(SessionManager.cloudArchiveUrl);
-      let data = await res.json();
+      // 2. PULL the fresh database (Cache-buster added to prevent Google HTML redirect bugs)
+      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=SYNC_DATABASE&t=${Date.now()}`);
+      
+      let text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("Google returned HTML instead of JSON:", text);
+        throw new Error("Connection blocked by Google. Please ensure your Apps Script is deployed as a 'New Deployment' and running as 'Me'.");
+      }
       
       if (data.status === "success" && data.db) {
          this.importCloudDatabase(data.db);
-         
-         // Wrap the alert
          if (!silent) alert("Master Database successfully synchronized with the cloud!");
          
-         // Refresh the grid UI instantly if the user is looking at it
          if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
            this.renderDbGridEditor(); 
          }
+      } else {
+         throw new Error(data.message || "Unknown Apps Script connection error.");
       }
     } catch (err) {
-      alert("Error syncing database: " + err.message);
+      if (!silent) alert("Error syncing database: " + err.message);
+      else console.error("Error syncing database: " + err.message);
+      throw err; // Re-throw to notify the master UI
     } finally {
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
     }
