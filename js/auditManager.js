@@ -657,7 +657,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</tbody></table></body></html>`;
 
     let win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 500); }
+    if (win) { 
+      win.document.write(html); 
+      let safeTitle = filename.replace(/\./g, '\u2024');
+      win.document.title = safeTitle; 
+      win.focus(); 
+      setTimeout(() => win.print(), 500); 
+    }
     
     let modal = document.getElementById('internalReportOptionsModal');
     if (modal) modal.remove();
@@ -945,7 +951,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     </body></html>`;
 
     let win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 500); }
+    if (win) { 
+      win.document.write(html); 
+      let safeTitle = filename.replace(/\./g, '\u2024');
+      win.document.title = safeTitle; 
+      win.focus(); 
+      setTimeout(() => win.print(), 500); 
+    }
     document.getElementById('stockReportEditorModal').remove();
   },
 

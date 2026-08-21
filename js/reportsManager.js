@@ -52,7 +52,10 @@ const ReportsManager = {
   generateInventoryReport(type) {
     let db = DatabaseManager.db.slice().sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     let filtered = [];
+    
+    // Setup Dynamic Titles and Suffixes
     let title = "On-Hand Stock Report";
+    let fileSuffix = "On-Hand";
 
     let incMfr = document.getElementById('chkInvMfr') ? document.getElementById('chkInvMfr').checked : true;
     let incDesc = document.getElementById('chkInvDesc') ? document.getElementById('chkInvDesc').checked : true;
@@ -61,6 +64,7 @@ const ReportsManager = {
     let incTotal = document.getElementById('chkInvTotal') ? document.getElementById('chkInvTotal').checked : false;
     let incRes = document.getElementById('chkInvRes') ? document.getElementById('chkInvRes').checked : false;
 
+    // Apply Dynamic Naming
     if (type === 'in_stock') {
       filtered = db.filter(i => {
         let total = parseInt(i.onHand, 10) || 0;
@@ -72,17 +76,22 @@ const ReportsManager = {
       });
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
+      title = "Out of Stock Items Report";
+      fileSuffix = "Out_Of_Stock";
     } else if (type === 'pricing') {
       filtered = db.filter(i => {
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
         return numPrice === 0;
       });
+      title = "Missing Price / Cost Report";
+      fileSuffix = "Missing_Pricing";
     }
 
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
-    
     let totalUnits = filtered.reduce((acc, i) => acc + ((parseInt(i.onHand, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)), 0);
+
+    // ... (Keep your existing HTML generation here) ...
 
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
@@ -150,13 +159,15 @@ const ReportsManager = {
 
     html += `</tbody></table></body></html>`;
     
+    // 3. Fix the Filename and Print Truncation
     let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
-    let filename = `ASP - On-Hand Stock Report (${dateStr}).pdf`;
+    let filename = `ASP_${fileSuffix}_Report_(${dateStr}).pdf`;
+    let safeTitle = filename.replace(/\./g, '\u2024'); // Magic Dot Trick
     
     let win = window.open('', '_blank');
     if (win) { 
       win.document.write(html); 
-      win.document.title = filename; 
+      win.document.title = safeTitle; 
       win.focus(); 
       setTimeout(() => win.print(), 500); 
     }
@@ -228,7 +239,13 @@ const ReportsManager = {
     html += `</tbody></table></body></html>`;
 
     let win = window.open('', '_blank');
-    if (win) { win.document.write(html); win.document.title = filename; win.focus(); setTimeout(() => win.print(), 800); }
+    if (win) { 
+      win.document.write(html); 
+      let safeTitle = filename.replace(/\./g, '\u2024');
+      win.document.title = safeTitle; 
+      win.focus(); 
+      setTimeout(() => win.print(), 800); 
+    }
   },
 
   async processEndOfWeekReport(event) {
@@ -463,13 +480,12 @@ const ReportsManager = {
       csvContent += `"${mfr}","${ref}","${desc}","${gtin}","${price}","${cost}",${total},${res},${avail}\r\n`;
     });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `ASP_Inventory_${mode}_Export_${new Date().toLocaleDateString().replace(/\//g, '.')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // OVERWRITE FROM HERE DOWN
+    let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+    let filename = `ASP_Inventory_${mode}_Export_${dateStr}.csv`;
+    
+    // Route through the secure Blob API
+    UIManager.triggerShareOrDownload(csvContent, filename, 'text/csv');
   },
 
   // --- REV-MED / DOT-MED DUAL-MODE REPORT ---
@@ -567,19 +583,18 @@ const ReportsManager = {
       }));
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,REF/SKU,DESCRIPTION,EXPIRATION,PRICE,AVAILABLE QTY\r\n";
+    let csvContent = "REF/SKU,DESCRIPTION,EXPIRATION,PRICE,AVAILABLE QTY\r\n";
     reportData.forEach(row => {
       let safeDesc = String(row.desc).replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
       csvContent += `"${row.ref}","${safeDesc}","${row.exp}","${row.price}",${row.qty}\r\n`;
     });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `RevMed_DotMed_Report_${mode}_${new Date().toLocaleDateString().replace(/\//g, '.')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // OVERWRITE FROM HERE DOWN
+    let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+    let filename = `RevMed_DotMed_Report_${mode}_${dateStr}.csv`;
+
+    // Route through the secure Blob API
+    UIManager.triggerShareOrDownload(csvContent, filename, 'text/csv');
 
     let modal = document.getElementById('revmedReportModal');
     if (modal) modal.remove();
