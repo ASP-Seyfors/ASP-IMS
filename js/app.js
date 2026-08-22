@@ -220,3 +220,7 @@ window.triggerQboSync = () => SessionManager.triggerQboSync();
 window.openQboModal = () => UIManager.openQboModal();
 window.offloadAndPurgeHistory = (e) => SessionManager.offloadAndPurgeHistory(e);
 window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
+
+window.exportThriveCreates = () => AuditManager.exportThriveCreates();
+window.exportThriveVariants = () => AuditManager.exportThriveVariants();
+window.exportThriveProducts = () => AuditManager.exportThriveProducts();

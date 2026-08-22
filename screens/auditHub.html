@@ -33,6 +33,11 @@
     </div>
   </div>
 
+  <div style="background: #ffebee; border: 1px solid #e53935; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #c62828;">⚠️ Administrative Tools</h4>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 8px;" onclick="AuditManager.openRestoreModal()">⏪ System Restore (Event Replay)</button>
+  </div>
+
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">
     
     <!-- Export Actions Panel -->
@@ -47,10 +52,10 @@
       </div>
 
       <div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;">
-        <button class="btn-small btn-auto" style="background-color: #388e3c; color: #fff;" onclick="exportThriveCreates()">📦 Thrive Bulk Create CSV</button>
-        <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="exportThriveEdits()">📝 Thrive Bulk Edit CSV</button>
-        <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="exportUpdatedDatabaseJSON()">💾 Updated Database JSON</button>
-        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.exportThriveInventory()">🧮 Thrive Inventory CSV</button>
+        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.exportThriveCreates()">➕ Thrive Bulk Create</button>
+        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.exportThriveVariants()">🏷️ Thrive Edit Variants (Price/Qty)</button>
+        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.exportThriveProducts()">📝 Thrive Edit Products (Desc/Status)</button>
+        <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.exportUpdatedDatabaseJSON()">💾 Updated Database JSON</button>
       </div>
     </div>
 

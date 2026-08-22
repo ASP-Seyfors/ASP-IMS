@@ -38,8 +38,9 @@ const SessionManager = {
   googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
   fetchedStagedData: {},
 
-  // --- NEW CLOUD ARCHIVE CONFIGURATION ---
-  cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
+  // Cloud URLs
+  cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec", // Keep this for inventory
+  googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec", // ADD THIS LINE
 
   pushToCloudArchive(sessionObj) {
     // UPDATED: Now checking and using cloudArchiveUrl instead of googleFeederUrl
@@ -374,6 +375,8 @@ const SessionManager = {
     });
 
     if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
+
+    this.bindOrderInputListener(); // <--- ADD THIS LINE
   },
 
   startStocktakeSession(mode) {
@@ -1545,6 +1548,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     // NEW: Auto-push to Google Sheets if the session is finished!
     if (status === 'Completed') {
       this.pushToCloudArchive(sessionObj);
+      this.pushQboWriteBack(sessionObj); // <--- ADD THIS LINE
     }
   },
 
@@ -1846,5 +1850,64 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     archive = archive.filter(s => s.id !== id);
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
     this.renderArchiveList();
+  },
+
+  // ==========================================
+  // QBO BIDIRECTIONAL WRITE-BACK
+  // ==========================================
+  async pushQboWriteBack(sessionObj) {
+    // This now correctly points to the Medline/Suture Script
+    if (!this.googleFeederUrl || this.googleFeederUrl.includes("YOUR_")) return; 
+    
+    if (!sessionObj.workflowType.includes('Packing') || !sessionObj.orderNum) return;
+    
+    let payload = {
+      action: "QBO_WRITEBACK",
+      payload: sessionObj
+    };
+
+    try {
+      await fetch(this.googleFeederUrl, { // <--- Routing to the correct script
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn("Background QBO Write-back failed:", err);
+    }
+  },
+
+  bindOrderInputListener() {
+    let orderInput = document.getElementById('orderDetailsInput');
+    if (orderInput) {
+      orderInput.addEventListener('change', (e) => {
+        let val = e.target.value.trim().toUpperCase();
+        if (!val) return;
+        
+        // Search the fetched QBO feed for a matching invoice/PO number
+        let match = Object.keys(this.fetchedStagedData).find(key => key.toUpperCase().includes(val));
+        
+        if (match) {
+          let isDone = this.fetchedStagedData[match].isCompleted === true;
+          if (isDone) return; // Skip if already completed
+
+          if (confirm(`📦 Order ${val} found in the QBO Feed!\n\nWould you like to auto-fill the customer and pre-load the expected items for packing?`)) {
+            // Auto-select the Customer
+            let customerName = match.split('-')[0].trim();
+            let custSelect = document.getElementById('customerSelect');
+            if (custSelect) {
+               let opt = Array.from(custSelect.options).find(o => o.value.toUpperCase() === customerName.toUpperCase());
+               if (opt) custSelect.value = opt.value;
+            }
+            
+            // Auto-set the workflow and trigger the manifest load
+            document.getElementById('workflowTypeSelect').value = 'Picking & Packing';
+            document.getElementById('chkPreloadManifest').checked = true;
+            this.loadSelectedStagedOrder(match);
+          }
+        }
+      });
+    }
   }
 };
