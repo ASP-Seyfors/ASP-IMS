@@ -42,9 +42,23 @@ const SessionManager = {
   cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec", // Keep this for inventory
   googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec", // ADD THIS LINE
 
+  // Sandbox URLs
+  testArchiveUrl: "https://script.google.com/macros/s/AKfycbwHNk0QL0Cu1bInJxjDqGxvQ-RdPD8xJaPVV3OpTdAOVJZBhppqieVj7AKS_j2B5QpuBQ/exec", 
+  testFeederUrl: "https://script.google.com/macros/s/AKfycbyugIbNY6XYvume81EmEklb32uFxuesGE9et3XrImUjYtHjkbKR6Q6goIHABAZ0P0BQfg/exec", // Only needed if you make a test QBO workbook too
+
+  getActiveArchiveUrl() {
+    let chk = document.getElementById('chkTestMode');
+    return (chk && chk.checked) ? this.testArchiveUrl : this.cloudArchiveUrl; // ✅ CORRECT
+  },
+  
+  getActiveFeederUrl() {
+    let chk = document.getElementById('chkTestMode');
+    return (chk && chk.checked) ? (this.testFeederUrl || this.googleFeederUrl) : this.googleFeederUrl;
+  },
+
   pushToCloudArchive(sessionObj) {
     // UPDATED: Now checking and using cloudArchiveUrl instead of googleFeederUrl
-    if (!this.cloudArchiveUrl) return; 
+    if (!this.getActiveArchiveUrl()) return; 
     
     let payload = {
       action: "ARCHIVE_SESSION",
@@ -52,7 +66,7 @@ const SessionManager = {
     };
 
     // UPDATED: Push strictly to the ASP_SCANNER_DATABASE backend
-    fetch(this.cloudArchiveUrl, {
+    fetch(this.getActiveArchiveUrl(), {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -89,7 +103,7 @@ const SessionManager = {
     };
 
     try {
-      await fetch(this.cloudArchiveUrl, {
+      await fetch(this.getActiveArchiveUrl(), {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -102,7 +116,7 @@ const SessionManager = {
 
   async fetchAllocationsFromCloud() {
     try {
-      let res = await fetch(`${this.cloudArchiveUrl}?action=GET_ALLOCATIONS`);
+      let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_ALLOCATIONS`);
       let data = await res.json();
       if (data.status === "success" && data.allocations) {
         // Rebuild local nested map from flat rows if needed
@@ -124,7 +138,7 @@ const SessionManager = {
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      let res = await fetch(`${this.cloudArchiveUrl}?action=SYNC_DIRECTORY&t=${Date.now()}`);
+      let res = await fetch(`${this.getActiveArchiveUrl()}?action=SYNC_DIRECTORY&t=${Date.now()}`);
       let text = await res.text();
       
       let data;
@@ -183,7 +197,7 @@ const SessionManager = {
           payload: session
         };
 
-        await fetch(this.cloudArchiveUrl, {
+        await fetch(this.getActiveArchiveUrl(), {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -377,6 +391,27 @@ const SessionManager = {
     if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
 
     this.bindOrderInputListener(); // <--- ADD THIS LINE
+
+    // Reveal Test Mode only for authorized admin email
+    let userEl = document.getElementById('userNameInput');
+    let testContainer = document.getElementById('testModeContainer');
+    
+    if (userEl && testContainer) {
+      // Check on initial load
+      if (userEl.value.trim().toLowerCase() === 'thomas@alliedsurgicalproducts.com') {
+        testContainer.style.display = 'block';
+      }
+      
+      // Listen for typing
+      userEl.addEventListener('input', (e) => {
+        if (e.target.value.trim().toLowerCase() === 'thomas@alliedsurgicalproducts.com') {
+          testContainer.style.display = 'block';
+        } else {
+          testContainer.style.display = 'none';
+          document.getElementById('chkTestMode').checked = false; // Uncheck if they backspace
+        }
+      });
+    }
   },
 
   startStocktakeSession(mode) {
@@ -1364,9 +1399,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       DatabaseManager.db = ledgerResult.updatedDb;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       
-      if (this.cloudArchiveUrl) {
+      if (this.getActiveArchiveUrl()) {
           let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
-          fetch(this.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+          fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
       }
 
       // Cleanup & UI Reset
@@ -1769,7 +1804,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         overlay.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">☁️</div><div>Downloading session payload...</div>`;
         document.body.appendChild(overlay);
 
-        let res = await fetch(`${this.cloudArchiveUrl}?action=GET_SESSION&id=${id}`);
+        let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${id}`);
         sessionData = await res.json();
         
         document.body.removeChild(overlay);
