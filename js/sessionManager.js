@@ -500,11 +500,11 @@ const SessionManager = {
         if (tagRow) tagRow.style.display = this.currentItemAction === 'Reserved' ? 'flex' : 'none';
       } else if (this.currentWorkflowType.includes('Reserving')) {
         if (destRow) destRow.style.display = 'none';
-        if (tagRow) tagRow.style.display = 'flex';
+        if (tagRow) tagRow.style.display = 'none'; // HIDDEN: Tag inherited from Session
         this.currentItemAction = 'Reserved';
       } else if (this.currentWorkflowType.includes('Packing')) {
         if (destRow) destRow.style.display = 'none';
-        if (tagRow) tagRow.style.display = 'none';
+        if (tagRow) tagRow.style.display = 'none'; // HIDDEN: Tag inherited from Session
         this.currentItemAction = 'Pack & Ship';
       } else {
         if (destRow) destRow.style.display = 'none';
@@ -847,10 +847,21 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   getCombinedCustomerTag() {
-    let custName = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
-    let custPO = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
-    if (custName === '+ Add Customer') custName = '';
-    return custName + (custPO ? ` - ${custPO}` : '');
+    // 1. If we are Receiving & Reserving, pull from the visible item-level fields
+    if (this.currentWorkflowType === 'Receiving & Reserving') {
+        let custName = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
+        let custPO = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
+        if (custName === '+ Add Customer') custName = '';
+        if (custName || custPO) return custName + (custPO ? ` - ${custPO}` : '');
+        return '';
+    }
+    
+    // 2. Otherwise, inherit exactly what was selected at the Session start screen
+    let sessionBaseCustomer = this.currentSessionName.split(' (')[0].trim();
+    let sessionPO = this.currentOrderNum ? this.currentOrderNum.trim() : '';
+    
+    if (!sessionBaseCustomer && !sessionPO) return "";
+    return sessionBaseCustomer + (sessionPO ? ` - ${sessionPO}` : '');
   },
 
   goToReviewStage() {
@@ -1059,8 +1070,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       price: price,
       qty: qty,
       rawScanLines: rawBarcodesGathered,
-      isNew: isNewRef,
-      customerTag: (effectiveTag === 'Reserved' ? cTag : ''),
+      isNew: isNewRef,      
+      customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTag : ''),
       itemNote: iNote
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
@@ -1213,12 +1224,19 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let onHandChanges = {}; let reservedChanges = {}; let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
 
       this.scannedObjects.forEach(item => {
-        let ref = item.ref.toUpperCase(); let tag = item.customerTag; 
-        if (this.currentWorkflowType.includes('Packing') && !tag) {
+        let ref = item.ref.toUpperCase(); 
+        
+        // Grab the exact tag we assigned during saveItemLog
+        let tag = item.customerTag; 
+        
+        // Manifest Override: If using a manifest, trust the manifest's allocation tag
+        if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
            let manifestItem = this.expectedManifest.find(m => m.ref === ref);
-           if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { tag = manifestItem.allocations[0].customerTag; } 
-           else { let baseCustomer = this.currentSessionName.split(' (')[0].trim(); tag = Object.keys(allocations).find(k => k.includes(baseCustomer) || baseCustomer.includes(k)) || baseCustomer; }
+           if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { 
+               tag = manifestItem.allocations[0].customerTag; 
+           }
         }
+
         if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
         if (tag) { if (!allocations[tag]) allocations[tag] = {}; if (!allocations[tag][ref]) allocations[tag][ref] = 0; }
 
@@ -1229,6 +1247,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         } else if (this.currentWorkflowType.includes('Reserving')) { reservedChanges[ref] += item.qty; if (tag) allocations[tag][ref] += item.qty;
         } else if (this.currentWorkflowType.includes('Packing') || this.currentWorkflowType.includes('Pack & Ship')) {
           onHandChanges[ref] -= item.qty;
+          
+          // EXACT Match Deduction Only
           if (tag && allocations[tag] && allocations[tag][ref] > 0) {
               let deduct = Math.min(item.qty, allocations[tag][ref]);
               reservedChanges[ref] -= deduct; allocations[tag][ref] -= deduct;
