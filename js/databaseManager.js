@@ -406,45 +406,21 @@ const DatabaseManager = {
   getItemVendor: (item) => (item && (item.mfr || item.vendor || item.manufacturer || '').toString().trim()) || '',
   getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || '',
 
-  // --- NEW: CLOUD DATABASE SYNC ENGINE ---
-  async syncMasterDatabase(event, silent = false) {
+  // 1. DOWNLOAD ONLY
+  async downloadCloudDatabase(event, silent = false) {
     const btn = event ? event.target : null;
-    const originalText = btn ? btn.textContent : "☁️ Sync Updates from DB";
-    if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+    const originalText = btn ? btn.textContent : "☁️ Download Cloud DB";
+    if (btn) { btn.textContent = "⏳ Downloading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
-      let cleanSuppliers = this.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
-      let cleanVendors = this.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
-
-      let pushPayload = {
-        action: "SYNC_LOCAL_DB",
-        payload: { items: this.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }
-      };
-      
-      // 1. PUSH local device additions (Forced text/plain to bypass browser CORS limits)
-      await fetch(SessionManager.cloudArchiveUrl, {
-        method: 'POST', 
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(pushPayload)
-      });
-
-      // 2. PULL the fresh database (Cache-buster added to prevent Google HTML redirect bugs)
       let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=SYNC_DATABASE&t=${Date.now()}`);
-      
       let text = await res.text();
       let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseErr) {
-        console.error("Google returned HTML instead of JSON:", text);
-        throw new Error("Connection blocked by Google. Please ensure your Apps Script is deployed as a 'New Deployment' and running as 'Me'.");
-      }
+      try { data = JSON.parse(text); } catch(e) { throw new Error("Connection blocked by Google. Check permissions."); }
       
       if (data.status === "success" && data.db) {
          this.importCloudDatabase(data.db);
-         if (!silent) alert("Master Database successfully synchronized with the cloud!");
+         if (!silent) UIManager.showCustomAlert("Sync Complete", `✅ Master Database successfully downloaded!\n\nImported ${data.db.items.length} total items.`);
          
          if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
            this.renderDbGridEditor(); 
@@ -453,12 +429,62 @@ const DatabaseManager = {
          throw new Error(data.message || "Unknown Apps Script connection error.");
       }
     } catch (err) {
-      if (!silent) alert("Error syncing database: " + err.message);
-      else console.error("Error syncing database: " + err.message);
-      throw err; // Re-throw to notify the master UI
+      if (!silent) UIManager.showCustomAlert("Sync Error", "Error downloading database: " + err.message);
     } finally {
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
     }
+  },
+
+  // 2. UPLOAD PENDING ONLY
+  async uploadPendingData(event) {
+    const btn = event ? event.target : null;
+    const originalText = btn ? btn.textContent : "⬆️ Upload Pending Data";
+    
+    let pendingNew = JSON.parse(localStorage.getItem('asp_pending_new_items') || "[]");
+    let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates') || "[]");
+    let newItemsCount = pendingNew.length;
+    let updatesCount = pendingUpd.length;
+    
+    if (newItemsCount === 0 && updatesCount === 0) {
+        UIManager.showCustomAlert("Upload Status", "All local data is already up to date with the cloud. Nothing to upload.");
+        return;
+    }
+
+    const confirmUpload = async () => {
+        if (btn) { btn.textContent = "⏳ Uploading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+        try {
+          let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+          let cleanSuppliers = this.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
+          let cleanVendors = this.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
+
+          let pushPayload = {
+            action: "SYNC_LOCAL_DB",
+            payload: { items: this.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }
+          };
+          
+          await fetch(SessionManager.cloudArchiveUrl, {
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pushPayload)
+          });
+
+          SessionManager.pendingNewItems = []; 
+          SessionManager.pendingFieldUpdates = [];
+          localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
+          localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+
+          UIManager.showCustomAlert("Upload Complete", "✅ Pending items and edits successfully pushed to the cloud.");
+        } catch (err) {
+          UIManager.showCustomAlert("Upload Error", "Failed to push data: " + err.message);
+        } finally {
+          if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
+        }
+    };
+
+    UIManager.showCustomConfirm(
+        "Review Pending Upload", 
+        `You have <b>${newItemsCount}</b> new items and <b>${updatesCount}</b> field edits pending.\n\nDo you want to push these changes to the master Google Sheet now?`, 
+        confirmUpload
+    );
   },
 
   importCloudDatabase(cloudDb) {

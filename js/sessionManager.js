@@ -977,18 +977,38 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   saveItemLog() {
-    const gtin = document.getElementById('gtinInput').value.trim();
-    const ref = document.getElementById('refInput').value.trim().toUpperCase();
+    let rawGtin = document.getElementById('gtinInput').value.trim();
+    let ref = document.getElementById('refInput').value.trim().toUpperCase();
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
-    const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+    let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
     const cTag = this.getCombinedCustomerTag();
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
-    
-    const desc = DatabaseManager.getItemDesc(this.currentMatchedItem) || "Navigate to vendor website for item description.";
-    const price = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
 
+    // ==========================================
+    // DYNAMIC BOX MULTIPLIER (UOM) LOGIC
+    // ==========================================
+    let matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+    
+    if (matchedDbItem && matchedDbItem.parentRef && matchedDbItem.uomMult > 1) {
+      qty = qty * matchedDbItem.uomMult;
+      let oldRef = ref;
+      ref = matchedDbItem.parentRef.toUpperCase();
+      rawGtin = "N/A"; // Nullify box barcode to prevent mismatch on the EACH item
+      
+      if (typeof UIManager !== 'undefined') {
+          UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${oldRef}) Detected. Converted to ${qty} individual units of ${ref}.`);
+      }
+      
+      // Re-match the database item to the new parent EACH item
+      matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+    }
+    
+    const gtin = rawGtin;
+    const desc = DatabaseManager.getItemDesc(matchedDbItem) || "Navigate to vendor website for item description.";
+    const price = (matchedDbItem && matchedDbItem.price) ? matchedDbItem.price : "$0.00";
+        
     let rawBarcodesGathered = [];
     for (let i = 1; i <= 4; i++) {
       let val = document.getElementById(`rawScan${i}`).value.trim();

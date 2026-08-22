@@ -13,7 +13,8 @@
   <div class="flex-between" style="border-bottom: 2px solid #00796b; padding-bottom: 6px; margin-bottom: 10px;">
     <h2 style="border:none; margin:0; padding:0; color: #00796b;">Database Editor</h2>
     <div style="display:flex; gap:8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0;" onclick="DatabaseManager.syncMasterDatabase(event)">☁️ Sync Updates from DB</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; margin-right: 5px;" onclick="DatabaseManager.downloadCloudDatabase(event)">☁️ Sync Cloud DB</button>
+      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff; margin:0;" onclick="DatabaseManager.uploadPendingData(event)">⬆️ Upload Pending Sessions</button>
       <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()">🔙 Return</button>
     </div>
   </div>
