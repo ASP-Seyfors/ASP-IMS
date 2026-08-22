@@ -51,6 +51,44 @@ const InventoryEngine = {
 
   /**
    * GATE 3: AVAILABILITY VALIDATION
+   * Prevents over-reserving and provides a smart prompt if a user 
+   * attempts to pack more items than a customer has in reserve.
+   */
+  validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations, ignoreOverpack = false) {
+    let dbItem = currentDb.find(i => (i.sku || i.ref || '').toUpperCase() === trueRef);
+    if (!dbItem) throw new Error(`HARD ERROR: Parent item ${trueRef} missing from database.`);
+
+    let onHand = parseInt(dbItem.onHand, 10) || 0;
+    let reserved = parseInt(dbItem.reservedQty, 10) || 0;
+    let available = onHand - reserved;
+
+    if (action === 'Reserved') {
+      if (requestedQty > available) {
+        throw new Error(`HARD ERROR: Insufficient stock. You are trying to reserve ${requestedQty}, but only ${available} are available.`);
+      }
+    }
+
+    if (action === 'Pack & Ship') {
+      let custTagUpper = (customerTag || '').toUpperCase();
+      let allocatedToCust = (currentAllocations[custTagUpper] && currentAllocations[custTagUpper][trueRef]) ? currentAllocations[custTagUpper][trueRef] : 0;
+      
+      // Check if they are trying to pack more than is specifically reserved for this customer
+      if (requestedQty > allocatedToCust && !ignoreOverpack) {
+        let extraNeeded = requestedQty - allocatedToCust;
+        
+        if (extraNeeded > available) {
+            throw new Error(`HARD ERROR: Insufficient stock to over-pack. You need ${extraNeeded} extra units, but only ${available} are available on the shelf.`);
+        } else {
+            throw new Error(`OVERPACK_WARNING: You are packing ${requestedQty}, but this customer only has ${allocatedToCust} reserved. This will pull ${extraNeeded} extra unit(s) from standard inventory. Proceed?`);
+        }
+      }
+    }
+
+    return true;
+  },
+
+  /**
+   * GATE 4: AVAILABILITY VALIDATION
    * Prevents over-packing or reserving stock that doesn't exist.
    */
   validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations) {
@@ -82,7 +120,7 @@ const InventoryEngine = {
   },
 
   /**
-   * GATE 4: FINAL LEDGER COMMIT
+   * GATE 5: FINAL LEDGER COMMIT
    * Executes the exact addition and subtraction math for the database
    * and the Active Allocations ledger.
    */

@@ -276,6 +276,14 @@ const DatabaseManager = {
             <textarea id="grid_desc_${idx}" style="width:100%; padding:4px; resize:vertical; min-height:40px; font-family:inherit; font-size:0.85rem; line-height:1.2;">${item.desc || ''}</textarea>
           </td>
           <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:90px; padding:4px;"></td>
+          
+          <td style="padding:4px; vertical-align:top;">
+            <select id="grid_status_${idx}" style="padding:4px; width:100px; font-weight:bold; color:${item.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">
+              <option value="ACTIVE" ${item.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+              <option value="INACTIVE" ${item.status !== 'ACTIVE' ? 'selected' : ''}>INACTIVE</option>
+            </select>
+          </td>
+
           <td style="padding:4px; vertical-align:top;">${priceInputHtml}</td>
           <td style="padding:4px; vertical-align:top;">
              ${costInputHtml}
@@ -303,17 +311,19 @@ const DatabaseManager = {
       let mfr = document.getElementById(`grid_mfr_${idx}`).value.trim();
       let desc = document.getElementById(`grid_desc_${idx}`).value.trim();
       let cat = document.getElementById(`grid_cat_${idx}`).value.trim();
+      let status = document.getElementById(`grid_status_${idx}`).value; // NEW
       let price = document.getElementById(`grid_price_${idx}`).value.trim();
       let costEl = document.getElementById(`grid_cost_${idx}`);
       let cost = (isAdmin && costEl) ? costEl.value.trim() : null;
 
       let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
       if (dbItem) {
-        let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
+        let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
         if (changed) {
           dbItem.mfr = mfr;
           dbItem.desc = desc;
           dbItem.category = cat;
+          dbItem.status = status; // NEW
           if (isAdmin) {
             dbItem.price = price;
             if (cost !== null) dbItem.cost = cost;

@@ -84,7 +84,7 @@
     <div class="form-label">Process:</div>
     <div class="input-wrapper">
       <select id="workflowTypeSelect">
-        <option value="Reserving">🚩 Reserving</option>
+        <option value="Reserving">🚩 Pick & Reserve</option>
         <option value="Picking & Packing">🖐️ Picking & Packing</option>
       </select>
     </div>
@@ -96,7 +96,7 @@
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; margin: 0; flex: 1;" onclick="startSession()">Start Scanning Session</button>
   </div>
 
-  <!-- 3. Enterprise Data Hub (Contains Reports, Database Editor, Stocktake, Traceability, Lookup, QBO) -->
+  <!-- 3. Enterprise Data Hub -->
   <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
     <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📈 Enterprise Data Hub</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -104,6 +104,7 @@
       <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()">🗄️ Database Editor</button>
       <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()">📋 Stocktake</button>
       <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">📦 Traceability</button>
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; grid-column: 1 / -1;" onclick="UIManager.openBinViewerModal()">🗃️ View Customer Bins</button> <!-- NEW BUTTON -->
     </div>
   </div>
 

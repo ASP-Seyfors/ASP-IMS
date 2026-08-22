@@ -795,9 +795,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   // ==========================================================================
   // CUSTOMER INVENTORY STOCK REPORT EDITOR (CUSTOMER-FACING)
   // ==========================================================================
-  openCustomerStockReportEditor(limit = '10') {
+  openCustomerStockReportEditor() {
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
+
+    // Read the scope selected in screens/reports.html
+    let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
+    let limit = scopeRadio ? scopeRadio.value : '10';
 
     let items = this.getHistoricalCustomerData(cust, limit).filter(i => {
       let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;

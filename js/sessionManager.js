@@ -433,11 +433,46 @@ const SessionManager = {
       let partner = type === 'Shipment' ? document.getElementById('supplierSelect').value : document.getElementById('customerSelect').value;
       const oDetails = document.getElementById('orderDetailsInput').value.trim();
       const wType = type === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
-      const chkManifest = document.getElementById('chkPreloadManifest').checked;
+      let chkManifest = document.getElementById('chkPreloadManifest').checked;
 
       if (!partner || partner === '+ Add Supplier' || partner === '+ Add Customer') {
         alert("Please select a valid Supplier or Customer.");
         return;
+      }
+
+      // ==========================================
+      // SMART TARGET PICK & PACK LOGIC
+      // ==========================================
+      let preloadedAllocations = [];
+      if (type === 'Order' && wType === 'Picking & Packing') {
+          let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+          let searchTag = partner.toUpperCase() + (oDetails ? ` - ${oDetails.toUpperCase()}` : '');
+          let baseTag = partner.toUpperCase();
+          
+          // Try to find reservations for the exact PO first, then fallback to just the base customer name
+          let targetAllocation = currentAllocations[searchTag] ? currentAllocations[searchTag] : currentAllocations[baseTag];
+
+          if (targetAllocation && Object.keys(targetAllocation).length > 0) {
+              let itemCount = Object.keys(targetAllocation).length;
+              let totalUnits = Object.values(targetAllocation).reduce((a, b) => a + b, 0);
+              
+              if (confirm(`Targeted Pick & Pack Available:\n\n${partner} has ${totalUnits} units across ${itemCount} items currently sitting in Reserve.\n\nDo you want to pre-load these items into your Pick List manifest?`)) {
+                  chkManifest = true; // Force manifest mode on
+                  
+                  // Build the manifest array from the allocation object
+                  for (let ref in targetAllocation) {
+                      let qty = targetAllocation[ref];
+                      preloadedAllocations.push({
+                          ref: ref,
+                          expectedQty: qty,
+                          isReserved: true,
+                          customerTag: searchTag,
+                          reservedQty: qty,
+                          allocations: [{ customerTag: searchTag, reservedQty: qty }]
+                      });
+                  }
+              }
+          }
       }
 
       this.currentUserName = uName || "N/A";
@@ -474,6 +509,11 @@ const SessionManager = {
         const container = document.getElementById('manifestRowsContainer');
         if (container) container.innerHTML = '';
         
+        // If we intercepted allocations, use those. Otherwise, use what they manually parsed.
+        if (preloadedAllocations.length > 0) {
+            this.expectedManifest = preloadedAllocations;
+        }
+
         if (this.expectedManifest && this.expectedManifest.length > 0) {
           this.expectedManifest.forEach(item => {
             let hasAlloc = item.allocations && item.allocations.length > 0;
@@ -549,8 +589,27 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     });
   },
 
+  editOrderNumber() {
+    let newOrderNum = prompt("Enter new Order/Invoice number (leave blank to clear):", this.currentOrderNum);
+    if (newOrderNum !== null) {
+      this.currentOrderNum = newOrderNum.trim();
+      let baseCustomer = this.currentSessionName.split(' (')[0].trim();
+      this.currentSessionName = baseCustomer + (this.currentOrderNum ? ` (${this.currentOrderNum})` : '');
+      
+      localStorage.setItem('asp_order_num', this.currentOrderNum);
+      localStorage.setItem('asp_session_name', this.currentSessionName);
+      this.updateHeaderBanners();
+    }
+  },
+
   updateHeaderBanners() {
-    ['hdrTitle', 'hdrTitleRev', 'hdrTitleSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.currentSessionName; });
+    let editBtn = ` <button class="btn-small" style="background:transparent; border:none; color:#0277bd; cursor:pointer; font-size:1rem; padding:0; margin-left:8px;" onclick="SessionManager.editOrderNumber()" title="Edit Order Number">✏️</button>`;
+    
+    ['hdrTitle', 'hdrTitleRev', 'hdrTitleSum'].forEach(id => { 
+      let el = document.getElementById(id);
+      if(el) el.innerHTML = this.currentSessionName + editBtn; 
+    });
+    
     ['hdrWorkflow', 'hdrWorkflowRev', 'hdrWorkflowSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.currentWorkflowType; });
     ['hdrUser', 'hdrUserRev', 'hdrUserSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.currentUserName || 'N/A'; });
     ['hdrDate', 'hdrDateRev', 'hdrDateSum'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = this.sessionDateStr; });
@@ -1045,8 +1104,16 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
       InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTag, currentAllocations);
     } catch (error) {
-      UIManager.showCustomAlert("Inventory Error", error.message, true);
-      return; // HARD STOP: Prevent over-packing or over-reserving
+      if (error.message.startsWith('OVERPACK_WARNING:')) {
+        // Strip the warning flag and ask the user
+        let userConfirmed = confirm(error.message.replace('OVERPACK_WARNING: ', ''));
+        if (!userConfirmed) return; // Stop if they click Cancel
+        
+        // If they click OK, the code just naturally continues down to the save block
+      } else {
+        UIManager.showCustomAlert("Inventory Error", error.message, true);
+        return; // HARD STOP for actual errors
+      }
     }
 
     // ==========================================
@@ -1231,6 +1298,25 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   completeSession(skipConfirm = false) {
     const executeCompletion = () => {
+      // NEW: Aggressive Auto-Save from the Summary Screen DOM
+      this.scannedObjects.forEach((item, index) => {
+        let qtyEl = document.getElementById(`editQty_${index}`);
+        let tagEl = document.getElementById(`editTag_${index}`);
+        if (qtyEl) {
+          item.qty = parseInt(qtyEl.value, 10) || 1;
+          if (tagEl) {
+            let newTag = tagEl.value.trim().toUpperCase();
+            item.customerTag = newTag;
+            // Force the action tag to Reserved if a customer tag was added during a Receiving session
+            if (newTag && this.currentWorkflowType.includes('Receiving')) {
+              item.actionTag = 'Reserved';
+            }
+          }
+        }
+      });
+      // Save the aggressively scraped data back to memory before the math runs
+      localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
+
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
 
       // Ensure manifest override logic runs before handing off to the engine

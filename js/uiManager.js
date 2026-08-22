@@ -67,6 +67,86 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     if (elHub) elHub.style.display = isAdv ? 'block' : 'none';
   },
 
+  // ==========================================
+  // CUSTOMER BIN VIEWER MODAL
+  // ==========================================
+  openBinViewerModal() {
+    let modal = document.getElementById('binViewerModal');
+    if (modal) modal.remove(); // Force a fresh render
+
+    // 1. Fetch live allocations
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+    let customersWithStock = Object.keys(allocations).sort();
+
+    // 2. Build the HTML content
+    let contentHtml = '';
+    
+    if (customersWithStock.length === 0) {
+        contentHtml = `<div style="text-align:center; padding:20px; color:#777; font-style:italic;">No active reservations found. All customer bins are currently empty.</div>`;
+    } else {
+        customersWithStock.forEach(cust => {
+            let items = allocations[cust];
+            let totalItems = 0;
+            let rowsHtml = '';
+            
+            // Build the item rows for this customer
+            Object.keys(items).sort().forEach(ref => {
+                let qty = items[ref];
+                totalItems += qty;
+                rowsHtml += `
+                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
+                        <span style="font-weight:bold; color:#0277bd;">${ref}</span>
+                        <span style="font-weight:bold; color:#333;">Qty: ${qty}</span>
+                    </div>
+                `;
+            });
+
+            // Wrap the customer's data in a collapsible accordion details block
+            contentHtml += `
+                <details style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:4px; margin-bottom:8px; padding:6px;">
+                    <summary style="cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; outline:none;">
+                        <span style="color:#0277bd;">📁 ${cust}</span>
+                        <span class="badge-info" style="background:#f57f17; color:#fff;">${totalItems} Total Units</span>
+                    </summary>
+                    <div style="padding-top:8px; margin-top:6px; border-top:2px solid #0277bd;">
+                        ${rowsHtml}
+                    </div>
+                </details>
+            `;
+        });
+    }
+
+    // 3. Render the Modal
+    modal = document.createElement('div');
+    modal.id = 'binViewerModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; max-height:85vh; display:flex; flex-direction:column; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f57f17; padding-bottom:8px; margin-bottom:15px; flex-shrink:0;">
+          <h3 style="margin:0; color:#f57f17;">🗃️ Customer Bin Viewer</h3>
+          <button onclick="document.getElementById('binViewerModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div style="font-size:0.85rem; color:#555; margin-bottom:15px; flex-shrink:0;">
+          Expand a customer below to view items currently reserved for them in physical warehouse bins.
+        </div>
+        
+        <div style="overflow-y:auto; flex-grow:1; padding-right:4px;">
+            ${contentHtml}
+        </div>
+        
+        <div style="margin-top:15px; text-align:right; flex-shrink:0; border-top:1px solid #eee; padding-top:12px;">
+            <button class="btn-small btn-cancel" style="padding:8px 16px;" onclick="document.getElementById('binViewerModal').remove()">Close Viewer</button>
+        </div>
+
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  },
+
   loadSavedAdvancedMode() {
     let saved = localStorage.getItem('asp_advanced_mode') === 'true';
     let chk = document.getElementById('chkAdvancedMode');
@@ -109,7 +189,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   executeQuickLookup() {
-    let query = document.getElementById('quickLookupInput').value.trim().toUpperCase();
+    let query = document.getElementById('quickLookupInput').value.trim();
     let resContainer = document.getElementById('quickLookupResult');
     if (!query) return;
 
@@ -126,13 +206,18 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       } else if (/^\d{12,14}$/.test(clean)) { extractedGtin = clean; break;
       } else { idx++; }
     }
-    if (extractedGtin) query = extractedGtin;
+    
+    // Determine what to pass to the engine
+    let searchRef = extractedGtin ? "" : clean;
+    let searchGtin = extractedGtin ? extractedGtin : "";
 
-    let item = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i).toUpperCase() === query || (i.gtin && i.gtin.toUpperCase() === query));
-
-    if (!item) {
-      resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" is not in the local database catalog.</div>`;
-      return;
+    let item;
+    try {
+        // USE THE NEW ENGINE STRICT LOOKUP
+        item = InventoryEngine.lookupAndNormalize(searchRef, searchGtin, DatabaseManager.db);
+    } catch (e) {
+        resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" is not in the local database catalog.</div>`;
+        return;
     }
 
     let ref = DatabaseManager.getItemSku(item);

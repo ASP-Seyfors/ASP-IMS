@@ -219,3 +219,4 @@ window.batchPushLegacyLogs = (e) => AuditManager.batchPushLegacyLogs(e);
 window.triggerQboSync = () => SessionManager.triggerQboSync();
 window.openQboModal = () => UIManager.openQboModal();
 window.offloadAndPurgeHistory = (e) => SessionManager.offloadAndPurgeHistory(e);
+window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
