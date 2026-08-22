@@ -989,7 +989,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   saveItemLog() {
     let rawGtin = document.getElementById('gtinInput').value.trim();
-    let ref = document.getElementById('refInput').value.trim().toUpperCase();
+    let ref = document.getElementById('refInput').value.trim();
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
@@ -998,25 +998,60 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
     // ==========================================
-    // DYNAMIC BOX MULTIPLIER (UOM) LOGIC
+    // GATE 1: STRICT LOOKUP & NORMALIZATION
     // ==========================================
-    let matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-    
-    if (matchedDbItem && matchedDbItem.parentRef && matchedDbItem.uomMult > 1) {
-      qty = qty * matchedDbItem.uomMult;
-      let oldRef = ref;
-      ref = matchedDbItem.parentRef.toUpperCase();
-      rawGtin = "N/A"; // Nullify box barcode to prevent mismatch on the EACH item
-      
-      if (typeof UIManager !== 'undefined') {
-          UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${oldRef}) Detected. Converted to ${qty} individual units of ${ref}.`);
-      }
-      
-      // Re-match the database item to the new parent EACH item
-      matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+    let matchedDbItem;
+    try {
+      matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
+    } catch (error) {
+      UIManager.showCustomAlert("Validation Error", error.message, true);
+      return; // HARD STOP: Prevent saving if item doesn't exist
     }
+
+    // ==========================================
+    // GATE 2: UOM MULTIPLIER (BOX TO EACH)
+    // ==========================================
+    let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty);
     
-    const gtin = rawGtin;
+    if (uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
+      if (typeof UIManager !== 'undefined') {
+          UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${ref.toUpperCase()}) Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
+      }
+      // Nullify GTIN since we are converting a Box scan to an EACH ledger entry
+      rawGtin = "N/A"; 
+      
+      // Re-acquire the parent EACH item from the database
+      matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
+    }
+
+    // Apply the mathematical results
+    ref = uomResult.trueRef;
+    qty = uomResult.trueQty;
+
+    // ==========================================
+    // DETERMINE WORKFLOW ACTION TAG
+    // ==========================================
+    let effectiveTag = this.currentItemAction;
+    if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
+      if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
+      else if (this.currentWorkflowType.includes('Packing')) effectiveTag = 'Pack & Ship';
+      else effectiveTag = 'Inventory';
+    }
+
+    // ==========================================
+    // GATE 3: AVAILABILITY VALIDATION
+    // ==========================================
+    try {
+      let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTag, currentAllocations);
+    } catch (error) {
+      UIManager.showCustomAlert("Inventory Error", error.message, true);
+      return; // HARD STOP: Prevent over-packing or over-reserving
+    }
+
+    // ==========================================
+    // ALL GATES PASSED: PROCEED WITH SAVING
+    // ==========================================
     const desc = DatabaseManager.getItemDesc(matchedDbItem) || "Navigate to vendor website for item description.";
     const price = (matchedDbItem && matchedDbItem.price) ? matchedDbItem.price : "$0.00";
         
@@ -1026,43 +1061,18 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (val) rawBarcodesGathered.push(val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, ''));
     }
 
-    // LIVE GTIN SYNC: Link GTIN in memory for immediate re-scan matching
-    if (this.currentMatchedItem && gtin && gtin !== "N/A" && !this.currentMatchedItem.gtin) {
-      this.currentMatchedItem.gtin = gtin;
+    // LIVE GTIN SYNC
+    if (this.currentMatchedItem && rawGtin && rawGtin !== "N/A" && !this.currentMatchedItem.gtin) {
+      this.currentMatchedItem.gtin = rawGtin;
       let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
-      if (dbMatch) dbMatch.gtin = gtin;
+      if (dbMatch) dbMatch.gtin = rawGtin;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-    }
-
-    let isNewRef = false;
-    if (!this.currentMatchedItem && ref) {
-      isNewRef = true;
-      let newItem = { 
-        gtin: (gtin === "N/A" ? "" : gtin), 
-        sku: ref, 
-        ref: ref, 
-        desc: desc, 
-        price: "$0.00", 
-        cost: "$0.00", // <-- Initialize default cost for newly scanned SKUs
-        mfr: vendor 
-      };
-      DatabaseManager.db.push(newItem);
-      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-      this.pendingNewItems.push(newItem);
-      localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
-    }
-
-    let effectiveTag = this.currentItemAction;
-    if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
-      if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
-      else if (this.currentWorkflowType.includes('Packing')) effectiveTag = 'Pack & Ship';
-      else effectiveTag = 'Inventory';
     }
 
     this.scannedObjects.push({
       actionTag: effectiveTag,
-      gtin: gtin || (this.currentMatchedItem ? this.currentMatchedItem.gtin : ''),
-      ref: ref || 'UNREGISTERED',
+      gtin: rawGtin || (this.currentMatchedItem ? this.currentMatchedItem.gtin : ''),
+      ref: ref,
       lot: lot || 'NO_LOT',
       exp: exp || 'NO_EXP',
       mfr: vendor,
@@ -1070,7 +1080,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       price: price,
       qty: qty,
       rawScanLines: rawBarcodesGathered,
-      isNew: isNewRef,      
+      isNew: false, // It can never be new if it passed Gate 1
       customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTag : ''),
       itemNote: iNote
     });
@@ -1221,70 +1231,59 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   completeSession(skipConfirm = false) {
     const executeCompletion = () => {
-      let onHandChanges = {}; let reservedChanges = {}; let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+      let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
 
+      // Ensure manifest override logic runs before handing off to the engine
       this.scannedObjects.forEach(item => {
-        let ref = item.ref.toUpperCase(); 
-        
-        // Grab the exact tag we assigned during saveItemLog
-        let tag = item.customerTag; 
-        
-        // Manifest Override: If using a manifest, trust the manifest's allocation tag
         if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
-           let manifestItem = this.expectedManifest.find(m => m.ref === ref);
+           let manifestItem = this.expectedManifest.find(m => m.ref === item.ref.toUpperCase());
            if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { 
-               tag = manifestItem.allocations[0].customerTag; 
+               item.customerTag = manifestItem.allocations[0].customerTag; 
            }
-        }
-
-        if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
-        if (tag) { if (!allocations[tag]) allocations[tag] = {}; if (!allocations[tag][ref]) allocations[tag][ref] = 0; }
-
-        if (this.currentWorkflowType.includes('Receiving & Reserving')) {
-          onHandChanges[ref] += item.qty;
-          if (item.actionTag === 'Reserved') { reservedChanges[ref] += item.qty; if (tag) allocations[tag][ref] += item.qty; }
-        } else if (this.currentWorkflowType.includes('Receiving')) { onHandChanges[ref] += item.qty;
-        } else if (this.currentWorkflowType.includes('Reserving')) { reservedChanges[ref] += item.qty; if (tag) allocations[tag][ref] += item.qty;
-        } else if (this.currentWorkflowType.includes('Packing') || this.currentWorkflowType.includes('Pack & Ship')) {
-          onHandChanges[ref] -= item.qty;
-          
-          // EXACT Match Deduction Only
-          if (tag && allocations[tag] && allocations[tag][ref] > 0) {
-              let deduct = Math.min(item.qty, allocations[tag][ref]);
-              reservedChanges[ref] -= deduct; allocations[tag][ref] -= deduct;
-              if (allocations[tag][ref] <= 0) delete allocations[tag][ref];
-          }
         }
       });
 
-      Object.keys(allocations).forEach(t => { if (Object.keys(allocations[t]).length === 0) delete allocations[t]; });
-      localStorage.setItem('asp_allocations', JSON.stringify(allocations));
+      // ==========================================
+      // GATE 4: FINAL LEDGER COMMIT
+      // ==========================================
+      let ledgerResult = InventoryEngine.commitLedgerMath(
+        this.scannedObjects, 
+        DatabaseManager.db, 
+        currentAllocations, 
+        this.currentWorkflowType
+      );
+
+      // Save the mathematically validated allocations
+      localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
       this.syncAllocationsToCloud();
 
+      // Apply pending updates
       if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
-        this.pendingFieldUpdates.forEach(update => { let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); if (dbItem && update.field) dbItem[update.field] = update.value; });
+        this.pendingFieldUpdates.forEach(update => { 
+          let dbItem = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); 
+          if (dbItem && update.field) dbItem[update.field] = update.value; 
+        });
       }
       if (this.pendingNewItems && this.pendingNewItems.length > 0) {
-        this.pendingNewItems.forEach(newItem => { let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); if (!exists) DatabaseManager.db.push(newItem); });
+        this.pendingNewItems.forEach(newItem => { 
+          let exists = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
+          if (!exists) ledgerResult.updatedDb.push(newItem); 
+        });
       }
       
-      if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
-        DatabaseManager.db.forEach(dbItem => {
-          let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
-          if (onHandChanges[ref] || reservedChanges[ref]) {
-            dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
-            if (dbItem.onHand < 0) dbItem.onHand = 0; if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
-          }
-        });
-        localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-        if (this.cloudArchiveUrl) {
-            let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
-            fetch(this.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
-        }
+      // Save the mathematically validated database
+      DatabaseManager.db = ledgerResult.updatedDb;
+      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+      
+      if (this.cloudArchiveUrl) {
+          let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
+          fetch(this.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
       }
 
+      // Cleanup & UI Reset
       this.pendingNewItems = []; this.pendingFieldUpdates = [];
-      localStorage.setItem('asp_pending_new_items', JSON.stringify([])); localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+      localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
+      localStorage.setItem('asp_pending_updates', JSON.stringify([]));
       
       let recList = document.getElementById('manifestReconcileList');
       let recCard = document.getElementById('manifestReconcileCard');

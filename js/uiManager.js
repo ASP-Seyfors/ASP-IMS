@@ -13,7 +13,7 @@
  * All Rights Reserved.
  * ======================================================================= */
 const UIManager = {// GLOBAL CONFIGURATIONS
-  printTimeout: 1200,
+  printTimeout: 1600,
   
   // POPULATE CUSTOMER REPORT SELECTOR FROM MASTER CUSTOMER LIST
   populateCustomerDropdown() {
