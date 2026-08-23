@@ -99,49 +99,59 @@ const InventoryEngine = {
     scannedObjects.forEach(item => {
       let ref = item.ref.toUpperCase(); 
       let tag = item.customerTag; 
+      let orderNum = item.orderNum;
 
       if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
       if (tag) { 
         if (!currentAllocations[tag]) currentAllocations[tag] = {}; 
-        if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = 0; 
+        if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, orders: [], lots: [], exps: [], sessionIds: [] }; 
       }
 
       if (workflowType.includes('Receiving & Reserving')) {
         onHandChanges[ref] += item.qty;
         if (item.actionTag === 'Reserved') { 
           reservedChanges[ref] += item.qty; 
-          if (tag) currentAllocations[tag][ref] += item.qty; 
+          if (tag) {
+             currentAllocations[tag][ref].qty += item.qty; 
+             if(orderNum && !currentAllocations[tag][ref].orders.includes(orderNum)) currentAllocations[tag][ref].orders.push(orderNum);
+             if(item.lot && item.lot !== 'NO_LOT' && !currentAllocations[tag][ref].lots.includes(item.lot)) currentAllocations[tag][ref].lots.push(item.lot);
+             if(item.exp && item.exp !== 'NO_EXP' && !currentAllocations[tag][ref].exps.includes(item.exp)) currentAllocations[tag][ref].exps.push(item.exp);
+             if(item.sessionId && !currentAllocations[tag][ref].sessionIds.includes(item.sessionId)) currentAllocations[tag][ref].sessionIds.push(item.sessionId);
+          }
         }
       } else if (workflowType.includes('Receiving')) { 
         onHandChanges[ref] += item.qty;
       } else if (workflowType.includes('Reserving')) { 
         reservedChanges[ref] += item.qty; 
-        if (tag) currentAllocations[tag][ref] += item.qty;
+        if (tag) {
+           currentAllocations[tag][ref].qty += item.qty;
+           if(orderNum && !currentAllocations[tag][ref].orders.includes(orderNum)) currentAllocations[tag][ref].orders.push(orderNum);
+           if(item.lot && item.lot !== 'NO_LOT' && !currentAllocations[tag][ref].lots.includes(item.lot)) currentAllocations[tag][ref].lots.push(item.lot);
+           if(item.exp && item.exp !== 'NO_EXP' && !currentAllocations[tag][ref].exps.includes(item.exp)) currentAllocations[tag][ref].exps.push(item.exp);
+           if(item.sessionId && !currentAllocations[tag][ref].sessionIds.includes(item.sessionId)) currentAllocations[tag][ref].sessionIds.push(item.sessionId);
+        }
       } else if (workflowType.includes('Packing') || workflowType.includes('Pack & Ship')) {
         onHandChanges[ref] -= item.qty;
         
-        if (tag && currentAllocations[tag] && currentAllocations[tag][ref] > 0) {
-            let deduct = Math.min(item.qty, currentAllocations[tag][ref]);
+        if (tag && currentAllocations[tag] && currentAllocations[tag][ref] && currentAllocations[tag][ref].qty > 0) {
+            let deduct = Math.min(item.qty, currentAllocations[tag][ref].qty);
             reservedChanges[ref] -= deduct; 
-            currentAllocations[tag][ref] -= deduct;
-            if (currentAllocations[tag][ref] <= 0) delete currentAllocations[tag][ref];
+            currentAllocations[tag][ref].qty -= deduct;
+            if (currentAllocations[tag][ref].qty <= 0) delete currentAllocations[tag][ref];
         }
       }
     });
 
-    // Clean up empty tags
     Object.keys(currentAllocations).forEach(t => { 
       if (Object.keys(currentAllocations[t]).length === 0) delete currentAllocations[t]; 
     });
 
-    // Apply the changes to the master database copy
     currentDb.forEach(dbItem => {
       let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
       if (onHandChanges[ref] || reservedChanges[ref]) {
         dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); 
         dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
         
-        // Prevent negative quantities
         if (dbItem.onHand < 0) dbItem.onHand = 0; 
         if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
       }

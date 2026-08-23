@@ -893,23 +893,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_pending_updates', JSON.stringify(this.pendingFieldUpdates));
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
     UIManager.hideAllConfirmButtons();
-  },
-
-  getCombinedCustomerTag() {
-    if (this.currentWorkflowType === 'Receiving & Reserving') {
-        let custName = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
-        let custPO = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
-        if (custName === '+ Add Customer') custName = '';
-        if (custName || custPO) return custName + (custPO ? ` - ${custPO}` : '');
-        return '';
-    }
-    
-    let sessionBaseCustomer = this.currentSessionName.split(' (')[0].trim();
-    let sessionPO = this.currentOrderNum ? this.currentOrderNum.trim() : '';
-    
-    if (!sessionBaseCustomer && !sessionPO) return "";
-    return sessionBaseCustomer + (sessionPO ? ` - ${sessionPO}` : '');
-  },
+  },  
 
   goToReviewStage() {
     let expField = document.getElementById('expInput');
@@ -1034,7 +1018,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    const cTag = this.getCombinedCustomerTag();
+    const cTag = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
+    const cOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
     let matchedDbItem;
@@ -1107,6 +1092,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       rawScanLines: rawBarcodesGathered,
       isNew: false, 
       customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTag : ''),
+      orderNum: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cOrder : ''),
+      sessionId: this.sessionId, // <--- ADD THIS EXACT LINE
       itemNote: iNote
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
