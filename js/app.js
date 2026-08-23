@@ -224,3 +224,6 @@ window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
 window.exportThriveCreates = () => AuditManager.exportThriveCreates();
 window.exportThriveVariants = () => AuditManager.exportThriveVariants();
 window.exportThriveProducts = () => AuditManager.exportThriveProducts();
+
+window.exportShopifyProducts = () => AuditManager.exportShopifyProducts();
+window.exportShopifyInventory = () => AuditManager.exportShopifyInventory();
