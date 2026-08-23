@@ -28,6 +28,16 @@
     Select a timeframe below to pull a comprehensive lifecycle audit, FEFO traceability report, or Thrive batch exports directly from the live Cloud Ledger.
   </p>
 
+  <!-- LOT TRACEABILITY TOOL -->
+  <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #0277bd;">🔎 Active Recall & Lot Traceability</h4>
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <input type="text" id="lotSearchInput" placeholder="Scan or type Lot Number..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="this.value = this.value.toUpperCase();">
+      <button class="btn-action" style="background-color: #0277bd; color: #fff; margin: 0; padding: 8px 16px;" onclick="AuditManager.traceLotNumber()">Trace</button>
+    </div>
+    <div id="lotTraceResults"></div>
+  </div>
+
   <div class="form-row" style="margin-bottom: 20px;">
     <div class="form-label" style="color: #0277bd;">Timeframe:</div>
     <div class="input-wrapper" style="display:flex; gap:8px;">

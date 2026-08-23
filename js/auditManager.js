@@ -2169,7 +2169,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     let foundEvents = [];
 
-    // Crawl history for matching lots
     allSessions.forEach(sess => {
       if (sess.scannedObjects && Array.isArray(sess.scannedObjects)) {
         sess.scannedObjects.forEach(item => {
@@ -2206,5 +2205,84 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</div>`;
 
     resultsContainer.innerHTML = html;
+  },
+
+  exportShopifyProducts() {
+    let db = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db : [];
+    if (db.length === 0) { alert("No inventory data loaded in memory."); return; }
+
+    let headers = ['Handle', 'Title', 'Description', 'Vendor', 'Product category', 'Status', 'SKU', 'Barcode', 'Option1 name', 'Option1 value', 'Price', 'Cost per item', 'Inventory tracker', 'Continue selling when out of stock'];
+    let csvContent = headers.join(',') + '\n';
+
+    db.forEach(item => {
+      let ref = String(item.ref || item.sku || '').trim();
+      if (!ref) return;
+
+      let handle = ref.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''); 
+      let safeDesc = String(item.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
+      let safeMfr = String(item.mfr || '').replace(/"/g, '""');
+      let safeGtin = (!item.gtin || item.gtin === 'N/A') ? '' : String(item.gtin).replace(/"/g, '""');
+      
+      let cleanPrice = parseFloat(String(item.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+      let safePrice = cleanPrice > 0 ? cleanPrice.toFixed(2) : '';
+      let safeCost = String(item.cost || '').replace(/[^0-9.-]+/g, '');
+      
+      let status = (item.status === 'INACTIVE' || cleanPrice === 0) ? 'draft' : 'active';
+      let category = String(item.category || '').replace(/"/g, '""');
+
+      let row = [
+        `"${handle}"`,           
+        `"${ref}"`,              
+        `"${safeDesc}"`,         
+        `"${safeMfr}"`,          
+        `"${category}"`,         
+        `"${status}"`,           
+        `"${ref}"`,              
+        `"${safeGtin}"`,         
+        `"Title"`,               
+        `"Default Title"`,       
+        `"${safePrice}"`,        
+        `"${safeCost}"`,         
+        `"shopify"`,             
+        `"DENY"`
+      ];
+
+      csvContent += row.join(',') + '\n';
+    });
+
+    UIManager.triggerShareOrDownload(csvContent, `Shopify_Products_Export_${SessionManager.sessionDateStr}.csv`, 'text/csv');
+  },
+
+  exportShopifyInventory() {
+    let db = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db : [];
+    if (db.length === 0) { alert("No inventory data loaded in memory."); return; }
+
+    let headers = ['Handle', 'Title', 'Option1 Name', 'Option1 Value', 'SKU', 'Location', 'On hand (new)'];
+    let csvContent = headers.join(',') + '\n';
+
+    db.forEach(item => {
+      let ref = String(item.ref || item.sku || '').trim();
+      if (!ref) return;
+
+      let handle = ref.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''); 
+      
+      let total = parseInt(item.onHand || item.TotalQty, 10) || 0;
+      let res = parseInt(item.reservedQty, 10) || 0;
+      let available = total - res;
+
+      let row = [
+        `"${handle}"`,           
+        `"${ref}"`,              
+        `"Title"`,               
+        `"Default Title"`,       
+        `"${ref}"`,              
+        `"PH Warehouse"`,        
+        `${available}`           
+      ];
+
+      csvContent += row.join(',') + '\n';
+    });
+
+    UIManager.triggerShareOrDownload(csvContent, `Shopify_Inventory_Export_${SessionManager.sessionDateStr}.csv`, 'text/csv');
   }
 };

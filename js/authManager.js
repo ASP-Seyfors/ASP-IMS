@@ -142,7 +142,6 @@ const AuthManager = {
       let rowQboSettings = document.getElementById('rowQboSettings');
       if (rowQboSettings) rowQboSettings.style.display = this.currentUser.isAdmin ? 'flex' : 'none';
 
-      // NEW: Reveal the Sandbox toggle only for Admins
       // NEW: Reveal the Sandbox toggle ONLY for the lead developer
       let rowSandboxSetting = document.getElementById('rowSandboxSetting');
       if (rowSandboxSetting) {
