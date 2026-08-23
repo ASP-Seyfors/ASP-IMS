@@ -34,30 +34,43 @@ const SessionManager = {
 
   currentArchiveTab: 'local',
 
-  // Paste your Web App URL here
-  googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
   fetchedStagedData: {},
 
   // Cloud URLs
-  cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec", // Keep this for inventory
-  googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec", // ADD THIS LINE
+  cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
+  googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
 
   // Sandbox URLs
   testArchiveUrl: "https://script.google.com/macros/s/AKfycbwHNk0QL0Cu1bInJxjDqGxvQ-RdPD8xJaPVV3OpTdAOVJZBhppqieVj7AKS_j2B5QpuBQ/exec", 
-  testFeederUrl: "https://script.google.com/macros/s/AKfycbyugIbNY6XYvume81EmEklb32uFxuesGE9et3XrImUjYtHjkbKR6Q6goIHABAZ0P0BQfg/exec", // Only needed if you make a test QBO workbook too
+  testFeederUrl: "https://script.google.com/macros/s/AKfycbyugIbNY6XYvume81EmEklb32uFxuesGE9et3XrImUjYtHjkbKR6Q6goIHABAZ0P0BQfg/exec", 
 
   getActiveArchiveUrl() {
-    let chk = document.getElementById('chkTestMode');
-    return (chk && chk.checked) ? this.testArchiveUrl : this.cloudArchiveUrl; // ✅ CORRECT
+    let chk = document.getElementById('chkSandboxMode');
+    return (chk && chk.checked) ? this.testArchiveUrl : this.cloudArchiveUrl;
   },
   
   getActiveFeederUrl() {
-    let chk = document.getElementById('chkTestMode');
+    let chk = document.getElementById('chkSandboxMode');
     return (chk && chk.checked) ? (this.testFeederUrl || this.googleFeederUrl) : this.googleFeederUrl;
   },
 
+  applyTestingModeVisuals(isTestActive) {
+    if (isTestActive) {
+      document.body.style.backgroundColor = '#fff3e0'; // Warm orange
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.borderColor = '#ff9800';
+        card.style.backgroundColor = '#e1f5fe'; // Light blue
+      });
+    } else {
+      document.body.style.backgroundColor = '';
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.borderColor = '';
+        card.style.backgroundColor = '';
+      });
+    }
+  },
+
   pushToCloudArchive(sessionObj) {
-    // UPDATED: Now checking and using cloudArchiveUrl instead of googleFeederUrl
     if (!this.getActiveArchiveUrl()) return; 
     
     let payload = {
@@ -65,7 +78,6 @@ const SessionManager = {
       payload: sessionObj
     };
 
-    // UPDATED: Push strictly to the ASP_SCANNER_DATABASE backend
     fetch(this.getActiveArchiveUrl(), {
       method: 'POST',
       mode: 'no-cors',
@@ -86,7 +98,6 @@ const SessionManager = {
       btnCloud.style.backgroundColor = '#0277bd'; btnCloud.style.color = '#fff'; btnCloud.style.border = '1px solid #0277bd';
       btnLocal.style.backgroundColor = '#f5f5f5'; btnLocal.style.color = '#555'; btnLocal.style.border = '1px solid #ccc';
       
-      // Auto-fetch if the directory is empty
       let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
       if (dir.length === 0) this.syncCloudArchive();
     }
@@ -119,7 +130,6 @@ const SessionManager = {
       let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_ALLOCATIONS`);
       let data = await res.json();
       if (data.status === "success" && data.allocations) {
-        // Rebuild local nested map from flat rows if needed
         let allocMap = {};
         data.allocations.forEach(a => {
           if (!allocMap[a.customerName]) allocMap[a.customerName] = {};
@@ -145,8 +155,7 @@ const SessionManager = {
       try {
         data = JSON.parse(text);
       } catch (parseErr) {
-        console.error("Google Apps Script returned HTML instead of JSON:", text);
-        throw new Error("Cloud Vault returned an HTML error page. Check your Apps Script deployment permissions ('Execute as: Me', 'Who has access: Anyone').");
+        throw new Error("Cloud Vault returned an HTML error page. Check your Apps Script deployment permissions.");
       }
       
       if (data.status === "success" && data.archive) {
@@ -171,7 +180,6 @@ const SessionManager = {
     }
   },
 
-  // ---------------------------------------
   async pushLegacySessionsToCloud(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "⬆️ Upload Local History";
@@ -181,7 +189,6 @@ const SessionManager = {
     let completedSessions = archive.filter(s => s.status === 'Completed' && !s.isSynced);
 
     if (completedSessions.length === 0) {
-      // Clear pending queue if all completed sessions are already uploaded
       localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
       localStorage.setItem('asp_pending_updates', JSON.stringify([]));
       if (!silent) alert("All completed sessions are already synchronized with the Cloud Archive.");
@@ -192,18 +199,13 @@ const SessionManager = {
     let successCount = 0;
     for (let session of completedSessions) {
       try {
-        let payload = {
-          action: "ARCHIVE_SESSION",
-          payload: session
-        };
-
+        let payload = { action: "ARCHIVE_SESSION", payload: session };
         await fetch(this.getActiveArchiveUrl(), {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
-        
         session.isSynced = true;
         successCount++;
       } catch (err) {
@@ -211,7 +213,6 @@ const SessionManager = {
       }
     }
 
-    // Save synced flags back to local storage
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
     localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
     localStorage.setItem('asp_pending_updates', JSON.stringify([]));
@@ -226,21 +227,13 @@ const SessionManager = {
     if (btn) { btn.textContent = "⏳ Processing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      // 1. Force a silent upload of any unsynced completed sessions first
       await this.pushLegacySessionsToCloud(null, true);
-
-      // 2. Read the local archive
       let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-
-      // 3. Filter out Completed and Cancelled, keeping ONLY Pending
       let initialCount = archive.length;
       let retainedArchive = archive.filter(s => s.status === 'Pending');
       let purgedCount = initialCount - retainedArchive.length;
-
-      // 4. Save the lean archive back to local memory
       localStorage.setItem('asp_session_archive', JSON.stringify(retainedArchive));
 
-      // 5. Update UI Indicators
       if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
         UIManager.evaluateSyncIndicator();
       }
@@ -254,13 +247,10 @@ const SessionManager = {
   },
 
   async fetchStagedSessions(silent = false) {
-    if (!this.googleFeederUrl || this.googleFeederUrl.includes("YOUR_COPIED")) {
-      if (!silent) alert("Please paste your Google Apps Script Web App URL into sessionManager.js first!");
-      return;
-    }
+    if (!this.getActiveFeederUrl() || this.getActiveFeederUrl().includes("YOUR_")) return;
 
     try {
-      let res = await fetch(this.googleFeederUrl);
+      let res = await fetch(this.getActiveFeederUrl());
       let data = await res.json();
       
       this.fetchedStagedData = data.stagedSessions || {};
@@ -273,14 +263,11 @@ const SessionManager = {
       let select = document.getElementById('stagedOrdersSelect');
       if (select) {
         select.innerHTML = '<option value="">-- Select Staged Order --</option>';
-
         let count = 0;
         for (let sessionName in this.fetchedStagedData) {
           let sessionObj = this.fetchedStagedData[sessionName];
           let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
-          let isDone = sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED';
-
-          if (isDone) continue;
+          if (sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED') continue;
 
           let opt = document.createElement('option');
           opt.value = sessionName;
@@ -314,15 +301,13 @@ const SessionManager = {
     if (btn && !silent) { btn.textContent = "⏳ Fetching QBO..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      // 1. Trigger the Apps Script backend to pull open invoices from QBO Sandbox into ASP_Scanner_Feed
-      let res = await fetch(this.googleFeederUrl, {
+      await fetch(this.getActiveFeederUrl(), {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: "FETCH_QBO" })
       });
 
-      // 2. Fetch the newly populated staged feed into the app
       await this.fetchStagedSessions(true);
 
       if (!silent) alert("✅ QuickBooks Sync Complete! Check the Shipments & Orders Feed dropdown above.");
@@ -390,26 +375,7 @@ const SessionManager = {
 
     if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
 
-    this.bindOrderInputListener(); // <--- ADD THIS LINE
-
-    // Reveal Test Mode only for authorized admin email
-    let userEl = document.getElementById('userNameInput');
-    let testContainer = document.getElementById('testModeContainer');
-    
-    if (userEl && testContainer) {
-      // Check on initial load
-      if (userEl.value.trim().toLowerCase() === 'thomas@alliedsurgicalproducts.com') {
-        testContainer.style.display = 'block';
-      }      
-      
-      // Bind the visual toggle to the checkbox itself
-      let chkTestMode = document.getElementById('chkTestMode');
-      if (chkTestMode) {
-        chkTestMode.addEventListener('change', (e) => {
-          this.applyTestingModeVisuals(e.target.checked);
-        });
-      }
-    }
+    this.bindOrderInputListener(); 
   },
 
   startStocktakeSession(mode) {
@@ -438,15 +404,12 @@ const SessionManager = {
     localStorage.setItem('asp_session_start_str', this.sessionStartStr);
     localStorage.setItem('asp_session_date_str', this.sessionDateStr);
     
-    // NEW: Clear the local memory and expected manifest list
     this.scannedObjects = [];
     this.expectedManifest = [];
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
     localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
     this.updateHeaderBanners();
-    
-    // NEW: Force the UI to hide the old manifest tracker
     this.updateManifestProgressUI();
     
     if (typeof UIManager !== 'undefined' && UIManager.closeStocktakeModal) UIManager.closeStocktakeModal();
@@ -476,16 +439,12 @@ const SessionManager = {
         return;
       }
 
-      // ==========================================
-      // SMART TARGET PICK & PACK LOGIC
-      // ==========================================
       let preloadedAllocations = [];
       if (type === 'Order' && wType === 'Picking & Packing') {
           let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
           let searchTag = partner.toUpperCase() + (oDetails ? ` - ${oDetails.toUpperCase()}` : '');
           let baseTag = partner.toUpperCase();
           
-          // Try to find reservations for the exact PO first, then fallback to just the base customer name
           let targetAllocation = currentAllocations[searchTag] ? currentAllocations[searchTag] : currentAllocations[baseTag];
 
           if (targetAllocation && Object.keys(targetAllocation).length > 0) {
@@ -493,9 +452,8 @@ const SessionManager = {
               let totalUnits = Object.values(targetAllocation).reduce((a, b) => a + b, 0);
               
               if (confirm(`Targeted Pick & Pack Available:\n\n${partner} has ${totalUnits} units across ${itemCount} items currently sitting in Reserve.\n\nDo you want to pre-load these items into your Pick List manifest?`)) {
-                  chkManifest = true; // Force manifest mode on
+                  chkManifest = true;
                   
-                  // Build the manifest array from the allocation object
                   for (let ref in targetAllocation) {
                       let qty = targetAllocation[ref];
                       preloadedAllocations.push({
@@ -538,14 +496,12 @@ const SessionManager = {
 
       this.updateHeaderBanners();
 
-      // UI SCREEN ROUTING
       document.getElementById('screenSetup').style.display = 'none';
 
       if (this.isManifestEnabled) {
         const container = document.getElementById('manifestRowsContainer');
         if (container) container.innerHTML = '';
         
-        // If we intercepted allocations, use those. Otherwise, use what they manually parsed.
         if (preloadedAllocations.length > 0) {
             this.expectedManifest = preloadedAllocations;
         }
@@ -576,11 +532,11 @@ const SessionManager = {
         if (tagRow) tagRow.style.display = this.currentItemAction === 'Reserved' ? 'flex' : 'none';
       } else if (this.currentWorkflowType.includes('Reserving')) {
         if (destRow) destRow.style.display = 'none';
-        if (tagRow) tagRow.style.display = 'none'; // HIDDEN: Tag inherited from Session
+        if (tagRow) tagRow.style.display = 'none';
         this.currentItemAction = 'Reserved';
       } else if (this.currentWorkflowType.includes('Packing')) {
         if (destRow) destRow.style.display = 'none';
-        if (tagRow) tagRow.style.display = 'none'; // HIDDEN: Tag inherited from Session
+        if (tagRow) tagRow.style.display = 'none'; 
         this.currentItemAction = 'Pack & Ship';
       } else {
         if (destRow) destRow.style.display = 'none';
@@ -593,7 +549,6 @@ const SessionManager = {
     } catch (err) {
       console.error("Error during startSession:", err);
       alert("Encountered an issue starting session: " + err.message);
-      // Emergency recovery: Restore home screen so it never stays black
       document.getElementById('screenSetup').style.display = 'block';
       if (document.getElementById('screenManifestEntry')) document.getElementById('screenManifestEntry').style.display = 'none';
       if (document.getElementById('screenScanning')) document.getElementById('screenScanning').style.display = 'none';
@@ -763,7 +718,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let qty = parseInt(qtyRaw, 10);
       if (isNaN(qty) || qty < 1) qty = 1;
       
-      // NEW: INTELLIGENT "SHELF" SPLITTER
       let poShelfMatch = activePO.match(/(.*?)\s*\((\d+)\)\s*SHELF\s*\((\d+)\)/i);
       let isSplitCust = activeCust.includes('/SHELF') || activeCust.includes('SHELF/');
 
@@ -783,7 +737,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           this.addManifestRow(ref, shelfQty, false, '', 0);
           parsedCount++;
         }
-        continue; // Skip the standard single-line add
+        continue;
       }
       
       let isRes = false, tagVal = '', resQty = 0;
@@ -942,7 +896,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   getCombinedCustomerTag() {
-    // 1. If we are Receiving & Reserving, pull from the visible item-level fields
     if (this.currentWorkflowType === 'Receiving & Reserving') {
         let custName = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
         let custPO = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
@@ -951,7 +904,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         return '';
     }
     
-    // 2. Otherwise, inherit exactly what was selected at the Session start screen
     let sessionBaseCustomer = this.currentSessionName.split(' (')[0].trim();
     let sessionPO = this.currentOrderNum ? this.currentOrderNum.trim() : '';
     
@@ -979,7 +931,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const cTag = this.getCombinedCustomerTag();
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-    // Manifest Progress Indicators (Safely Guarded)
     const refProgRow = document.getElementById('revRefProgressRow');
     const totalProgRow = document.getElementById('revTotalProgressRow');
     const refProgText = document.getElementById('revRefProgress');
@@ -1006,7 +957,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (totalProgRow) totalProgRow.style.display = 'none';
     }
 
-    // Required Fields Rendering
     if (document.getElementById('revRef')) document.getElementById('revRef').textContent = ref;
     if (document.getElementById('revGtin')) document.getElementById('revGtin').textContent = gtin || '--';
     if (document.getElementById('revLot')) document.getElementById('revLot').textContent = lot || '--';
@@ -1014,7 +964,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (document.getElementById('revMfr')) document.getElementById('revMfr').textContent = vendor;
     if (document.getElementById('revQty')) document.getElementById('revQty').textContent = qty;
     
-    // Item Note Row Guard
     if (document.getElementById('revItemNoteRow')) {
       document.getElementById('revItemNoteRow').style.display = iNote ? 'flex' : 'none';
       if (document.getElementById('revItemNote')) document.getElementById('revItemNote').textContent = ' ' + iNote;
@@ -1027,7 +976,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       document.getElementById('revPrice').textContent = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
     }
 
-    // FIX: Always render the correct destination type regardless of the row's display state
     if (document.getElementById('revAction')) {
       document.getElementById('revAction').textContent = this.currentItemAction;
     }
@@ -1035,7 +983,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       document.getElementById('revActionRow').style.display = this.currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
     }
     
-    // Customer Tag Row Guard
     let tagRow = document.getElementById('rowCustomerTag');
     let revTagRow = document.getElementById('revCustomerTagRow');
     if (tagRow && tagRow.style.display !== 'none' && revTagRow) {
@@ -1045,7 +992,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       revTagRow.style.display = 'none'; 
     }
 
-    // GTIN Difference Banner Guard
     let diffBanner = document.getElementById('gtinDiffBanner');
     let btnGtin = document.getElementById('btnConfirmGtin');
     if (this.currentMatchedItem && gtin && gtin !== "N/A" && this.currentMatchedItem.gtin !== gtin) {
@@ -1065,7 +1011,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
     }
 
-    // Transition Screens
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'block';
   },
@@ -1092,40 +1037,27 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const cTag = this.getCombinedCustomerTag();
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-    // ==========================================
-    // GATE 1: STRICT LOOKUP & NORMALIZATION
-    // ==========================================
     let matchedDbItem;
     try {
       matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
     } catch (error) {
       UIManager.showCustomAlert("Validation Error", error.message, true);
-      return; // HARD STOP: Prevent saving if item doesn't exist
+      return; 
     }
 
-    // ==========================================
-    // GATE 2: UOM MULTIPLIER (BOX TO EACH)
-    // ==========================================
     let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty);
     
     if (uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
       if (typeof UIManager !== 'undefined') {
           UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${ref.toUpperCase()}) Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
       }
-      // Nullify GTIN since we are converting a Box scan to an EACH ledger entry
       rawGtin = "N/A"; 
-      
-      // Re-acquire the parent EACH item from the database
       matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
     }
 
-    // Apply the mathematical results
     ref = uomResult.trueRef;
     qty = uomResult.trueQty;
 
-    // ==========================================
-    // DETERMINE WORKFLOW ACTION TAG
-    // ==========================================
     let effectiveTag = this.currentItemAction;
     if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
       if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
@@ -1133,28 +1065,19 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       else effectiveTag = 'Inventory';
     }
 
-    // ==========================================
-    // GATE 3: AVAILABILITY VALIDATION
-    // ==========================================
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
       InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTag, currentAllocations);
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
-        // Strip the warning flag and ask the user
         let userConfirmed = confirm(error.message.replace('OVERPACK_WARNING: ', ''));
-        if (!userConfirmed) return; // Stop if they click Cancel
-        
-        // If they click OK, the code just naturally continues down to the save block
+        if (!userConfirmed) return; 
       } else {
         UIManager.showCustomAlert("Inventory Error", error.message, true);
-        return; // HARD STOP for actual errors
+        return; 
       }
     }
 
-    // ==========================================
-    // ALL GATES PASSED: PROCEED WITH SAVING
-    // ==========================================
     const desc = DatabaseManager.getItemDesc(matchedDbItem) || "Navigate to vendor website for item description.";
     const price = (matchedDbItem && matchedDbItem.price) ? matchedDbItem.price : "$0.00";
         
@@ -1164,7 +1087,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (val) rawBarcodesGathered.push(val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, ''));
     }
 
-    // LIVE GTIN SYNC
     if (this.currentMatchedItem && rawGtin && rawGtin !== "N/A" && !this.currentMatchedItem.gtin) {
       this.currentMatchedItem.gtin = rawGtin;
       let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
@@ -1183,7 +1105,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       price: price,
       qty: qty,
       rawScanLines: rawBarcodesGathered,
-      isNew: false, // It can never be new if it passed Gate 1
+      isNew: false, 
       customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTag : ''),
       itemNote: iNote
     });
@@ -1274,7 +1196,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let mfr = input.getAttribute('data-mfr');
       
       if (rawDesc && rawDesc !== "Navigate to vendor website for item description.") {
-        // Automatically inject the Manufacturer and REF into the saved string
         let newDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
         
         let pendingItem = this.pendingNewItems.find(i => i.ref === ref);
@@ -1334,7 +1255,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   completeSession(skipConfirm = false) {
     const executeCompletion = () => {
-      // NEW: Aggressive Auto-Save from the Summary Screen DOM
       this.scannedObjects.forEach((item, index) => {
         let qtyEl = document.getElementById(`editQty_${index}`);
         let tagEl = document.getElementById(`editTag_${index}`);
@@ -1343,19 +1263,16 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           if (tagEl) {
             let newTag = tagEl.value.trim().toUpperCase();
             item.customerTag = newTag;
-            // Force the action tag to Reserved if a customer tag was added during a Receiving session
             if (newTag && this.currentWorkflowType.includes('Receiving')) {
               item.actionTag = 'Reserved';
             }
           }
         }
       });
-      // Save the aggressively scraped data back to memory before the math runs
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
 
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
 
-      // Ensure manifest override logic runs before handing off to the engine
       this.scannedObjects.forEach(item => {
         if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
            let manifestItem = this.expectedManifest.find(m => m.ref === item.ref.toUpperCase());
@@ -1365,9 +1282,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         }
       });
 
-      // ==========================================
-      // GATE 4: FINAL LEDGER COMMIT
-      // ==========================================
       let ledgerResult = InventoryEngine.commitLedgerMath(
         this.scannedObjects, 
         DatabaseManager.db, 
@@ -1375,11 +1289,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         this.currentWorkflowType
       );
 
-      // Save the mathematically validated allocations
       localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
       this.syncAllocationsToCloud();
 
-      // Apply pending updates
       if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
         this.pendingFieldUpdates.forEach(update => { 
           let dbItem = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); 
@@ -1393,7 +1305,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         });
       }
       
-      // Save the mathematically validated database
       DatabaseManager.db = ledgerResult.updatedDb;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       
@@ -1402,7 +1313,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
       }
 
-      // Cleanup & UI Reset
       this.pendingNewItems = []; this.pendingFieldUpdates = [];
       localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
       localStorage.setItem('asp_pending_updates', JSON.stringify([]));
@@ -1441,7 +1351,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let chkNote = document.getElementById('chkSessionNote');
     let noteVal = noteEl ? noteEl.value.trim() : '';
     
-    // Enforce mandatory note for Full Stocktakes
     if (this.currentWorkflowType === 'Full Stocktake' && (!chkNote.checked || !noteVal)) {
       alert("A mandatory Session Note is required to commit a Full Stocktake (e.g., 'Q3 Inventory Audit'). Please check 'Add Session Note' and provide a reason.");
       return;
@@ -1455,7 +1364,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       scannedTotals[item.ref] += item.qty;
     });
 
-    // CALCULATE VARIANCE
     let varianceData = [];
     let netFinancialImpact = 0;
 
@@ -1464,7 +1372,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let expected = dbItem.onHand || 0;
       let counted = scannedTotals[sku] || 0;
       
-      // If it's a Selection stocktake, ignore items we didn't count
       if (this.currentWorkflowType !== 'Full Stocktake' && scannedTotals[sku] === undefined) return;
 
       let variance = counted - expected;
@@ -1478,11 +1385,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       }
     });
 
-    // Apply to DB logic (Reset counts & clear legacy reservations on Full Stocktake)
     if (this.currentWorkflowType === 'Full Stocktake') {
       DatabaseManager.db.forEach(dbItem => {
         dbItem.onHand = 0;
-        dbItem.reservedQty = 0; // <--- Clears old customer reservation tags on full stocktake
+        dbItem.reservedQty = 0; 
       });
     } else {
       Object.keys(scannedTotals).forEach(ref => {
@@ -1491,7 +1397,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       });
     }
 
-    // Add the new counts
     Object.keys(scannedTotals).forEach(ref => {
       let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
       if (dbItem) {
@@ -1502,14 +1407,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
     alert("Stocktake successfully committed to the master database!");
     
-    // Generate ONLY the Variance Report PDF (no multi-download conflicts)
     if (varianceData.length > 0) {
       ReportsManager.generateVarianceReportPDF(varianceData, this.currentWorkflowType, netFinancialImpact);
     } else {
       alert("No variances detected! Your physical counts match the system perfectly.");
     }
     
-    // Cleanly close the session without triggering another export
     setTimeout(() => { this.completeSession(true); }, UIManager.printTimeout);
   },
 
@@ -1520,7 +1423,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
     localStorage.setItem('asp_pending_updates', JSON.stringify([]));
     
-    // Cleanup UI
     let recList = document.getElementById('manifestReconcileList');
     let recCard = document.getElementById('manifestReconcileCard');
     if (recList) recList.innerHTML = '';
@@ -1543,12 +1445,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.saveToArchive('Pending');
   },
 
-  // ==========================================
-  // SESSION ARCHIVE ENGINE
-  // ==========================================
   saveToArchive(status = 'Pending') { 
     if (!this.sessionId || this.scannedObjects.length === 0) return;
-    // ... rest of the function remains the same
     
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     let sessionObj = {
@@ -1572,16 +1470,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (existingIdx > -1) archive[existingIdx] = sessionObj;
     else archive.unshift(sessionObj);
 
-    // Auto-delete sessions older than 30 days (2592000000 ms)
     let cutoff = Date.now() - 2592000000;
     archive = archive.filter(s => s.lastUpdated > cutoff);
     
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
 
-    // NEW: Auto-push to Google Sheets if the session is finished!
     if (status === 'Completed') {
       this.pushToCloudArchive(sessionObj);
-      this.pushQboWriteBack(sessionObj); // <--- ADD THIS LINE
+      this.pushQboWriteBack(sessionObj); 
     }
   },
 
@@ -1696,7 +1592,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   renderArchiveList() {
     const container = document.getElementById('archiveListContainer');
     
-    // Choose source based on the active tab
     let rawList = [];
     if (this.currentArchiveTab === 'local') {
       rawList = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
@@ -1717,10 +1612,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (filterVal === 'today') cutoff = Date.now() - (24 * 60 * 60 * 1000);
     else if (filterVal === 'week') cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
     else if (filterVal === 'month') cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    else cutoff = 0; // 'all' time
+    else cutoff = 0; 
 
     let filtered = rawList.filter(s => {
-      // Allow legacy/cloud sessions without a strict lastUpdated timestamp to bypass the cutoff
       if (cutoff > 0 && s.lastUpdated && s.lastUpdated < cutoff) return false;
       if (hideCancelled && s.status === 'Cancelled') return false;
       if (onlyActive && s.status !== 'Pending') return false; 
@@ -1739,7 +1633,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let itemsPreview = '';
       let isCloud = s.isCloud === true;
 
-      // Local sessions have item details; Cloud directory is lightweight
       if (!isCloud && s.scannedObjects) {
         itemsPreview = s.scannedObjects.map(item => `<li>${item.qty}x ${item.ref}</li>`).join('');
         if(!itemsPreview) itemsPreview = '<li>No items scanned</li>';
@@ -1794,7 +1687,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let sessionData = null;
 
     if (isCloud) {
-      // Target Fetch via Google Apps Script
       try {
         let overlay = document.createElement('div');
         overlay.id = 'downloadOverlay';
@@ -1818,7 +1710,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         return;
       }
     } else {
-      // Local Fetch
       let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
       sessionData = archive.find(x => x.id === id);
     }
@@ -1837,7 +1728,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.sessionDateStr = sessionData.dateStr;
     this.sessionStartStr = sessionData.startStr;
     
-    // NEW: Replace generic legacy timestamps with the actual current time
     if (this.sessionStartStr === 'Historical Import') {
       this.sessionStartStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
@@ -1848,7 +1738,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.pendingNewItems = sessionData.pendingNewItems || [];
     this.pendingFieldUpdates = sessionData.pendingUpdates || [];
 
-    // NEW: Reset the internal action state to match the restored workflow
     if (this.currentWorkflowType.includes('Packing')) {
       this.currentItemAction = 'Pack & Ship';
     } else if (this.currentWorkflowType.includes('Reserving')) {
@@ -1857,7 +1746,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       this.currentItemAction = 'Inventory';
     }
 
-    // Save everything locally so they can work on it
     localStorage.setItem('asp_session_id', this.sessionId);
     localStorage.setItem('asp_session_is_active', 'true');
     localStorage.setItem('asp_user_name', this.currentUserName);
@@ -1885,12 +1773,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.renderArchiveList();
   },
 
-  // ==========================================
-  // QBO BIDIRECTIONAL WRITE-BACK
-  // ==========================================
   async pushQboWriteBack(sessionObj) {
-    // This now correctly points to the Medline/Suture Script
-    if (!this.googleFeederUrl || this.googleFeederUrl.includes("YOUR_")) return; 
+    if (!this.getActiveFeederUrl() || this.getActiveFeederUrl().includes("YOUR_")) return; 
     
     if (!sessionObj.workflowType.includes('Packing') || !sessionObj.orderNum) return;
     
@@ -1900,7 +1784,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     };
 
     try {
-      await fetch(this.googleFeederUrl, { // <--- Routing to the correct script
+      await fetch(this.getActiveFeederUrl(), { 
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1918,15 +1802,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         let val = e.target.value.trim().toUpperCase();
         if (!val) return;
         
-        // Search the fetched QBO feed for a matching invoice/PO number
         let match = Object.keys(this.fetchedStagedData).find(key => key.toUpperCase().includes(val));
         
         if (match) {
           let isDone = this.fetchedStagedData[match].isCompleted === true;
-          if (isDone) return; // Skip if already completed
+          if (isDone) return; 
 
           if (confirm(`📦 Order ${val} found in the QBO Feed!\n\nWould you like to auto-fill the customer and pre-load the expected items for packing?`)) {
-            // Auto-select the Customer
             let customerName = match.split('-')[0].trim();
             let custSelect = document.getElementById('customerSelect');
             if (custSelect) {
@@ -1934,28 +1816,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
                if (opt) custSelect.value = opt.value;
             }
             
-            // Auto-set the workflow and trigger the manifest load
             document.getElementById('workflowTypeSelect').value = 'Picking & Packing';
             document.getElementById('chkPreloadManifest').checked = true;
             this.loadSelectedStagedOrder(match);
           }
         }
-      });
-    }
-  },
-
-  applyTestingModeVisuals(isTestActive) {
-    if (isTestActive) {
-      document.body.style.backgroundColor = '#fff3e0'; // Warm orange
-      document.querySelectorAll('.card').forEach(card => {
-        card.style.borderColor = '#ff9800';
-        card.style.backgroundColor = '#e1f5fe'; // Light blue
-      });
-    } else {
-      document.body.style.backgroundColor = '';
-      document.querySelectorAll('.card').forEach(card => {
-        card.style.borderColor = '';
-        card.style.backgroundColor = '';
       });
     }
   }
