@@ -217,19 +217,6 @@ const DatabaseManager = {
     return null;
   },
 
-  // --- NEW: FACTORY RESET UTILITY ---
-  factoryResetDatabase() {
-    if(!confirm("⚠️ WARNING: Are you sure you want to wipe this device's local memory and reset the database back to the original database.json file?")) return;
-    localStorage.removeItem('asp_wh_db');
-    this.db = [];
-    this.init().then(() => {
-      alert("Local memory scrubbed and reset to factory defaults!");
-      if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
-         this.renderDbGridEditor(); 
-      }
-    });
-  },
-
   // --- UPDATED: TEXT-WRAP GRID EDITOR WITH ADMIN-LOCKED COST & PRICE ---
   renderDbGridEditor() {
     const tbody = document.getElementById('dbGridBody');

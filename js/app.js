@@ -52,9 +52,33 @@ async function checkAppUpdates() {
   }
 
   // If no new update was detected on the server
-  alert("✓ You are already running the latest version of ASP Scanner!");
+  alert("✓ You are already running the latest version of ASP IMS!");
   if (btn) btn.textContent = "🔄 Check for Updates";
 }
+
+async function forceAppUpdate() {
+  if (!confirm("Are you sure you want to force an update?\n\nThis will clear the offline cache and reload the application from the server.")) return;
+  
+  if ('caches' in window) {
+    try {
+      let cacheNames = await caches.keys();
+      for (let name of cacheNames) {
+        if (name.startsWith('asp-scanner-')) {
+          await caches.delete(name);
+        }
+      }
+      alert("Offline cache cleared! Reloading...");
+      window.location.reload(true);
+    } catch (err) {
+      alert("Error clearing cache: " + err.message);
+    }
+  } else {
+    window.location.reload(true);
+  }
+}
+
+// Don't forget to expose it to the window! Add this near the bottom of app.js with the other window bindings:
+window.forceAppUpdate = () => forceAppUpdate();
 
 window.onload = async () => { 
   if (typeof ComponentManager !== 'undefined') {

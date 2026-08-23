@@ -1,6 +1,6 @@
 {
-  "name": "ASP Scanner v3.7.8",
-  "short_name": "ASP Scanner",
+  "name": "ASP Inventory Management System",
+  "short_name": "ASP IMS",
   "description": "Allied Surgical Products Warehouse Inventory Scanner & Management System",
   "start_url": "./index.html",
   "display": "standalone",

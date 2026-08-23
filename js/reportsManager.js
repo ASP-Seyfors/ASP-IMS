@@ -251,7 +251,7 @@ const ReportsManager = {
 
   async generateEndOfWeekReport() {
     let btn = document.getElementById('btnEndOfWeek');
-    let origText = btn ? btn.textContent : "📊 Generate Cloud Report (Last 7 Days)";
+    let origText = btn ? btn.textContent : "📊 Generate the End of the Week (Last 7 Days) Report";
     if (btn) { btn.textContent = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
 
     try {
@@ -288,17 +288,38 @@ const ReportsManager = {
       let totalItems = 0;
       let uniqueRefs = new Set();
       let sessionsByDate = {};
+      let newlyAddedRefs = new Set();
+      let totalRevenue = 0;
+      
+      let testKeywords = ["TEST SUPPLIER", "ASP_INTERNAL", "ASP_TESTER", "ASP_TESTER2", "TESTER"];
 
       filteredLogs.forEach(row => {
         let sessionName = row['Session / Reason'] || 'Unknown Session';
+        
+        // EXCLUDE TEST SESSIONS
+        let upperSession = sessionName.toUpperCase();
+        let isTest = testKeywords.some(kw => upperSession.includes(kw)) || upperSession === "TEST" || upperSession.startsWith("TEST ");
+        if (isTest) return;
+
         let workflow = row['Workflow'] || '';
         let dateStr = row['Timestamp'].split(' ')[0];
         let qty = parseInt(row['Qty Moved'], 10) || 0;
         let ref = row['REF / SKU'] || '';
+        let priceStr = String(row['Price'] || '').replace(/[^0-9.-]+/g, '');
+        let price = parseFloat(priceStr) || 0;
 
         sessionsSet.add(sessionName);
         if (workflow.includes('Receiving')) inboundSessions.add(sessionName);
-        if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) outboundSessions.add(sessionName);
+        if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) {
+            outboundSessions.add(sessionName);
+            totalRevenue += (Math.abs(qty) * price);
+        }
+        
+        // Check if the item was added in this log
+        let notes = row['Destination / Action'] || '';
+        if (workflow.includes('New Item Added') || notes.includes('New Item Added')) {
+            newlyAddedRefs.add(ref); 
+        }
         
         if (ref && ref !== 'N/A') {
           totalItems += Math.abs(qty);
@@ -309,34 +330,89 @@ const ReportsManager = {
         sessionsByDate[dateStr].add(sessionName);
       });
 
-      // 4. Build the HTML output
-      let auditedSessionsHtml = '';
-      let sortedDates = Object.keys(sessionsByDate).sort().reverse(); // Newest first
-      sortedDates.forEach(d => {
-        auditedSessionsHtml += `<h4 style="margin: 10px 0 4px 0; color: #333; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 2px;">📅 ${d}</h4><ul class="session-list">`;
-        Array.from(sessionsByDate[d]).sort().forEach(s => {
-          auditedSessionsHtml += `<li>${s}</li>`;
+      // Calculate customer bins directly from live cloud allocations, or local storage as fallback
+      let rawAllocations = localStorage.getItem('asp_allocations') || '{}';
+      let allocationsObj = JSON.parse(rawAllocations);
+      
+      let binsHtml = '';
+      let customersWithStock = Object.keys(allocationsObj).sort();
+      if (customersWithStock.length === 0) {
+        binsHtml = '<div style="font-size:11px; color:#777; font-style:italic;">No active reservations found.</div>';
+      } else {
+        customersWithStock.forEach(cust => {
+            let items = allocationsObj[cust];
+            let totalCustItems = 0;
+            let rowsHtml = '';
+            Object.keys(items).sort().forEach(ref => {
+                let qty = items[ref];
+                totalCustItems += qty;
+                rowsHtml += `<tr><td style="padding:4px 8px; border:1px solid #eee;">${ref}</td><td style="padding:4px 8px; border:1px solid #eee; text-align:center; font-weight:bold;">${qty}</td></tr>`;
+            });
+            binsHtml += `
+            <div style="margin-bottom: 15px; border: 1px solid #bfe0fb; border-radius: 4px; padding: 10px; background: #fff;">
+              <div style="color: #0277bd; font-weight: bold; font-size: 14px; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
+                ${cust} <span style="float:right; color:#2e7d32;">Total Items: ${totalCustItems}</span>
+              </div>
+              <table style="width:100%; border-collapse: collapse; font-size: 12px;">
+                <tr style="background:#f0f8ff;"><th style="text-align:left; padding:4px 8px;">REF</th><th style="text-align:center; padding:4px 8px;">Reserved Qty</th></tr>
+                ${rowsHtml}
+              </table>
+            </div>`;
         });
-        auditedSessionsHtml += `</ul>`;
+      }
+
+      // Check local pending new items for any that were created this week
+      let localNewItems = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
+      localNewItems.forEach(item => {
+        newlyAddedRefs.add(item.ref);
       });
 
+      // 4. Build the HTML output
+      let auditedSessionsHtml = '';
+      let sortedDates = Object.keys(sessionsByDate).sort().reverse(); 
+      if (sortedDates.length > 0) {
+        sortedDates.forEach(d => {
+          auditedSessionsHtml += `<h4 style="margin: 10px 0 4px 0; color: #333; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 2px;">📅 ${d}</h4><ul class="session-list">`;
+          Array.from(sessionsByDate[d]).sort().forEach(s => {
+            auditedSessionsHtml += `<li>${s}</li>`;
+          });
+          auditedSessionsHtml += `</ul>`;
+        });
+      } else {
+        auditedSessionsHtml = '<div style="font-size:11px; color:#777; font-style:italic;">No non-test sessions logged this week.</div>';
+      }
+
       let generatedDate = new Date().toLocaleDateString();
-      let dateRangeStr = `${sortedDates[sortedDates.length - 1]} to ${sortedDates[0]}`;
-      // Note: We intentionally do NOT append ".pdf" here so Chrome handles the extension correctly
+      let dateRangeStr = sortedDates.length > 0 ? `${sortedDates[sortedDates.length - 1]} to ${sortedDates[0]}` : generatedDate;
       let baseFilename = `ASP_End_of_Week_Report_(${dateRangeStr.replace(/\//g, '.')})`;
+
+      let newRefsHtml = '';
+      if (newlyAddedRefs.size > 0) {
+        newRefsHtml = `<ul style="column-count: 3; list-style-type: square; margin-top: 10px;">`;
+        Array.from(newlyAddedRefs).sort().forEach(r => {
+            newRefsHtml += `<li><strong style="color:#0277bd;">${r}</strong></li>`;
+        });
+        newRefsHtml += `</ul>`;
+      } else {
+        newRefsHtml = `<div style="font-size:11px; color:#777; font-style:italic;">No new REFs added this week.</div>`;
+      }
 
       let html = `<!DOCTYPE html><html><head><title>ASP End of Week Report</title>
       <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
         .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
         h1 { margin:0; color:#0277bd; font-size:20px; text-transform:uppercase; }
-        h3 { color: #0277bd; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 20px;}
+        h3 { color: #0277bd; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 25px;}
         .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .kpi-box { background: #f0f8ff; border: 1px solid #bfe0fb; padding: 15px; border-radius: 6px; text-align: center; }
         .kpi-val { font-size: 20px; font-weight: bold; color: #0277bd; display: block; margin-top: 5px; }
+        .kpi-rev { font-size: 20px; font-weight: bold; color: #2e7d32; display: block; margin-top: 5px; }
         ul { column-count: 2; margin: 0; padding-left: 20px; }
         li { margin-bottom: 4px; font-family: monospace; font-size: 11px; color: #555; }
         .session-list { column-count: 1; list-style-type: square; }
+        @media print {
+            .page-break { page-break-before: always; }
+        }
       </style></head><body>
 
       <div class="header">
@@ -350,15 +426,25 @@ const ReportsManager = {
       </div>
 
       <div class="kpi-grid">
-        <div class="kpi-box">Sessions Logged<span class="kpi-val">${sessionsSet.size}</span></div>
-        <div class="kpi-box">Incoming Shipments<span class="kpi-val">${inboundSessions.size}</span></div>
-        <div class="kpi-box">Outgoing Orders<span class="kpi-val">${outboundSessions.size}</span></div>
-        <div class="kpi-box">Total Items Handled<span class="kpi-val">${totalItems}</span></div>
+        <div class="kpi-box">Total Items Scanned<span class="kpi-val">${totalItems}</span></div>
         <div class="kpi-box">Unique REFs Touched<span class="kpi-val">${uniqueRefs.size}</span></div>
+        <div class="kpi-box">New REFs Added<span class="kpi-val">${newlyAddedRefs.size}</span></div>
+        
+        <div class="kpi-box">Sessions Logged<span class="kpi-val">${sessionsSet.size}</span></div>
+        <div class="kpi-box">Outgoing Orders Packed<span class="kpi-val">${outboundSessions.size}</span></div>
+        <div class="kpi-box">Total Revenue (Packed)<span class="kpi-rev">$${totalRevenue.toFixed(2)}</span></div>
       </div>
+
+      <h3>✨ NEW REFS ADDED THIS WEEK</h3>
+      ${newRefsHtml}
 
       <h3>📄 AUDITED SESSIONS (${sessionsSet.size})</h3>
       ${auditedSessionsHtml}
+
+      <div class="page-break"></div>
+      <h3>📦 CURRENT CUSTOMER RESERVED BINS</h3>
+      <p style="font-size: 11px; color: #555; margin-top: -10px;">The following physical items are currently allocated and in reserved bins.</p>
+      ${binsHtml}
 
       </body></html>`;
 
@@ -371,7 +457,7 @@ const ReportsManager = {
         document.body.appendChild(iframe);
       }
       
-      let safeTitle = baseFilename.replace(/\./g, '\u2024'); // Magic Dot implementation
+      let safeTitle = baseFilename.replace(/\./g, '\u2024'); 
       
       let doc = iframe.contentWindow.document;
       doc.open();
