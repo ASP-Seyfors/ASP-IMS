@@ -86,39 +86,7 @@ const InventoryEngine = {
 
     return true;
   },
-
-  /**
-   * GATE 4: AVAILABILITY VALIDATION
-   * Prevents over-packing or reserving stock that doesn't exist.
-   */
-  validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations) {
-    let dbItem = currentDb.find(i => (i.sku || i.ref || '').toUpperCase() === trueRef);
-    if (!dbItem) throw new Error(`HARD ERROR: Parent item ${trueRef} missing from database.`);
-
-    let onHand = parseInt(dbItem.onHand, 10) || 0;
-    let reserved = parseInt(dbItem.reservedQty, 10) || 0;
-    let available = onHand - reserved;
-
-    // Rule: Cannot Pick & Reserve more than what is available on the shelf
-    if (action === 'Reserved') {
-      if (requestedQty > available) {
-        throw new Error(`HARD ERROR: Insufficient stock. You are trying to reserve ${requestedQty}, but only ${available} are available.`);
-      }
-    }
-
-    // Rule: Cannot Pack & Ship more than what is specifically allocated to that customer
-    if (action === 'Pack & Ship') {
-      let custTagUpper = (customerTag || '').toUpperCase();
-      let allocatedToCust = (currentAllocations[custTagUpper] && currentAllocations[custTagUpper][trueRef]) ? currentAllocations[custTagUpper][trueRef] : 0;
-      
-      if (requestedQty > allocatedToCust) {
-        throw new Error(`HARD ERROR: Allocation mismatch. You are trying to pack ${requestedQty} for ${custTagUpper}, but they only have ${allocatedToCust} reserved.`);
-      }
-    }
-
-    return true;
-  },
-
+  
   /**
    * GATE 5: FINAL LEDGER COMMIT
    * Executes the exact addition and subtraction math for the database

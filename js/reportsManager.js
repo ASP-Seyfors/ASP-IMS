@@ -517,8 +517,8 @@ const ReportsManager = {
         return avail > 0 && numPrice > 0;
       });
     }
-
-    let csvContent = "data:text/csv;charset=utf-8,MANUFACTURER,REF/SKU,DESCRIPTION,GTIN,PRICE,COST,TOTAL QTY,RESERVED QTY,AVAILABLE QTY\r\n";
+    
+    let csvContent = "MANUFACTURER,REF/SKU,DESCRIPTION,GTIN,PRICE,COST,TOTAL QTY,RESERVED QTY,AVAILABLE QTY\r\n";
     
     filtered.forEach(item => {
       let mfr = String(item.mfr || 'UNKNOWN').replace(/"/g, '""');

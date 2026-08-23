@@ -44,6 +44,8 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         if(typeof DatabaseManager !== 'undefined') DatabaseManager.db = [];
         
         SessionManager.applyTestingModeVisuals(isChecked);
+
+        chkEl.checked = isChecked;
         
         // Return home so they can sync
         if(document.getElementById('screenSettings')) document.getElementById('screenSettings').style.display = 'none';

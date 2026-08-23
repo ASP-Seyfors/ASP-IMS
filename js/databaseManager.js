@@ -55,6 +55,14 @@ const DatabaseManager = {
           this.vendors = jsonContent.vendors;
           localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
         }
+        if (jsonContent.customers && jsonContent.customers.length > 0) {
+          this.customers = jsonContent.customers;
+          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        }
+        if (jsonContent.suppliers && jsonContent.suppliers.length > 0) {
+          this.suppliers = jsonContent.suppliers;
+          localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+        }
       } else {
         console.warn("Notice: External database.json not found, using local cache.");
       }
