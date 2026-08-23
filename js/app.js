@@ -227,3 +227,5 @@ window.exportThriveProducts = () => AuditManager.exportThriveProducts();
 
 window.exportShopifyProducts = () => AuditManager.exportShopifyProducts();
 window.exportShopifyInventory = () => AuditManager.exportShopifyInventory();
+
+window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);

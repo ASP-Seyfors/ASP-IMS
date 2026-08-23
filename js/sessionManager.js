@@ -1802,24 +1802,31 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         let val = e.target.value.trim().toUpperCase();
         if (!val) return;
         
+        // STRICT CHECK: Only trigger for Orders that are Picking & Packing
+        let typeRadio = document.querySelector('input[name="sessionType"]:checked');
+        let wType = document.getElementById('workflowTypeSelect').value;
+        if (!typeRadio || typeRadio.value !== 'Order' || wType !== 'Picking & Packing') return;
+        
         let match = Object.keys(this.fetchedStagedData).find(key => key.toUpperCase().includes(val));
         
         if (match) {
           let isDone = this.fetchedStagedData[match].isCompleted === true;
           if (isDone) return; 
 
-          if (confirm(`📦 Order ${val} found in the QBO Feed!\n\nWould you like to auto-fill the customer and pre-load the expected items for packing?`)) {
-            let customerName = match.split('-')[0].trim();
-            let custSelect = document.getElementById('customerSelect');
-            if (custSelect) {
-               let opt = Array.from(custSelect.options).find(o => o.value.toUpperCase() === customerName.toUpperCase());
-               if (opt) custSelect.value = opt.value;
+          UIManager.showCustomConfirm(
+            "Order Found",
+            `📦 Order ${val} found in the QBO Feed!\n\nWould you like to auto-fill the customer and pre-load the expected items for packing?`,
+            () => {
+              let customerName = match.split('-')[0].trim();
+              let custSelect = document.getElementById('customerSelect');
+              if (custSelect) {
+                 let opt = Array.from(custSelect.options).find(o => o.value.toUpperCase() === customerName.toUpperCase());
+                 if (opt) custSelect.value = opt.value;
+              }
+              document.getElementById('chkPreloadManifest').checked = true;
+              this.loadSelectedStagedOrder(match);
             }
-            
-            document.getElementById('workflowTypeSelect').value = 'Picking & Packing';
-            document.getElementById('chkPreloadManifest').checked = true;
-            this.loadSelectedStagedOrder(match);
-          }
+          );
         }
       });
     }

@@ -30,6 +30,19 @@
     </div>
   </div>
 
+  <!-- E-Commerce & Master Data Exports -->
+  <div style="background: #e0f7fa; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #01579b;">🛒 E-Commerce & Master Exports</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveCreates()">➕ Thrive Bulk Create</button>
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveVariants()">🏷️ Thrive Edit Variants</button>
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveProducts()">📝 Thrive Edit Products</button>
+      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportShopifyProducts()">🛍️ Shopify Products</button>
+      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportShopifyInventory()">📦 Shopify Inventory</button>
+      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.exportUpdatedDatabaseJSON()">💾 Download JSON DB</button>
+    </div>
+  </div>
+
   <!-- Expiration Warnings -->
   <div style="background: #fff3e0; border: 1px solid #ffcc80; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #e65100;">Expiration Risk Reports (FEFO)</h4>

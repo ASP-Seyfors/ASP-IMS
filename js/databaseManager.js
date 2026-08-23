@@ -241,7 +241,12 @@ const DatabaseManager = {
       });
     }
 
-    let dbCopy = this.db.map(i => ({ ...i, category: i.category || '', cost: i.cost || '$0.00' }))
+    let dbCopy = this.db.map(i => ({ 
+        ...i, 
+        category: i.category || '', 
+        cost: i.cost || '$0.00',
+        status: i.status ? i.status.toUpperCase() : 'ACTIVE' 
+      }))
       .filter(i => {
         let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
         let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;

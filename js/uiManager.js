@@ -14,6 +14,48 @@
  * ======================================================================= */
 const UIManager = {// GLOBAL CONFIGURATIONS
   printTimeout: 1600,
+
+  handleSandboxToggle(chkEl) {
+    let isChecked = chkEl.checked;
+    
+    // Check if there is pending data that hasn't been pushed
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let pendingSessions = archive.filter(s => s.status === 'Pending' || (s.status === 'Completed' && !s.isSynced));
+    let pendingNew = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
+    let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
+
+    if (pendingSessions.length > 0 || pendingNew.length > 0 || pendingUpd.length > 0) {
+      this.showCustomAlert("Action Blocked", "You have pending sessions or un-synced database edits! Please upload or purge your local history before switching environments.", true);
+      chkEl.checked = !isChecked; // Revert the checkbox visually
+      return;
+    }
+
+    this.showCustomConfirm(
+      "Switch Environments?", 
+      "Switching between Production and Sandbox will completely wipe this device's local memory to prevent cross-contamination.\n\nYou will need to click 'Sync System' afterward to download the correct database.", 
+      () => {
+        // CONFIRMED: Wipe the memory
+        localStorage.removeItem('asp_wh_db');
+        localStorage.removeItem('asp_session_archive');
+        localStorage.removeItem('asp_allocations');
+        localStorage.removeItem('asp_pending_new_items');
+        localStorage.removeItem('asp_pending_updates');
+        localStorage.removeItem('asp_last_cloud_sync');
+        if(typeof DatabaseManager !== 'undefined') DatabaseManager.db = [];
+        
+        SessionManager.applyTestingModeVisuals(isChecked);
+        
+        // Return home so they can sync
+        if(document.getElementById('screenSettings')) document.getElementById('screenSettings').style.display = 'none';
+        if(document.getElementById('screenSetup')) document.getElementById('screenSetup').style.display = 'block';
+        
+        setTimeout(() => alert("Environment switched successfully. Local memory wiped.\n\nPlease click 'Sync System' now."), 300);
+      }
+    );
+    
+    // Revert visually immediately until they confirm
+    chkEl.checked = !isChecked; 
+  },
   
   // POPULATE CUSTOMER REPORT SELECTOR FROM MASTER CUSTOMER LIST
   populateCustomerDropdown() {

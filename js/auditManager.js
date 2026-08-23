@@ -852,14 +852,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludePriceInReport" checked> Include Unit Price</label>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <div style="font-weight:bold; font-size:0.85rem; color:#555;">Report Line Items:</div>
-          <div style="font-size:0.8rem; display:flex; gap:10px;">
-            <label style="cursor:pointer;"><input type="radio" name="histLimit" value="10" ${top10Checked} onchange="AuditManager.openCustomerStockReportEditor('10')"> Top 10 Items</label>
-            <label style="cursor:pointer;"><input type="radio" name="histLimit" value="all" ${allChecked} onchange="AuditManager.openCustomerStockReportEditor('all')"> All Historical Items</label>
-          </div>
-        </div>
-
         <div id="reportItemRowsContainer">${rowsHtml}</div>
         <button onclick="AuditManager.addBlankRowToReportEditor()" style="background:#0277bd; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.8rem; margin-top:8px; cursor:pointer;">+ Add Item to Flyer</button>
 
@@ -2155,7 +2147,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     UIManager.showCustomAlert("Restore Complete", `✅ Database successfully rebuilt!\n\nReplayed ${sessionsToReplay.length} historical sessions to establish exact current stock levels.`);
   },
 
-  traceLotNumber() {
+  async traceLotNumber() {
     let inputEl = document.getElementById('lotSearchInput');
     let resultsContainer = document.getElementById('lotTraceResults');
     if (!inputEl || !resultsContainer) return;
@@ -2163,48 +2155,53 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let targetLot = inputEl.value.trim().toUpperCase();
     if (!targetLot) { alert("Please enter a Lot Number to trace."); return; }
 
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let cloudDir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
-    let allSessions = [...archive, ...cloudDir];
+    resultsContainer.innerHTML = '<div style="padding:15px; color:#0277bd; text-align:center;">⏳ Searching live cloud ledger...</div>';
 
-    let foundEvents = [];
+    try {
+      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let text = await res.text();
+      let responseData = JSON.parse(text);
+      
+      if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
 
-    allSessions.forEach(sess => {
-      if (sess.scannedObjects && Array.isArray(sess.scannedObjects)) {
-        sess.scannedObjects.forEach(item => {
-          if (item.lot && String(item.lot).toUpperCase() === targetLot) {
-            foundEvents.push({
-              sessionName: sess.sessionName || "Unknown Session",
-              workflow: sess.workflowType || "Unknown Workflow",
-              date: sess.dateStr || "Unknown Date",
-              user: sess.userName || "Operator",
-              qty: item.qty,
-              ref: item.ref,
-              actionTag: item.actionTag || item.customerTag || "Inventory"
-            });
-          }
-        });
+      let auditLog = responseData.data;
+      let foundEvents = [];
+
+      auditLog.forEach(row => {
+        let rLot = String(row['Lot'] || '').toUpperCase();
+        if (rLot && rLot.includes(targetLot)) {
+          foundEvents.push({
+            sessionName: row['Session / Reason'] || "Unknown Session",
+            workflow: row['Workflow'] || "Unknown Workflow",
+            date: row['Timestamp'] || "Unknown Date",
+            user: row['User'] || "Operator",
+            qty: row['Qty Moved'],
+            ref: row['REF / SKU'],
+            actionTag: row['Destination / Action']
+          });
+        }
+      });
+
+      if (foundEvents.length === 0) {
+        resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">No records found matching Lot Number: <strong>${targetLot}</strong></div>`;
+        return;
       }
-    });
 
-    if (foundEvents.length === 0) {
-      resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">No records found matching Lot Number: <strong>${targetLot}</strong></div>`;
-      return;
+      let html = `<div style="margin-top:10px; padding:10px; background:#e8f5e9; border:1px solid #4caf50; border-radius:4px;">
+                    <h4 style="margin:0 0 8px 0; color:#2e7d32;">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
+      foundEvents.forEach(ev => {
+        html += `<div style="background:#fff; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #0277bd; font-size:0.85rem;">
+                  <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
+                  <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                  <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
+                </div>`;
+      });
+      html += `</div>`;
+
+      resultsContainer.innerHTML = html;
+    } catch(err) {
+      resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching trace data: ${err.message}</div>`;
     }
-
-    let html = `<div style="margin-top:10px; padding:10px; background:#e8f5e9; border:1px solid #4caf50; border-radius:4px;">
-                  <h4 style="margin:0 0 8px 0; color:#2e7d32;">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
-    
-    foundEvents.forEach(ev => {
-      html += `<div style="background:#fff; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #0277bd; font-size:0.85rem;">
-                <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
-                <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
-                <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
-              </div>`;
-    });
-    html += `</div>`;
-
-    resultsContainer.innerHTML = html;
   },
 
   exportShopifyProducts() {

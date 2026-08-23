@@ -1,2548 +1,4653 @@
 {
   "vendors": [
-              "ARTHREX",
-              "BARD",
-              "BAXTER",
-              "BD",
-              "COOPER SURGICAL",
-              "COOPERSURG",
-              "COVIDIEN",
-              "ETHICON",
-              "INTEGRA",
-              "INTUITIVE",
-              "MEDTRONIC",
-              "SHARPOINT",
-              "SMITH & NEPHEW",
-              "STRYKER",
-              "+ Create New Vendor"
-              ],
-  "items":  [
-    {
-      "gtin": "00763000490140",
-      "ref": "MR8-14MH30",
-      "desc": "Medtronic Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 14cm x 3mm MR8-14MH30",
-      "price": "$0.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "30705031468102",
-      "ref": "1951S",
-      "desc": "Ethicon SURGICEL® Original Hemostat, 2x14 inches 1951S",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031015665",
-      "ref": "843H",
-      "desc": "Ethicon 2-0 GUT PLA\" YELLOWISH TAN 1X27\" CT-1 (BX/36) 843H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031058914",
-      "ref": "Y346H",
-      "desc": "Ethicon 0 MONOCRYL VIOLET 1X36\" CT-1 (BX/36) Y346H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043224",
-      "ref": "J839D",
-      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 8X18\" CT-1 CR (BX/12) J839D",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060917",
-      "ref": "Z423H",
-      "desc": "Ethicon 3-0 PDS II UNDYED 1X2\" FS-2 (BX/36) Z423H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031001682",
-      "ref": "1661G",
-      "desc": "Ethicon 5-0 ETHILON BLACK 1X18\" PS-4 (BX/12) 1661G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031017362",
-      "ref": "8581H",
-      "desc": "Ethicon 4-0 PROLENE BLUE 1X36\" BB DOUBLE ARMED (BX/36) 8581H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060764",
-      "ref": "Z358T",
-      "desc": "Ethicon 0 PDS II VIOLET 1X36\" CT (BX/24) Z358T",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031044306",
-      "ref": "K802H",
-      "desc": "Ethicon 6-0 PERMA HAND BLACK 1X18\" BV-1 (BX/36) K802H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031052677",
-      "ref": "VCP356H",
-      "desc": "Ethicon 3-0 COATED VICRYL PLUS VIOLET 1X36\" CT (BX/36) VCP356H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031059317",
-      "ref": "Y493G",
-      "desc": "Ethicon 5-0 MONOCRYL UNDYED 1X18\" P-3 (BX/12) Y493G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031002863",
-      "ref": "1893G",
-      "desc": "Ethicon 3-0 ETHILON BLACK 1X18\" PC-5 (BX/12) 1893G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038435",
-      "ref": "J269H",
-      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 1X27\" CT-2 (BX/36) J269H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031134717",
-      "ref": "VR834",
-      "desc": "Ethicon 5-0 VICRYL RAPIDE UNDYED 1X18\" PC-1 (BX/12) VR834",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031061969",
-      "ref": "Z970H",
-      "desc": "Ethicon 0 PDS II VIOLET 1X27\" CP-2 (BX/36) Z970H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038312",
-      "ref": "J259H",
-      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 1X27\" CT-1 (BX/36) J259H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031053193",
-      "ref": "VCP433H",
-      "desc": "Ethicon 5-0 COATED VICRYL PLUS UNDYED 1X27\" RB-2 (BX/36) VCP433H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031041398",
-      "ref": "J578G",
-      "desc": "Ethicon 6-0 COATED VICRYL VIOLET 1X8\" S-14 DOUBLE ARMED (BX/12) J578G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031041381",
-      "ref": "J576G",
-      "desc": "Ethicon 7-0 COATED VICRYL VIOLET 1X18\" TG160-8 DOUBLE ARMED (BX/12) J576G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038855",
-      "ref": "J328H",
-      "desc": "Ethicon 2-0 COATED VICRYL VIOLET 1X27\" CT-3 (BX/36) J328H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038190",
-      "ref": "J212H",
-      "desc": "Ethicon 6-0 COATED VICRYL UNDYED 1X27\" RB-1 (BX/36) J212H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031002566",
-      "ref": "1780G",
-      "desc": "Ethicon 6-0 PERMA HAND BLACK 1X18\" S-14 DOUBLE ARMED (BX/12) 1780G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060566",
-      "ref": "Z334H",
-      "desc": "Ethicon 0 PDS II VIOLET 1X27\" CT-2 (BX36) Z334H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031041602",
-      "ref": "J599G",
-      "desc": "8-0 COATED VICRYL VIOLET 1X12\" TG140-8 DOUBLE ARMED (BX/12) J599G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040582",
-      "ref": "J496G",
-      "desc": "4-0 COATED VICRYL UNDYED 1X18\" PS-2 (BX/12) J496G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060580",
-      "ref": "Z338H",
-      "desc": "3-0 PDS II VIOLET 1X27\" CT-1 (BX/36) Z338H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038275",
-      "ref": "J219H",
-      "desc": "3-0 COATED VICRYL UNDYED 1X27\" SH-1 (BX/36) J219H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031051663",
-      "ref": "VCP214H",
-      "desc": "4-0 COATED VICRYL PLUS UNDYED 1X27\" RB-1 (BX/36) VCP214H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060320",
-      "ref": "Z195T",
-      "desc": "2 PDS II VIOLET 1X27\" CP (BX/24) Z195T",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031001811",
-      "ref": "1667G",
-      "desc": "4-0 ETHILON BLACK 1X18\" PS-2 (BX/12) 1667G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "SA6H",
-      "desc": "0 PERMA HAND BLACK 2X60\" TIE (BX/36) SA6H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038619",
-      "ref": "J304H",
-      "desc": "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "00801741095337",
-      "ref": "1200710",
-      "desc": "Bard Phasix St Mesh Rectangle 3.0in X 4.0in 1200710",
-      "price": "$700.00",
-      "mfr": "BARD"
-    },
-    {
-      "gtin": "20884521057569",
-      "ref": "134051",
-      "desc": "Covidien Premium Surgiclip II Auto Suture Clip Applier 9.75\" Medium 134051",
-      "price": "$375.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "1611G",
-      "desc": "ETHICON 4-0 Ethilon Undyed 1X18\" PS-2 (BX/12) 1611G",
-      "price": "$110.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031001439",
-      "ref": "1629H",
-      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" FS-1 (BX/36) 1629H",
-      "price": "$115.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1647G",
-      "desc": "ETHICON 7-0 Ethilon Black 1X18\" P-6 (BX/12) 1647G",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1665G",
-      "desc": "ETHICON 6-0 Ethilon Black 1X18\" PS-3 (BX/12) 1665G",
-      "price": "$72.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1669H",
-      "desc": "ETHICON 3-0 Ethilon Black 1X18\" PS-2 (BX/36) 1669H",
-      "price": "$275.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1698G",
-      "desc": "ETHICON 6-0 Ethilon Black 1X18\" P-3 (BX/12) 1698G",
-      "price": "$112.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1761G",
-      "desc": "ETHICON 5-0 Mersilene Green 1X18\" S-14 Double Armed (BX/12) 1761G",
-      "price": "$70.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1797G",
-      "desc": "ETHICON 7-0 Gut Chromic Blue 1X18\" TG140-8 Double Armed (BX/12) 1797G",
-      "price": "$450.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1952S",
-      "desc": "ETHICON Surgicel® Original Hemostat, 4X8 in, Oxidized Regenerated Cellulose, Absorbable 1952S",
-      "price": "$300.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031468126",
-      "ref": "1953S",
-      "desc": "ETHICON Ethicon Surgicel Original Absorbable Hemostat 2 in X 3 in 1953S",
-      "price": "$375.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1973",
-      "desc": "Ethicon Surgifoam Absorbable Gelatin Sponge 8cm x 6.25cm x 10mm (Each) 1973",
-      "price": "$29.99",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1974",
-      "desc": "Ethicon Surgifoam Absorbable Gelatin Sponge Size 100 8cm X 12.5cm X 1cm (BX/6) 1974",
-      "price": "$179.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30381780537162",
-      "ref": "206520",
-      "desc": "INTEGRA DuraSeal Exact Spine Sealant System Polymer Kit 5ml (BX/5) D/S 206520",
-      "price": "$4,000.00",
-      "mfr": "INTEGRA"
-    },
-    {
-      "gtin": "",
-      "ref": "2815G",
-      "desc": "ETHICON 8-0 Ethilon Black 1X5\" BV130-4 (BX/12) 2815G",
-      "price": "$300.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "33-31",
-      "desc": "INTEGRA Biopsy Punch Dermal 2 BX/50 33-31",
-      "price": "$90.00",
-      "mfr": "INTEGRA"
-    },
-    {
-      "gtin": "00888937015645",
-      "ref": "3350-8G",
-      "desc": "COOPER SURGICAL Cooper Surgical Lone Star Elastic Stays 12 mm Blunt Hook 3350-8G",
-      "price": "$50.00",
-      "mfr": "COOPER SURGICAL"
-    },
-    {
-      "gtin": "30705031004898",
-      "ref": "3846T",
-      "desc": "ETHICON 2 Prolene Blue 3X20\" LR (BX/24) 3846T",
-      "price": "$360.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031005321",
-      "ref": "424H",
-      "desc": "ETHICON 0 Perma Hand Black 1X30\" CT-1 (BX/36) 424H",
-      "price": "$85.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "35413765589615",
-      "ref": "4301-02",
-      "desc": "Baxter Seprafilm Adhesion Barrier 5 X 6 (BX/10) 4301-02",
-      "price": "$1,300.00",
-      "mfr": "BAXTER"
-    },
-    {
-      "gtin": "",
-      "ref": "4350XL",
-      "desc": "Ethicon Gynecare Interceed Absorbable Adhesion Barrier 5.0in X 6.0in 12.7cm X 15.2cm (BX/10) 4350XL",
-      "price": "$1,299.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "4406",
-      "desc": "BD General Purpose Surgical Clipping Blade (BX/50) 4406",
-      "price": "$235.00",
-      "mfr": "BD"
-    },
-    {
-      "gtin": "",
-      "ref": "460T",
-      "desc": "ETHICON 2 Ethilon Black 1X20\" LR (BX/24) 460T",
-      "price": "$86.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "470007",
-      "desc": "INTUITIVE Da Vinci XI Round Tip Scissors 470007",
-      "price": "$1,300.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "470194",
-      "desc": "INTUITIVE Intuitive Surgical Da Vinci Xi Mega Needle Driver 470194",
-      "price": "$2,300.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "470230",
-      "desc": "INTUITIVE Intuitive Surgical Da Vinci Xi Weck Hem-O-Lok Large Clip Applier 470230",
-      "price": "$1,200.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "471344",
-      "desc": "INTUITIVE Da Vinci XI Curved Bipolar Dissector 471344",
-      "price": "$1,950.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "00886874115664",
-      "ref": "480422",
-      "desc": "Intuitive da Vinci X / Xi EndoWrist Instruments Vessel Sealer Extended 8 mm 480422",
-      "price": "$385.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "10886874117092",
-      "ref": "48345G",
-      "desc": "Intuitive da Vinci X / da Vinci Xi Surgical SureForm 45 mm Reload (Green, 6-Row, 4.3 mm) (BX/12) 48345G",
-      "price": "$1,225.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "00886874117118",
-      "ref": "48345T",
-      "desc": "INTUITIVE Intuitive Surgical 48345T Da Vinci Xi Sureform 45 Reload, 45 mm, 6-Row, Black (Each) 48345T",
-      "price": "$100.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "10886874117122",
-      "ref": "48345W",
-      "desc": "INTUITIVE Intuitive Surgical 48345W Da Vinci Sureform 45 Reload, 2.5 mm, 6-Row, White (Each) 48345W",
-      "price": "$115.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "00886874113837",
-      "ref": "48360B",
-      "desc": "INTUITIVE Da Vinci Sureform 60 Reload, 3.5 mm 6 Row, Blue (Each) 48360B",
-      "price": "$120.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "00886874113844",
-      "ref": "48360G",
-      "desc": "INTUITIVE Da Vinci Stapler Reload, For Sureform 60, Green, 4.3 mm, 6-Row, 1 Firing 48360G",
-      "price": "$120.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "48360W",
-      "desc": "Intuitive da Vinci X / da Vinci Xi Surgical SureForm 60 mm Reload (White, 6-Row, 2.5 mm) (BX/12) 48360W",
-      "price": "$1,500.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "5086-02",
-      "desc": "Baxter Seprafilm Adhesion Barrier 3 X 5 (BX/5) 5086-02",
-      "price": "$750.00",
-      "mfr": "BAXTER"
-    },
-    {
-      "gtin": "",
-      "ref": "585H",
-      "desc": "ETHICON 2-0 Ethilon Black 1X18\" PS (BX/36) 585H",
-      "price": "$140.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "627H",
-      "desc": "ETHICON 3-0 Ethilon Black 1X30\" KS-1 (BX/36) 627H",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "628H",
-      "desc": "ETHICON 2-0 Ethilon Black 1X30\" KS (BX/36) 628H",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031007066",
-      "ref": "632G",
-      "desc": "ETHICON 3-0 Perma Hand Black 1X18\" X-1 (BX/12) 632G",
-      "price": "$40.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "635H",
-      "desc": "ETHICON 4-0 Gut Chromic Naturally Brown 1X27\" FS-2 (BX/36) 635H",
-      "price": "$125.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "640G",
-      "desc": "ETHICON 5-0 Perma Hand Black 1X18\" P-3 (BX/12) 640G",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031007745",
-      "ref": "662H",
-      "desc": "ETHICON 4-0 Ethilon Black 1X18\" FS-2 (BX/36) 662H",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "678G",
-      "desc": "ETHICON 0 Perma Hand Black 1X18\" FSL (BX/12) 678G",
-      "price": "$85.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "680H",
-      "desc": "ETHICON 0 Perma Hand Black 1X30\" FSL (BX/36) 680H",
-      "price": "$142.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "682G",
-      "desc": "ETHICON 5-0 Perma Hand Black 1X18\" FS-2 (BX/12) 682G",
-      "price": "$40.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "685G",
-      "desc": "ETHICON 2-0 Perma Hand Black 1X18\" FS (BX/12) 685G",
-      "price": "$52.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031008308",
-      "ref": "687G",
-      "desc": "ETHICON 5-0 Chromic Gut 1X18\" P-3 (BX/12) 687G",
-      "price": "$115.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "689G",
-      "desc": "ETHICON 6-0 Ethilon Undyed 1X18\" P-1 (BX/12) 689G",
-      "price": "$95.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031008582",
-      "ref": "698G",
-      "desc": "ETHICON 5-0 Ethilon Black 1X18\" P-3 (BX/12) 698G",
-      "price": "$98.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "699G",
-      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" P-3 (BX/12) 699G",
-      "price": "$103.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "699H",
-      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" P-3 (BX/36) 699H",
-      "price": "$220.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "71111579",
-      "desc": "Smith & Nephew Suture Retriever Hewson Pen-like Handle (BX/6) 71111579",
-      "price": "$400.00",
-      "mfr": "SMITH & NEPHEW"
-    },
-    {
-      "gtin": "00613994239525",
-      "ref": "7510100",
-      "desc": "MEDTRONIC Medtronic Infuse Bone Graft X-Small 7510100",
-      "price": "$2,100.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "",
-      "ref": "7510200",
-      "desc": "MEDTRONIC Medtronic Infuse 2.8 cc Small Bone Graft Kit 7510200",
-      "price": "$3,800.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "00681490843805",
-      "ref": "7510400",
-      "desc": "MEDTRONIC Medtronic Infuse Bone Graft Kit – Medium 7510400",
-      "price": "$4,300.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "00681490843812",
-      "ref": "7510600",
-      "desc": "MEDTRONIC Medtronic Infuse Bone Graft Kit Large 7510600",
-      "price": "$4,100.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "00681490843829",
-      "ref": "7510800",
-      "desc": "Medtronic Infuse Bone Graft Kit XL 7510800",
-      "price": "$4,700.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "30705031010479",
-      "ref": "770G",
-      "desc": "ETHICON 6-0 GUT PLA\" YELLOWISH TAN 1X18\" G-1 DOUBLE ARMED (BX/12) 770G",
-      "price": "$390.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "783G",
-      "desc": "ETHICON 4-0 Perma Hand Black 1X18\" G-3 Double Armed (BX/12) 783G",
-      "price": "$298.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "790G",
-      "desc": "ETHICON 6-0 Gut Chromic Naturally Brown 1X18\" G-1 Double Armed (BX/12) 790G",
-      "price": "$350.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "810H",
-      "desc": "ETHICON 3-0 Gut Chromic Naturally Brown 1X27\" CT-1 (BX/36) 810H",
-      "price": "$200.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031012732",
-      "ref": "811H",
-      "desc": "ETHICON 2-0 Gut Chromic Naturally Brown 1X27\" CT-1 (BX/36) 811H",
-      "price": "$230.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031013746",
-      "ref": "825G",
-      "desc": "ETHICON 2 Ethilon Black 1X60\" Tp-1 (BX/12) 825G",
-      "price": "$78.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "00840420133687",
-      "ref": "84000611",
-      "desc": "STRYKER Osteoset Resorbable Mini Bead Kit Fast Cure 5 cc 9.5G 3.0 mL - Slight Dent 84000611",
-      "price": "$500.00",
-      "mfr": "STRYKER"
-    },
-    {
-      "gtin": "",
-      "ref": "8424H",
-      "desc": "ETHICON 0 Prolene Blue 1X30\" CT-1 (BX/36) 8424H",
-      "price": "$180.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8521H",
-      "desc": "ETHICON 4-0 Prolene Blue 1X36\" SH Double Armed Prolene® Polypropylene Suture (BX/36) 8521H",
-      "price": "$130.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8556H",
-      "desc": "ETHICON 5-0 Prolene Blue 1X36\" RB-1 Double Armed (BX/36) 8556H",
-      "price": "$195.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8665G",
-      "desc": "ETHICON 3-0 Prolene Blue 1X18\" FS-2 (BX/12) 8665G",
-      "price": "$85.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8681G",
-      "desc": "ETHICON 5-0 Prolene Blue 1X18\" PS-3 (BX/12) 8681G",
-      "price": "$105.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8682G",
-      "desc": "ETHICON 4-0 Prolene Blue 1X18\" PS-2 (BX/12) 8682G",
-      "price": "$115.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8684G",
-      "desc": "ETHICON 3-0 Prolene Blue 1X18\" FS-1 (BX/12) 8684G",
-      "price": "$118.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8689H",
-      "desc": "ETHICON 2-0 Prolene Blue 1X30\" FSLX (BX/36) 8689H",
-      "price": "$275.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8695G",
-      "desc": "ETHICON 6-0 Prolene Blue 1X18\" P-3 (BX/12) 8695G",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031019182",
-      "ref": "8696G",
-      "desc": "ETHICON 7-0 Prolene Blue 1X18\" P-1 (BX/12) 8696G",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031019212",
-      "ref": "8697G",
-      "desc": "ETHICON 6-0 PROLENE BLUE 1X18\" P-1 8697G",
-      "price": "$140.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031019236",
-      "ref": "8698G",
-      "desc": "ETHICON 5-0 Prolene Blue 1X18\" P-3 (BX/12) 8698G",
-      "price": "$103.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031021017",
-      "ref": "8832H",
-      "desc": "ETHICON 3-0 Prolene Blue 1X30\" SH (BX/36) 8832H",
-      "price": "$225.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8871H",
-      "desc": "ETHICON 4-0 Prolene Blue 1X30\" RB-1 (BX/36) 8871H",
-      "price": "$260.00",
-      "mfr": "ETHICON"
-    },
+    "ARTHREX",
+    "BARD",
+    "BAXTER",
+    "BD",
+    "COOPER SURGICAL",
+    "COOPERSURG",
+    "COVIDIEN",
+    "ETHICON",
+    "INTEGRA",
+    "INTUITIVE",
+    "MEDTRONIC",
+    "SHARPOINT",
+    "SMITH & NEPHEW",
+    "STRYKER",
+    "+ Create New Vendor"
+  ],
+  "items": [
     {
       "gtin": "",
       "ref": "AR-7200",
       "desc": "ARTHREX #2 Fiberwire Suture, 38 In (Blue) W/Tapered Needle, 26.5 mm, 1/2 Circle, 12/Box AR-7200",
-      "price": "$225.00",
-      "mfr": "ARTHREX"
+      "price": "$300.00",
+      "cost": "$145.00",
+      "mfr": "ARTHREX",
+      "category": "Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "10888867041292",
       "ref": "AR-7202",
       "desc": "ARTHREX #2 FiberWire, 38\" (Blue) w/ Reverse Cutting Needle, 36.6mm 1/2c AR-7202",
-      "price": "$210.00",
-      "mfr": "ARTHREX"
+      "price": "$205.00",
+      "cost": "$170.00",
+      "mfr": "ARTHREX",
+      "category": "Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "AR-7211",
       "desc": "ARTHREX #5 Fiberwire, 38\" (Blue) W/Conventional Cutting Needle, 48 mm 1/2 Circle, 12/Box AR-7211",
       "price": "$300.00",
-      "mfr": "ARTHREX"
+      "cost": "$145.00",
+      "mfr": "ARTHREX",
+      "category": "Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
-      "gtin": "10705036001348",
-      "ref": "CB5LT",
-      "desc": "ETHICON Ethicon Endopath Xcel Universal Trocar Stability Sleeve CB5LT",
-      "price": "$25.00",
-      "mfr": "ETHICON"
+      "gtin": "",
+      "ref": "AR-9821",
+      "desc": "ARTHREX Apollorf Xl90, Aspirating Ablator 90\u00b0, Extra Large AR-9821",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ARTHREX",
+      "category": "Ablator",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
-      "gtin": "20705031203522",
-      "ref": "DHVM12",
-      "desc": "ETHICON Dermabond Mini Topical Skin Adhesive DHVM12",
-      "price": "$240.00",
-      "mfr": "ETHICON"
+      "gtin": "00801741095337",
+      "ref": "1200710",
+      "desc": "Bard Phasix St Mesh Rectangle 3.0in X 4.0in 1200710",
+      "price": "$700.00",
+      "cost": "$250.00",
+      "mfr": "BARD",
+      "category": "Mesh",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
-      "gtin": "20705031203539",
-      "ref": "DNX12",
-      "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive DNX12",
-      "price": "$210.00",
-      "mfr": "ETHICON"
+      "gtin": "35413765589615",
+      "ref": "4301-02-01 00:00:00",
+      "desc": "Baxter Seprafilm Adhesion Barrier 5 X 6 (BX/10) 4301-02",
+      "price": "$1,300.00",
+      "cost": "$0.00",
+      "mfr": "BAXTER",
+      "category": "Barrier",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "5086-02-01 00:00:00",
+      "desc": "Baxter Seprafilm Adhesion Barrier 3 X 5 (BX/5) 5086-02",
+      "price": "$750.00",
+      "cost": "$0.00",
+      "mfr": "BAXTER",
+      "category": "Barrier",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "4406",
+      "desc": "BD General Purpose Surgical Clipping Blade (BX/50) 4406",
+      "price": "$235.00",
+      "cost": "$0.00",
+      "mfr": "BD",
+      "category": "Clipping Blade",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "309647",
+      "desc": "BD 5 mL Luer Slip Tip Syringe Only 309647",
+      "price": "$40.00",
+      "cost": "$20.00",
+      "mfr": "BD",
+      "category": "Syringe",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "383512",
+      "desc": "BD Nexiva\u2122 Closed IV Catheter System 383512",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "BD",
+      "category": "Catheter",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "20867516000108",
+      "ref": "2030",
+      "desc": "COOPER SURGICAL (IN)SORB Single Patient Use Skin Stapler (BX/6) 2030",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "COOPER SURGICAL",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "3311-8G",
+      "desc": "COOPER SURGICAL Lone Star Elastic Stays 5 mm Sharp Hook 3311-8G",
+      "price": "$50.00",
+      "cost": "$0.00",
+      "mfr": "COOPER SURGICAL",
+      "category": "Elastic Stays",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00888937015645",
+      "ref": "3350-8G",
+      "desc": "COOPER SURGICAL Lone Star Elastic Stays 12 mm Blunt Hook 3350-8G",
+      "price": "$50.00",
+      "cost": "$0.00",
+      "mfr": "COOPER SURGICAL",
+      "category": "Elastic Stays",
+      "status": "ACTIVE",
+      "onHand": 8,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00888937003536",
+      "ref": "MX140",
+      "desc": "COOPER SURGICAL Pipet Suction Curette Sterile MX140",
+      "price": "$1.95",
+      "cost": "$0.00",
+      "mfr": "COOPER SURGICAL",
+      "category": "Pipet",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "20884521057569",
+      "ref": "134051",
+      "desc": "COVIDIEN Premium Surgiclip II Auto Suture Clip Applier 9.75\" Medium 134051",
+      "price": "$375.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Suture Clip Applier",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "EGIA45AMT",
+      "desc": "COVIDIEN Endo Gia Articulating Medium/Thick Tri-Staple Reload 45.0 mm (Purple) EGIA45AMT",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "EGIA45AV",
-      "desc": "Endo GIA 45mm Articulating Reload: Vascular, Gray EGIA45AV",
+      "desc": "COVIDIEN Endo GIA 45mm Articulating Reload: Vascular, Gray EGIA45AV",
       "price": "$130.00",
-      "mfr": "COVIDIEN"
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
-      "ref": "G121H",
-      "desc": "ETHICON 4-0 Gut Chromic Naturally Brown 1X27\" SH (BX/36) G121H",
-      "price": "$185.00",
-      "mfr": "ETHICON"
+      "ref": "EGIA45AVM",
+      "desc": "COVIDIEN Endo Gia Reload W/Tri-Staple Technology - Vascular/Medium; 45 mm (Each) EGIA45AVM",
+      "price": "$135.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
-      "ref": "G181H",
-      "desc": "ETHICON 4-0 Gut Chromic Naturally Brown 1X27\" SH-1 (BX/36) G181H",
-      "price": "$200.00",
-      "mfr": "ETHICON"
+      "ref": "EGIA60AMT",
+      "desc": "COVIDIEN Endo Gia Reload W/ Tri-Staple Technology - Medium/Thick; 60 mm EGIA60AMT",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
-      "ref": "G346N",
-      "desc": "SHARPOINT Polysyn 0 Violet 1X36\" CT-1 G346N",
-      "price": "$49.00",
-      "mfr": "SHARPOINT"
-    },
-    {
-      "gtin": "",
-      "ref": "GST45B",
-      "desc": "Ethicon Echelon Flex Gst System Reload Blue 45.0mm X 3.6mm (BX/12) GST45B",
-      "price": "$750.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "GST60W",
-      "desc": "ETHICON 60 mm White Reload With Gripping Surface Technology (BX/12) GST60W",
-      "price": "$750.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J206G",
-      "desc": "ETHICON 2-0 Coated Vicryl Violet 54\" Ligapak Reel 0 (BX/12) J206G",
-      "price": "$60.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038220",
-      "ref": "J214H",
-      "desc": "Ethicon 4-0 Coated Vicryl Undyed 1x27\" CT-1(BX/36)J214H",
-      "price": "$105.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038718",
-      "ref": "J315H",
-      "desc": "ETHICON 4-0 Coated Vicryl Violet 1X27\" SH (BX/36) J315H",
-      "price": "$127.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J338H",
-      "desc": "ETHICON 3-0 Coated Vicryl Violet 1X27\" CT-1 (BX/36) J338H",
-      "price": "$95.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031039036",
-      "ref": "J340H",
-      "desc": "ETHICON 0 Coated Vicryl Violet 1X27\" CT-1 (BX/36) J340H",
-      "price": "$102.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031039074",
-      "ref": "J344H",
-      "desc": "ETHICON 3-0 Coated Vicryl Violet 1X36\" CT-1 (BX/36) J344H",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031039098",
-      "ref": "J345H",
-      "desc": "Ethicon 2-0 Coated Vicryl Violet 1x36\" CT-1(BX/36)J345H",
-      "price": "$105.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031039647",
-      "ref": "J415H",
-      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X27\" SH (BX/36) J415H",
-      "price": "$116.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J417H",
-      "desc": "ETHICON 2-0 Coated Vicryl Undyed 1X27\" SH (BX/36) J417H",
-      "price": "$125.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J492G",
-      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" P-3 (BX/12) J492G",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J492H",
-      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" P-3 (BX/36) J492H",
-      "price": "$110.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040551",
-      "ref": "J495G",
-      "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/12) J495G",
-      "price": "$105.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J496H",
-      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/36) J496H",
-      "price": "$280.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J497H",
-      "desc": "ETHICON 3-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/36) J497H",
-      "price": "$245.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J506G",
-      "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" PS-4 (BX/12) J506G",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J510G",
-      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" PS-6 (BX/12) J510G",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031041077",
-      "ref": "J544G",
-      "desc": "ETHICON 6-0 Coated Vicryl Violet 1X18\" TG100-8 Double Armed (BX/12) J544G",
-      "price": "$230.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J548G",
-      "desc": "ETHICON 8-0 Coated Vicryl Violet 1X12\" TG140-8 Double Armed (BX/12) J548G",
-      "price": "$250.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J566G",
-      "desc": "ETHICON 7-0 Coated Vicryl Violet 1X12\" TG140-8 Double Armed (BX/12) J566G",
-      "price": "$285.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J570G",
-      "desc": "ETHICON 6-0 Coated Vicryl Violet 1x18\" S-14 Double Armed (BX/12) J570G",
-      "price": "$310.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031041336",
-      "ref": "J571G",
-      "desc": "ETHICON 5-0 Coated Vicryl Violet 1X18\" S-14 Double Armed (BX/12) J571G",
-      "price": "$170.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043644",
-      "ref": "J944H",
-      "desc": "Ethicon 3-0 Coated Vicryl Undyed 1x36\" CT-1(BX/36)J944H",
-      "price": "$115.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043675",
-      "ref": "J946H",
-      "desc": "ETHICON 0 Coated Vicryl Undyed 1X36\" CT-1 (BX/36) J946H",
-      "price": "$113.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J975G",
-      "desc": "ETHICON 8-0 Coated Vicryl Violet 1X12\" TG160-6 Double Armed (BX/12) J975G",
-      "price": "$400.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "K832H",
-      "desc": "ETHICON 3-0 Perma Hand Black 1X30\" SH (BX/36) K832H",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "K834H",
-      "desc": "ETHICON 0 Perma Hand Black 1X30\" SH (BX/36) K834H",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "K891H",
-      "desc": "ETHICON 4-0 Perma Hand Black 1X30\" C-1 (BX/36) K891H",
-      "price": "$190.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "L880G",
-      "desc": "ETHICON 0 Ethilon Black 1X96\" Looped 48\" TP-1 (BX/12) L880G",
-      "price": "$77.00",
-      "mfr": "ETHICON"
+      "ref": "EGIA60AVM",
+      "desc": "COVIDIEN Endo Gia 60 mm Articulating Vascular Staple Device, Medium Staple, Tan (Each) EGIA60AVM",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "10884521186033",
       "ref": "LF1212A",
-      "desc": "COVIDIEN Small Jaw Instrument Ligasure™ 18.8 cm (7.4 in) Single Units LF1212A",
+      "desc": "COVIDIEN Small Jaw Instrument Ligasure\u2122 18.8 cm (7.4 in) Single Units LF1212A",
       "price": "$300.00",
-      "mfr": "COVIDIEN"
+      "cost": "$220.00",
+      "mfr": "COVIDIEN",
+      "category": "Sealer-Divider",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "LF1837",
       "desc": "COVIDIEN Medtronic Ligasure Blunt Tip 37 cm Laparoscopic Sealer/Divider, Nano-Coated LF1837",
       "price": "$395.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "LF1937",
-      "desc": "COVIDIEN Medtronic Ligasure Maryland Jaw 37 cm Laparoscopic Instrument, Nano-Coated LF1937",
-      "price": "$425.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "LF4418",
-      "desc": "COVIDIEN Ligasure Impact, Curved, Large Jaw, Open Sealer/ Divider; 36 mm - 18 cm LF4418",
-      "price": "$395.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "LF5637",
-      "desc": "COVIDIEN Covidien Ligasure 5 mm - 37 cm Retractable L-Hook Laparoscopic Sealer/Divider LF5637",
-      "price": "$435.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "10884524001623",
-      "ref": "LS1020",
-      "desc": "Covidien Ligasure Atlas Tissue Fusion Open Procedure Sealer Divider Bilateral Blunt Jaw",
-      "price": "$300.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "MB66G",
-      "desc": "ETHICON 5 Ethibond Green 4X30\" V-37 (BX/12) MB66G",
-      "price": "$300.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "00888937003536",
-      "ref": "MX140",
-      "desc": "COOPERSURG Cooper Surgical Pipet Suction Curette Sterile MX140",
-      "price": "$1.95",
-      "mfr": "COOPERSURG"
-    },
-    {
-      "gtin": "",
-      "ref": "PDP317H",
-      "desc": "ETHICON 2-0 PDS Plus Violet 1X27\" SH (BX/36) PDP317H",
-      "price": "$225.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "PDP334H",
-      "desc": "ETHICON 0 PDS Plus Violet 1X27\" CT-2 (BX/36) PDP334H",
-      "price": "$200.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "PDP340H",
-      "desc": "ETHICON 0 PDS Plus Violet 1X27\" CT-1 (BX/36) PDP340H",
-      "price": "$214.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "10705036002673",
-      "ref": "PXW35",
-      "desc": "ETHICON Ethicon PXW35 Wide Fixed- Head Skin Stapler With 0.58 Diameter (Each) PXW35",
-      "price": "$25.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "20705036002670",
-      "ref": "PXW35-43",
-      "desc": "ETHICON Ethicon PXW35 Wide Fixed- Head Skin Stapler With 0.58 Diameter (BX/6) PXW35",
-      "price": "$115.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "10705031462205",
-      "ref": "PXX22N",
-      "desc": "ETHICON 2-0 Ethibond Green/White 10X30\" V-4 Double Armed Firm Pledget 7mm x 3mm x 1.5mm PXX22N",
-      "price": "$415.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "10705031462298",
-      "ref": "PXX82N",
-      "desc": "ETHICON 2-0 Ethibond Green/White 10X30\" SH-2 Double Armed PXX82N",
-      "price": "$225.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "R647H",
-      "desc": "ETHICON 3-0 Mersilene White 1X18\" FS-1 (BX/36) R647H",
-      "price": "$175.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "20817470006630",
-      "ref": "RR750",
-      "desc": "SMITH & NEPHEW Rapid Rhino Epistaxis Nasal Pac 7.5 cm Ant/Posterior RR750",
-      "price": "$25.00",
-      "mfr": "SMITH & NEPHEW"
-    },
-    {
-      "gtin": "",
-      "ref": "SIG45AMT",
-      "desc": "COVIDIEN Tri-Staple 2.0 Reload, 45 mm Medium/Thick Tissue, Purple SIG45AMT",
-      "price": "$110.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "10884521808966",
-      "ref": "SIG45AVM",
-      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Reload, 45mm Vascular/Medium Tissue, Tan (Each) EGIA45AVM",
-      "price": "$135.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "SIG45AXT",
-      "desc": "Covidien Signia Tri-staple 2.0 Extra Thick Reload 45.0mm Black SIG45AXT",
-      "price": "$125.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "SIG45CTAMT",
-      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Medium/Thick Reload 45 mm Purple SIG45CTAMT",
-      "price": "$92.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "10884521543720",
-      "ref": "SIG45CTAVM",
-      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Intelligent Reload & Introducer, 45mm Vascular/Medium SIG45CTAVM",
-      "price": "$92.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "SIG60AMT",
-      "desc": "COVIDIEN Tri-Staple 2.0 Intelligent Reload Medium/Thick SIG60AMT",
-      "price": "$150.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "10884521808980",
-      "ref": "SIG60AVM",
-      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Reload, 60mm, Vascular/Medium Tissue, Tan SIG60AVM",
-      "price": "$135.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "SIG60AXT",
-      "desc": "COVIDIEN Signia Tri-staple 2.0 Extra Thick Reload 60.0mm Black SIG60AXT",
-      "price": "$150.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "SIG60CTAMT",
-      "desc": "COVIDIEN Signia Tri-staple 2.0 Curved Tip Medium Thick Reload 60.0mm Purple SIG60CTAMT",
-      "price": "$105.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "10884521543690",
-      "ref": "SIG60CTAVM",
-      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Intelligent Reload & Introducer, 60mm Vascular/Medium SIG60CTAVM",
-      "price": "$105.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "10884521043152",
-      "ref": "TA30V3L",
-      "desc": "COVIDIEN TA Autosuture Vascular Loading Unit with DST Series Technology 30 mm - V3 TA30V3L",
-      "price": "$90.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP213H",
-      "desc": "ETHICON 5-0 Coated Vicryl Plus Undyed 1X27\" RB-1 (BX/36) VCP213H",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031051878",
-      "ref": "VCP267H",
-      "desc": "ETHICON 0 Coated Vicryl Plus Undyed 1X27\" CP-1 (BX/36) VCP267H",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP305H",
-      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" RB-1 (BX/36) VCP305H",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP311H",
-      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" SH-1 (BX/36) VCP311H",
-      "price": "$131.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP316H",
-      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" SH (BX/36) VCP316H",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP329H",
-      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-3 (BX/36) VCP329H",
-      "price": "$25.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031052370",
-      "ref": "VCP332H",
-      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP332H",
-      "price": "$117.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP334H",
-      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP334H",
-      "price": "$112.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP340H",
-      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-1 (BX/36) VCP340H",
-      "price": "$153.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP341H",
-      "desc": "ETHICON 1 Coated Vicryl Plus Violet 1X27\" CT-1 (BX/36) VCP341H",
-      "price": "$123.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031053032",
-      "ref": "VCP417H",
-      "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" SH (BX/36) VCP417H",
-      "price": "$114.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031053070",
-      "ref": "VCP421H",
-      "desc": "ETHICON 5-0 Coated Vicryl Plus Undyed 1X27\" FS-2 (BX/36) VCP421H",
-      "price": "$130.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP423H",
-      "desc": "ETHICON 3-0 Coated Vicryl Plus Undyed 1X27\" FS-2 (BX/36) VCP423H",
-      "price": "$160.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031053292",
-      "ref": "VCP442H",
-      "desc": "ETHICON 3-0 Coated Vicryl Plus Undyed 1X27\" FS-1 (BX/36) VCP442H",
-      "price": "$160.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP443H",
-      "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" FS-1 (BX/36) VCP443H",
-      "price": "$160.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP493G",
-      "desc": "ETHICON 5-0 Coated Vicryl Plus Undyed 1X18\" P-3 (BX/12) VCP493G",
-      "price": "$97.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP504G",
-      "desc": "ETHICON 4-0 Coated Vicryl Plus Undyed 1X18\" P-2 (BX/12) VCP504G",
-      "price": "$130.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VCP596H",
-      "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" PSLl (BX/36) VCP596H",
-      "price": "$320.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031054398",
-      "ref": "VCP603H",
-      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" UR-6 (BX/36) VCP603H",
-      "price": "$160.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031055982",
-      "ref": "VCP880T",
-      "desc": "ETHICON 2 Coated Vicryl Plus Undyed 1X54\" TP-1 (BX/24) VCP880T",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VR416",
-      "desc": "ETHICON 3-0 Vicryl Rapide Undyed 1X27\" SH VR416",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VR493",
-      "desc": "ETHICON 5-0 VICRYL RAPIDE UNDYED 1X18\" P-3 VR493",
-      "price": "$150.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "VR945",
-      "desc": "ETHICON 2-0 Vicryl Rapide Undyed 1X36\" CT-1 VR945",
-      "price": "$100.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "X916H",
-      "desc": "ETHICON 3-0 Ethibond White 1X30\" V-5 Double Armed (BX/36) X916H",
-      "price": "$300.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y266H",
-      "desc": "ETHICON 2-0 Monocryl Undyed 1X27\" CP-1 (BX/36) Y266H",
-      "price": "$140.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031058761",
-      "ref": "Y317H",
-      "desc": "ETHICON 2-0 Monocryl Violet 1X27\" SH (BX/36) Y317H",
-      "price": "$175.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y333H",
-      "desc": "ETHICON 2-0 Monocryl Violet 1X27\" CT-2 (BX/36) Y333H",
-      "price": "$170.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y334H",
-      "desc": "ETHICON 0 Monocryl Violet 1X27\" CT-2 (BX/36) Y334H",
-      "price": "$135.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031059119",
-      "ref": "Y415H",
-      "desc": "Ethicon 4-0 MONOCRYL UNDYED 1X27\" SH Y415H",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031059126",
-      "ref": "Y416H",
-      "desc": "ETHICON 3-0 Monocryl Undyed 1X27\" SH (BX/36) Y416H",
-      "price": "$195.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031059133",
-      "ref": "Y417H",
-      "desc": "ETHICON 2-0 Monocryl Undyed 1X27\" SH (BX/36) Y417H",
-      "price": "$170.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y427H",
-      "desc": "ETHICON 3-0 Monocryl Undyed 1X27\" PS-2 (BX/36) Y427H",
-      "price": "$480.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y464G",
-      "desc": "ETHICON 4-0 Monocryl Violet 1X18\" P-3 (BX/12) Y464G",
-      "price": "$135.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y489G",
-      "desc": "ETHICON 6-0 Monocryl Undyed 1X18\" P-1 (BX/12) Y489G",
-      "price": "$135.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Y492G",
-      "desc": "ETHICON 6-0 Monocryl Undyed 1X18\" P-3 (BX/12) Y492G",
-      "price": "$121.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060375",
-      "ref": "Z304H",
-      "desc": "ETHICON 4-0 PDS II Violet 1x27\" RB-1(BX/36)Z304H",
-      "price": "$200.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z305H",
-      "desc": "ETHICON 3-0 PDS II Violet 1X27\" RB-1 (BX/36) Z305H",
-      "price": "$185.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z311H",
-      "desc": "ETHICON 3-0 PDS II Violet 1X27\" SH-1 (BX/36) Z311H",
-      "price": "$190.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z316H",
-      "desc": "ETHICON 3-0 PDS II Violet 1X27\" SH (BX/36) Z316H",
-      "price": "$175.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060498",
-      "ref": "Z317H",
-      "desc": "ETHICON 2-0 PDS II Violet 1X27\" SH (BX/36) Z317H",
-      "price": "$196.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z332H",
-      "desc": "ETHICON 3-0 PDS II Violet 1X27\" CT-2 (BX/36) Z332H",
-      "price": "$203.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z340H",
-      "desc": "ETHICON 0 PDS II VIOLET 1X27\" CT-1 Z340H",
-      "price": "$185.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060641",
-      "ref": "Z341H",
-      "desc": "ETHICON 1 PDS II Violet 1X27\" CT-1 (BX/36) Z341H",
-      "price": "$195.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060665",
-      "ref": "Z346H",
-      "desc": "ETHICON 0 PDS II Violet 1x36\" CT-1(BX/36)Z346H",
-      "price": "$197.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z357H",
-      "desc": "ETHICON 2-0 PDS II Violet 1X36\" CT (BX/36) Z357H",
-      "price": "$192.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060825",
-      "ref": "Z371T",
-      "desc": "ETHICON 1 PDS II Violet 1X36\" CTX Z371T",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031060931",
-      "ref": "Z432H",
-      "desc": "Ethicon 6-0 PDS II Violet 1x27\" TF(BX/36) Z432H",
-      "price": "$225.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z443H",
-      "desc": "ETHICON 2-0 PDS II Undyed 1X27\" FS-1 (BX/36) Z443H",
-      "price": "$200.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z463G",
-      "desc": "ETHICON 5-0 PDS II Violet 1X18\" P-3 (BX/12) Z463G",
-      "price": "$160.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "Z466H",
-      "desc": "ETHICON 2-0 PDS II VIOLET 1X27\" CP-1 Z466H",
-      "price": "$195.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031061112",
-      "ref": "Z487G",
-      "desc": "ETHICON 6-0 PDS II Violet 1X18\" P-1 (BX/12) Z487G",
-      "price": "$175.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031061211",
-      "ref": "Z496G",
-      "desc": "ETHICON 4-0 PDS II Undyed 1X18\" PS-2 (BX/12) Z496G",
-      "price": "$135.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031061235",
-      "ref": "Z497G",
-      "desc": "ETHICON 3-0 PDS II Undyed 1X18\" PS-2 (BX/12) Z497G",
-      "price": "$135.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1740G",
-      "desc": "ETHICON 5-0 Ethilon Black 1X18\" S-22 Double Armed (BX/12) 1740G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1856G",
-      "desc": "ETHICON 6-0 Ethilon Black 1X18\" PC-1 (BX/12) 1856G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031002917",
-      "ref": "1915G",
-      "desc": "ETHICON 5-0 Gut Pla\" Fast Absorb\"G Yellowish Tan 1X18\" PC-1 (BX/12) 1915G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1962",
-      "desc": "ETHICON Surgicel® Fibrillar™ Hemostat, 2X4 in 1962",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "1963",
-      "desc": "ETHICON Surgicel® Fibrillar™ Hemostat, 4X4 in 1963",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "202050",
-      "desc": "INTEGRA Dural Sealant System 5 mL 202050",
-      "price": "$0.00",
-      "mfr": "INTEGRA"
-    },
-    {
-      "gtin": "20867516000108",
-      "ref": "2030",
-      "desc": "Cooper Surgical (IN)SORB Single Patient Use Skin Stapler with absorbable staples (BX/6) 2030",
-      "price": "$0.00",
-      "mfr": "COOPER SURGICAL"
-    },
-    {
-      "gtin": "",
-      "ref": "309647",
-      "desc": "BD 5 mL BD® Luer Slip Tip Syringe Only 309647",
-      "price": "$0.00",
-      "mfr": "BD"
-    },
-    {
-      "gtin": "",
-      "ref": "3311-8G",
-      "desc": "COOPER SURGICAL Cooper Surgical Lone Star Elastic Stays 5 mm Sharp Hook 3311-8G",
-      "price": "$50.00",
-      "mfr": "COOPER SURGICAL"
-    },
-    {
-      "gtin": "",
-      "ref": "383512",
-      "desc": "BD BD Nexiva™ Closed IV Catheter System 383512",
-      "price": "$0.00",
-      "mfr": "BD"
-    },
-    {
-      "gtin": "00886874117583",
-      "ref": "480455",
-      "desc": "Ethicon Da Vinci SureForm 45 Stapler Da Vinci Xi / X SmartFire (12mm, 570mm, 12°, +/- 60°) 480455",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "48230B",
-      "desc": "INTUITIVE Reload, Blue, 3.5 mm Size, 4 Rows Of Staples, Sterile, Single-Use, For Sureform Staplers 48230B",
-      "price": "$0.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "48230W",
-      "desc": "INTUITIVE Intuitive Surgical Stapler Reload White 2.4 mm 6-Row For Endowrist 30 48230W",
-      "price": "$0.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "48345B",
-      "desc": "INTUITIVE Surgical da Vinci SureForm 45mm-3.5mm Reload, Six-Row Blue 48345B",
-      "price": "$0.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "48345M",
-      "desc": "INTUITIVE Intuitive Surgical Da Vinci Xi Sureform 45 Reload 45 mm Gray 48345M",
-      "price": "$0.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "",
-      "ref": "48360M",
-      "desc": "INTUITIVE Intuitive Surgical Da Vinci Xi Sureform Stapler Reload 60.0 mm White 48360M",
-      "price": "$0.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "00886874113851",
-      "ref": "48360T",
-      "desc": "INTUITIVE Intuitive Surgical Da Vinci Xi Sureformstapler Reload 60.0 mm Black 48360T",
-      "price": "$0.00",
-      "mfr": "INTUITIVE"
-    },
-    {
-      "gtin": "30705031007776",
-      "ref": "663G",
-      "desc": "ETHICON 3-0 Ethilon Black 1X18\" FS-1 (BX/12) 663G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "663H",
-      "desc": "ETHICON 3-0 Ethilon Black 1X18\" FS-1 (BX/36) 663H",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031007820",
-      "ref": "664H",
-      "desc": "ETHICON 2-0 Ethilon Black 1X18\" FS (BX/36) 664H",
-      "price": "$110.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "669H",
-      "desc": "ETHICON 3-0 Ethilon Black 1X30\" FS-1 (BX/36) 669H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "686G",
-      "desc": "ETHICON 5-0 Plain Gut P-3 Yellowish Tan 18\" Monofilament (BX/12) 686G - Discontinued 686G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "697G",
-      "desc": "ETHICON 6-0 Ethilon Black 1X18\" P-1 (BX/12) 697G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "698H",
-      "desc": "ETHICON 5-0 Ethilon Black 1X18\" P-3 (BX/36) 698H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031009381",
-      "ref": "736G",
-      "desc": "Ethicon 4-0 (1.5 Ph. Eur.) C-3 (13mm 3/8c Reverse Cutting) 18” (45cm) PERMA-HAND SILK (BX/12) 736G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "7731G",
-      "desc": "ETHICON 5-0 Ethilon Black 1X18\" S-14 Double Armed (BX/12) 7731G",
-      "price": "$120.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031010776",
-      "ref": "774G",
-      "desc": "Ethicon 6-0 GUT PLA\" YELLOWISH TAN 1X18\" G-1 (BX/12) 774G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "792G",
-      "desc": "ETHICON 5-0 Gut Chromic Naturally Brown 1X18\" G-3 Double Armed (BX/12) 792G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "794G",
-      "desc": "ETHICON 6-0 Gut Chromic Naturally Brown 1X18\" G-6 Double Armed (BX/12) 794G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8557H",
-      "desc": "ETHICON 4-0 Prolene Blue 1X36\" RB-1 Double Armed (BX/36) 8557H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8661G",
-      "desc": "ETHICON 5-0 Prolene Blue 1X18\" FS-2 (BX/12) 8661G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8661H",
-      "desc": "ETHICON Prolene Blu 45 cm M1 (BX/36) 8661H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031018918",
-      "ref": "8683G",
-      "desc": "ETHICON 4-0 Prolene Blue 1X18\" FS-2 (BX/12) 8683G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031019090",
-      "ref": "8690H",
-      "desc": "ETHICON 0 Prolene Blue 1X30\" FSLX Prolene® Polypropylene Suture (BX/36) 8690H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8706H",
-      "desc": "ETHICON 6-0 Prolene Blue 1X30\" C-1 Double Armed (BX/36) 8706H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "8726G",
-      "desc": "ETHICON 6-0 Prolene Blue 1X30\" C-1 Double Armed (BX/12) 8726G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031091652",
-      "ref": "8776H",
-      "desc": "ETHICON 6-0 Prolene Blue 1X30\" BV Double Armed (Short Dated) (BX/36) 8776H",
-      "price": "$45.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031020966",
-      "ref": "882H",
-      "desc": "Ethicon 3-0 GUT CHROMIC Naturally BROWN 1X27\" CT-2 (BX/36) 882H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "A1667N",
-      "desc": "SHARPOINT Sharpoint Plus Suture 4-0 18\" Nylon Monofilament PS-2 Black 12/BX A1667N",
-      "price": "$0.00",
-      "mfr": "SHARPOINT"
-    },
-    {
-      "gtin": "",
-      "ref": "AR-9821",
-      "desc": "ARTHREX Apollorf Xl90, Aspirating Ablator 90°, Extra Large AR-9821",
-      "price": "$0.00",
-      "mfr": "ARTHREX"
-    },
-    {
-      "gtin": "",
-      "ref": "B1915N",
-      "desc": "SHARPOINT 5-0 Fast Absorbing Gut Suture - 1915G Replacement B1915N",
-      "price": "$0.00",
-      "mfr": "SHARPOINT"
-    },
-    {
-      "gtin": "",
-      "ref": "C521D",
-      "desc": "ETHICON 0 Nurolon Black 8X18\" CT-1 CR C521D",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "ECR45M",
-      "desc": "ETHICON 45 mm Gray Reload ECR45M",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "ECR60M",
-      "desc": "ETHICON 60 mm Gray Reload ECR60M",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "EGIA45AMT",
-      "desc": "COVIDIEN Covidien Endo Gia Articulating Medium/Thick Tri-Staple Reload 45.0 mm (Purple) EGIA45AMT",
-      "price": "$0.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "EGIA45AVM",
-      "desc": "COVIDIEN Covidien Endo Gia Reload W/Tri-Staple Technology - Vascular/Medium; 45 mm (Each) EGIA45AVM",
-      "price": "$135.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "EGIA60AMT",
-      "desc": "COVIDIEN Covidien Endo Gia Reload W/ Tri-Staple Technology - Medium/Thick; 60 mm EGIA60AMT",
-      "price": "$0.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "",
-      "ref": "EGIA60AVM",
-      "desc": "COVIDIEN Covidien Endo Gia 60 mm Articulating Vascular Staple Device, Medium Staple, Tan (Each) EGIA60AVM",
-      "price": "$0.00",
-      "mfr": "COVIDIEN"
-    },
-    {
-      "gtin": "30705031037445",
-      "ref": "G122H",
-      "desc": "Ethicon 3-0 GUT CHROMIC Naturally BROWN 1X27\" SH (BX/36) G122H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "10848782014375",
-      "ref": "G316N",
-      "desc": "SHARPOINT Polysyn 3-0 Violet 1X27\" SH G316N",
-      "price": "$45.00",
-      "mfr": "SHARPOINT"
-    },
-    {
-      "gtin": "",
-      "ref": "GST45D",
-      "desc": "ETHICON 45 mm Gold Reload With Gripping Surface Technology GST45D",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "GST45G",
-      "desc": "ETHICON 45 mm Green Reload With Gripping Surface Technology GST45G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "GST45T",
-      "desc": "ETHICON 45 mm Black Reload With Gripping Surface Technology GST45T",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "HAR9F",
-      "desc": "ETHICON Harmonic Focus®+ Shears HAR9F",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031038732",
-      "ref": "J316H",
-      "desc": "ETHICON 3-0 COATED VICRYL VIOLET 1X27\" SH (BX/36) J316H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031039135",
-      "ref": "J347H",
-      "desc": "ETHICON 1 (4 Ph. Eur.) CT-1 (36mm 1/2c Taperpoint) 36” (90cm) Coated VICRYL (BX/36) J347H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J385H",
-      "desc": "ETHICON 5-0 Coated Vicryl Violet 1X18\" C-3 (BX/36) J385H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040131",
-      "ref": "J463G",
-      "desc": "ETHICON 5-0 COATED VICRYL VIOLET 1X18\" P-3 (BX/12) J463G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040155",
-      "ref": "J464G",
-      "desc": "Ethicon 4-0 COATED VICRYL VIOLET 1X18\" P-3 (BX/12) J464G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J489G",
-      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" P-1 (BX/12) J489G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040490",
-      "ref": "J493G",
-      "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" P-3 (BX/12) J493G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040520",
-      "ref": "J494G",
-      "desc": "4-0 COATED VICRYL UNDYED 1X18\" P-3 (BX/12) J494G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031040629",
-      "ref": "J497G",
-      "desc": "ETHICON 3-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/12) J497G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J546G",
-      "desc": "ETHICON 7-0 Coated Vicryl Violet 1X18\" TG140-8 Double Armed (BX/12) J546G",
-      "price": "$270.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J833G",
-      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" PC-1 (BX/12) J833G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043323",
-      "ref": "J868H",
-      "desc": "Ethicon 3-0 CP-2 (26mm 1/2c Reverse Cutting) 27\" (70cm) Coated VICRYL (BX/36) J868H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043477",
-      "ref": "J906G",
-      "desc": "Ethicon 0 COATED VICRYL VIOLET 12X18\" TIE (BX/12) J906G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043651",
-      "ref": "J945H",
-      "desc": "Ethicon 2-0 COATED VICRYL UNDYED 1X36\" CT-1 (BX/36) J945H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "J946G",
-      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/12) J946G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "30705031043682",
-      "ref": "J947H",
-      "desc": "Ethicon 1 COATED VICRYL UNDYED 1X36\" CT-1 (BX/36) J947H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "",
-      "ref": "K833H",
-      "desc": "ETHICON 2-0 Perma Hand Black 1X30\" SH (BX/36) K833H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$280.00",
+      "mfr": "COVIDIEN",
+      "category": "Sealer-Divider",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "LF1923",
       "desc": "COVIDIEN Medtronic LigaSure Maryland Jaw 23cm Open Sealer/Divider, Nano-Coated (BX/6) LF1923",
       "price": "$0.00",
-      "mfr": "COVIDIEN"
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Sealer",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "LF1937",
+      "desc": "COVIDIEN Medtronic Ligasure Maryland Jaw 37 cm Laparoscopic Instrument, Nano-Coated LF1937",
+      "price": "$425.00",
+      "cost": "$320.00",
+      "mfr": "COVIDIEN",
+      "category": "Instrument",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "LF4418",
+      "desc": "COVIDIEN Ligasure Impact, Curved, Large Jaw, Open Sealer/ Divider; 36 mm - 18 cm LF4418",
+      "price": "$395.00",
+      "cost": "$290.00",
+      "mfr": "COVIDIEN",
+      "category": "Sealer",
+      "status": "ACTIVE",
+      "onHand": 12,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "LF5637",
+      "desc": "COVIDIEN Ligasure 5 mm - 37 cm Retractable L-Hook Laparoscopic Sealer/Divider LF5637",
+      "price": "$435.00",
+      "cost": "$330.00",
+      "mfr": "COVIDIEN",
+      "category": "Sealer-Divider",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10884524001623",
+      "ref": "LS1020",
+      "desc": "COVIDIEN Ligasure Atlas Tissue Fusion Open Procedure Sealer Divider Bilateral Blunt Jaw",
+      "price": "$300.00",
+      "cost": "$125.00",
+      "mfr": "COVIDIEN",
+      "category": "Ligasure",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "SIG45AMT",
+      "desc": "COVIDIEN Tri-Staple 2.0 Reload, 45 mm Medium/Thick Tissue, Purple SIG45AMT",
+      "price": "$110.00",
+      "cost": "$65.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10884521808966",
+      "ref": "SIG45AVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Reload, 45mm Vascular/Medium Tissue, Tan (Each) EGIA45AVM",
+      "price": "$80.00",
+      "cost": "$60.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 8,
+      "reservedQty": 1
+    },
+    {
+      "gtin": "",
+      "ref": "SIG45AXT",
+      "desc": "COVIDIEN Signia Tri-staple 2.0 Extra Thick Reload 45.0mm Black SIG45AXT",
+      "price": "$125.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "SIG45CTAMT",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Medium/Thick Reload 45 mm Purple SIG45CTAMT",
+      "price": "$92.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10884521543720",
+      "ref": "SIG45CTAVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Intelligent Reload & Introducer, 45mm Vascular/Medium SIG45CTAVM",
+      "price": "$92.00",
+      "cost": "$60.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "SIG60AMT",
+      "desc": "COVIDIEN Tri-Staple 2.0 Intelligent Reload Medium/Thick SIG60AMT",
+      "price": "$150.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10884521808980",
+      "ref": "SIG60AVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Reload, 60mm, Vascular/Medium Tissue, Tan SIG60AVM",
+      "price": "$85.00",
+      "cost": "$65.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "SIG60AXT",
+      "desc": "COVIDIEN Signia Tri-staple 2.0 Extra Thick Reload 60.0mm Black SIG60AXT",
+      "price": "$150.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "SIG60CTAMT",
+      "desc": "COVIDIEN Signia Tri-staple 2.0 Curved Tip Medium Thick Reload 60.0mm Purple SIG60CTAMT",
+      "price": "$105.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10884521543690",
+      "ref": "SIG60CTAVM",
+      "desc": "COVIDIEN Medtronic Signia Tri-Staple 2.0 Curved Tip Intelligent Reload & Introducer, 60mm Vascular/Medium SIG60CTAVM",
+      "price": "$65.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10884521043152",
+      "ref": "TA30V3L",
+      "desc": "COVIDIEN TA Autosuture Vascular Loading Unit with DST Series Technology 30 mm - V3 TA30V3L",
+      "price": "$90.00",
+      "cost": "$0.00",
+      "mfr": "COVIDIEN",
+      "category": "Autosuture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1962",
+      "desc": "ETHICON Surgicel\u00ae Fibrillar\u2122 Hemostat, 2X4 in 1962",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Hemostat",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1963",
+      "desc": "ETHICON Surgicel\u00ae Fibrillar\u2122 Hemostat, 4X4 in 1963",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Hemostat",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1973",
+      "desc": "ETHICON Surgifoam Absorbable Gelatin Sponge 8cm x 6.25cm x 10mm (Each) 1973",
+      "price": "$29.99",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Hemostat, Gelatin, Sponge",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1974",
+      "desc": "ETHICON Surgifoam Absorbable Gelatin Sponge Size 100 8cm X 12.5cm X 1cm (BX/6) 1974",
+      "price": "$179.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "General, Gelatin, Sponge",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1611G",
+      "desc": "ETHICON 4-0 Ethilon Undyed 1X18\" PS-2 (BX/12) 1611G",
+      "price": "$110.00",
+      "cost": "$20.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1611",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031001439",
+      "ref": "1629H",
+      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" FS-1 (BX/36) 1629H",
+      "price": "$115.00",
+      "cost": "$49.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1629",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1647G",
+      "desc": "ETHICON 7-0 Ethilon Black 1X18\" P-6 (BX/12) 1647G",
+      "price": "$100.00",
+      "cost": "$66.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1647",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031001682",
+      "ref": "1661G",
+      "desc": "ETHICON 5-0 ETHILON BLACK 1X18\" PS-4 (BX/12) 1661G",
+      "price": "$130.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "1661, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1665G",
+      "desc": "ETHICON 6-0 Ethilon Black 1X18\" PS-3 (BX/12) 1665G",
+      "price": "$72.00",
+      "cost": "$37.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1665",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031001811",
+      "ref": "1667G",
+      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" PS-2 (BX/12) 1667G",
+      "price": "$104.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "1667, Suture",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1669H",
+      "desc": "ETHICON 3-0 Ethilon Black 1X18\" PS-2 (BX/36) 1669H",
+      "price": "$275.00",
+      "cost": "$108.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1669",
+      "status": "ACTIVE",
+      "onHand": 7,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1698G",
+      "desc": "ETHICON 6-0 Ethilon Black 1X18\" P-3 (BX/12) 1698G",
+      "price": "$112.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1698",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1740G",
+      "desc": "ETHICON 5-0 Ethilon Black 1X18\" S-22 Double Armed (BX/12) 1740G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1740",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1761G",
+      "desc": "ETHICON 5-0 Mersilene Green 1X18\" S-14 Double Armed (BX/12) 1761G",
+      "price": "$70.00",
+      "cost": "$36.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1761",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031002566",
+      "ref": "1780G",
+      "desc": "ETHICON 6-0 PERMA HAND BLACK 1X18\" S-14 DOUBLE ARMED (BX/12) 1780G",
+      "price": "$333.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "1780, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1797G",
+      "desc": "ETHICON 7-0 Gut Chromic Blue 1X18\" TG140-8 Double Armed (BX/12) 1797G",
+      "price": "$450.00",
+      "cost": "$150.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1797",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1856G",
+      "desc": "ETHICON 6-0 Ethilon Black 1X18\" PC-1 (BX/12) 1856G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1856",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031002863",
+      "ref": "1893G",
+      "desc": "ETHICON 3-0 ETHILON BLACK 1X18\" PC-5 (BX/12) 1893G",
+      "price": "$128.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "1893, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031002917",
+      "ref": "1915G",
+      "desc": "ETHICON 5-0 Gut Pla\" Fast Absorb\"G Yellowish Tan 1X18\" PC-1 (BX/12) 1915G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 1915",
+      "status": "INACTIVE",
+      "onHand": 9,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031468102",
+      "ref": "1951S",
+      "desc": "ETHICON SURGICEL\u00ae Original Hemostat, 2x14 inches 1951S",
+      "price": "$400.00",
+      "cost": "$200.00",
+      "mfr": "ETHICON",
+      "category": "Hemostat",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "1952S",
+      "desc": "ETHICON Surgicel\u00ae Original Hemostat, 4X8 in, Oxidized Regenerated Cellulose, Absorbable 1952S",
+      "price": "$300.00",
+      "cost": "$160.00",
+      "mfr": "ETHICON",
+      "category": "Hemostat",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031468126",
+      "ref": "1953S",
+      "desc": "ETHICON Ethicon Surgicel Original Absorbable Hemostat 2 in X 3 in 1953S",
+      "price": "$375.00",
+      "cost": "$200.00",
+      "mfr": "ETHICON",
+      "category": "Hemostat",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "2815G",
+      "desc": "ETHICON 8-0 Ethilon Black 1X5\" BV130-4 (BX/12) 2815G",
+      "price": "$300.00",
+      "cost": "$115.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 2815",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031004898",
+      "ref": "3846T",
+      "desc": "ETHICON 2 Prolene Blue 3X20\" LR (BX/24) 3846T",
+      "price": "$360.00",
+      "cost": "$142.68",
+      "mfr": "ETHICON",
+      "category": "Suture, 3846",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031005321",
+      "ref": "424H",
+      "desc": "ETHICON 0 Perma Hand Black 1X30\" CT-1 (BX/36) 424H",
+      "price": "$85.00",
+      "cost": "$40.28",
+      "mfr": "ETHICON",
+      "category": "Suture, 424",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "4350XL",
+      "desc": "Ethicon Gynecare Interceed Absorbable Adhesion Barrier 5.0in X 6.0in 12.7cm X 15.2cm (BX/10) 4350XL",
+      "price": "$1,299.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Adhesion, Barrier, 4350",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "460T",
+      "desc": "ETHICON 2 Ethilon Black 1X20\" LR (BX/24) 460T",
+      "price": "$86.00",
+      "cost": "$24.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 460",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "585H",
+      "desc": "ETHICON 2-0 Ethilon Black 1X18\" PS (BX/36) 585H",
+      "price": "$140.00",
+      "cost": "$123.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 585",
+      "status": "ACTIVE",
+      "onHand": 5,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "627H",
+      "desc": "ETHICON 3-0 Ethilon Black 1X30\" KS-1 (BX/36) 627H",
+      "price": "$150.00",
+      "cost": "$70.53",
+      "mfr": "ETHICON",
+      "category": "Suture, 627",
+      "status": "ACTIVE",
+      "onHand": 6,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "628H",
+      "desc": "ETHICON 2-0 Ethilon Black 1X30\" KS (BX/36) 628H",
+      "price": "$120.00",
+      "cost": "$80.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 628",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031007066",
+      "ref": "632G",
+      "desc": "ETHICON 3-0 Perma Hand Black 1X18\" X-1 (BX/12) 632G",
+      "price": "$40.00",
+      "cost": "$17.30",
+      "mfr": "ETHICON",
+      "category": "Suture, 632",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "635H",
+      "desc": "ETHICON 4-0 Gut Chromic Naturally Brown 1X27\" FS-2 (BX/36) 635H",
+      "price": "$125.00",
+      "cost": "$89.12",
+      "mfr": "ETHICON",
+      "category": "Suture, 635",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "640G",
+      "desc": "ETHICON 5-0 Perma Hand Black 1X18\" P-3 (BX/12) 640G",
+      "price": "$100.00",
+      "cost": "$36.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 640",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031007745",
+      "ref": "662H",
+      "desc": "ETHICON 4-0 Ethilon Black 1X18\" FS-2 (BX/36) 662H",
+      "price": "$150.00",
+      "cost": "$55.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 662",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031007776",
+      "ref": "663G",
+      "desc": "ETHICON 3-0 Ethilon Black 1X18\" FS-1 (BX/12) 663G",
+      "price": "$120.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 663",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 1
+    },
+    {
+      "gtin": "",
+      "ref": "663H",
+      "desc": "ETHICON 3-0 Ethilon Black 1X18\" FS-1 (BX/36) 663H",
+      "price": "$120.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 663",
+      "status": "ACTIVE",
+      "onHand": 22,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031007820",
+      "ref": "664H",
+      "desc": "ETHICON 2-0 Ethilon Black 1X18\" FS (BX/36) 664H",
+      "price": "$110.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 664",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "669H",
+      "desc": "ETHICON 3-0 Ethilon Black 1X30\" FS-1 (BX/36) 669H",
+      "price": "$151.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 669",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "678G",
+      "desc": "ETHICON 0 Perma Hand Black 1X18\" FSL (BX/12) 678G",
+      "price": "$85.00",
+      "cost": "$60.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 678",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "680H",
+      "desc": "ETHICON 0 Perma Hand Black 1X30\" FSL (BX/36) 680H",
+      "price": "$142.00",
+      "cost": "$86.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 680",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "682G",
+      "desc": "ETHICON 5-0 Perma Hand Black 1X18\" FS-2 (BX/12) 682G",
+      "price": "$40.00",
+      "cost": "$19.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 682",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "685G",
+      "desc": "ETHICON 2-0 Perma Hand Black 1X18\" FS (BX/12) 685G",
+      "price": "$52.00",
+      "cost": "$25.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 685",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "686G",
+      "desc": "ETHICON 5-0 Plain Gut P-3 Yellowish Tan 18\" Monofilament (BX/12) 686G - Discontinued 686G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 686",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031008308",
+      "ref": "687G",
+      "desc": "ETHICON 5-0 Chromic Gut 1X18\" P-3 (BX/12) 687G",
+      "price": "$115.00",
+      "cost": "$63.84",
+      "mfr": "ETHICON",
+      "category": "Suture, 687",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "689G",
+      "desc": "ETHICON 6-0 Ethilon Undyed 1X18\" P-1 (BX/12) 689G",
+      "price": "$95.00",
+      "cost": "$36.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 689",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "697G",
+      "desc": "ETHICON 6-0 Ethilon Black 1X18\" P-1 (BX/12) 697G",
+      "price": "$91.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 697",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031008582",
+      "ref": "698G",
+      "desc": "ETHICON 5-0 Ethilon Black 1X18\" P-3 (BX/12) 698G",
+      "price": "$98.00",
+      "cost": "$36.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 698",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "698H",
+      "desc": "ETHICON 5-0 Ethilon Black 1X18\" P-3 (BX/36) 698H",
+      "price": "$194.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 698",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "699G",
+      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" P-3 (BX/12) 699G",
+      "price": "$103.00",
+      "cost": "$75.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 699",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "699H",
+      "desc": "ETHICON 4-0 ETHILON BLACK 1X18\" P-3 (BX/36) 699H",
+      "price": "$220.00",
+      "cost": "$135.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 699",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031009381",
+      "ref": "736G",
+      "desc": "ETHICON 4-0 PERMA HAND BLACK 1X18\" C-3 (BX/12) 736G",
+      "price": "$65.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 736",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031010479",
+      "ref": "770G",
+      "desc": "ETHICON 6-0 GUT PLA\" YELLOWISH TAN 1X18\" G-1 DOUBLE ARMED (BX/12) 770G",
+      "price": "$390.00",
+      "cost": "$169.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 770",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "7731G",
+      "desc": "ETHICON 5-0 Ethilon Black 1X18\" S-14 Double Armed (BX/12) 7731G",
+      "price": "$120.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 7731",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031010776",
+      "ref": "774G",
+      "desc": "ETHICON 6-0 GUT PLA\" YELLOWISH TAN 1X18\" G-1 (BX/12) 774G",
+      "price": "$182.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 774",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "783G",
+      "desc": "ETHICON 4-0 Perma Hand Black 1X18\" G-3 Double Armed (BX/12) 783G",
+      "price": "$298.00",
+      "cost": "$195.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 783",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "790G",
+      "desc": "ETHICON 6-0 Gut Chromic Naturally Brown 1X18\" G-1 Double Armed (BX/12) 790G",
+      "price": "$350.00",
+      "cost": "$130.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 790",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "792G",
+      "desc": "ETHICON 5-0 Gut Chromic Naturally Brown 1X18\" G-3 Double Armed (BX/12) 792G",
+      "price": "$392.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 792",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "794G",
+      "desc": "ETHICON 6-0 Gut Chromic Naturally Brown 1X18\" G-6 Double Armed (BX/12) 794G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 794",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031011940",
+      "ref": "796G",
+      "desc": "ETHICON 6-0 GUT CHROMIC Naturally BROWN 1X18\" G-1 (BX/12) 796G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 796",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "810H",
+      "desc": "ETHICON 3-0 Gut Chromic Naturally Brown 1X27\" CT-1 (BX/36) 810H",
+      "price": "$200.00",
+      "cost": "$110.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 810",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031012732",
+      "ref": "811H",
+      "desc": "ETHICON 2-0 Gut Chromic Naturally Brown 1X27\" CT-1 (BX/36) 811H",
+      "price": "$230.00",
+      "cost": "$100.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 811",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031013746",
+      "ref": "825G",
+      "desc": "ETHICON 2 Ethilon Black 1X60\" Tp-1 (BX/12) 825G",
+      "price": "$78.00",
+      "cost": "$33.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 825",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8424H",
+      "desc": "ETHICON 0 Prolene Blue 1X30\" CT-1 (BX/36) 8424H",
+      "price": "$180.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8424",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031015665",
+      "ref": "843H",
+      "desc": "ETHICON 2-0 GUT PLA\" YELLOWISH TAN 1X27\" CT-1 (BX/36) 843H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "843, Suture",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8521H",
+      "desc": "ETHICON 4-0 PROLENE BLUE 1X36\" SH DOUBLE ARMED (BX/36) 8521H",
+      "price": "$130.00",
+      "cost": "$62.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8521",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8556H",
+      "desc": "ETHICON 5-0 Prolene Blue 1X36\" RB-1 Double Armed (BX/36) 8556H",
+      "price": "$195.00",
+      "cost": "$90.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8556",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8557H",
+      "desc": "ETHICON 4-0 Prolene Blue 1X36\" RB-1 Double Armed (BX/36) 8557H",
+      "price": "$200.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8557",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031017362",
+      "ref": "8581H",
+      "desc": "ETHICON 4-0 PROLENE BLUE 1X36\" BB DOUBLE ARMED (BX/36) 8581H",
+      "price": "$500.00",
+      "cost": "$154.44",
+      "mfr": "ETHICON",
+      "category": "8581, Suture",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8661G",
+      "desc": "ETHICON 5-0 Prolene Blue 1X18\" FS-2 (BX/12) 8661G",
+      "price": "$91.00",
+      "cost": "$28.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8661",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8661H",
+      "desc": "ETHICON Prolene Blu 45 cm M1 (BX/36) 8661H",
+      "price": "$91.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8661",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8665G",
+      "desc": "ETHICON 3-0 Prolene Blue 1X18\" FS-2 (BX/12) 8665G",
+      "price": "$85.00",
+      "cost": "$44.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8665",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8681G",
+      "desc": "ETHICON 5-0 Prolene Blue 1X18\" PS-3 (BX/12) 8681G",
+      "price": "$105.00",
+      "cost": "$48.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8681",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8682G",
+      "desc": "ETHICON 4-0 Prolene Blue 1X18\" PS-2 (BX/12) 8682G",
+      "price": "$115.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8682",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031018918",
+      "ref": "8683G",
+      "desc": "ETHICON 4-0 Prolene Blue 1X18\" FS-2 (BX/12) 8683G",
+      "price": "$105.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8683",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8684G",
+      "desc": "ETHICON 3-0 Prolene Blue 1X18\" FS-1 (BX/12) 8684G",
+      "price": "$118.00",
+      "cost": "$37.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8684",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8689H",
+      "desc": "ETHICON 2-0 Prolene Blue 1X30\" FSLX (BX/36) 8689H",
+      "price": "$275.00",
+      "cost": "$75.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8689",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031019090",
+      "ref": "8690H",
+      "desc": "ETHICON 0 PROLENE BLUE 1X30\" FSLX (BX/36) 8690H",
+      "price": "$247.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8690",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8695G",
+      "desc": "ETHICON 6-0 Prolene Blue 1X18\" P-3 (BX/12) 8695G",
+      "price": "$120.00",
+      "cost": "$49.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8695",
+      "status": "ACTIVE",
+      "onHand": 5,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031019182",
+      "ref": "8696G",
+      "desc": "ETHICON 7-0 Prolene Blue 1X18\" P-1 (BX/12) 8696G",
+      "price": "$120.00",
+      "cost": "$81.68",
+      "mfr": "ETHICON",
+      "category": "Suture, 8696",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031019212",
+      "ref": "8697G",
+      "desc": "ETHICON 6-0 PROLENE BLUE 1X18\" P-1 8697G",
+      "price": "$140.00",
+      "cost": "$48.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8697",
+      "status": "ACTIVE",
+      "onHand": 5,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031019236",
+      "ref": "8698G",
+      "desc": "ETHICON 5-0 Prolene Blue 1X18\" P-3 (BX/12) 8698G",
+      "price": "$103.00",
+      "cost": "$52.10",
+      "mfr": "ETHICON",
+      "category": "Suture, 8698",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8706H",
+      "desc": "ETHICON 6-0 Prolene Blue 1X30\" C-1 Double Armed (BX/36) 8706H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8706",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8726G",
+      "desc": "ETHICON 6-0 Prolene Blue 1X30\" C-1 Double Armed (BX/12) 8726G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8726",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031091652",
+      "ref": "8776H",
+      "desc": "ETHICON 6-0 Prolene Blue 1X30\" BV Double Armed (Short Dated) (BX/36) 8776H",
+      "price": "$45.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8776",
+      "status": "ACTIVE",
+      "onHand": 20,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031020966",
+      "ref": "882H",
+      "desc": "ETHICON 3-0 GUT CHROMIC Naturally BROWN 1X27\" CT-2 (BX/36) 882H",
+      "price": "$250.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 882",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031021017",
+      "ref": "8832H",
+      "desc": "ETHICON 3-0 Prolene Blue 1X30\" SH (BX/36) 8832H",
+      "price": "$225.00",
+      "cost": "$105.88",
+      "mfr": "ETHICON",
+      "category": "Suture, 8832",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031021109",
+      "ref": "883H",
+      "desc": "ETHICON 2-0 GUT CHROMIC Naturally BROWN 1X27\" CT-2 (BX/36) 883H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 883",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "8871H",
+      "desc": "ETHICON 4-0 Prolene Blue 1X30\" RB-1 (BX/36) 8871H",
+      "price": "$260.00",
+      "cost": "$110.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 8871",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031022557",
+      "ref": "9038G",
+      "desc": "ETHICON 8-0 ETHILON BLACK 1X12\" CS175-8 DOUBLE ARMED (BX/12) 9038G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, 9038",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "C521D",
+      "desc": "ETHICON 0 Nurolon Black 8X18\" CT-1 CR C521D",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, C521",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10705036001348",
+      "ref": "CB5LT",
+      "desc": "ETHICON Ethicon Endopath Xcel Universal Trocar Stability Sleeve CB5LT",
+      "price": "$25.00",
+      "cost": "$15.83",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "20705031203522",
+      "ref": "DHVM12",
+      "desc": "ETHICON Dermabond Mini Topical Skin Adhesive DHVM12",
+      "price": "$240.00",
+      "cost": "$150.00",
+      "mfr": "ETHICON",
+      "category": "Sealant",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "20705031203539",
+      "ref": "DNX12",
+      "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive DNX12",
+      "price": "$210.00",
+      "cost": "$150.00",
+      "mfr": "ETHICON",
+      "category": "Sealant",
+      "status": "ACTIVE",
+      "onHand": 8,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "ECR45M",
+      "desc": "ETHICON 45 mm Gray Reload ECR45M",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "ECR60M",
+      "desc": "ETHICON 60 mm Gray Reload ECR60M",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "G121H",
+      "desc": "ETHICON 4-0 Gut Chromic Naturally Brown 1X27\" SH (BX/36) G121H",
+      "price": "$185.00",
+      "cost": "$108.00",
+      "mfr": "ETHICON",
+      "category": "Suture, G121",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031037445",
+      "ref": "G122H",
+      "desc": "ETHICON 3-0 GUT CHROMIC Naturally BROWN 1X27\" SH (BX/36) G122H",
+      "price": "$185.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, G122",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031037452",
+      "ref": "G123H",
+      "desc": "ETHICON 2-0 GUT CHROMIC Naturally BROWN 1X27\" SH BX/36 G123H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, G123",
+      "status": "INACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "G181H",
+      "desc": "ETHICON 4-0 Gut Chromic Naturally Brown 1X27\" SH-1 (BX/36) G181H",
+      "price": "$200.00",
+      "cost": "$127.00",
+      "mfr": "ETHICON",
+      "category": "Suture, G181",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031037636",
+      "ref": "G697G",
+      "desc": "ETHICON 6-0 ETHILON GREEN 1X18\" P-1 (BX/12) G697G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, G697",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "GST45B",
+      "desc": "ETHICON Echelon Flex Gst System Reload Blue 45.0mm X 3.6mm (BX/12) GST45B",
+      "price": "$750.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "GST, Reload, Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "GST45D",
+      "desc": "ETHICON 45 mm Gold Reload With Gripping Surface Technology GST45D",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "GST45G",
+      "desc": "ETHICON 45 mm Green Reload With Gripping Surface Technology GST45G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "GST45T",
+      "desc": "ETHICON 45 mm Black Reload With Gripping Surface Technology GST45T",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "GST60W",
+      "desc": "ETHICON 60 mm White Reload With Gripping Surface Technology (BX/12) GST60W",
+      "price": "$750.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "HAR9F",
+      "desc": "ETHICON Harmonic Focus\u00ae+ Shears HAR9F",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Shears",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038060",
+      "ref": "J195H",
+      "desc": "ETHICON 2 COATED VICRYL UNDYED 1X27\" CP BX/36 J195H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J195",
+      "status": "INACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J206G",
+      "desc": "ETHICON 2-0 Coated Vicryl Violet 54\" Ligapak Reel 0 (BX/12) J206G",
+      "price": "$60.00",
+      "cost": "$8.25",
+      "mfr": "ETHICON",
+      "category": "Suture, J206",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038190",
+      "ref": "J212H",
+      "desc": "ETHICON 6-0 COATED VICRYL UNDYED 1X27\" RB-1 (BX/36) J212H",
+      "price": "$127.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "J212, Suture",
+      "status": "ACTIVE",
+      "onHand": 5,
+      "reservedQty": 5
+    },
+    {
+      "gtin": "30705031038220",
+      "ref": "J214H",
+      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1x27\" CT-1(BX/36)J214H",
+      "price": "$105.00",
+      "cost": "$48.12",
+      "mfr": "ETHICON",
+      "category": "Suture, J214",
+      "status": "ACTIVE",
+      "onHand": 6,
+      "reservedQty": 5
+    },
+    {
+      "gtin": "30705031038275",
+      "ref": "J219H",
+      "desc": "ETHICON 3-0 COATED VICRYL UNDYED 1X27\" SH-1 (BX/36) J219H",
+      "price": "$151.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "J219, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J258H",
+      "desc": "ETHICON 4-0 COATED VICRYL PLUS VIOLET 1X27\" RB-1 (BX/36) J258H",
+      "price": "$115.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J258",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038312",
+      "ref": "J259H",
+      "desc": "ETHICON 2-0 COATED VICRYL UNDYED 1X27\" CT-1 (BX/36) J259H",
+      "price": "$131.00",
+      "cost": "$46.53",
+      "mfr": "ETHICON",
+      "category": "J259, Suture",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038435",
+      "ref": "J269H",
+      "desc": "ETHICON 2-0 COATED VICRYL UNDYED 1X27\" CT-2 (BX/36) J269H",
+      "price": "$127.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "J269, Suture",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038619",
+      "ref": "J304H",
+      "desc": "ETHICON 4-0 Coated Vicryl Violet 1X27\" RB-1 (BX/36) J304H",
+      "price": "$115.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J304",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038718",
+      "ref": "J315H",
+      "desc": "ETHICON 4-0 Coated Vicryl Violet 1X27\" SH (BX/36) J315H",
+      "price": "$127.00",
+      "cost": "$53.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J315",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031038732",
+      "ref": "J316H",
+      "desc": "ETHICON 3-0 COATED VICRYL VIOLET 1X27\" SH (BX/36) J316H",
+      "price": "$125.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J316",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 3
+    },
+    {
+      "gtin": "30705031038855",
+      "ref": "J328H",
+      "desc": "ETHICON 2-0 COATED VICRYL VIOLET 1X27\" CT-3 (BX/36) J328H",
+      "price": "$105.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "J328, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J338H",
+      "desc": "ETHICON 3-0 Coated Vicryl Violet 1X27\" CT-1 (BX/36) J338H",
+      "price": "$95.00",
+      "cost": "$40.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J338",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031039036",
+      "ref": "J340H",
+      "desc": "ETHICON 0 Coated Vicryl Violet 1X27\" CT-1 (BX/36) J340H",
+      "price": "$110.00",
+      "cost": "$52.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J340",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031039074",
+      "ref": "J344H",
+      "desc": "ETHICON 3-0 Coated Vicryl Violet 1X36\" CT-1 (BX/36) J344H",
+      "price": "$120.00",
+      "cost": "$54.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J344",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031039098",
+      "ref": "J345H",
+      "desc": "ETHICON 2-0 Coated Vicryl Violet 1x36\" CT-1(BX/36)J345H",
+      "price": "$105.00",
+      "cost": "$37.26",
+      "mfr": "ETHICON",
+      "category": "Suture, J345",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031039111",
+      "ref": "J346H",
+      "desc": "ETHICON 0 COATED VICRYL VIOLET 1X36\" CT-1 BX/36 J346H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J346",
+      "status": "INACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031039135",
+      "ref": "J347H",
+      "desc": "ETHICON 1 COATED VICRYL VIOLET 1X36\" CT-1 (BX/36) J347H",
+      "price": "$130.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J347",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J385H",
+      "desc": "ETHICON 5-0 Coated Vicryl Violet 1X18\" C-3 (BX/36) J385H",
+      "price": "$140.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J385",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031039647",
+      "ref": "J415H",
+      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X27\" SH (BX/36) J415H",
+      "price": "$116.00",
+      "cost": "$66.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J415",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J417H",
+      "desc": "ETHICON 2-0 Coated Vicryl Undyed 1X27\" SH (BX/36) J417H",
+      "price": "$125.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J417",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040131",
+      "ref": "J463G",
+      "desc": "ETHICON 5-0 COATED VICRYL VIOLET 1X18\" P-3 (BX/12) J463G",
+      "price": "$115.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J463",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040155",
+      "ref": "J464G",
+      "desc": "ETHICON 4-0 COATED VICRYL VIOLET 1X18\" P-3 (BX/12) J464G",
+      "price": "$125.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J464",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040414",
+      "ref": "J488G",
+      "desc": "ETHICON 7-0 COATED VICRYL UNDYED 1X18\" P-1 (BX/12) J488G",
+      "price": "$160.00",
+      "cost": "$65.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J488",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040421",
+      "ref": "J489G",
+      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" P-1 (BX/12) J489G",
+      "price": "$114.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J489",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J492G",
+      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" P-3 (BX/12) J492G",
+      "price": "$100.00",
+      "cost": "$74.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J492",
+      "status": "ACTIVE",
+      "onHand": 6,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040476",
+      "ref": "J492H",
+      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" P-3 (BX/36) J492H",
+      "price": "$110.00",
+      "cost": "$54.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J492",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040490",
+      "ref": "J493G",
+      "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" P-3 (BX/12) J493G",
+      "price": "$135.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J493",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 1
+    },
+    {
+      "gtin": "30705031040506",
+      "ref": "J493H",
+      "desc": "ETHICON 5-0 COATED VICRYL UNDYED 1X18\" P-3 BX/36 J493H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J493",
+      "status": "INACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040520",
+      "ref": "J494G",
+      "desc": "ETHICON 4-0 COATED VICRYL UNDYED 1X18\" P-3 (BX/12) J494G",
+      "price": "$150.00",
+      "cost": "$44.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J494",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040551",
+      "ref": "J495G",
+      "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/12) J495G",
+      "price": "$105.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J495",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040582",
+      "ref": "J496G",
+      "desc": "ETHICON 4-0 COATED VICRYL UNDYED 1X18\" PS-2 (BX/12) J496G",
+      "price": "$115.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J496",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J496H",
+      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/36) J496H",
+      "price": "$280.00",
+      "cost": "$54.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J496",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040629",
+      "ref": "J497G",
+      "desc": "ETHICON 3-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/12) J497G",
+      "price": "$140.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J497",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J497H",
+      "desc": "ETHICON 3-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/36) J497H",
+      "price": "$245.00",
+      "cost": "$85.64",
+      "mfr": "ETHICON",
+      "category": "Suture, J497",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031040759",
+      "ref": "J506G",
+      "desc": "ETHICON 5-0 Coated Vicryl Undyed 1X18\" PS-4 (BX/12) J506G",
+      "price": "$100.00",
+      "cost": "$40.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J506",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J510G",
+      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" PS-6 (BX/12) J510G",
+      "price": "$100.00",
+      "cost": "$35.10",
+      "mfr": "ETHICON",
+      "category": "Suture, J510",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031041077",
+      "ref": "J544G",
+      "desc": "ETHICON 6-0 Coated Vicryl Violet 1X18\" TG100-8 Double Armed (BX/12) J544G",
+      "price": "$230.00",
+      "cost": "$110.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J544",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J546G",
+      "desc": "ETHICON 7-0 Coated Vicryl Violet 1X18\" TG140-8 Double Armed (BX/12) J546G",
+      "price": "$270.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J546",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J548G",
+      "desc": "ETHICON 8-0 Coated Vicryl Violet 1X12\" TG140-8 Double Armed (BX/12) J548G",
+      "price": "$250.00",
+      "cost": "$110.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J548",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031041251",
+      "ref": "J562G",
+      "desc": "ETHICON 6-0 COATED VICRYL VIOLET 1X18\" S-28 DOUBLE ARMED (BX/12) J562G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J562",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J566G",
+      "desc": "ETHICON 7-0 Coated Vicryl Violet 1X12\" TG140-8 Double Armed (BX/12) J566G",
+      "price": "$285.00",
+      "cost": "$149.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J566",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J570G",
+      "desc": "ETHICON 6-0 Coated Vicryl Violet 1x18\" S-14 Double Armed (BX/12) J570G",
+      "price": "$310.00",
+      "cost": "$148.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J570",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031041336",
+      "ref": "J571G",
+      "desc": "ETHICON 5-0 Coated Vicryl Violet 1X18\" S-14 Double Armed (BX/12) J571G",
+      "price": "$170.00",
+      "cost": "$110.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J571",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031041381",
+      "ref": "J576G",
+      "desc": "ETHICON 7-0 COATED VICRYL VIOLET 1X18\" TG160-8 DOUBLE ARMED (BX/12) J576G",
+      "price": "$265.00",
+      "cost": "$140.00",
+      "mfr": "ETHICON",
+      "category": "J576, Suture",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031041398",
+      "ref": "J578G",
+      "desc": "ETHICON 6-0 COATED VICRYL VIOLET 1X8\" S-14 DOUBLE ARMED (BX/12) J578G",
+      "price": "$272.00",
+      "cost": "$60.00",
+      "mfr": "ETHICON",
+      "category": "J578, Suture",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031041602",
+      "ref": "J599G",
+      "desc": "ETHICON 8-0 COATED VICRYL VIOLET 1X12\" TG140-8 DOUBLE ARMED (BX/12) J599G",
+      "price": "$298.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J599",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J833G",
+      "desc": "ETHICON 6-0 Coated Vicryl Undyed 1X18\" PC-1 (BX/12) J833G",
+      "price": "$122.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J833",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043224",
+      "ref": "J839D",
+      "desc": "ETHICON 2-0 COATED VICRYL UNDYED 8X18\" CT-1 CR (BX/12) J839D",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "J839, Suture",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043323",
+      "ref": "J868H",
+      "desc": "ETHICON 3-0 CP-2 (26mm 1/2c Reverse Cutting) 27\" (70cm) Coated VICRYL (BX/36) J868H",
+      "price": "$100.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J868",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043477",
+      "ref": "J906G",
+      "desc": "ETHICON 0 COATED VICRYL VIOLET 12X18\" TIE (BX/12) J906G",
+      "price": "$164.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J906",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043644",
+      "ref": "J944H",
+      "desc": "ETHICON 3-0 Coated Vicryl Undyed 1x36\" CT-1(BX/36)J944H",
+      "price": "$115.00",
+      "cost": "$49.77",
+      "mfr": "ETHICON",
+      "category": "Suture, J944",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043651",
+      "ref": "J945H",
+      "desc": "ETHICON 2-0 COATED VICRYL UNDYED 1X36\" CT-1 (BX/36) J945H",
+      "price": "$150.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J945",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "J946G",
+      "desc": "ETHICON 4-0 Coated Vicryl Undyed 1X18\" PS-2 (BX/12) J946G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J946",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043675",
+      "ref": "J946H",
+      "desc": "ETHICON 0 Coated Vicryl Undyed 1X36\" CT-1 (BX/36) J946H",
+      "price": "$113.00",
+      "cost": "$54.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J946",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031043682",
+      "ref": "J947H",
+      "desc": "ETHICON 1 COATED VICRYL UNDYED 1X36\" CT-1 (BX/36) J947H",
+      "price": "$135.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J947",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 2
+    },
+    {
+      "gtin": "",
+      "ref": "J975G",
+      "desc": "ETHICON 8-0 Coated Vicryl Violet 1X12\" TG160-6 Double Armed (BX/12) J975G",
+      "price": "$400.00",
+      "cost": "$180.00",
+      "mfr": "ETHICON",
+      "category": "Suture, J975",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031044306",
+      "ref": "K802H",
+      "desc": "ETHICON 6-0 PERMA HAND BLACK 1X18\" BV-1 (BX/36) K802H",
+      "price": "$406.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "K802, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "K832H",
+      "desc": "ETHICON 3-0 Perma Hand Black 1X30\" SH (BX/36) K832H",
+      "price": "$150.00",
+      "cost": "$75.00",
+      "mfr": "ETHICON",
+      "category": "Suture, K832",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "K833H",
+      "desc": "ETHICON 2-0 Perma Hand Black 1X30\" SH (BX/36) K833H",
+      "price": "$145.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, K833",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "K834H",
+      "desc": "ETHICON 0 Perma Hand Black 1X30\" SH (BX/36) K834H",
+      "price": "$100.00",
+      "cost": "$30.00",
+      "mfr": "ETHICON",
+      "category": "Suture, K834",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "K891H",
+      "desc": "ETHICON 4-0 Perma Hand Black 1X30\" C-1 (BX/36) K891H",
+      "price": "$190.00",
+      "cost": "$139.00",
+      "mfr": "ETHICON",
+      "category": "Suture, K891",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "L880G",
+      "desc": "ETHICON 0 Ethilon Black 1X96\" Looped 48\" TP-1 (BX/12) L880G",
+      "price": "$77.00",
+      "cost": "$35.00",
+      "mfr": "ETHICON",
+      "category": "Suture, L880",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "M8702",
-      "desc": "ETHICON Prolene 7-0 BV-1 Double Armed 4X24” M8702",
+      "desc": "ETHICON Prolene 7-0 BV-1 Double Armed 4X24\u201d M8702",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, M8702",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "MB66G",
+      "desc": "ETHICON 5 Ethibond Green 4X30\" V-37 (BX/12) MB66G",
+      "price": "$300.00",
+      "cost": "$175.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MB66",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031046362",
       "ref": "MCP316H",
       "desc": "ETHICON 3-0 Monocryl Plus Violet 1X27\" SH (BX/36) MCP316H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$165.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP316",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP317H",
       "desc": "ETHICON 2-0 Monocryl Plus Violet 1X27\" SH (BX/36) MCP317H",
       "price": "$25.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP317",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP427H",
       "desc": "ETHICON 3-0 Monocryl Plus Undyed 1X27\" PS-2 (BX/36) MCP427H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP427",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP493G",
       "desc": "ETHICON 5-0 Monocryl Plus Undyed 1X18\" P-3 (BX/12) MCP493G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$158.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP493",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP493H",
       "desc": "ETHICON Monocryl Plus UND 70 cm M1 (BX/36) MCP493H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP493",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP494G",
       "desc": "ETHICON 4-0 Monocryl Plus Undyed 1X18\" P-3 (BX/12) MCP494G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$153.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP494",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP494H",
       "desc": "ETHICON Monocryl Plus Und 70 cm M1.5 (BX/36) MCP494H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP494",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP496G",
       "desc": "ETHICON 4-0 Monocryl Plus Undyed 1X18\" PS-2 (BX/12) MCP496G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$143.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP496",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP496H",
-      "desc": "ETHICON Monocryl™ Plus 45 cm USP 4-0 (BX/36) MCP496H",
+      "desc": "ETHICON Monocryl\u2122 Plus 45 cm USP 4-0 (BX/36) MCP496H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP496",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP523H",
       "desc": "ETHICON 3-0 Monocryl Plus Undyed 1X27\" KS (BX/36) MCP523H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP523",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "MCP936H",
       "desc": "ETHICON 3-0 Monocryl Plus Undyed 1X27\" PS-1 (Short Dated) (BX/36) MCP936H",
       "price": "$0.00",
-      "mfr": "ETHICON"
-    },
-    {
-      "gtin": "00763000487508",
-      "ref": "MR8-10MH17",
-      "desc": "MEDTRONIC Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 10 cm X 1.7 mm MR8-10MH17",
-      "price": "$95.00",
-      "mfr": "MEDTRONIC"
-    },
-    {
-      "gtin": "",
-      "ref": "MR8-10MH30",
-      "desc": "MEDTRONIC Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 10 cm X 3 mm MR8-10MH30",
-      "price": "$95.00",
-      "mfr": "MEDTRONIC"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, MCP936",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "PDP311H",
       "desc": "ETHICON 3-0 PDS Plus Violet 1X27\" SH-1 (BX/36) PDP311H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$208.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP311",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "PDP316H",
       "desc": "ETHICON 3-0 PDS Antibacterial Violet Monofilament Absorbable Suture 27\" SH (BX/36) PDP316H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$114.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP316",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "PDP317H",
+      "desc": "ETHICON 2-0 PDS Plus Violet 1X27\" SH (BX/36) PDP317H",
+      "price": "$225.00",
+      "cost": "$80.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP317",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "PDP334H",
+      "desc": "ETHICON 0 PDS Plus Violet 1X27\" CT-2 (BX/36) PDP334H",
+      "price": "$200.00",
+      "cost": "$79.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP334",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "PDP338H",
       "desc": "ETHICON 3-0 PDS Antibacterial Violet Monofilament Absorbable Suture 27\" CT1 (BX/36) PDP338H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$112.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP338",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "PDP340H",
+      "desc": "ETHICON 0 PDS Plus Violet 1X27\" CT-1 (BX/36) PDP340H",
+      "price": "$214.00",
+      "cost": "$91.34",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP340",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "PDP467H",
       "desc": "ETHICON Suture, 0/0, 27\", PDS Plus, Violet Monofilament, CP1 (BX/36) PDP467H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$202.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDP467",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031048915",
-      "ref": "PDPB9916",
+      "ref": "PDPB991G",
       "desc": "ETHICON 0 BP-1 (65mm 1/2c Blunt Point) 60\" (150cm) PDS Plus Antibacterial (BX/12) PDPB991G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$165.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PDPB9916",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
-      "gtin": "10848782031051",
-      "ref": "R340N",
-      "desc": "SHARPOINT PDO 0 Violet 1X27\" CT-1 R340N",
-      "price": "$65.00",
-      "mfr": "SHARPOINT"
+      "gtin": "10705036002642",
+      "ref": "PMW35",
+      "desc": "ETHICON Sterile, single patient use skin stapler with 0.58 diameter EA PMW35",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10705036002673",
+      "ref": "PXW35",
+      "desc": "ETHICON Wide Fixed- Head Skin Stapler With 0.58 Diameter (Each) PXW35",
+      "price": "$115.00",
+      "cost": "$48.34",
+      "mfr": "ETHICON",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10705031462205",
+      "ref": "PXX22N",
+      "desc": "ETHICON 2-0 Ethibond Green/White 10X30\" V-4 Double Armed Firm Pledget 7mm x 3mm x 1.5mm PXX22N",
+      "price": "$415.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PXX22",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10705031462298",
+      "ref": "PXX82N",
+      "desc": "ETHICON 2-0 Ethibond Green/White 10X30\" SH-2 Double Armed PXX82N",
+      "price": "$225.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, PXX82",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031049530",
+      "ref": "R647H",
+      "desc": "ETHICON 3-0 Mersilene White 1X18\" FS-1 (BX/36) R647H",
+      "price": "$175.00",
+      "cost": "$47.87",
+      "mfr": "ETHICON",
+      "category": "Suture, R647",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "SA6H",
+      "desc": "ETHICON 0 PERMA HAND BLACK 2X60\" TIE (BX/36) SA6H",
+      "price": "$98.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "SA6, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "V549G",
       "desc": "ETHICON 9-0 Vicryl Violet 1X12\" TG140-8 Double Armed (BX/12) V549G",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, V549",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP213H",
+      "desc": "ETHICON 5-0 Coated Vicryl Plus Undyed 1X27\" RB-1 (BX/36) VCP213H",
+      "price": "$150.00",
+      "cost": "$56.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP213",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031051663",
+      "ref": "VCP214H",
+      "desc": "ETHICON 4-0 COATED VICRYL PLUS UNDYED 1X27\" RB-1 (BX/36) VCP214H",
+      "price": "$113.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "VCP214, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031051878",
+      "ref": "VCP267H",
+      "desc": "ETHICON 0 Coated Vicryl Plus Undyed 1X27\" CP-1 (BX/36) VCP267H",
+      "price": "$150.00",
+      "cost": "$60.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP267",
+      "status": "ACTIVE",
+      "onHand": 8,
+      "reservedQty": 5
+    },
+    {
+      "gtin": "",
+      "ref": "VCP304H",
+      "desc": "ETHICON 3-0 COATED VICRYL UNDYED 1X27\" CT-1 (BX/36) VCP304H",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP304",
+      "status": "INACTIVE",
+      "onHand": 3,
+      "reservedQty": 3
+    },
+    {
+      "gtin": "",
+      "ref": "VCP305H",
+      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" RB-1 (BX/36) VCP305H",
+      "price": "$120.00",
+      "cost": "$57.60",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP305",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP311H",
+      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" SH-1 (BX/36) VCP311H",
+      "price": "$131.00",
+      "cost": "$43.84",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP311",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP316H",
+      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" SH (BX/36) VCP316H",
+      "price": "$120.00",
+      "cost": "$53.66",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP316",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "VCP317H",
       "desc": "ETHICON 2-0 Coated Vicryl Plus Violet 1X27\" SH (BX/36) VCP317H",
+      "price": "$134.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP317",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP329H",
+      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-3 (BX/36) VCP329H",
+      "price": "$25.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP329",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031052370",
+      "ref": "VCP332H",
+      "desc": "ETHICON 3-0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP332H",
+      "price": "$117.00",
+      "cost": "$55.54",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP332",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP334H",
+      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-2 (BX/36) VCP334H",
+      "price": "$112.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP334",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP340H",
+      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" CT-1 (BX/36) VCP340H",
+      "price": "$153.00",
+      "cost": "$91.34",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP340",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP341H",
+      "desc": "ETHICON 1 Coated Vicryl Plus Violet 1X27\" CT-1 (BX/36) VCP341H",
+      "price": "$123.00",
+      "cost": "$55.74",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP341",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031052615",
+      "ref": "VCP351H",
+      "desc": "ETHICON 2-0 COATED VICRYL PLUS VIOLET 1X27\" CT (BX/36) VCP351H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP351",
+      "status": "INACTIVE",
+      "onHand": 3,
+      "reservedQty": 3
+    },
+    {
+      "gtin": "30705031052677",
+      "ref": "VCP356H",
+      "desc": "ETHICON 3-0 COATED VICRYL PLUS VIOLET 1X36\" CT (BX/36) VCP356H",
+      "price": "$144.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "VCP356, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031052691",
       "ref": "VCP357H",
-      "desc": "2-0 COATED VICRYL PLUS VIOLET 1X36\" CT (BX/36) VCP357H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "desc": "ETHICON 2-0 COATED VICRYL PLUS VIOLET 1X36\" CT (BX/36) VCP357H",
+      "price": "$130.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP357",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031052998",
       "ref": "VCP415H",
-      "desc": "Ethicon 4-0 COATED VICRYL PLUS UNDYED 1X27\" SH (BX/36) VCP415H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "desc": "ETHICON 4-0 COATED VICRYL PLUS UNDYED 1X27\" SH (BX/36) VCP415H",
+      "price": "$135.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP415",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031053032",
+      "ref": "VCP417H",
+      "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" SH (BX/36) VCP417H",
+      "price": "$115.00",
+      "cost": "$55.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP417",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031053070",
+      "ref": "VCP421H",
+      "desc": "ETHICON 5-0 Coated Vicryl Plus Undyed 1X27\" FS-2 (BX/36) VCP421H",
+      "price": "$130.00",
+      "cost": "$40.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP421",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031053094",
       "ref": "VCP422H",
-      "desc": "Ethicon 4-0 COATED VICRYL PLUS UNDYED 1X27\" FS-2 (BX/36) VCP422H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "desc": "ETHICON 4-0 COATED VICRYL PLUS UNDYED 1X27\" FS-2 (BX/36) VCP422H",
+      "price": "$160.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP422",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP423H",
+      "desc": "ETHICON 3-0 Coated Vicryl Plus Undyed 1X27\" FS-2 (BX/36) VCP423H",
+      "price": "$160.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP423",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031053193",
+      "ref": "VCP433H",
+      "desc": "ETHICON 5-0 COATED VICRYL PLUS UNDYED 1X27\" RB-2 (BX/36) VCP433H",
+      "price": "$150.00",
+      "cost": "$65.00",
+      "mfr": "ETHICON",
+      "category": "VCP433, Suture",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031053278",
       "ref": "VCP441H",
-      "desc": "4-0 COATED VICRYL PLUS UNDYED 1X27\" FS-1 (BX/36) VCP441H",
+      "desc": "ETHICON 4-0 COATED VICRYL PLUS UNDYED 1X27\" FS-1 (BX/36) VCP441H",
+      "price": "$175.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP441",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031053292",
+      "ref": "VCP442H",
+      "desc": "ETHICON 3-0 Coated Vicryl Plus Undyed 1X27\" FS-1 (BX/36) VCP442H",
+      "price": "$160.00",
+      "cost": "$72.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP442",
+      "status": "ACTIVE",
+      "onHand": 5,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP443H",
+      "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" FS-1 (BX/36) VCP443H",
+      "price": "$160.00",
+      "cost": "$80.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP443",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031053650",
+      "ref": "VCP493G",
+      "desc": "ETHICON 5-0 Coated Vicryl Plus Undyed 1X18\" P-3 (BX/12) VCP493G",
+      "price": "$97.00",
+      "cost": "$44.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP493",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 1
+    },
+    {
+      "gtin": "30705031053698",
+      "ref": "VCP494G",
+      "desc": "ETHICON 4-0 COATED VICRYL PLUS UNDYED 1X18\" P-3 (BX/12) VCP494G",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP494",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP504G",
+      "desc": "ETHICON 4-0 Coated Vicryl Plus Undyed 1X18\" P-2 (BX/12) VCP504G",
+      "price": "$130.00",
+      "cost": "$40.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP504",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VCP596H",
+      "desc": "ETHICON 2-0 Coated Vicryl Plus Undyed 1X27\" PSLl (BX/36) VCP596H",
+      "price": "$320.00",
+      "cost": "$74.70",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP596",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031054398",
+      "ref": "VCP603H",
+      "desc": "ETHICON 0 Coated Vicryl Plus Violet 1X27\" UR-6 (BX/36) VCP603H",
+      "price": "$160.00",
+      "cost": "$66.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP603",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031055982",
+      "ref": "VCP880T",
+      "desc": "ETHICON 2 Coated Vicryl Plus Undyed 1X54\" TP-1 (BX/24) VCP880T",
+      "price": "$150.00",
+      "cost": "$96.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VCP880",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VR416",
+      "desc": "ETHICON 3-0 Vicryl Rapide Undyed 1X27\" SH VR416",
+      "price": "$100.00",
+      "cost": "$33.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VR416",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031134595",
+      "ref": "VR490",
+      "desc": "ETHICON 5-0 VICRYL RAPIDE UNDYED 1X18\" P-1 (BX/12) VR490",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VR490",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VR493",
+      "desc": "ETHICON 5-0 VICRYL RAPIDE UNDYED 1X18\" P-3 VR493",
+      "price": "$150.00",
+      "cost": "$33.33",
+      "mfr": "ETHICON",
+      "category": "Suture, VR493",
+      "status": "ACTIVE",
+      "onHand": 14,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031134687",
       "ref": "VR494",
       "desc": "ETHICON 4-0 Vicryl Rapide Undyed 1X18\" P-3 VR494",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$143.00",
+      "cost": "$72.46",
+      "mfr": "ETHICON",
+      "category": "Suture, VR494",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031134717",
+      "ref": "VR834",
+      "desc": "ETHICON 5-0 VICRYL RAPIDE UNDYED 1X18\" PC-1 (BX/12) VR834",
+      "price": "$170.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VR834",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "VR845",
       "desc": "ETHICON 4-0 Vicryl Rapide Undyed 1X18\" PC-3 VR845",
       "price": "$165.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, VR845",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "VR945",
+      "desc": "ETHICON 2-0 Vicryl Rapide Undyed 1X36\" CT-1 VR945",
+      "price": "$100.00",
+      "cost": "$35.81",
+      "mfr": "ETHICON",
+      "category": "Suture, VR945",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031056996",
       "ref": "W31G",
       "desc": "ETHICON Bone Wax, 2.5 Grams, 1 Dozen Per Box W31G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$145.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Bone Wax, W31",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "X916H",
+      "desc": "ETHICON 3-0 Ethibond White 1X30\" V-5 Double Armed (BX/36) X916H",
+      "price": "$300.00",
+      "cost": "$90.00",
+      "mfr": "ETHICON",
+      "category": "Suture, X916",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y213H",
       "desc": "ETHICON 5-0 Monocryl Undyed 1X27\" RB-1 (BX/36) Y213H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y213",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031058587",
       "ref": "Y215H",
       "desc": "ETHICON 3-0 Monocryl Undyed 1X27\" RB-1 (BX/36) Y215H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$155.00",
+      "cost": "$68.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y215",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
     },
     {
       "gtin": "",
-      "ref": "Y303D",
-      "desc": "SHARPOINT 5-0 Sharpoint Suture 27\" Monoderm Monofilament RB-1 Violet 36/BX Y303D",
-      "price": "$0.00",
-      "mfr": "SHARPOINT"
+      "ref": "Y266H",
+      "desc": "ETHICON 2-0 Monocryl Undyed 1X27\" CP-1 (BX/36) Y266H",
+      "price": "$140.00",
+      "cost": "$65.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y266",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031058679",
       "ref": "Y303H",
       "desc": "ETHICON 5-0 Monocryl Violet 1X27\" RB-1 (BX/36) Y303H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$175.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y303",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031058693",
       "ref": "Y304H",
-      "desc": "Ethicon 4-0 RB-1 (17mm 1/2c Taperpoint ETHALLOY Needle Alloy) 27\" (70cm) MONOCRYL (BX/36) Y304H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "desc": "ETHICON 4-0 MONOCRYL VIOLET 1X27\" RB-1 (BX/36) Y304H",
+      "price": "$155.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y304",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031058716",
       "ref": "Y305H",
       "desc": "ETHICON 3-0 Monocryl Violet 1X27\" RB-1 (BX/36) Y305H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$175.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y305",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y315H",
       "desc": "ETHICON 4-0 Monocryl Violet 1X27\" SH (BX/36) Y315H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$175.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y315",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031058761",
+      "ref": "Y317H",
+      "desc": "ETHICON 2-0 Monocryl Violet 1X27\" SH (BX/36) Y317H",
+      "price": "$175.00",
+      "cost": "$75.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y317",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y318H",
       "desc": "ETHICON 0 Monocryl Violet 1X27\" SH (BX/36) Y318H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$140.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y318",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y333H",
+      "desc": "ETHICON 2-0 Monocryl Violet 1X27\" CT-2 (BX/36) Y333H",
+      "price": "$170.00",
+      "cost": "$61.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y333",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y334H",
+      "desc": "ETHICON 0 Monocryl Violet 1X27\" CT-2 (BX/36) Y334H",
+      "price": "$135.00",
+      "cost": "$66.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y334",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031058914",
+      "ref": "Y346H",
+      "desc": "ETHICON 0 MONOCRYL VIOLET 1X36\" CT-1 (BX/36) Y346H",
+      "price": "$161.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Y346, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031059119",
+      "ref": "Y415H",
+      "desc": "ETHICON 4-0 MONOCRYL UNDYED 1X27\" SH Y415H",
+      "price": "$120.00",
+      "cost": "$61.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y415",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y415N",
-      "desc": "Ethicon 4-0 Monoderm Undyed 1X27\" SH Y415N",
-      "price": "$59.00",
-      "mfr": "ETHICON"
+      "desc": "ETHICON 4-0 Monoderm Undyed 1X27\" SH Y415N",
+      "price": "$50.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y415",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031059126",
+      "ref": "Y416H",
+      "desc": "ETHICON 3-0 Monocryl Undyed 1X27\" SH (BX/36) Y416H",
+      "price": "$195.00",
+      "cost": "$66.14",
+      "mfr": "ETHICON",
+      "category": "Suture, Y416",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031059133",
+      "ref": "Y417H",
+      "desc": "ETHICON 2-0 Monocryl Undyed 1X27\" SH (BX/36) Y417H",
+      "price": "$170.00",
+      "cost": "$61.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y417",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y427H",
+      "desc": "ETHICON 3-0 Monocryl Undyed 1X27\" PS-2 (BX/36) Y427H",
+      "price": "$480.00",
+      "cost": "$228.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y427",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y463G",
       "desc": "ETHICON 5-0 Monocryl Violet 1X18\" P-3 (BX/12) Y463G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$154.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y463",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y464G",
+      "desc": "ETHICON 4-0 Monocryl Violet 1X18\" P-3 (BX/12) Y464G",
+      "price": "$135.00",
+      "cost": "$49.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y464",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y489G",
+      "desc": "ETHICON 6-0 Monocryl Undyed 1X18\" P-1 (BX/12) Y489G",
+      "price": "$135.00",
+      "cost": "$24.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y489",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y489H",
-      "desc": "ETHICON 6-0 Ethicon Monocryl™ (Poliglecaprone 25) Surgical Suture (BX/36) Y489H",
+      "desc": "ETHICON 6-0 Monocryl\u2122 (Poliglecaprone 25) Surgical Suture (BX/36) Y489H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y489",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y490H",
       "desc": "ETHICON Monocryl Vio 70 cm M0.7 (BX/36) Y490H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y490",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y492G",
+      "desc": "ETHICON 6-0 Monocryl Undyed 1X18\" P-3 (BX/12) Y492G",
+      "price": "$121.00",
+      "cost": "$76.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y492",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y492H",
       "desc": "ETHICON Monocryl UC UD 45 cm M0.7 (BX/36) Y492H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y492",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
-      "gtin": "",
-      "ref": "Y493N",
-      "desc": "SHARPOINT 5-0 Monoderm PGCL undyed 18\" P-3 Reverse Cutting - Absorbable, Monofilament, PGCL, Poliglecaprone, Suture, Synthetic (12/BX) Y493N",
-      "price": "$0.00",
-      "mfr": "SHARPOINT"
+      "gtin": "30705031059317",
+      "ref": "Y493G",
+      "desc": "ETHICON 5-0 MONOCRYL UNDYED 1X18\" P-3 (BX/12) Y493G",
+      "price": "$153.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Y493, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031059331",
       "ref": "Y494G",
-      "desc": "Ethicon Ethicon 4-0 MONOCRYL UNDYED 1X18\" P-3 (BX/12) Y494G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "desc": "ETHICON 4-0 MONOCRYL UNDYED 1X18\" P-3 (BX/12) Y494G",
+      "price": "$155.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y494",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031059379",
       "ref": "Y496G",
       "desc": "ETHICON 4-0 Monocryl Undyed 1X18\" PS-2 (BX/12) Y496G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$143.00",
+      "cost": "$48.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y496",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y496H",
       "desc": "ETHICON 4-0 Monocryl Undyed 1X18\" PS-2 (BX/36) Y496H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y496",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y497G",
       "desc": "ETHICON 3-0 Monocryl Undyed 1X18\" PS-2 (BX/12) Y497G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$149.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y497",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y497H",
       "desc": "ETHICON 3-0 Monocryl Undyed 1X18\" PS-2 (BX/36) Y497H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y497",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y527H",
       "desc": "ETHICON 3-0 Monocryl Violet 1X36\" SH Double Armed (BX/36) Y527H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y527",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y682H",
       "desc": "ETHICON 4-0 Monocryl Undyed 1X18\" PS-1 (BX/36) Y682H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y682",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031059676",
+      "ref": "Y833G",
+      "desc": "ETHICON 6-0 MONOCRYL UNDYED 1X18\" PC-1 (BX/12) Y833G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y833",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031059683",
+      "ref": "Y834G",
+      "desc": "ETHICON 5-0 MONOCRYL UNDYED 1X18\" PC-1 (BX/12) Y834G",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y834",
+      "status": "INACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Y936H",
       "desc": "ETHICON 3-0 Monocryl Undyed 1X27\" PS-1 (BX/36) Y936H",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Y936",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "YY31G",
       "desc": "ETHICON 0 Monocryl Violet 4X27\" CT-1 CR (BX/12) YY31G",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, YY31",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060320",
+      "ref": "Z195T",
+      "desc": "ETHICON 2 PDS II VIOLET 1X27\" CP (BX/24) Z195T",
+      "price": "$144.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Z195, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060375",
+      "ref": "Z304H",
+      "desc": "ETHICON 4-0 PDS II Violet 1x27\" RB-1(BX/36)Z304H",
+      "price": "$200.00",
+      "cost": "$140.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z304",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z305H",
+      "desc": "ETHICON 3-0 PDS II Violet 1X27\" RB-1 (BX/36) Z305H",
+      "price": "$185.00",
+      "cost": "$81.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z305",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z311H",
+      "desc": "ETHICON 3-0 PDS II Violet 1X27\" SH-1 (BX/36) Z311H",
+      "price": "$190.00",
+      "cost": "$90.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z311",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z316H",
+      "desc": "ETHICON 3-0 PDS II Violet 1X27\" SH (BX/36) Z316H",
+      "price": "$175.00",
+      "cost": "$82.15",
+      "mfr": "ETHICON",
+      "category": "Suture, Z316",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060498",
+      "ref": "Z317H",
+      "desc": "ETHICON 2-0 PDS II Violet 1X27\" SH (BX/36) Z317H",
+      "price": "$196.00",
+      "cost": "$80.35",
+      "mfr": "ETHICON",
+      "category": "Suture, Z317",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z332H",
+      "desc": "ETHICON 3-0 PDS II Violet 1X27\" CT-2 (BX/36) Z332H",
+      "price": "$203.00",
+      "cost": "$97.58",
+      "mfr": "ETHICON",
+      "category": "Suture, Z332",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031060542",
       "ref": "Z333H",
       "desc": "ETHICON 2-0 PDS II Violet 1X27\" CT-2 (BX/36) Z333H",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$195.00",
+      "cost": "$79.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z333",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060566",
+      "ref": "Z334H",
+      "desc": "ETHICON 0 PDS II VIOLET 1X27\" CT-2 (BX36) Z334H",
+      "price": "$201.00",
+      "cost": "$78.00",
+      "mfr": "ETHICON",
+      "category": "Z334, Suture",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 3
+    },
+    {
+      "gtin": "30705031060580",
+      "ref": "Z338H",
+      "desc": "ETHICON 3-0 PDS II VIOLET 1X27\" CT-1 (BX/36) Z338H",
+      "price": "$183.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Z338, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z340H",
+      "desc": "ETHICON 0 PDS II VIOLET 1X27\" CT-1 Z340H",
+      "price": "$185.00",
+      "cost": "$79.43",
+      "mfr": "ETHICON",
+      "category": "Suture, Z340",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060641",
+      "ref": "Z341H",
+      "desc": "ETHICON 1 PDS II Violet 1X27\" CT-1 (BX/36) Z341H",
+      "price": "$195.00",
+      "cost": "$120.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z341",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060665",
+      "ref": "Z346H",
+      "desc": "ETHICON 0 PDS II Violet 1x36\" CT-1(BX/36)Z346H",
+      "price": "$197.00",
+      "cost": "$78.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z346",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z357H",
+      "desc": "ETHICON 2-0 PDS II Violet 1X36\" CT (BX/36) Z357H",
+      "price": "$192.00",
+      "cost": "$88.05",
+      "mfr": "ETHICON",
+      "category": "Suture, Z357",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060764",
+      "ref": "Z358T",
+      "desc": "ETHICON 0 PDS II VIOLET 1X36\" CT (BX/24) Z358T",
+      "price": "$144.00",
+      "cost": "$45.54",
+      "mfr": "ETHICON",
+      "category": "Z358, Suture",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060825",
+      "ref": "Z371T",
+      "desc": "ETHICON 1 PDS II Violet 1X36\" CTX Z371T",
+      "price": "$120.00",
+      "cost": "$43.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z371",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060917",
+      "ref": "Z423H",
+      "desc": "Ethicon 3-0 PDS II UNDYED 1X2\" FS-2 (BX/36) Z423H",
+      "price": "$251.00",
+      "cost": "$123.66",
+      "mfr": "ETHICON",
+      "category": "Z423, Suture",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031060931",
+      "ref": "Z432H",
+      "desc": "Ethicon 6-0 PDS II Violet 1x27\" TF(BX/36) Z432H",
+      "price": "$225.00",
+      "cost": "$90.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z432",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z443H",
+      "desc": "ETHICON 2-0 PDS II Undyed 1X27\" FS-1 (BX/36) Z443H",
+      "price": "$200.00",
+      "cost": "$45.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z443",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z463G",
+      "desc": "ETHICON 5-0 PDS II Violet 1X18\" P-3 (BX/12) Z463G",
+      "price": "$160.00",
+      "cost": "$83.27",
+      "mfr": "ETHICON",
+      "category": "Suture, Z463",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Z466H",
+      "desc": "ETHICON 2-0 PDS II VIOLET 1X27\" CP-1 Z466H",
+      "price": "$195.00",
+      "cost": "$88.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z466",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031061112",
+      "ref": "Z487G",
+      "desc": "ETHICON 6-0 PDS II Violet 1X18\" P-1 (BX/12) Z487G",
+      "price": "$175.00",
+      "cost": "$37.97",
+      "mfr": "ETHICON",
+      "category": "Suture, Z487",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Z493G",
       "desc": "ETHICON 5-0 PDS II Undyed 1X18\" P-3 (BX/12) Z493G",
+      "price": "$126.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z493",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031061174",
+      "ref": "Z494G",
+      "desc": "ETHICON 4-0 PDS II UNDYED 1X18\" P-3 (BX/12) Z494G",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Z494, Suture",
+      "status": "INACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031061211",
+      "ref": "Z496G",
+      "desc": "ETHICON 4-0 PDS II Undyed 1X18\" PS-2 (BX/12) Z496G",
+      "price": "$135.00",
+      "cost": "$42.72",
+      "mfr": "ETHICON",
+      "category": "Suture, Z496",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30705031061235",
+      "ref": "Z497G",
+      "desc": "ETHICON 3-0 PDS II Undyed 1X18\" PS-2 (BX/12) Z497G",
+      "price": "$135.00",
+      "cost": "$56.96",
+      "mfr": "ETHICON",
+      "category": "Suture, Z497",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
     },
     {
       "gtin": "",
       "ref": "Z513G",
       "desc": "ETHICON 4-0 PDS II Violet 1X18\" PS-2 (BX/12) Z513G",
-      "price": "$0.00",
-      "mfr": "ETHICON"
+      "price": "$173.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z513",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
     },
     {
       "gtin": "30705031061938",
       "ref": "Z968H",
-      "desc": "Ethicon 3-0 CP-2 (26mm 1/2c Reverse Cutting) 27\" (70cm) PDS II (BX/36) Z968H",
+      "desc": "ETHICON 3-0 CP-2 (26mm 1/2c Reverse Cutting) 27\" (70cm) PDS II (BX/36) Z968H",
+      "price": "$185.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Suture, Z968",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 2
+    },
+    {
+      "gtin": "30705031061969",
+      "ref": "Z970H",
+      "desc": "ETHICON 0 PDS II VIOLET 1X27\" CP-2 (BX/36) Z970H",
+      "price": "$228.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "Z970, Suture",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "202050",
+      "desc": "INTEGRA Dural Sealant System 5 mL 202050",
       "price": "$0.00",
-      "mfr": "ETHICON"
+      "cost": "$0.00",
+      "mfr": "INTEGRA",
+      "category": "Sealant",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "30381780537162",
+      "ref": "206520",
+      "desc": "INTEGRA DuraSeal Exact Spine Sealant System Polymer Kit 5ml (BX/5) D/S 206520",
+      "price": "$4,000.00",
+      "cost": "$1,860.00",
+      "mfr": "INTEGRA",
+      "category": "Sealant",
+      "status": "ACTIVE",
+      "onHand": 4,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "33-31",
+      "desc": "INTEGRA Biopsy Punch Dermal 2 BX/50 33-31",
+      "price": "$90.00",
+      "cost": "$50.00",
+      "mfr": "INTEGRA",
+      "category": "Biopsy",
+      "status": "ACTIVE",
+      "onHand": 3,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "470007",
+      "desc": "INTUITIVE Da Vinci XI Round Tip Scissors 470007",
+      "price": "$1,300.00",
+      "cost": "$1,000.00",
+      "mfr": "INTUITIVE",
+      "category": "Scissors",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "470194",
+      "desc": "INTUITIVE Surgical Da Vinci Xi Mega Needle Driver 470194",
+      "price": "$2,300.00",
+      "cost": "$1,800.00",
+      "mfr": "INTUITIVE",
+      "category": "Needle Driver",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "470230",
+      "desc": "INTUITIVE Surgical Da Vinci Xi Weck Hem-O-Lok Large Clip Applier 470230",
+      "price": "$1,200.00",
+      "cost": "$800.00",
+      "mfr": "INTUITIVE",
+      "category": "Instrument Introducer",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "471344",
+      "desc": "INTUITIVE Da Vinci XI Curved Bipolar Dissector 471344",
+      "price": "$1,950.00",
+      "cost": "$1,500.00",
+      "mfr": "INTUITIVE",
+      "category": "Dissector",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00886874117583",
+      "ref": "480455",
+      "desc": "INTUITIVE Da Vinci SureForm 45 Stapler Da Vinci Xi / X SmartFire (12mm, 570mm, 12\u00b0, +/- 60\u00b0) 480455",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00886874115664",
+      "ref": "480422 (EACH)",
+      "desc": "INTUITIVE Da Vinci X / Xi EndoWrist Instruments Vessel Sealer Extended 8 mm (BX/6) 480422",
+      "price": "$385.00",
+      "cost": "$325.00",
+      "mfr": "INTUITIVE",
+      "category": "Sealer",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "48230B",
+      "desc": "INTUITIVE Reload, Blue, 3.5 mm Size, 4 Rows Of Staples, Sterile, Single-Use, For Sureform Staplers 48230B",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "48230W",
+      "desc": "INTUITIVE Surgical Stapler Reload White 2.4 mm 6-Row For Endowrist 30 48230W",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "48345B",
+      "desc": "INTUITIVE Surgical da Vinci SureForm 45mm-3.5mm Reload, Six-Row Blue 48345B",
+      "price": "$100.00",
+      "cost": "$75.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 24,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10886874117092",
+      "ref": "48345G",
+      "desc": "INTUITIVE Da Vinci X / Da Vinci Xi Surgical SureForm 45 mm Reload (Green, 6-Row, 4.3 mm) (BX/12) 48345G",
+      "price": "$100.00",
+      "cost": "$75.00",
+      "mfr": "INTUITIVE",
+      "category": "Surgical Stapling, 48345",
+      "status": "ACTIVE",
+      "onHand": 24,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "48345M",
+      "desc": "INTUITIVE Surgical Da Vinci Xi Sureform 45 Reload 45 mm Gray 48345M",
+      "price": "$100.00",
+      "cost": "$75.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00886874117118",
+      "ref": "48345T",
+      "desc": "INTUITIVE Surgical 48345T Da Vinci Xi Sureform 45 Reload, 45 mm, 6-Row, Black (Each) 48345T",
+      "price": "$100.00",
+      "cost": "$75.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 60,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10886874117122",
+      "ref": "48345W",
+      "desc": "INTUITIVE Surgical 48345W Da Vinci Sureform 45 Reload, 2.5 mm, 6-Row, White (Each) 48345W",
+      "price": "$115.00",
+      "cost": "$75.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00886874113837",
+      "ref": "48360B",
+      "desc": "INTUITIVE Da Vinci Sureform 60 Reload, 3.5 mm 6 Row, Blue (Each) 48360B",
+      "price": "$120.00",
+      "cost": "$0.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00886874113844",
+      "ref": "48360G",
+      "desc": "INTUITIVE Da Vinci Stapler Reload, For Sureform 60, Green, 4.3 mm, 6-Row, 1 Firing 48360G",
+      "price": "$120.00",
+      "cost": "$85.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 60,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "48360M",
+      "desc": "INTUITIVE Surgical Da Vinci Xi Sureform Stapler Reload 60.0 mm White 48360M",
+      "price": "$110.00",
+      "cost": "$85.00",
+      "mfr": "INTUITIVE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00886874113851",
+      "ref": "48360T",
+      "desc": "INTUITIVE Surgical Da Vinci Xi Sureformstapler Reload 60.0 mm Black 48360T",
+      "price": "$110.00",
+      "cost": "$85.00",
+      "mfr": "INTUITIVE",
+      "category": "Surgical Stapling, 48360",
+      "status": "ACTIVE",
+      "onHand": 24,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "48360W",
+      "desc": "Intuitive da Vinci X / da Vinci Xi Surgical SureForm 60 mm Reload (White, 6-Row, 2.5 mm) (BX/12) 48360W",
+      "price": "$110.00",
+      "cost": "$85.00",
+      "mfr": "INTUITIVE",
+      "category": "Surgical Stapling, 48360",
+      "status": "ACTIVE",
+      "onHand": 36,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00613994239525",
+      "ref": "7510100",
+      "desc": "MEDTRONIC Infuse Bone Graft X-Small 7510100",
+      "price": "$2,100.00",
+      "cost": "$1,400.00",
+      "mfr": "MEDTRONIC",
+      "category": "Graft",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00681490843782",
+      "ref": "7510200",
+      "desc": "MEDTRONIC Infuse 2.8 cc Small Bone Graft Kit 7510200",
+      "price": "$3,800.00",
+      "cost": "$2,500.00",
+      "mfr": "MEDTRONIC",
+      "category": "Graft",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 2
+    },
+    {
+      "gtin": "00681490843805",
+      "ref": "7510400",
+      "desc": "MEDTRONIC Infuse Bone Graft Kit \u2013 Medium 7510400",
+      "price": "$4,300.00",
+      "cost": "$3,050.00",
+      "mfr": "MEDTRONIC",
+      "category": "Graft",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00681490843812",
+      "ref": "7510600",
+      "desc": "MEDTRONIC Infuse Bone Graft Kit Large 7510600",
+      "price": "$4,100.00",
+      "cost": "$2,660.00",
+      "mfr": "MEDTRONIC",
+      "category": "Graft",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00681490843829",
+      "ref": "7510800",
+      "desc": "Medtronic Infuse Bone Graft Kit XL 7510800",
+      "price": "$4,700.00",
+      "cost": "$0.00",
+      "mfr": "MEDTRONIC",
+      "category": "Graft",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00763000487508",
+      "ref": "MR8-10MH17",
+      "desc": "MEDTRONIC Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 10 cm X 1.7 mm MR8-10MH17",
+      "price": "$95.00",
+      "cost": "$0.00",
+      "mfr": "MEDTRONIC",
+      "category": "Surgical Tool, MR8",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "MR8-10MH30",
+      "desc": "MEDTRONIC Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 10 cm X 3 mm MR8-10MH30",
+      "price": "$95.00",
+      "cost": "$55.00",
+      "mfr": "MEDTRONIC",
+      "category": "Surgical Tool, MR8",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00763000490140",
+      "ref": "MR8-14MH30",
+      "desc": "Medtronic Midas Rex MR8 High-Speed Surgical Tool, Match Head Fluted Cutting Burr, 14cm x 3mm MR8-14MH30",
+      "price": "$130.00",
+      "cost": "$80.00",
+      "mfr": "MEDTRONIC",
+      "category": "Surgical Tool, MR8",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "A1667N",
+      "desc": "SHARPOINT Plus Suture 4-0 18\" Nylon Monofilament PS-2 Black 12/BX A1667N",
+      "price": "$50.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, A1667",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "B1915N",
+      "desc": "SHARPOINT 5-0 Fast Absorbing Gut Suture - 1915G Replacement B1915N",
+      "price": "$150.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, B1915",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10848782014375",
+      "ref": "G316N",
+      "desc": "SHARPOINT Polysyn 3-0 Violet 1X27\" SH G316N",
+      "price": "$45.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, G316",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "G346N",
+      "desc": "SHARPOINT Polysyn 0 Violet 1X36\" CT-1 G346N",
+      "price": "$49.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, G346",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "10848782031051",
+      "ref": "R340N",
+      "desc": "SHARPOINT PDO 0 Violet 1X27\" CT-1 R340N",
+      "price": "$65.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, R340",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y303D",
+      "desc": "SHARPOINT 5-0 Sharpoint Suture 27\" Monoderm Monofilament RB-1 Violet 36/BX Y303D",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, Y303",
+      "status": "INACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "Y493N",
+      "desc": "SHARPOINT 5-0 Monoderm PGCL undyed 18\" P-3 Reverse Cutting - Absorbable, Monofilament, PGCL, Poliglecaprone, Suture, Synthetic (12/BX) Y493N",
+      "price": "$80.00",
+      "cost": "$0.00",
+      "mfr": "SHARPOINT",
+      "category": "Suture, Y493",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "",
+      "ref": "71111579",
+      "desc": "Smith & Nephew Suture Retriever Hewson Pen-like Handle (BX/6) 71111579",
+      "price": "$400.00",
+      "cost": "$0.00",
+      "mfr": "SMITH & NEPHEW",
+      "category": "Suture Retriever",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "20817470006630",
+      "ref": "RR750",
+      "desc": "SMITH & NEPHEW Rapid Rhino Epistaxis Nasal Pac 7.5 cm Ant/Posterior RR750",
+      "price": "$25.00",
+      "cost": "$117.50",
+      "mfr": "SMITH & NEPHEW",
+      "category": "Nasal Packing",
+      "status": "ACTIVE",
+      "onHand": 2,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "00840420133687",
+      "ref": "84000611",
+      "desc": "STRYKER Osteoset Resorbable Mini Bead Kit Fast Cure 5 cc 9.5G 3.0 mL - Slight Dent 84000611",
+      "price": "$500.00",
+      "cost": "$250.00",
+      "mfr": "STRYKER",
+      "category": "Graft",
+      "status": "ACTIVE",
+      "onHand": 1,
+      "reservedQty": 0
+    },
+    {
+      "gtin": "20705036002670",
+      "ref": "PXW35-43",
+      "desc": "ETHICON Wide Fixed- Head Skin Stapler With 0.58 Diameter (BX/6) PXW35-43",
+      "price": "$115.00",
+      "cost": "$0.00",
+      "mfr": "ETHICON",
+      "category": "ACTIVE",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0,
+      "parentRef": "PXW35",
+      "uomMult": 6
+    },
+    {
+      "gtin": "00886874115664",
+      "ref": "480422 (BX/6)",
+      "desc": "INTUITIVE Da Vinci X / Xi EndoWrist Instruments Vessel Sealer Extended 8 mm (BX/6) 480422",
+      "price": "$2,700.00",
+      "cost": "$1,950.00",
+      "mfr": "INTUITIVE",
+      "category": "ACTIVE",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0,
+      "parentRef": "480422 (EACH)",
+      "uomMult": 6
+    },
+    {
+      "gtin": "10886874117085",
+      "ref": "48345B-03",
+      "desc": "INTUITIVE Surgical da Vinci SureForm 45mm-3.5mm Reload, Six-Row Blue (BX/12) 48345B-03",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "mfr": "INTUITIVE",
+      "category": "INACTIVE",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0,
+      "parentRef": "48345B",
+      "uomMult": 12
+    },
+    {
+      "gtin": "10886874117092",
+      "ref": "48345G-03",
+      "desc": "INTUITIVE Da Vinci X / Da Vinci Xi Surgical SureForm 45 mm Reload (Green, 6-Row, 4.3 mm) (BX/12) 48345G",
+      "price": "$1,225.00",
+      "cost": "$900.00",
+      "mfr": "INTUITIVE",
+      "category": "ACTIVE",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0,
+      "parentRef": "48345G",
+      "uomMult": 12
+    },
+    {
+      "gtin": "10886874113858",
+      "ref": "48360T-10",
+      "desc": "INTUITIVE Surgical Da Vinci Xi Sureformstapler Reload 60.0 mm Black (BX/12) 48360T-10",
+      "price": "$1,320.00",
+      "cost": "$1,020.00",
+      "mfr": "INTUITIVE",
+      "category": "ACTIVE",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0,
+      "parentRef": "48360T",
+      "uomMult": 12
+    },
+    {
+      "gtin": "10886874113827",
+      "ref": "48360W-10",
+      "desc": "INTUITIVE Surgical da Vinci SureForm 60mm-2.5mm Reload, Six-Row White (BX/12) 48360W-10",
+      "price": "$1,500.00",
+      "cost": "$0.00",
+      "mfr": "INTUITIVE",
+      "category": "ACTIVE",
+      "status": "ACTIVE",
+      "onHand": 0,
+      "reservedQty": 0,
+      "parentRef": "48360W",
+      "uomMult": 12
     }
   ]
 }
