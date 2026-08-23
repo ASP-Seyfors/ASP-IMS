@@ -408,9 +408,21 @@ const SessionManager = {
           testContainer.style.display = 'block';
         } else {
           testContainer.style.display = 'none';
-          document.getElementById('chkTestMode').checked = false; // Uncheck if they backspace
+          let chk = document.getElementById('chkTestMode');
+          if (chk && chk.checked) {
+            chk.checked = false; // Uncheck if they backspace
+            this.applyTestingModeVisuals(false); // Reset theme
+          }
         }
       });
+      
+      // Bind the visual toggle to the checkbox itself
+      let chkTestMode = document.getElementById('chkTestMode');
+      if (chkTestMode) {
+        chkTestMode.addEventListener('change', (e) => {
+          this.applyTestingModeVisuals(e.target.checked);
+        });
+      }
     }
   },
 
@@ -1942,6 +1954,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
             this.loadSelectedStagedOrder(match);
           }
         }
+      });
+    }
+  },
+
+  applyTestingModeVisuals(isTestActive) {
+    if (isTestActive) {
+      document.body.style.backgroundColor = '#fff3e0'; // Warm orange
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.borderColor = '#ff9800';
+        card.style.backgroundColor = '#e1f5fe'; // Light blue
+      });
+    } else {
+      document.body.style.backgroundColor = '';
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.borderColor = '';
+        card.style.backgroundColor = '';
       });
     }
   }

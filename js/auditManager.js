@@ -2067,5 +2067,58 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     document.getElementById('systemRestoreModal').remove();
     UIManager.showCustomAlert("Restore Complete", `✅ Database successfully rebuilt!\n\nReplayed ${sessionsToReplay.length} historical sessions to establish exact current stock levels.`);
+  },
+
+  traceLotNumber() {
+    let inputEl = document.getElementById('lotSearchInput');
+    let resultsContainer = document.getElementById('lotTraceResults');
+    if (!inputEl || !resultsContainer) return;
+
+    let targetLot = inputEl.value.trim().toUpperCase();
+    if (!targetLot) { alert("Please enter a Lot Number to trace."); return; }
+
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let cloudDir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+    let allSessions = [...archive, ...cloudDir];
+
+    let foundEvents = [];
+
+    // Crawl history for matching lots
+    allSessions.forEach(sess => {
+      if (sess.scannedObjects && Array.isArray(sess.scannedObjects)) {
+        sess.scannedObjects.forEach(item => {
+          if (item.lot && String(item.lot).toUpperCase() === targetLot) {
+            foundEvents.push({
+              sessionName: sess.sessionName || "Unknown Session",
+              workflow: sess.workflowType || "Unknown Workflow",
+              date: sess.dateStr || "Unknown Date",
+              user: sess.userName || "Operator",
+              qty: item.qty,
+              ref: item.ref,
+              actionTag: item.actionTag || item.customerTag || "Inventory"
+            });
+          }
+        });
+      }
+    });
+
+    if (foundEvents.length === 0) {
+      resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">No records found matching Lot Number: <strong>${targetLot}</strong></div>`;
+      return;
+    }
+
+    let html = `<div style="margin-top:10px; padding:10px; background:#e8f5e9; border:1px solid #4caf50; border-radius:4px;">
+                  <h4 style="margin:0 0 8px 0; color:#2e7d32;">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
+    
+    foundEvents.forEach(ev => {
+      html += `<div style="background:#fff; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #0277bd; font-size:0.85rem;">
+                <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
+                <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
+              </div>`;
+    });
+    html += `</div>`;
+
+    resultsContainer.innerHTML = html;
   }
 };
