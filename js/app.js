@@ -63,7 +63,7 @@ async function forceAppUpdate() {
     try {
       let cacheNames = await caches.keys();
       for (let name of cacheNames) {
-        if (name.startsWith('asp-scanner-')) {
+        if (name.startsWith('asp-') || name.startsWith('asp-scanner-')) {
           await caches.delete(name);
         }
       }
@@ -253,3 +253,5 @@ window.exportShopifyProducts = () => AuditManager.exportShopifyProducts();
 window.exportShopifyInventory = () => AuditManager.exportShopifyInventory();
 
 window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);
+
+window.forceAppUpdate = forceAppUpdate;
