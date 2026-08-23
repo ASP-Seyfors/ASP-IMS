@@ -400,21 +400,7 @@ const SessionManager = {
       // Check on initial load
       if (userEl.value.trim().toLowerCase() === 'thomas@alliedsurgicalproducts.com') {
         testContainer.style.display = 'block';
-      }
-      
-      // Listen for typing
-      userEl.addEventListener('input', (e) => {
-        if (e.target.value.trim().toLowerCase() === 'thomas@alliedsurgicalproducts.com') {
-          testContainer.style.display = 'block';
-        } else {
-          testContainer.style.display = 'none';
-          let chk = document.getElementById('chkTestMode');
-          if (chk && chk.checked) {
-            chk.checked = false; // Uncheck if they backspace
-            this.applyTestingModeVisuals(false); // Reset theme
-          }
-        }
-      });
+      }      
       
       // Bind the visual toggle to the checkbox itself
       let chkTestMode = document.getElementById('chkTestMode');
