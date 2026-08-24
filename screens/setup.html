@@ -25,9 +25,11 @@
     </div>
   </div>
 
-  <!-- 1. Shipments & Orders Feed (Top of Setup) -->
   <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; text-align: center; display: none;">
-    <div style="font-size: 0.85rem; font-weight: bold; color: #0277bd; margin-bottom: 6px;">☁️ Shipments & Orders Feed</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+      <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;">☁️ Shipments & Orders Feed</span>
+      <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="SessionManager.triggerQboSync(event)">☁️ Fetch Orders</button>
+    </div>
     <select id="stagedOrdersSelect" style="width: 100%; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)">
       <option value="">-- Select Staged Order --</option>
     </select>

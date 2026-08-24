@@ -912,7 +912,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    const cTag = this.getCombinedCustomerTag();
+    
+    // FIX: Safely grab the Customer and Order strings for the Review Screen
+    const custVal = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
+    const ordVal = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
+    const cTag = custVal + (ordVal ? ` - ${ordVal}` : '');
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
     const refProgRow = document.getElementById('revRefProgressRow');
