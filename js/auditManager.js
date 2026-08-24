@@ -2122,12 +2122,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   openRestoreModal() {
-    // Look at the CLOUD directory instead of the local archive
     let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     
-    // Find all Full Stocktakes to act as our baselines
-    let stocktakes = dir.filter(s => s.workflowType === 'Full Stocktake' && s.status === 'Completed')
-                        .sort((a,b) => b.lastUpdated - a.lastUpdated);
+    // FIX: Look at the sessionName for 'FULL-INV' or 'Stocktake' and sort by numeric ID
+    let stocktakes = dir.filter(s => (s.sessionName.includes('FULL-INV') || s.sessionName.includes('Stocktake')) && s.status === 'Completed')
+                        .sort((a,b) => parseInt(b.id) - parseInt(a.id));
 
     if (stocktakes.length === 0) {
       UIManager.showCustomAlert("Restore Failed", "No 'Full Stocktake' sessions found in the Cloud Vault.");
@@ -2211,9 +2210,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     try {
       logMsg(`Starting restore from baseline ID: ${baselineId}...`, '#64b5f6');
       
-      // 1. Identify sessions to replay
-      let sessionsToFetch = dir.filter(s => s.status === 'Completed' && s.lastUpdated >= baselineLite.lastUpdated)
-                               .sort((a,b) => a.lastUpdated - b.lastUpdated); 
+      // 1. Identify sessions to replay (Sort chronologically by numeric ID)
+      let sessionsToFetch = dir.filter(s => s.status === 'Completed' && parseInt(s.id) >= parseInt(baselineLite.id))
+                               .sort((a,b) => parseInt(a.id) - parseInt(b.id));
       
       logMsg(`Found ${sessionsToFetch.length} chronological sessions to replay.`, '#64b5f6');
       
