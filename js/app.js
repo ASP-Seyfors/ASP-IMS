@@ -56,29 +56,45 @@ async function checkAppUpdates() {
   if (btn) btn.textContent = "🔄 Check for Updates";
 }
 
-async function forceAppUpdate() {
-  if (!confirm("Are you sure you want to force an update?\n\nThis will clear the offline cache and reload the application from the server.")) return;
-  
-  if ('caches' in window) {
-    try {
-      let cacheNames = await caches.keys();
-      for (let name of cacheNames) {
-        if (name.startsWith('asp-') || name.startsWith('asp-scanner-')) {
-          await caches.delete(name);
-        }
-      }
-      alert("Offline cache cleared! Reloading...");
-      window.location.reload(true);
-    } catch (err) {
-      alert("Error clearing cache: " + err.message);
+window.forceAppUpdate = async function() {
+    // 1. Circuit Breaker: Prevent infinite loops
+    if (sessionStorage.getItem('isUpdating') === 'true') {
+        console.warn('Update already in progress. Halting to prevent infinite loop.');
+        sessionStorage.removeItem('isUpdating'); // Clear it for the next manual click
+        return;
     }
-  } else {
-    window.location.reload(true);
-  }
-}
+    
+    // Set the flag so it doesn't run again if the page reloads mid-process
+    sessionStorage.setItem('isUpdating', 'true');
+    
+    try {
+        // 2. Unregister all Service Workers
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+                console.log('Service worker unregistered.');
+            }
+        }
 
-// Don't forget to expose it to the window! Add this near the bottom of app.js with the other window bindings:
-window.forceAppUpdate = () => forceAppUpdate();
+        // 3. Clear all PWA Caches
+        const cacheKeys = await caches.keys();
+        for (let key of cacheKeys) {
+            await caches.delete(key);
+            console.log(`Cache deleted: ${key}`);
+        }
+
+        console.log('Local caches cleared successfully. Reloading application...');
+        
+        // 4. Reload from the server, bypassing the cache
+        window.location.reload(true);
+        
+    } catch (error) {
+        console.error('Error during force update:', error);
+        // If it fails, remove the lock so the user can try again
+        sessionStorage.removeItem('isUpdating');
+    }
+};
 
 window.onload = async () => { 
   if (typeof ComponentManager !== 'undefined') {
