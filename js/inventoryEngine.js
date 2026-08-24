@@ -95,21 +95,25 @@ const InventoryEngine = {
   commitLedgerMath(scannedObjects, currentDb, currentAllocations, workflowType) {
     let onHandChanges = {}; 
     let reservedChanges = {}; 
+    
+    // Force uppercase to catch all legacy string variations
+    let wType = (workflowType || '').toUpperCase();
 
     scannedObjects.forEach(item => {
-      let ref = item.ref.toUpperCase(); 
-      let orderNum = item.orderNum;
-      let actionTag = (item.actionTag || '').toUpperCase();
+      let ref = (item.ref || item.sku || '').toUpperCase().trim(); 
+      let orderNum = item.orderNum || '';
+      let actionTag = (item.actionTag || '').toUpperCase().trim();
       let rawTag = (item.customerTag || '').toUpperCase().trim(); 
 
-      // 1. TAG NORMALIZATION (Removes Invoice/Order details so matching works across workflows)
+      // 1. TAG NORMALIZATION
+      // Strips away hyphens and parentheses so reserving and packing tags match perfectly
       let tag = rawTag.split('(')[0].split('-')[0].trim();
       
-      // Fallback: If tag is blank during packing, extract it from the session name
-      if (!tag && (workflowType === 'Picking & Packing' || actionTag === 'PACK & SHIP')) {
-        let sessName = (SessionManager.currentSessionName || '').toUpperCase();
+      // Fallback: If tag is blank during packing, extract it from the historical session name
+      if (!tag && (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK'))) {
+        let sessName = (item.sessionId || SessionManager.currentSessionName || '').toUpperCase();
         let baseCust = sessName.split('(')[0].split('-')[0].trim();
-        if (baseCust) tag = baseCust;
+        if (baseCust && !baseCust.includes('HISTORICAL')) tag = baseCust;
       }
 
       // Prevents running 0s from wiping out active math
@@ -126,29 +130,29 @@ const InventoryEngine = {
       // --- STRICT LOGIC GATES ---
 
       // GATE A: "Receiving" or "Receiving & Reserving"
-      if (workflowType.includes('Receiving')) {
+      if (wType.includes('RECEIVING')) {
         onHandChanges[ref] += item.qty; // ALWAYS updates Total Qty for Receiving
         
         if (actionTag === 'RESERVED' && tag) {
            reservedChanges[ref] += item.qty;
            currentAllocations[tag][ref].qty += item.qty;
            currentAllocations[tag][ref].details.push({
-               lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum || '', sessionId: item.sessionId || '', qty: item.qty
+               lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum, sessionId: item.sessionId || '', qty: item.qty
            });
         }
       } 
       // GATE B: "Reserving" or "Pick & Reserve" (DOES NOT ADD TO TOTAL QTY)
-      else if (workflowType === 'Reserving' || workflowType === 'Pick & Reserve') {
+      else if (wType.includes('RESERVING') || wType.includes('PICK & RESERVE') || wType === 'RESERVE') {
          if (tag) {
              reservedChanges[ref] += item.qty;
              currentAllocations[tag][ref].qty += item.qty;
              currentAllocations[tag][ref].details.push({
-                 lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum || '', sessionId: item.sessionId || '', qty: item.qty
+                 lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum, sessionId: item.sessionId || '', qty: item.qty
              });
          }
       }
       // GATE C: "Picking & Packing" or "Pack & Ship"
-      else if (workflowType === 'Picking & Packing' || actionTag === 'PACK & SHIP') {
+      else if (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK')) {
         onHandChanges[ref] -= item.qty; // Subtracts from Total Qty
         
         if (tag && currentAllocations[tag] && currentAllocations[tag][ref] && currentAllocations[tag][ref].qty > 0) {
@@ -171,13 +175,15 @@ const InventoryEngine = {
         }
       }
       // GATE D: "Stocktake"
-      // Intentionally bypassed here! Stocktake quantities are explicitly overwritten in SessionManager.commitStocktake().
+      // INTENTIONALLY EMPTY! Stocktake does NOT add or subtract here. 
     });
 
+    // GARBAGE COLLECTION
     Object.keys(currentAllocations).forEach(t => { 
       if (Object.keys(currentAllocations[t]).length === 0) delete currentAllocations[t]; 
     });
 
+    // APPLY TO DATABASE
     currentDb.forEach(dbItem => {
       let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
       
