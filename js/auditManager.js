@@ -2122,14 +2122,15 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   openRestoreModal() {
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    // Look at the CLOUD directory instead of the local archive
+    let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     
     // Find all Full Stocktakes to act as our baselines
-    let stocktakes = archive.filter(s => s.workflowType === 'Full Stocktake' && s.status === 'Completed')
-                            .sort((a,b) => b.lastUpdated - a.lastUpdated);
+    let stocktakes = dir.filter(s => s.workflowType === 'Full Stocktake' && s.status === 'Completed')
+                        .sort((a,b) => b.lastUpdated - a.lastUpdated);
 
     if (stocktakes.length === 0) {
-      UIManager.showCustomAlert("Restore Failed", "No 'Full Stocktake' sessions found in the local archive to use as a baseline.");
+      UIManager.showCustomAlert("Restore Failed", "No 'Full Stocktake' sessions found in the Cloud Vault.");
       return;
     }
 
@@ -2141,8 +2142,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     modal.innerHTML = `
       <div style="background:#fff; border-radius:8px; width:100%; max-width:450px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-        <h3 style="margin:0 0 10px 0; color:#c62828; border-bottom:2px solid #c62828; padding-bottom:8px;">⏪ System Restore</h3>
-        <p style="font-size:0.85rem; color:#555;">Select a historical stocktake below. The system will wipe current quantities, apply the baseline, and mathematically replay all subsequent sessions to rebuild your inventory.</p>
+        <h3 style="margin:0 0 10px 0; color:#c62828; border-bottom:2px solid #c62828; padding-bottom:8px;">☁️ Cloud System Restore</h3>
+        <p style="font-size:0.85rem; color:#555;">Select a historical stocktake below. The system will download the required payloads from the Cloud Vault and mathematically replay all subsequent sessions to rebuild your inventory.</p>
         
         <select id="restoreBaselineSelect" style="width:100%; padding:10px; font-weight:bold; margin-bottom:20px; border:2px solid #c62828;">
           ${optionsHtml}
@@ -2150,81 +2151,177 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
         <div style="display:flex; justify-content:space-between; gap:10px;">
           <button onclick="document.getElementById('systemRestoreModal').remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.executeEventReplay()" style="flex:1; background:#c62828; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">⚠️ Execute Replay</button>
+          <button onclick="AuditManager.executeCloudEventReplay()" style="flex:1; background:#c62828; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">⚠️ Execute Replay</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
   },
 
-  executeEventReplay() {
+  async executeCloudEventReplay() {
     let baselineId = document.getElementById('restoreBaselineSelect').value;
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     
-    let baselineSession = archive.find(s => String(s.id) === String(baselineId));
-    if (!baselineSession) return;
+    let baselineLite = dir.find(s => String(s.id) === String(baselineId));
+    if (!baselineLite) return;
 
-    if (!confirm(`Are you absolutely sure you want to rebuild the database starting from the baseline on ${baselineSession.dateStr}?`)) return;
+    if (!confirm(`Are you absolutely sure you want to rebuild the database starting from the cloud baseline on ${baselineLite.dateStr}?`)) return;
 
-    // 1. Wipe current quantities
-    DatabaseManager.db.forEach(dbItem => {
-      dbItem.onHand = 0;
-      dbItem.reservedQty = 0;
-    });
-    let activeAllocations = {};
+    document.getElementById('systemRestoreModal').remove();
+    
+    // Show detailed downloading overlay with scrolling console
+    let overlay = document.createElement('div');
+    overlay.id = 'replayOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;';
+    overlay.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:600px; padding:20px; display:flex; flex-direction:column; height:80vh; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <h3 style="margin:0 0 15px 0; color:#c62828; text-align:center; border-bottom:2px solid #c62828; padding-bottom:8px;">⏪ System Restore in Progress</h3>
+        
+        <div style="margin-bottom:10px; text-align:center; font-weight:bold; color:#0277bd;" id="replayStatusTitle">Initializing Connection...</div>
+        
+        <div style="width:100%; background:#eee; border-radius:4px; height:12px; overflow:hidden; margin-bottom:15px; flex-shrink:0;">
+          <div id="replayProgressBar" style="width:0%; height:100%; background:#c62828; transition:width 0.2s ease;"></div>
+        </div>
+        
+        <div id="replayDetailedLog" style="flex:1; background:#1a1d20; color:#00e676; padding:10px; border-radius:4px; font-family:monospace; font-size:0.8rem; overflow-y:auto; border:2px solid #000; display:flex; flex-direction:column; gap:4px;">
+          <!-- Logs injected here -->
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
 
-    // 2. Identify sessions to replay (Baseline + Everything strictly after it)
-    let sessionsToReplay = archive.filter(s => s.status === 'Completed' && s.lastUpdated >= baselineSession.lastUpdated)
-                                  .sort((a,b) => a.lastUpdated - b.lastUpdated); // Oldest to Newest
+    const logMsg = (msg, color = '#00e676') => {
+      let logBox = document.getElementById('replayDetailedLog');
+      if (logBox) {
+        let div = document.createElement('div');
+        div.style.color = color;
+        div.textContent = `> ${msg}`;
+        logBox.appendChild(div);
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+    };
 
-    // 3. Replay history through the Engine
-    sessionsToReplay.forEach(sess => {
-      if (sess.workflowType && sess.workflowType.includes('Stocktake')) {
-        // Explicitly handle Stocktake overwrites during replay loop
-        let scannedTotals = {};
-        (sess.scannedObjects || []).forEach(item => {
-          let ref = item.ref.toUpperCase();
-          if (!scannedTotals[ref]) scannedTotals[ref] = 0;
-          scannedTotals[ref] += item.qty;
-        });
+    const updateProgress = (title, percent) => {
+      let tEl = document.getElementById('replayStatusTitle');
+      let pEl = document.getElementById('replayProgressBar');
+      if (tEl) tEl.textContent = title;
+      if (pEl) pEl.style.width = `${percent}%`;
+    };
 
-        if (sess.workflowType === 'Full Stocktake') {
-          DatabaseManager.db.forEach(dbItem => { dbItem.onHand = 0; dbItem.reservedQty = 0; });
+    try {
+      logMsg(`Starting restore from baseline ID: ${baselineId}...`, '#64b5f6');
+      
+      // 1. Identify sessions to replay
+      let sessionsToFetch = dir.filter(s => s.status === 'Completed' && s.lastUpdated >= baselineLite.lastUpdated)
+                               .sort((a,b) => a.lastUpdated - b.lastUpdated); 
+      
+      logMsg(`Found ${sessionsToFetch.length} chronological sessions to replay.`, '#64b5f6');
+      
+      let fullSessions = [];
+      
+      // 2. Batch download payloads
+      for (let i = 0; i < sessionsToFetch.length; i++) {
+        let sLite = sessionsToFetch[i];
+        let pct = Math.floor((i / sessionsToFetch.length) * 40); // First 40% is downloading
+        updateProgress(`Downloading payload ${i+1} of ${sessionsToFetch.length}...`, pct);
+        logMsg(`Fetching: ${sLite.dateStr} - ${sLite.sessionName}...`);
+        
+        let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sLite.id}`);
+        let sessionData = await res.json();
+        if (sessionData && !sessionData.error) {
+          fullSessions.push(sessionData);
+          logMsg(`  ✓ Downloaded ${sessionData.scannedObjects ? sessionData.scannedObjects.length : 0} scanned items.`, '#fff');
         } else {
+           logMsg(`  ❌ FAILED to download ${sLite.sessionName}!`, '#ff5252');
+        }
+      }
+
+      updateProgress(`Wiping current database quantities...`, 45);
+      logMsg(`Wiping all active quantities from memory to prepare for baseline...`, '#ffb74d');
+
+      // 3. Wipe current quantities
+      DatabaseManager.db.forEach(dbItem => {
+        dbItem.onHand = 0;
+        dbItem.reservedQty = 0;
+      });
+      let activeAllocations = {};
+
+      updateProgress(`Rebuilding mathematical ledger...`, 50);
+
+      // 4. Replay history through the Engine
+      for (let i = 0; i < fullSessions.length; i++) {
+        let sess = fullSessions[i];
+        let pct = 50 + Math.floor((i / fullSessions.length) * 40); // 50% to 90% is processing
+        updateProgress(`Processing: ${sess.sessionName}...`, pct);
+        
+        logMsg(`[MATH] Processing ${sess.workflowType}: ${sess.sessionName} (${sess.dateStr})`, '#ffb74d');
+
+        if (sess.workflowType && sess.workflowType.includes('Stocktake')) {
+          let scannedTotals = {};
+          (sess.scannedObjects || []).forEach(item => {
+            let ref = item.ref.toUpperCase();
+            if (!scannedTotals[ref]) scannedTotals[ref] = 0;
+            scannedTotals[ref] += item.qty;
+          });
+
+          if (sess.workflowType === 'Full Stocktake') {
+            logMsg(`  - Executing Full Stocktake wipe & overwrite...`, '#fff');
+            DatabaseManager.db.forEach(dbItem => { dbItem.onHand = 0; dbItem.reservedQty = 0; });
+          } else {
+             logMsg(`  - Executing Targeted Selection Stocktake overwrite...`, '#fff');
+            Object.keys(scannedTotals).forEach(ref => {
+              let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+              if (dbItem) dbItem.onHand = 0;
+            });
+          }
+
           Object.keys(scannedTotals).forEach(ref => {
             let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-            if (dbItem) dbItem.onHand = 0;
+            if (dbItem) {
+              dbItem.onHand = (dbItem.onHand || 0) + scannedTotals[ref];
+              logMsg(`    = REF: ${ref} explicitly set to ${dbItem.onHand}`);
+            }
           });
+        } else {
+          logMsg(`  - Committing standard ledger adjustments (${sess.scannedObjects ? sess.scannedObjects.length : 0} lines)...`, '#fff');
+          let result = InventoryEngine.commitLedgerMath(sess.scannedObjects, DatabaseManager.db, activeAllocations, sess.workflowType);
+          DatabaseManager.db = result.updatedDb;
+          activeAllocations = result.updatedAllocations;
         }
-
-        Object.keys(scannedTotals).forEach(ref => {
-          let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-          if (dbItem) {
-            dbItem.onHand = (dbItem.onHand || 0) + scannedTotals[ref];
-          }
-        });
-      } else {
-        // Standard ledger math for Receiving, Reserving, and Packing
-        let result = InventoryEngine.commitLedgerMath(sess.scannedObjects, DatabaseManager.db, activeAllocations, sess.workflowType);
-        DatabaseManager.db = result.updatedDb;
-        activeAllocations = result.updatedAllocations;
       }
-    });
 
-    // 4. Save the rebuilt universe
-    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-    localStorage.setItem('asp_allocations', JSON.stringify(activeAllocations));
-    
-    if (SessionManager.cloudArchiveUrl) {
-      let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
-      fetch(SessionManager.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
-      SessionManager.syncAllocationsToCloud();
+      updateProgress(`Syncing rebuilt ledger to the cloud...`, 95);
+      logMsg(`Saving rebuilt universe to local memory...`, '#64b5f6');
+      
+      // 5. Save the rebuilt universe
+      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+      localStorage.setItem('asp_allocations', JSON.stringify(activeAllocations));
+      
+      if (SessionManager.getActiveArchiveUrl()) {
+        logMsg(`Pushing database adjustments to Google Sheets...`, '#64b5f6');
+        let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
+        await fetch(SessionManager.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) });
+        
+        logMsg(`Pushing customer allocations to Google Sheets...`, '#64b5f6');
+        SessionManager.syncAllocationsToCloud();
+      }
+
+      updateProgress(`Restore Complete!`, 100);
+      logMsg(`✅ SYSTEM RESTORE 100% COMPLETE!`, '#ffff00');
+
+      setTimeout(() => {
+        document.body.removeChild(overlay);
+        UIManager.showCustomAlert("Restore Complete", `✅ Database successfully rebuilt from the cloud!\n\nDownloaded and replayed ${fullSessions.length} historical sessions to establish exact current stock levels.`);
+      }, 3500); // Leave it on screen for 3.5 seconds so you can read the final logs
+      
+    } catch(err) {
+       logMsg(`FATAL ERROR: ${err.message}`, '#ff5252');
+       let overlayEl = document.getElementById('replayOverlay');
+       // Add a close button so you aren't trapped if it fails
+       if (overlayEl) {
+         overlayEl.innerHTML += `<button onclick="document.body.removeChild(this.parentElement)" style="background:#ff5252; color:#fff; border:none; padding:10px 20px; margin-top:20px; border-radius:4px; font-weight:bold; cursor:pointer;">Close Window</button>`;
+       }
     }
-
-    let modal = document.getElementById('systemRestoreModal');
-    if (modal) modal.remove();
-    
-    UIManager.showCustomAlert("Restore Complete", `✅ Database successfully rebuilt!\n\nReplayed ${sessionsToReplay.length} historical sessions to establish exact current stock levels.`);
   },
 
   async traceLotNumber() {
