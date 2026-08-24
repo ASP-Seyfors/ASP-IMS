@@ -1111,9 +1111,21 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     AuditManager.updateSessionSummaryView();
     
+    // NEW STRICT DROPDOWN LOGIC
     let optCommit = document.getElementById('optCommitStock');
+    let optComplete = document.querySelector('#exportDropdown option[value="complete"]');
+    let isStocktake = this.currentWorkflowType.includes('Stocktake');
+
     if (optCommit) {
-      optCommit.style.display = this.currentWorkflowType.includes('Stocktake') ? 'block' : 'none';
+      optCommit.style.display = isStocktake ? 'block' : 'none';
+      if (optComplete) optComplete.style.display = isStocktake ? 'none' : 'block';
+      
+      // Auto-select the correct completion action
+      if (isStocktake) {
+        document.getElementById('exportDropdown').value = 'commit_stock';
+      } else {
+        document.getElementById('exportDropdown').value = 'continue';
+      }
     }
 
     this.renderManifestReconciliation();
@@ -1125,7 +1137,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   getVendorSearchUrl(mfr, ref) {
     let cleanMfr = (mfr || '').toUpperCase();
     if (cleanMfr.includes('ETHICON')) return 'https://www.ethicon.com/na/epc/search/';
-    if (cleanMfr.includes('SYNERGY')) return 'https://www.synergysurgical.com/search/in-date,short-dated.html';
+    if (cleanMfr.includes('SYNERGY')) return 'https://www.synergysurgical.com/search/';
     
     return `https://www.google.com/search?q=${encodeURIComponent(mfr + ' ' + ref)}`;
   },

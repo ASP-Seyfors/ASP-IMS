@@ -2179,9 +2179,36 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     // 3. Replay history through the Engine
     sessionsToReplay.forEach(sess => {
-      let result = InventoryEngine.commitLedgerMath(sess.scannedObjects, DatabaseManager.db, activeAllocations, sess.workflowType);
-      DatabaseManager.db = result.updatedDb;
-      activeAllocations = result.updatedAllocations;
+      if (sess.workflowType && sess.workflowType.includes('Stocktake')) {
+        // Explicitly handle Stocktake overwrites during replay loop
+        let scannedTotals = {};
+        (sess.scannedObjects || []).forEach(item => {
+          let ref = item.ref.toUpperCase();
+          if (!scannedTotals[ref]) scannedTotals[ref] = 0;
+          scannedTotals[ref] += item.qty;
+        });
+
+        if (sess.workflowType === 'Full Stocktake') {
+          DatabaseManager.db.forEach(dbItem => { dbItem.onHand = 0; dbItem.reservedQty = 0; });
+        } else {
+          Object.keys(scannedTotals).forEach(ref => {
+            let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+            if (dbItem) dbItem.onHand = 0;
+          });
+        }
+
+        Object.keys(scannedTotals).forEach(ref => {
+          let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+          if (dbItem) {
+            dbItem.onHand = (dbItem.onHand || 0) + scannedTotals[ref];
+          }
+        });
+      } else {
+        // Standard ledger math for Receiving, Reserving, and Packing
+        let result = InventoryEngine.commitLedgerMath(sess.scannedObjects, DatabaseManager.db, activeAllocations, sess.workflowType);
+        DatabaseManager.db = result.updatedDb;
+        activeAllocations = result.updatedAllocations;
+      }
     });
 
     // 4. Save the rebuilt universe
@@ -2190,11 +2217,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     if (SessionManager.cloudArchiveUrl) {
       let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
-      fetch(SessionManager.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dbPayload) }).catch(e => {});
+      fetch(SessionManager.cloudArchiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
       SessionManager.syncAllocationsToCloud();
     }
 
-    document.getElementById('systemRestoreModal').remove();
+    let modal = document.getElementById('systemRestoreModal');
+    if (modal) modal.remove();
+    
     UIManager.showCustomAlert("Restore Complete", `✅ Database successfully rebuilt!\n\nReplayed ${sessionsToReplay.length} historical sessions to establish exact current stock levels.`);
   },
 
