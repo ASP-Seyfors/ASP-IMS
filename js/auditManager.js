@@ -2255,10 +2255,80 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         
         logMsg(`[MATH] Processing ${sess.workflowType}: ${sess.sessionName} (${sess.dateStr})`, '#ffb74d');
 
+        // ==========================================
+        // LEGACY DATA TRANSFORMER (ITEMS 7a-7d)
+        // ==========================================
+        let transformedScans = (sess.scannedObjects || []).map(item => {
+           let tRef = (item.ref || item.sku || '').toUpperCase().trim();
+           let tQty = parseInt(item.qty, 10) || 1;
+           let tTag = (item.customerTag || '').toUpperCase().trim();
+           let tOrder = (item.orderNum || '').toUpperCase().trim();
+           let tAction = item.actionTag || '';
+           let tSessionId = item.sessionId || '';
+
+           // 7a. UOM Bundle Conversion
+           let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === tRef);
+           if (dbMatch && dbMatch.parentRef && dbMatch.uomMult > 1) {
+               tRef = dbMatch.parentRef.toUpperCase().trim();
+               tQty = tQty * dbMatch.uomMult;
+           }
+
+           // 7b. Legacy Pick & Pack Missing Tags
+           let wTypeUpper = (sess.workflowType || '').toUpperCase();
+           let sNameUpper = (sess.sessionName || '').toUpperCase();
+           if ((wTypeUpper.includes('PACKING') || wTypeUpper.includes('PACK & SHIP')) && !tTag) {
+               tTag = sNameUpper;
+           }
+
+           // 7c. Split Concatenated Customer Tags & Orders
+           if (tTag.includes(' - ')) {
+               let parts = tTag.split(' - ');
+               tTag = parts[0].trim();
+               if (!tOrder) tOrder = parts[1].trim();
+           } else if (tTag.includes('(')) {
+               let match = tTag.match(/(.*?)\s*\((.*?)\)/);
+               if (match) {
+                   tTag = match[1].trim();
+                   if (!tOrder) tOrder = match[2].trim();
+               }
+           }
+           
+           // Extra Fallback for 7b: If the sessionName itself was the tag, parse it
+           if ((wTypeUpper.includes('PACKING') || wTypeUpper.includes('PACK & SHIP')) && tTag === sNameUpper) {
+               if (sNameUpper.includes(' - ')) {
+                   let parts = sNameUpper.split(' - ');
+                   tTag = parts[0].trim();
+                   if (!tOrder) tOrder = parts[1].trim();
+               } else if (sNameUpper.includes('(')) {
+                   let match = sNameUpper.match(/(.*?)\s*\((.*?)\)/);
+                   if (match) {
+                       tTag = match[1].trim();
+                       if (!tOrder) tOrder = match[2].trim();
+                   }
+               }
+           }
+
+           // 7d. Fallback Session ID
+           if (!tSessionId) {
+               tSessionId = `${sess.dateStr} - ${sess.sessionName}`;
+           }
+
+           return {
+               ...item,
+               ref: tRef,
+               qty: tQty,
+               customerTag: tTag,
+               orderNum: tOrder,
+               actionTag: tAction,
+               sessionId: tSessionId
+           };
+        });
+
+        // USE THE TRANSFORMED DATA FOR THE MATH
         if (sess.workflowType && sess.workflowType.includes('Stocktake')) {
           let scannedTotals = {};
-          (sess.scannedObjects || []).forEach(item => {
-            let ref = item.ref.toUpperCase();
+          transformedScans.forEach(item => {
+            let ref = item.ref;
             if (!scannedTotals[ref]) scannedTotals[ref] = 0;
             scannedTotals[ref] += item.qty;
           });
@@ -2282,8 +2352,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             }
           });
         } else {
-          logMsg(`  - Committing standard ledger adjustments (${sess.scannedObjects ? sess.scannedObjects.length : 0} lines)...`, '#fff');
-          let result = InventoryEngine.commitLedgerMath(sess.scannedObjects, DatabaseManager.db, activeAllocations, sess.workflowType);
+          logMsg(`  - Committing standard ledger adjustments (${transformedScans.length} lines)...`, '#fff');
+          let result = InventoryEngine.commitLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
           DatabaseManager.db = result.updatedDb;
           activeAllocations = result.updatedAllocations;
         }
