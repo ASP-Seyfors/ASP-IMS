@@ -104,32 +104,36 @@ const InventoryEngine = {
       if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
       if (tag) { 
         if (!currentAllocations[tag]) currentAllocations[tag] = {}; 
-        if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, orders: [], lots: [], exps: [], sessionIds: [] }; 
+        if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] }; 
       }
 
-      if (workflowType.includes('Receiving & Reserving')) {
-        onHandChanges[ref] += item.qty;
-        if (item.actionTag === 'Reserved') { 
-          reservedChanges[ref] += item.qty; 
-          if (tag) {
-             currentAllocations[tag][ref].qty += item.qty; 
-             if(orderNum && !currentAllocations[tag][ref].orders.includes(orderNum)) currentAllocations[tag][ref].orders.push(orderNum);
-             if(item.lot && item.lot !== 'NO_LOT' && !currentAllocations[tag][ref].lots.includes(item.lot)) currentAllocations[tag][ref].lots.push(item.lot);
-             if(item.exp && item.exp !== 'NO_EXP' && !currentAllocations[tag][ref].exps.includes(item.exp)) currentAllocations[tag][ref].exps.push(item.exp);
-             if(item.sessionId && !currentAllocations[tag][ref].sessionIds.includes(item.sessionId)) currentAllocations[tag][ref].sessionIds.push(item.sessionId);
-          }
+      if (workflowType.includes('Receiving') || workflowType.includes('Stocktake')) {
+        // Only increment OnHand for pure Receiving or Stocktake (not Reserving alone)
+        if (!workflowType.includes('Reserving') || item.actionTag !== 'Reserved') {
+            onHandChanges[ref] += item.qty;
         }
-      } else if (workflowType.includes('Receiving')) { 
-        onHandChanges[ref] += item.qty;
-      } else if (workflowType.includes('Reserving')) { 
-        reservedChanges[ref] += item.qty; 
-        if (tag) {
-           currentAllocations[tag][ref].qty += item.qty;
-           if(orderNum && !currentAllocations[tag][ref].orders.includes(orderNum)) currentAllocations[tag][ref].orders.push(orderNum);
-           if(item.lot && item.lot !== 'NO_LOT' && !currentAllocations[tag][ref].lots.includes(item.lot)) currentAllocations[tag][ref].lots.push(item.lot);
-           if(item.exp && item.exp !== 'NO_EXP' && !currentAllocations[tag][ref].exps.includes(item.exp)) currentAllocations[tag][ref].exps.push(item.exp);
-           if(item.sessionId && !currentAllocations[tag][ref].sessionIds.includes(item.sessionId)) currentAllocations[tag][ref].sessionIds.push(item.sessionId);
-        }
+      }
+
+      if (item.actionTag === 'Reserved' && tag) {
+         reservedChanges[ref] += item.qty;
+         currentAllocations[tag][ref].qty += item.qty;
+         
+         // Relational Object Push
+         let existingDetail = currentAllocations[tag][ref].details.find(d => 
+            d.lot === item.lot && d.exp === item.exp && d.orderNum === orderNum && d.sessionId === item.sessionId
+         );
+         
+         if (existingDetail) {
+            existingDetail.qty += item.qty;
+         } else {
+            currentAllocations[tag][ref].details.push({
+                lot: item.lot || 'NO_LOT',
+                exp: item.exp || 'NO_EXP',
+                orderNum: orderNum || '',
+                sessionId: item.sessionId || '',
+                qty: item.qty
+            });
+         }
       } else if (workflowType.includes('Packing') || workflowType.includes('Pack & Ship')) {
         onHandChanges[ref] -= item.qty;
         
@@ -137,6 +141,19 @@ const InventoryEngine = {
             let deduct = Math.min(item.qty, currentAllocations[tag][ref].qty);
             reservedChanges[ref] -= deduct; 
             currentAllocations[tag][ref].qty -= deduct;
+            
+            // FIFO Deduction from specific lots
+            let remainingToDeduct = deduct;
+            for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {
+                if (remainingToDeduct <= 0) break;
+                let det = currentAllocations[tag][ref].details[i];
+                let take = Math.min(det.qty, remainingToDeduct);
+                det.qty -= take;
+                remainingToDeduct -= take;
+            }
+            // Clean up empty lots
+            currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
+
             if (currentAllocations[tag][ref].qty <= 0) delete currentAllocations[tag][ref];
         }
       }

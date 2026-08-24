@@ -133,7 +133,20 @@ const SessionManager = {
         let allocMap = {};
         data.allocations.forEach(a => {
           if (!allocMap[a.customerName]) allocMap[a.customerName] = {};
-          allocMap[a.customerName][a.ref] = a.qty;
+          
+          // Rebuild the object structure
+          if (!allocMap[a.customerName][a.ref]) {
+              allocMap[a.customerName][a.ref] = { qty: 0, details: [] };
+          }
+          
+          allocMap[a.customerName][a.ref].qty += a.qty;
+          allocMap[a.customerName][a.ref].details.push({
+             lot: a.lot, 
+             exp: a.exp, 
+             qty: a.qty, 
+             orderNum: a.orderNum, 
+             sessionId: a.sessionId
+          });
         });
         localStorage.setItem('asp_allocations', JSON.stringify(allocMap));
       }
