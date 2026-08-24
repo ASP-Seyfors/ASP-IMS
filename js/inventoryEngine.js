@@ -129,7 +129,7 @@ const InventoryEngine = {
 
       // --- STRICT FAULT-TOLERANT LOGIC GATES ---
 
-      // GATE A: "Receiving" or "Receiving & Reserving"
+      // GATE A: "Receiving" or "Receiving & Reserving" (Supports your Reconcile Strategy)
       if (wType.includes('RECEIVING')) {
         onHandChanges[ref] += item.qty; // ALWAYS updates Total Qty for Receiving
         
@@ -155,23 +155,44 @@ const InventoryEngine = {
       else if (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK')) {
         onHandChanges[ref] -= item.qty; // Subtracts from Total Qty
         
-        if (tag && currentAllocations[tag] && currentAllocations[tag][ref] && currentAllocations[tag][ref].qty > 0) {
-            let deduct = Math.min(item.qty, currentAllocations[tag][ref].qty);
+        if (tag && currentAllocations[tag] && currentAllocations[tag][ref]) {
+            let deduct = item.qty;
             reservedChanges[ref] -= deduct; 
             currentAllocations[tag][ref].qty -= deduct;
             
-            // FIFO Deduction from specific lots
-            let remainingToDeduct = deduct;
-            for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {
-                if (remainingToDeduct <= 0) break;
-                let det = currentAllocations[tag][ref].details[i];
-                let take = Math.min(det.qty, remainingToDeduct);
-                det.qty -= take;
-                remainingToDeduct -= take;
+            let targetLot = item.lot || 'NO_LOT';
+            let targetExp = item.exp || 'NO_EXP';
+
+            // 1. EXACT MATCH DEDUCTION
+            let exactMatches = currentAllocations[tag][ref].details.filter(d => d.lot === targetLot && d.exp === targetExp && d.qty > 0);
+            for (let i = 0; i < exactMatches.length; i++) {
+                if (deduct <= 0) break;
+                let take = Math.min(exactMatches[i].qty, deduct);
+                exactMatches[i].qty -= take;
+                deduct -= take;
             }
+
+            // 2. FEFO FALLBACK DEDUCTION (First Expiring, First Out)
+            if (deduct > 0) {
+                currentAllocations[tag][ref].details.sort((a, b) => {
+                    if (a.exp === 'NO_EXP') return 1;
+                    if (b.exp === 'NO_EXP') return -1;
+                    return new Date(a.exp) - new Date(b.exp);
+                });
+
+                for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {
+                    if (deduct <= 0) break;
+                    let det = currentAllocations[tag][ref].details[i];
+                    if (det.qty > 0) {
+                        let take = Math.min(det.qty, deduct);
+                        det.qty -= take;
+                        deduct -= take;
+                    }
+                }
+            }
+            
             // Clean up empty lots
             currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
-            if (currentAllocations[tag][ref].qty <= 0) delete currentAllocations[tag][ref];
         }
       }
       // GATE D: "Stocktake"
@@ -180,6 +201,9 @@ const InventoryEngine = {
 
     // GARBAGE COLLECTION
     Object.keys(currentAllocations).forEach(t => { 
+      Object.keys(currentAllocations[t]).forEach(ref => {
+          if (currentAllocations[t][ref].qty <= 0) delete currentAllocations[t][ref];
+      });
       if (Object.keys(currentAllocations[t]).length === 0) delete currentAllocations[t]; 
     });
 
@@ -192,6 +216,7 @@ const InventoryEngine = {
         dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); 
         dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
         
+        // Final floor safety check
         if (dbItem.onHand < 0) dbItem.onHand = 0; 
         if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
       }
