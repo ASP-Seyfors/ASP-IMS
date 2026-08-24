@@ -87,7 +87,7 @@ const InventoryEngine = {
     return true;
   },
   
-  /**
+ /**
    * GATE 5: FINAL LEDGER COMMIT
    * Executes the exact addition and subtraction math for the database
    * and the Active Allocations ledger.
@@ -98,44 +98,58 @@ const InventoryEngine = {
 
     scannedObjects.forEach(item => {
       let ref = item.ref.toUpperCase(); 
-      let tag = item.customerTag; 
       let orderNum = item.orderNum;
+      let actionTag = (item.actionTag || '').toUpperCase();
+      let rawTag = (item.customerTag || '').toUpperCase().trim(); 
 
-      if (!onHandChanges[ref]) { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
+      // 1. TAG NORMALIZATION (Removes Invoice/Order details so matching works across workflows)
+      let tag = rawTag.split('(')[0].split('-')[0].trim();
+      
+      // Fallback: If tag is blank during packing, extract it from the session name
+      if (!tag && (workflowType === 'Picking & Packing' || actionTag === 'PACK & SHIP')) {
+        let sessName = (SessionManager.currentSessionName || '').toUpperCase();
+        let baseCust = sessName.split('(')[0].split('-')[0].trim();
+        if (baseCust) tag = baseCust;
+      }
+
+      // Prevents running 0s from wiping out active math
+      if (typeof onHandChanges[ref] === 'undefined') { 
+          onHandChanges[ref] = 0; 
+          reservedChanges[ref] = 0; 
+      }
+      
       if (tag) { 
         if (!currentAllocations[tag]) currentAllocations[tag] = {}; 
         if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] }; 
       }
 
-      if (workflowType.includes('Receiving') || workflowType.includes('Stocktake')) {
-        // Only increment OnHand for pure Receiving or Stocktake (not Reserving alone)
-        if (!workflowType.includes('Reserving') || item.actionTag !== 'Reserved') {
-            onHandChanges[ref] += item.qty;
-        }
-      }
+      // --- STRICT LOGIC GATES ---
 
-      if (item.actionTag === 'Reserved' && tag) {
-         reservedChanges[ref] += item.qty;
-         currentAllocations[tag][ref].qty += item.qty;
-         
-         // Relational Object Push
-         let existingDetail = currentAllocations[tag][ref].details.find(d => 
-            d.lot === item.lot && d.exp === item.exp && d.orderNum === orderNum && d.sessionId === item.sessionId
-         );
-         
-         if (existingDetail) {
-            existingDetail.qty += item.qty;
-         } else {
-            currentAllocations[tag][ref].details.push({
-                lot: item.lot || 'NO_LOT',
-                exp: item.exp || 'NO_EXP',
-                orderNum: orderNum || '',
-                sessionId: item.sessionId || '',
-                qty: item.qty
-            });
+      // GATE A: "Receiving" or "Receiving & Reserving"
+      if (workflowType.includes('Receiving')) {
+        onHandChanges[ref] += item.qty; // ALWAYS updates Total Qty for Receiving
+        
+        if (actionTag === 'RESERVED' && tag) {
+           reservedChanges[ref] += item.qty;
+           currentAllocations[tag][ref].qty += item.qty;
+           currentAllocations[tag][ref].details.push({
+               lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum || '', sessionId: item.sessionId || '', qty: item.qty
+           });
+        }
+      } 
+      // GATE B: "Reserving" or "Pick & Reserve" (DOES NOT ADD TO TOTAL QTY)
+      else if (workflowType === 'Reserving' || workflowType === 'Pick & Reserve') {
+         if (tag) {
+             reservedChanges[ref] += item.qty;
+             currentAllocations[tag][ref].qty += item.qty;
+             currentAllocations[tag][ref].details.push({
+                 lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum || '', sessionId: item.sessionId || '', qty: item.qty
+             });
          }
-      } else if (workflowType.includes('Packing') || workflowType.includes('Pack & Ship')) {
-        onHandChanges[ref] -= item.qty;
+      }
+      // GATE C: "Picking & Packing" or "Pack & Ship"
+      else if (workflowType === 'Picking & Packing' || actionTag === 'PACK & SHIP') {
+        onHandChanges[ref] -= item.qty; // Subtracts from Total Qty
         
         if (tag && currentAllocations[tag] && currentAllocations[tag][ref] && currentAllocations[tag][ref].qty > 0) {
             let deduct = Math.min(item.qty, currentAllocations[tag][ref].qty);
@@ -153,10 +167,11 @@ const InventoryEngine = {
             }
             // Clean up empty lots
             currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
-
             if (currentAllocations[tag][ref].qty <= 0) delete currentAllocations[tag][ref];
         }
       }
+      // GATE D: "Stocktake"
+      // Intentionally bypassed here! Stocktake quantities are explicitly overwritten in SessionManager.commitStocktake().
     });
 
     Object.keys(currentAllocations).forEach(t => { 
@@ -165,7 +180,9 @@ const InventoryEngine = {
 
     currentDb.forEach(dbItem => {
       let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
-      if (onHandChanges[ref] || reservedChanges[ref]) {
+      
+      // Ensure we only touch items that were actually scanned in this session
+      if (typeof onHandChanges[ref] !== 'undefined') {
         dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); 
         dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
         
