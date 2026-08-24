@@ -96,7 +96,7 @@ const InventoryEngine = {
     let onHandChanges = {}; 
     let reservedChanges = {}; 
     
-    // Force uppercase to catch all legacy string variations
+    // Force uppercase to catch all legacy string variations and prevent matching failures
     let wType = (workflowType || '').toUpperCase();
 
     scannedObjects.forEach(item => {
@@ -105,7 +105,7 @@ const InventoryEngine = {
       let actionTag = (item.actionTag || '').toUpperCase().trim();
       let rawTag = (item.customerTag || '').toUpperCase().trim(); 
 
-      // 1. TAG NORMALIZATION
+      // 1. THE TAG NORMALIZATION FIX
       // Strips away hyphens and parentheses so reserving and packing tags match perfectly
       let tag = rawTag.split('(')[0].split('-')[0].trim();
       
@@ -127,7 +127,7 @@ const InventoryEngine = {
         if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] }; 
       }
 
-      // --- STRICT LOGIC GATES ---
+      // --- STRICT FAULT-TOLERANT LOGIC GATES ---
 
       // GATE A: "Receiving" or "Receiving & Reserving"
       if (wType.includes('RECEIVING')) {
@@ -175,7 +175,7 @@ const InventoryEngine = {
         }
       }
       // GATE D: "Stocktake"
-      // INTENTIONALLY EMPTY! Stocktake does NOT add or subtract here. 
+      // INTENTIONALLY EMPTY! Stocktake does NOT add or subtract here, preserving your UOM Bundle integrity. 
     });
 
     // GARBAGE COLLECTION
