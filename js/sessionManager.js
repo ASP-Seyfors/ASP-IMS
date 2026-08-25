@@ -461,20 +461,24 @@ const SessionManager = {
       let preloadedAllocations = [];
       if (type === 'Order' && wType === 'Picking & Packing') {
           let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-          let searchTag = partner.toUpperCase() + (oDetails ? ` - ${oDetails.toUpperCase()}` : '');
-          let baseTag = partner.toUpperCase();
+          let baseTag = partner.toUpperCase().trim();
+          let searchTag = baseTag + (oDetails ? ` - ${oDetails.toUpperCase().trim()}` : '');
           
           let targetAllocation = currentAllocations[searchTag] ? currentAllocations[searchTag] : currentAllocations[baseTag];
 
           if (targetAllocation && Object.keys(targetAllocation).length > 0) {
               let itemCount = Object.keys(targetAllocation).length;
-              let totalUnits = Object.values(targetAllocation).reduce((a, b) => a + b, 0);
+              // FIX: Safely add quantities from the new object structure
+              let totalUnits = Object.values(targetAllocation).reduce((a, b) => a + (typeof b === 'object' ? (b.qty || 0) : b), 0);
               
               if (confirm(`Targeted Pick & Pack Available:\n\n${partner} has ${totalUnits} units across ${itemCount} items currently sitting in Reserve.\n\nDo you want to pre-load these items into your Pick List manifest?`)) {
                   chkManifest = true;
                   
                   for (let ref in targetAllocation) {
-                      let qty = targetAllocation[ref];
+                      // FIX: Extract the integer quantity
+                      let rawVal = targetAllocation[ref];
+                      let qty = typeof rawVal === 'object' ? (rawVal.qty || 0) : rawVal;
+                      
                       preloadedAllocations.push({
                           ref: ref,
                           expectedQty: qty,

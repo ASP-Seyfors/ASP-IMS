@@ -67,8 +67,12 @@ const InventoryEngine = {
     }
 
     if (action === 'Pack & Ship') {
-      let custTagUpper = (customerTag || '').toUpperCase();
-      let allocatedToCust = (currentAllocations[custTagUpper] && currentAllocations[custTagUpper][trueRef]) ? currentAllocations[custTagUpper][trueRef] : 0;
+      // FIX: Strip order number to match the base customer bin (e.g. 'SYNERGY')
+      let baseTag = (customerTag || '').toUpperCase().split('(')[0].split('-')[0].trim();
+      
+      let allocData = (currentAllocations[baseTag] && currentAllocations[baseTag][trueRef]) ? currentAllocations[baseTag][trueRef] : 0;
+      // FIX: Safely extract the qty whether it's the new object structure or an old number
+      let allocatedToCust = typeof allocData === 'object' ? (allocData.qty || 0) : allocData;
       
       if (requestedQty > allocatedToCust && !ignoreOverpack) {
         let extraNeeded = requestedQty - allocatedToCust;
