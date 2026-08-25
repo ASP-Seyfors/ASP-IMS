@@ -1764,13 +1764,29 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.pendingNewItems = sessionData.pendingNewItems || [];
     this.pendingFieldUpdates = sessionData.pendingUpdates || [];
 
-    if (this.currentWorkflowType.includes('Packing')) {
-      this.currentItemAction = 'Pack & Ship';
+    // --- NEW UI REBUILD & STATE OVERRIDE ---
+    let destRow = document.getElementById('rowItemDestination');
+    let tagRow = document.getElementById('rowCustomerTag');
+
+    if (this.currentWorkflowType.includes('Receiving & Reserving')) {
+      this.currentItemAction = 'Inventory'; // Default back to Inventory for receiving
+      if (destRow) destRow.style.display = 'flex';
+      if (tagRow) tagRow.style.display = 'none';
+      if (typeof UIManager !== 'undefined' && UIManager.setItemAction) UIManager.setItemAction('Inventory');
     } else if (this.currentWorkflowType.includes('Reserving')) {
       this.currentItemAction = 'Reserved';
+      if (destRow) destRow.style.display = 'none';
+      if (tagRow) tagRow.style.display = 'none';
+    } else if (this.currentWorkflowType.includes('Packing')) {
+      this.currentItemAction = 'Pack & Ship';
+      if (destRow) destRow.style.display = 'none';
+      if (tagRow) tagRow.style.display = 'none';
     } else {
       this.currentItemAction = 'Inventory';
+      if (destRow) destRow.style.display = 'none';
+      if (tagRow) tagRow.style.display = 'none';
     }
+    // ----------------------------------------
 
     localStorage.setItem('asp_session_id', this.sessionId);
     localStorage.setItem('asp_session_is_active', 'true');
