@@ -1030,7 +1030,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   saveItemLog() {
     let rawGtin = document.getElementById('gtinInput').value.trim();
-    let ref = document.getElementById('refInput').value.trim();
+    let ref = document.getElementById('refInput').value.trim().toUpperCase(); // Ensure uppercase
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
@@ -1039,17 +1039,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const cOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-    let matchedDbItem;
-    try {
-      matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
-    } catch (error) {
-      UIManager.showCustomAlert("Validation Error", error.message, true);
-      return; 
-    }
-
-    let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty);
+    // Gracefully handle null matches so new items can be added
+    let matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
+    let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty, ref);
     
-    if (uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
+    if (matchedDbItem && uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
       if (typeof UIManager !== 'undefined') {
           UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${ref.toUpperCase()}) Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
       }
@@ -1060,6 +1054,21 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     ref = uomResult.trueRef;
     qty = uomResult.trueQty;
 
+    // NEW ITEM HANDLING
+    let isNewItem = !matchedDbItem;
+    if (isNewItem) {
+       let alreadyPending = this.pendingNewItems.find(i => i.ref === ref);
+       if (!alreadyPending) {
+           this.pendingNewItems.push({
+               ref: ref,
+               gtin: rawGtin,
+               mfr: vendor,
+               price: "$0.00",
+               desc: "Navigate to vendor website for item description."
+           });
+       }
+    }
+
     let effectiveTag = this.currentItemAction;
     if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
       if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
@@ -1069,7 +1078,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTag, currentAllocations);
+      // Pass the workflowType so Receiving skips the stock check
+      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTag, currentAllocations, false, this.currentWorkflowType);
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
         let userConfirmed = confirm(error.message.replace('OVERPACK_WARNING: ', ''));
@@ -1107,10 +1117,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       price: price,
       qty: qty,
       rawScanLines: rawBarcodesGathered,
-      isNew: false, 
+      isNew: isNewItem, 
       customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTag : ''),
       orderNum: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cOrder : ''),
-      sessionId: this.sessionId, // <--- ADD THIS EXACT LINE
+      sessionId: this.sessionId,
       itemNote: iNote
     });
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));

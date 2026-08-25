@@ -13,9 +13,8 @@
 const InventoryEngine = {
 
   /**
-   * GATE 1: STRICT NORMALIZATION & LOOKUP
+   * GATE 1: NORMALIZATION & LOOKUP
    * Forces all inputs to uppercase and attempts a database match.
-   * Throws a hard error if the item does not exist.
    */
   lookupAndNormalize(ref, gtin, currentDb) {
     let cleanRef = (ref || '').trim().toUpperCase();
@@ -26,22 +25,18 @@ const InventoryEngine = {
       (i.gtin && i.gtin === cleanGtin)
     );
 
-    if (!match) {
-      throw new Error(`HARD ERROR: Unrecognized SKU (${cleanRef}). Please add this item to the master database before scanning.`);
-    }
-    
-    return match;
+    // FIXED: Return null instead of throwing a hard error so new items can proceed
+    return match || null;
   },
 
   /**
    * GATE 2: UOM MULTIPLIER (BOX TO EACH)
-   * Cross-references the UOM Bundles to calculate the true EACH quantity.
    */
-  calculateUOM(matchedItem, scannedQty) {
+  calculateUOM(matchedItem, scannedQty, fallbackRef) {
     let finalQty = parseInt(scannedQty, 10) || 1;
-    let finalRef = matchedItem.sku || matchedItem.ref;
+    let finalRef = matchedItem ? (matchedItem.sku || matchedItem.ref) : fallbackRef.toUpperCase();
 
-    if (matchedItem.parentRef && matchedItem.uomMult > 1) {
+    if (matchedItem && matchedItem.parentRef && matchedItem.uomMult > 1) {
       finalQty = finalQty * matchedItem.uomMult;
       finalRef = matchedItem.parentRef.toUpperCase();
     }
@@ -51,12 +46,15 @@ const InventoryEngine = {
 
   /**
    * GATE 3: AVAILABILITY VALIDATION
-   * Prevents over-reserving and provides a smart prompt if a user 
-   * attempts to pack more items than a customer has in reserve.
    */
-  validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations, ignoreOverpack = false) {
+  validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations, ignoreOverpack = false, workflowType = '') {
+    // FIXED: If we are RECEIVING, we are bringing items into the building. Skip availability checks.
+    if (workflowType.toUpperCase().includes('RECEIVING')) {
+        return true;
+    }
+
     let dbItem = currentDb.find(i => (i.sku || i.ref || '').toUpperCase() === trueRef);
-    if (!dbItem) throw new Error(`HARD ERROR: Parent item ${trueRef} missing from database.`);
+    if (!dbItem) throw new Error(`HARD ERROR: Item ${trueRef} missing from database. Cannot reserve or pack.`);
 
     let onHand = parseInt(dbItem.onHand, 10) || 0;
     let reserved = parseInt(dbItem.reservedQty, 10) || 0;
@@ -72,10 +70,8 @@ const InventoryEngine = {
       let custTagUpper = (customerTag || '').toUpperCase();
       let allocatedToCust = (currentAllocations[custTagUpper] && currentAllocations[custTagUpper][trueRef]) ? currentAllocations[custTagUpper][trueRef] : 0;
       
-      // Check if they are trying to pack more than is specifically reserved for this customer
       if (requestedQty > allocatedToCust && !ignoreOverpack) {
         let extraNeeded = requestedQty - allocatedToCust;
-        
         if (extraNeeded > available) {
             throw new Error(`HARD ERROR: Insufficient stock to over-pack. You need ${extraNeeded} extra units, but only ${available} are available on the shelf.`);
         } else {
