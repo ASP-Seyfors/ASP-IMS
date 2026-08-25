@@ -139,10 +139,16 @@ const SessionManager = {
               allocMap[a.customerName][a.ref] = { qty: 0, details: [] };
           }
           
+          // FIX: Strip timezone/timestamp garbage injected by Google Sheets
+          let cleanExp = a.exp || 'NO_EXP';
+          if (typeof cleanExp === 'string' && cleanExp.includes('T')) {
+              cleanExp = cleanExp.split('T')[0];
+          }
+          
           allocMap[a.customerName][a.ref].qty += a.qty;
           allocMap[a.customerName][a.ref].details.push({
              lot: a.lot, 
-             exp: a.exp, 
+             exp: cleanExp, 
              qty: a.qty, 
              orderNum: a.orderNum, 
              sessionId: a.sessionId
