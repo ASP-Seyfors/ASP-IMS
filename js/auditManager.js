@@ -2280,16 +2280,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                tTag = sNameUpper;
            }
 
-           // 7c. Split Concatenated Customer Tags & Orders
+           // 7c. Split Concatenated Customer Tags & Orders (UPDATED: Force overwrite)
            if (tTag.includes(' - ')) {
                let parts = tTag.split(' - ');
                tTag = parts[0].trim();
-               if (!tOrder) tOrder = parts[1].trim();
+               tOrder = parts[1].trim(); // Automatically overwrites the generic session order number
            } else if (tTag.includes('(')) {
                let match = tTag.match(/(.*?)\s*\((.*?)\)/);
                if (match) {
                    tTag = match[1].trim();
-                   if (!tOrder) tOrder = match[2].trim();
+                   tOrder = match[2].trim(); // Automatically overwrites the generic session order number
                }
            }
            
@@ -2298,12 +2298,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                if (sNameUpper.includes(' - ')) {
                    let parts = sNameUpper.split(' - ');
                    tTag = parts[0].trim();
-                   if (!tOrder) tOrder = parts[1].trim();
+                   tOrder = parts[1].trim(); // Automatically overwrites the generic session order number
                } else if (sNameUpper.includes('(')) {
                    let match = sNameUpper.match(/(.*?)\s*\((.*?)\)/);
                    if (match) {
                        tTag = match[1].trim();
-                       if (!tOrder) tOrder = match[2].trim();
+                       tOrder = match[2].trim(); // Automatically overwrites the generic session order number
                    }
                }
            }
