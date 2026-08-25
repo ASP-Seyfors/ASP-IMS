@@ -1040,13 +1040,15 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   saveItemLog() {
     let rawGtin = document.getElementById('gtinInput').value.trim();
-    let ref = document.getElementById('refInput').value.trim().toUpperCase(); // Ensure uppercase
+    let ref = document.getElementById('refInput').value.trim().toUpperCase();
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    const cTag = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
-    const cOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
+    
+    // Grab item-level form inputs
+    const itemCust = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
+    const itemOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
     // Gracefully handle null matches so new items can be added
@@ -1079,6 +1081,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
        }
     }
 
+    // Determine the action tag
     let effectiveTag = this.currentItemAction;
     if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
       if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
@@ -1086,10 +1089,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       else effectiveTag = 'Inventory';
     }
 
+    // AUTO-POPULATION FOR ORDERS
+    let finalCustomerTag = itemCust;
+    let finalOrderNum = itemOrder;
+
+    if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
+      let baseCustomer = this.currentSessionName.split('(')[0].trim();
+      if (!finalCustomerTag) finalCustomerTag = baseCustomer;
+      if (!finalOrderNum) finalOrderNum = this.currentOrderNum;
+    }
+
+    let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
+
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-      // Pass the workflowType so Receiving skips the stock check
-      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTag, currentAllocations, false, this.currentWorkflowType);
+      // FIX: Pass cTagCombined instead of the blank item-level string!
+      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, false, this.currentWorkflowType);
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
         let userConfirmed = confirm(error.message.replace('OVERPACK_WARNING: ', ''));
@@ -1128,8 +1143,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       qty: qty,
       rawScanLines: rawBarcodesGathered,
       isNew: isNewItem, 
-      customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTag : ''),
-      orderNum: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cOrder : ''),
+      customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTagCombined : ''),
+      orderNum: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? finalOrderNum : ''),
       sessionId: this.sessionId,
       itemNote: iNote
     });
