@@ -1360,7 +1360,20 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       
       if (this.getActiveArchiveUrl()) {
-          let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
+          // FIX: Clean and attach the Partners/Vendors arrays so they sync automatically
+          let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+          let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
+          let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
+
+          let dbPayload = { 
+            action: "SYNC_LOCAL_DB", 
+            payload: { 
+              items: DatabaseManager.db,
+              customers: cleanCustomers,
+              suppliers: cleanSuppliers,
+              vendors: cleanVendors
+            } 
+          };
           fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
       }
 
