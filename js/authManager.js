@@ -165,6 +165,15 @@ const AuthManager = {
       DatabaseManager.populatePartners();
       DatabaseManager.populateItemCustomerSelect();
       if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
+
+      // === NEW AUTO-SYNC LOGIC ===
+      // Automatically trigger the Master System Sync for verified users.
+      // A 500ms timeout ensures the home screen finishes rendering before the modal pops up.
+      setTimeout(() => {
+         if (typeof window.masterSystemSync === 'function') {
+             window.masterSystemSync(null);
+         }
+      }, 500);
     }
   },
 
