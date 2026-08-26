@@ -24,7 +24,8 @@ const ComponentManager = {
       'settings.html',
       'reports.html',
       'dbEditor.html',
-      'help.html'
+      'help.html',
+      'devTools.html' 
     ];
 
     const appRoot = document.getElementById('app-root');

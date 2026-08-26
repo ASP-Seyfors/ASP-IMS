@@ -48,7 +48,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         chkEl.checked = isChecked;
         
         // Return home so they can sync
-        if(document.getElementById('screenSettings')) document.getElementById('screenSettings').style.display = 'none';
+        if(document.getElementById('screenDevTools')) document.getElementById('screenDevTools').style.display = 'none';
         if(document.getElementById('screenSetup')) document.getElementById('screenSetup').style.display = 'block';
         
         setTimeout(() => alert("Environment switched successfully. Local memory wiped.\n\nPlease click 'Sync System' now."), 300);
@@ -624,5 +624,58 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   closeHelpScreen() {
     document.getElementById('screenHelp').style.display = 'none';
     document.getElementById('screenSettings').style.display = 'block';
+  }
+
+  openDevTools() {
+    document.getElementById('screenSetup').style.display = 'none';
+    document.getElementById('screenDevTools').style.display = 'block';
+  },
+
+  closeDevTools() {
+    document.getElementById('screenDevTools').style.display = 'none';
+    document.getElementById('screenSetup').style.display = 'block';
+  },
+
+  initDebugConsole() {
+    if (this.debugConsoleInitialized) return;
+    this.debugConsoleInitialized = true;
+    
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    
+    const logToUI = (msg, color) => {
+      const consoleEl = document.getElementById('customDebugConsole');
+      if (!consoleEl) return;
+      const div = document.createElement('div');
+      div.style.color = color;
+      div.style.borderBottom = '1px solid #444';
+      div.style.padding = '4px 0';
+      
+      let text = '';
+      if (typeof msg === 'object') {
+        try { text = JSON.stringify(msg); } catch(e) { text = String(msg); }
+      } else {
+        text = String(msg);
+      }
+      
+      const timestamp = new Date().toLocaleTimeString([], {hour12:false});
+      div.textContent = `[${timestamp}] ${text}`;
+      consoleEl.appendChild(div);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    };
+
+    console.log = (...args) => {
+      originalLog.apply(console, args);
+      logToUI(args.join(' '), '#a5d6a7'); // Green
+    };
+    console.warn = (...args) => {
+      originalWarn.apply(console, args);
+      logToUI(args.join(' '), '#ffcc80'); // Orange
+    };
+    console.error = (...args) => {
+      originalError.apply(console, args);
+      logToUI(args.join(' '), '#ef9a9a'); // Red
+    };
   }
 };

@@ -109,6 +109,10 @@ window.onload = async () => {
   if (typeof UIManager.loadSavedAdvancedMode === 'function') {
     UIManager.loadSavedAdvancedMode();
   }
+  
+  if (typeof UIManager.initDebugConsole === 'function') {
+    UIManager.initDebugConsole();
+  }
 
   if (typeof AuthManager !== 'undefined') {
     AuthManager.init();
@@ -210,6 +214,8 @@ window.closeHelpScreen = () => UIManager.closeHelpScreen();
 window.openQboModal = () => UIManager.openQboModal();
 window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
 window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);
+window.openDevTools = () => UIManager.openDevTools();
+window.closeDevTools = () => UIManager.closeDevTools();
 
 window.handlePartnerSelect = (val, type) => DatabaseManager.handlePartnerSelect(val, type);
 window.runMasterLookup = () => DatabaseManager.runMasterLookup();
