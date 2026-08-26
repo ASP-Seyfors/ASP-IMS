@@ -23,7 +23,7 @@
       </div>
     </div>
     <div style="text-align: right; margin-top: 10px;">
-      <button class="btn-action btn-stop btn-auto" style="padding: 6px 12px !important; margin: 0;" onclick="goToSummaryScreen()">Review Session</button>
+      <button class="btn-action btn-stop btn-auto" style="padding: 6px 12px !important; margin: 0;" onclick="goToSummaryScreen()" title="Finish scanning and proceed to the session summary.">Review Session</button>
     </div>
   </div>
 
@@ -36,8 +36,8 @@
   <div class="card">
     <div class="raw-section">
       <div class="flex-between" style="margin-bottom: 8px;">
-        <button class="btn-small btn-clear btn-auto" onclick="resetScanLinesAndFields()">🧹 Clear Fields</button>
-        <button class="btn-small btn-cam btn-auto" id="btnToggleCam" onclick="toggleCameraScanner()">📷 Open Camera</button>
+        <button class="btn-small btn-clear btn-auto" onclick="resetScanLinesAndFields()" title="Clear all raw barcode inputs below.">🧹 Clear Fields</button>
+        <button class="btn-small btn-cam btn-auto" id="btnToggleCam" onclick="toggleCameraScanner()" title="Launch device camera to scan barcodes.">📷 Open Camera</button>
         <!-- UPLOAD COMMENTED OUT <button class="btn-small btn-upload" onclick="...">📁 Upload Image</button> -->
       </div>
       <h2 style="margin-top: 10px;">Raw Barcode Scans</h2>
@@ -47,30 +47,30 @@
           <span id="tagGtin" class="status-tag">GTIN</span>
           <span id="tagLot" class="status-tag">LOT</span>
           <span id="tagExp" class="status-tag">EXP</span>
-          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()">📸 Snap</button>
+          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()" title="Force a manual snapshot if auto-focus is struggling.">📸 Snap</button>
         </div>
         <div id="cameraViewfinder"></div>
       </div>
 
       <div class="form-row" id="rowScan1">
         <div class="form-label">Barcode Line 1:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan1" placeholder="Scan Primary Barcode" oninput="processAllScans()"></div>
+        <div class="input-wrapper"><input type="text" id="rawScan1" placeholder="Scan Primary Barcode" oninput="processAllScans()" title="Scan your primary 1D or 2D barcode here."></div>
       </div>
       <div class="form-row" id="rowScan2" style="display: none;">
         <div class="form-label">Barcode Line 2:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()"></div>
+        <div class="input-wrapper"><input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()" title="Scan additional barcodes if required."></div>
       </div>
       <div class="form-row" id="rowScan3" style="display: none;">
         <div class="form-label">Barcode Line 3:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()"></div>
+        <div class="input-wrapper"><input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()" title="Scan additional barcodes if required."></div>
       </div>
       <div class="form-row" id="rowScan4" style="display: none;">
         <div class="form-label">Barcode Line 4:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()"></div>
+        <div class="input-wrapper"><input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()" title="Scan additional barcodes if required."></div>
       </div>
 
       <div style="text-align: center; margin-top: 8px;">
-        <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()">+ Add Barcode Line</button>
+        <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()" title="Add another raw barcode input field.">+ Add Barcode Line</button>
       </div>
     </div>
   </div>
@@ -78,7 +78,7 @@
   <!-- REF / SKU LOOKUP SECTION -->
   <div class="card" style="text-align: center;">
     <div class="form-label" style="color: #000000; font-size: 0.95rem; width: 100%; margin-bottom: 6px;">REF / SKU Lookup:</div>
-    <input list="dbRefs" type="text" id="refInput" class="input-center" style="width: 50%;" placeholder="Scan or Type REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
+    <input list="dbRefs" type="text" id="refInput" class="input-center" style="width: 50%;" placeholder="Scan or Type REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();" title="Type or scan a REF/SKU to manually search the database.">
     <datalist id="dbRefs"></datalist>
   </div>
 
@@ -96,8 +96,8 @@
       <div class="form-label">Item Destination:</div>
       <div class="input-wrapper">
         <div class="action-selector" style="justify-content: flex-start;">
-          <div id="actBtnInv" class="action-btn selected-inv btn-auto" onclick="setItemAction('Inventory')">Inventory</div>
-          <div id="actBtnRes" class="action-btn btn-auto" onclick="setItemAction('Reserved')">Reserved</div>
+          <div id="actBtnInv" class="action-btn selected-inv btn-auto" onclick="setItemAction('Inventory')" title="Send this item to general warehouse inventory.">Inventory</div>
+          <div id="actBtnRes" class="action-btn btn-auto" onclick="setItemAction('Reserved')" title="Reserve this item for a specific customer.">Reserved</div>
         </div>
       </div>
     </div>
@@ -106,8 +106,8 @@
     <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
       <div class="form-label" style="color: #0277bd;">Customer Tag:</div>
       <div class="input-wrapper" style="display: flex; gap: 6px;">
-        <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value)"></select>
-        <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;">
+        <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value)" title="Select the customer to reserve this item for."></select>
+        <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;" title="Optional: Enter a specific PO or Order number.">
       </div>
     </div>
 
@@ -115,7 +115,7 @@
     <div class="form-row">
       <div class="form-label">Quantity Scanned:</div>
       <div class="input-wrapper">
-        <input type="number" id="qtyInput" value="1" min="0" class="input-micro">
+        <input type="number" id="qtyInput" value="1" min="0" class="input-micro" title="Enter the total number of identical units.">
       </div>
     </div>
 
@@ -123,37 +123,37 @@
     <div class="form-row">
       <div class="form-label">Manufacturer:</div>
       <div class="input-wrapper">
-        <select id="vendorSelect" class="needs-attention input-short" onchange="handleVendorSelect(this.value); evaluateFieldAttention();"></select>
+        <select id="vendorSelect" class="needs-attention input-short" onchange="handleVendorSelect(this.value); evaluateFieldAttention();" title="Select the manufacturer of this item."></select>
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-label">GTIN Barcode:</div>
       <div class="input-wrapper">
-        <input type="text" id="gtinInput" class="needs-attention input-short" placeholder="GTIN" oninput="runMasterLookup(); evaluateFieldAttention();">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
+        <input type="text" id="gtinInput" class="needs-attention input-short" placeholder="GTIN" oninput="runMasterLookup(); evaluateFieldAttention();" title="14-digit Global Trade Item Number.">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not have a GTIN."><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-label">Lot Number:</div>
       <div class="input-wrapper">
-        <input type="text" id="lotInput" class="needs-attention input-short" placeholder="Lot" oninput="evaluateFieldAttention();">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
+        <input type="text" id="lotInput" class="needs-attention input-short" placeholder="Lot" oninput="evaluateFieldAttention();" title="Alphanumeric manufacturing Lot/Batch number.">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not have a Lot number."><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-label">Expiration Date:</div>
       <div class="input-wrapper">
-        <input type="text" id="expInput" class="needs-attention input-short" placeholder="YYYY-MM-DD" onchange="formatExpDate(this)" oninput="evaluateFieldAttention();">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;"><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
+        <input type="text" id="expInput" class="needs-attention input-short" placeholder="YYYY-MM-DD" onchange="formatExpDate(this)" oninput="evaluateFieldAttention();" title="Item expiration date in YYYY-MM-DD format.">
+        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not expire."><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
       </div>
     </div>
 
     <!-- Item Note Checkbox moved to bottom -->
     <div style="text-align: left; width: 100%; margin-bottom: 10px; margin-top: 10px;">
-      <label style="font-size:0.85rem; font-weight:bold; color:#d32f2f; cursor:pointer;">
+      <label style="font-size:0.85rem; font-weight:bold; color:#d32f2f; cursor:pointer;" title="Attach a specific note or flag damage for this item.">
         <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()"> ⚠️ Add Item Issue / Note
       </label>
     </div>
@@ -166,14 +166,14 @@
 
     <!-- Bottom Buttons Layout -->
     <div class="flex-between" style="margin-top: 15px;">
-      <button class="btn-action btn-clear btn-auto" onclick="resetScanLinesAndFields()">Clear Fields</button>
-      <button class="btn-action btn-continue btn-auto" onclick="goToReviewStage()">Continue</button>
+      <button class="btn-action btn-clear btn-auto" onclick="resetScanLinesAndFields()" title="Clear all fields below to start a fresh scan.">Clear Fields</button>
+      <button class="btn-action btn-continue btn-auto" onclick="goToReviewStage()" title="Proceed to the verification step.">Continue</button>
     </div>
   </div>
 
   <!-- NEW: PINNED MANIFEST TRACKER -->
   <div id="liveManifestTracker" class="card" style="display:none; margin-top: 12px; background-color: #f8f9fa; border-color: #0277bd;">
-    <div style="font-size: 0.9rem; font-weight: bold; color: #0277bd; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px;">
+    <div style="font-size: 0.9rem; font-weight: bold; color: #0277bd; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px;" title="Items expected to be scanned in this session.">
       📋 Expected Items Tracker
     </div>
     <div id="liveManifestList" style="max-height: 180px; overflow-y: auto; font-size: 0.85rem;">
