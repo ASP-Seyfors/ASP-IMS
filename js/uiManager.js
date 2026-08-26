@@ -624,7 +624,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   closeHelpScreen() {
     document.getElementById('screenHelp').style.display = 'none';
     document.getElementById('screenSettings').style.display = 'block';
-  }
+  },
 
   openDevTools() {
     document.getElementById('screenSetup').style.display = 'none';
