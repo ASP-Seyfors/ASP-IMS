@@ -104,11 +104,22 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let elPreload = document.getElementById('rowPreloadToggle');
     if (elPreload) elPreload.style.display = isAdv ? 'block' : 'none';
 
-    let elFeed = document.getElementById('panelStagedFeed');
-    if (elFeed) elFeed.style.display = isAdv ? 'block' : 'none';
-
     let elHub = document.getElementById('panelEnterpriseHub');
     if (elHub) elHub.style.display = isAdv ? 'block' : 'none';
+    
+    // Force feed check
+    this.togglePreloadFeed();
+  },
+
+  togglePreloadFeed() {
+    let preloadChk = document.getElementById('chkPreloadManifest');
+    let feedPanel = document.getElementById('panelStagedFeed');
+    let advChk = document.getElementById('chkAdvancedMode');
+    
+    if (feedPanel && preloadChk && advChk) {
+      // Only show the feed if BOTH Advanced Mode AND the Pre-Load checkbox are checked
+      feedPanel.style.display = (advChk.checked && preloadChk.checked) ? 'block' : 'none';
+    }
   },
 
   // ==========================================

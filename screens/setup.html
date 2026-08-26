@@ -12,8 +12,9 @@
 <div id="screenSetup" class="card">
   
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
+    <!-- 11a: Changed title to ASP Inventory Management System -->
     <h2 style="border:none; margin:0; padding:0; display:flex; align-items:center; gap:8px;">
-      ASP IMS <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
+      ASP Inventory Management System <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
     </h2>
     <div style="display: flex; gap: 10px; align-items: center;">
       <span id="syncIndicator" style="display:none; color:#c62828; font-weight:bold; font-size:0.85rem;">🔴 Updates Pending</span>
@@ -25,7 +26,15 @@
     </div>
   </div>
 
-  <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; text-align: center; display: none;">
+  <!-- 2. Pre-Load Checkbox (11b: Moved above the feed, 11c: Capitalized Information) -->
+  <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 10px; display: none;">
+    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
+      <input type="checkbox" id="chkPreloadManifest" onchange="UIManager.togglePreloadFeed()"> Pre-Load Order Information
+    </label>
+  </div>
+
+  <!-- 11b & 11d: Moved below checkbox, hidden by default -->
+  <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 15px; text-align: center; display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
       <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;">☁️ Shipments & Orders Feed</span>
       <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="SessionManager.triggerQboSync(event)">☁️ Fetch Orders</button>
@@ -34,22 +43,17 @@
       <option value="">-- Select Staged Order --</option>
     </select>
   </div>
-
-  <!-- 2. Pre-Load Checkbox (Above Session Type) -->
-  <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 15px; display: none;">
-    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;">
-      <input type="checkbox" id="chkPreloadManifest"> Pre-Load Order Information
-    </label>
-  </div>
   
   <div class="form-row">
     <div class="form-label">Session Type:</div>
     <div class="input-wrapper" style="justify-content: space-around;">
       <label style="cursor:pointer; font-weight:bold;">
-        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> 📦 Shipment
+        <!-- 11e: Added (Incoming) -->
+        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> 📦 Shipment (Incoming)
       </label>
       <label style="cursor:pointer; font-weight:bold;">
-        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> 🛒 Order
+        <!-- 11f: Added (Outgoing) -->
+        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> 🛒 Order (Outgoing)
       </label>
     </div>
   </div>
@@ -86,7 +90,7 @@
     <div class="form-label">Process:</div>
     <div class="input-wrapper">
       <select id="workflowTypeSelect">
-        <option value="Reserving">🚩 Pick & Reserve</option>
+        <option value="Reserving">🚩 Picking & Reserving</option>
         <option value="Picking & Packing">🖐️ Picking & Packing</option>
       </select>
     </div>
@@ -102,11 +106,13 @@
   <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
     <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📈 Enterprise Data Hub</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()">📊 Reports</button>
+      <!-- 11g: Changed to Reports & Analytics -->
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()">📊 Reports & Analytics</button>
       <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()">🗄️ Database Editor</button>
       <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()">📋 Stocktake</button>
       <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()">📦 Traceability</button>
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; grid-column: 1 / -1;" onclick="UIManager.openBinViewerModal()">🗃️ View Customer Bins</button> <!-- NEW BUTTON -->
+      <!-- 11h: Changed to Customer Bins -->
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; grid-column: 1 / -1;" onclick="UIManager.openBinViewerModal()">🗃️ Customer Bins</button>
     </div>
   </div>
 

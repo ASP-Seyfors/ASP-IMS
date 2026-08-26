@@ -191,11 +191,33 @@ window.masterSystemSync = async (event) => {
 };
 window.changeAppTheme = (val) => UIManager.changeAppTheme(val);
 window.toggleSessionType = () => UIManager.toggleSessionType();
+window.togglePreloadFeed = () => UIManager.togglePreloadFeed();
+window.openAuditHub = () => UIManager.openAuditHub();
+window.setItemAction = (act) => UIManager.setItemAction(act);
+window.toggleItemNote = () => UIManager.toggleItemNote();
+window.toggleNA = (field, chk) => UIManager.toggleNA(field, chk);
+window.formatExpDate = (el) => UIManager.formatExpDate(el);
+window.evaluateFieldAttention = () => UIManager.evaluateFieldAttention();
+window.toggleSessionNote = () => UIManager.toggleSessionNote();
+window.closeAuditHub = () => UIManager.closeAuditHub();
+window.toggleAdvancedMode = () => UIManager.toggleAdvancedMode();
+window.openReportsHub = () => UIManager.openReportsHub();
+window.closeReportsHub = () => UIManager.closeReportsHub();
+window.openDbEditor = () => UIManager.openDbEditor();
+window.closeDbEditor = () => UIManager.closeDbEditor();
+window.openHelpScreen = () => UIManager.openHelpScreen();
+window.closeHelpScreen = () => UIManager.closeHelpScreen();
+window.openQboModal = () => UIManager.openQboModal();
+window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
+window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);
+
 window.handlePartnerSelect = (val, type) => DatabaseManager.handlePartnerSelect(val, type);
+window.runMasterLookup = () => DatabaseManager.runMasterLookup();
+window.handleVendorSelect = (val) => DatabaseManager.handleVendorSelect(val);
+window.handleItemCustomerSelect = (val) => DatabaseManager.handleItemCustomerSelect(val);
+
 window.startSession = () => SessionManager.startSession();
 window.rescueLastSession = () => SessionManager.rescueLastSession();
-window.openAuditHub = () => UIManager.openAuditHub();
-window.scanDocumentOCR = (e) => ScannerManager.scanDocumentOCR(e);
 window.processPastedSpreadsheet = () => SessionManager.processPastedSpreadsheet();
 window.addManifestRow = () => SessionManager.addManifestRow();
 window.cancelManifestEntry = () => SessionManager.cancelManifestEntry();
@@ -204,56 +226,35 @@ window.returnToManifestEdit = () => SessionManager.returnToManifestEdit();
 window.confirmManifestAndStart = () => SessionManager.confirmManifestAndStart();
 window.toggleManifestResRow = (idx) => SessionManager.toggleManifestResRow(idx);
 window.goToSummaryScreen = () => SessionManager.goToSummaryScreen();
-window.resetScanLinesAndFields = () => ScannerManager.resetScanLinesAndFields();
-window.toggleCameraScanner = () => ScannerManager.toggleCameraScanner();
-window.scanImageFile = (e) => ScannerManager.scanImageFile(e);
-window.processAllScans = () => ScannerManager.processAllScans();
-window.addScanLine = () => ScannerManager.addScanLine();
-window.runMasterLookup = () => DatabaseManager.runMasterLookup();
-window.setItemAction = (act) => UIManager.setItemAction(act);
-window.toggleItemNote = () => UIManager.toggleItemNote();
-window.handleVendorSelect = (val) => DatabaseManager.handleVendorSelect(val);
-window.toggleNA = (field, chk) => UIManager.toggleNA(field, chk);
-window.formatExpDate = (el) => UIManager.formatExpDate(el);
-window.evaluateFieldAttention = () => UIManager.evaluateFieldAttention();
 window.goToReviewStage = () => SessionManager.goToReviewStage();
 window.confirmFieldUpdate = (field) => SessionManager.confirmFieldUpdate(field);
 window.returnToEdit = () => SessionManager.returnToEdit();
 window.cancelScannedItem = () => SessionManager.cancelScannedItem();
 window.saveItemLog = () => SessionManager.saveItemLog();
+window.clearManifestList = () => SessionManager.clearManifestList();
+window.triggerQboSync = () => SessionManager.triggerQboSync();
+window.offloadAndPurgeHistory = (e) => SessionManager.offloadAndPurgeHistory(e);
+
+window.scanDocumentOCR = (e) => ScannerManager.scanDocumentOCR(e);
+window.resetScanLinesAndFields = () => ScannerManager.resetScanLinesAndFields();
+window.toggleCameraScanner = () => ScannerManager.toggleCameraScanner();
+window.scanImageFile = (e) => ScannerManager.scanImageFile(e);
+window.processAllScans = () => ScannerManager.processAllScans();
+window.addScanLine = () => ScannerManager.addScanLine();
+
 window.executeAction = () => AuditManager.executeSessionAction();
-window.toggleSessionNote = () => UIManager.toggleSessionNote();
-window.closeAuditHub = () => UIManager.closeAuditHub();
 window.processAuditFiles = (e) => AuditManager.processAuditFiles(e);
 window.clearAuditSessions = () => AuditManager.clearAuditSessions();
 window.executeAuditExport = () => AuditManager.executeAuditExport();
 window.exportThriveCreates = () => AuditManager.exportThriveCreates();
 window.exportThriveEdits = () => AuditManager.exportThriveEdits();
 window.exportUpdatedDatabaseJSON = () => AuditManager.exportUpdatedDatabaseJSON();
-window.clearManifestList = () => SessionManager.clearManifestList();
-window.handleItemCustomerSelect = (val) => DatabaseManager.handleItemCustomerSelect(val);
 window.loadCustomerReportData = () => AuditManager.loadCustomerReportData();
-window.toggleAdvancedMode = () => UIManager.toggleAdvancedMode();
-// ... existing bridges ...
-window.openReportsHub = () => UIManager.openReportsHub();
-window.closeReportsHub = () => UIManager.closeReportsHub();
-window.openDbEditor = () => UIManager.openDbEditor();
-window.closeDbEditor = () => UIManager.closeDbEditor();
-window.openHelpScreen = () => UIManager.openHelpScreen();
-window.closeHelpScreen = () => UIManager.closeHelpScreen();
 window.batchPushLegacyLogs = (e) => AuditManager.batchPushLegacyLogs(e);
-window.triggerQboSync = () => SessionManager.triggerQboSync();
-window.openQboModal = () => UIManager.openQboModal();
-window.offloadAndPurgeHistory = (e) => SessionManager.offloadAndPurgeHistory(e);
-window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
-
 window.exportThriveCreates = () => AuditManager.exportThriveCreates();
 window.exportThriveVariants = () => AuditManager.exportThriveVariants();
 window.exportThriveProducts = () => AuditManager.exportThriveProducts();
-
 window.exportShopifyProducts = () => AuditManager.exportShopifyProducts();
 window.exportShopifyInventory = () => AuditManager.exportShopifyInventory();
-
-window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);
 
 window.forceAppUpdate = forceAppUpdate;
