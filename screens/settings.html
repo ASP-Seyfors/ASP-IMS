@@ -4,7 +4,6 @@
  * Author: Thomas Paul Seyfors
  * Date: August 2026
  * 
- *
  * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= --> 
@@ -12,7 +11,7 @@
 <div id="screenSettings" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
     <h2 style="border:none; margin:0; padding:0;">ASP IMS - Settings</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeSettings()">🔙 Return</button>
+    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeSettings()" title="Return to the Home Screen.">🔙 Return</button>
   </div>
 
   <div class="form-row">
@@ -44,29 +43,8 @@
     </div>
   </div>
 
-  <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;" id="rowQboSettings">
-    <div class="form-label">QuickBooks Online:</div>
-    <div class="input-wrapper">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; width: 100%; padding: 8px;" onclick="UIManager.openQboModal()">☁️ QBO Invoice Sync</button>
-    </div>
-  </div>  
-
-  <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-    <div class="form-label">System Cache:</div>
-    <div class="input-wrapper">
-      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; width: 100%; padding: 8px;" onclick="forceAppUpdate()">🗑️ Force Update / Clear Cache</button>
-    </div>
-  </div>
-
-  <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-    <div class="form-label">Storage Optimization:</div>
-    <div class="input-wrapper">
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; width: 100%; padding: 8px;" onclick="offloadAndPurgeHistory(event)">🧹 Offload & Purge Local History</button>
-    </div>
-  </div>
-
   <div class="form-row" style="margin-top: 20px;">
-    <div class="form-label">App Version: v4.0.8</div>    
+    <div class="form-label">App Version: v4.0.9</div>    
     <div class="input-wrapper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
       <div>
         <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; margin-left: 10px;" onclick="checkAppUpdates()">🔄 Check for Updates</button>

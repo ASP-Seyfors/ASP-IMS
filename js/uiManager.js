@@ -640,42 +640,73 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     if (this.debugConsoleInitialized) return;
     this.debugConsoleInitialized = true;
     
+    // Create the floating console container dynamically
+    const floatContainer = document.createElement('div');
+    floatContainer.id = 'floatingDebugConsoleContainer';
+    floatContainer.style.cssText = 'display:none; position:fixed; bottom:20px; right:20px; width:350px; height:280px; background:rgba(26, 29, 32, 0.95); border:2px solid #4caf50; border-radius:6px; z-index:999999; flex-direction:column; box-shadow:0 6px 20px rgba(0,0,0,0.6);';
+    
+    floatContainer.innerHTML = `
+      <div style="background:#2e7d32; color:#fff; padding:8px 12px; font-weight:bold; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; border-top-left-radius:4px; border-top-right-radius:4px; cursor:move;" id="floatingDebugHeader">
+        <span>🐞 Debug Console</span>
+        <div>
+          <button onclick="document.getElementById('customDebugOutput').innerHTML=''" style="background:none; border:none; color:#fff; cursor:pointer; margin-right:12px; font-size:1.1rem;" title="Clear Logs">🚫</button>
+          <button onclick="UIManager.toggleDebugConsole()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.1rem;" title="Hide Console">✖</button>
+        </div>
+      </div>
+      <div id="customDebugOutput" style="flex:1; padding:10px; overflow-y:auto; color:#a5d6a7; font-family:monospace; font-size:0.8rem; display:flex; flex-direction:column; gap:4px;">
+        <div style="color:#888;">> Console initialized... Waiting for events.</div>
+      </div>
+    `;
+    document.body.appendChild(floatContainer);
+
+    // Make the console draggable by its header
+    const header = document.getElementById('floatingDebugHeader');
+    let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+    
+    header.addEventListener('mousedown', (e) => {
+      initialX = e.clientX - xOffset; initialY = e.clientY - yOffset;
+      if (e.target === header || e.target.parentNode === header) isDragging = true;
+    }, false);
+    
+    document.addEventListener('mouseup', () => { initialX = currentX; initialY = currentY; isDragging = false; }, false);
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX; currentY = e.clientY - initialY;
+        xOffset = currentX; yOffset = currentY;
+        floatContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+      }
+    }, false);
+
+    // Override native console to output to UI
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
     
     const logToUI = (msg, color) => {
-      const consoleEl = document.getElementById('customDebugConsole');
+      const consoleEl = document.getElementById('customDebugOutput');
       if (!consoleEl) return;
       const div = document.createElement('div');
       div.style.color = color;
       div.style.borderBottom = '1px solid #444';
       div.style.padding = '4px 0';
       
-      let text = '';
-      if (typeof msg === 'object') {
-        try { text = JSON.stringify(msg); } catch(e) { text = String(msg); }
-      } else {
-        text = String(msg);
-      }
-      
+      let text = typeof msg === 'object' ? JSON.stringify(msg) : String(msg);
       const timestamp = new Date().toLocaleTimeString([], {hour12:false});
       div.textContent = `[${timestamp}] ${text}`;
       consoleEl.appendChild(div);
       consoleEl.scrollTop = consoleEl.scrollHeight;
     };
 
-    console.log = (...args) => {
-      originalLog.apply(console, args);
-      logToUI(args.join(' '), '#a5d6a7'); // Green
-    };
-    console.warn = (...args) => {
-      originalWarn.apply(console, args);
-      logToUI(args.join(' '), '#ffcc80'); // Orange
-    };
-    console.error = (...args) => {
-      originalError.apply(console, args);
-      logToUI(args.join(' '), '#ef9a9a'); // Red
-    };
+    console.log = (...args) => { originalLog.apply(console, args); logToUI(args.join(' '), '#a5d6a7'); };
+    console.warn = (...args) => { originalWarn.apply(console, args); logToUI(args.join(' '), '#ffcc80'); };
+    console.error = (...args) => { originalError.apply(console, args); logToUI(args.join(' '), '#ef9a9a'); };
+  },
+
+  toggleDebugConsole() {
+    let fc = document.getElementById('floatingDebugConsoleContainer');
+    if (fc) {
+      fc.style.display = fc.style.display === 'none' ? 'flex' : 'none';
+    }
   }
 };
