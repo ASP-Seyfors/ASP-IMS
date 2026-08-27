@@ -37,6 +37,16 @@
     <div style="font-size: 0.8rem; color: #c62828; margin-top: 6px;">Routes all saves, databases, and syncs to the TEST DATABASE.</div>
   </div>
 
+  <!-- Session Reversal Tool -->
+  <div style="background: #fce4ec; border: 1px solid #d81b60; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #d81b60;">🔄 Undo / Reverse Session</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
+    <div style="display: flex; gap: 8px;">
+      <select id="reversalSessionSelect" style="flex: 2; padding: 8px; border: 1px solid #d81b60; border-radius: 4px; font-weight: bold;"></select>
+      <button class="btn-action btn-auto" style="flex: 1; background-color: #d81b60; color: #fff; margin: 0; padding: 8px;" onclick="SessionManager.executeSessionReversal()">Reverse Math</button>
+    </div>
+  </div>
+
   <!-- System Restore -->
   <div style="background: #fff3e0; border: 1px solid #e65100; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #e65100;">⚠️ Event Replay & Restore</h4>

@@ -1648,6 +1648,104 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
   },
 
+  loadReversibleSessions() {
+    let select = document.getElementById('reversalSessionSelect');
+    if (!select) return;
+    
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let cutoff = Date.now() - (24 * 60 * 60 * 1000); // Strict 24-hour limit
+    
+    // Safety Net: Only allow Receiving or Reserving sessions from last 24h
+    let reversible = archive.filter(s => {
+        if (s.status !== 'Completed') return false;
+        if (s.lastUpdated < cutoff) return false;
+        let w = (s.workflowType || '').toUpperCase();
+        
+        // Explicitly forbid packing or stocktakes from being reversed
+        if (w.includes('PACK') || w.includes('STOCKTAKE')) return false;
+        return w.includes('RECEIV') || w.includes('RESERV');
+    }).sort((a,b) => b.lastUpdated - a.lastUpdated);
+
+    select.innerHTML = '<option value="">-- Select Session to Reverse --</option>';
+    reversible.forEach(s => {
+        let opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.dateStr} | ${s.sessionName} (${s.workflowType})`;
+        select.appendChild(opt);
+    });
+  },
+
+  async executeSessionReversal() {
+    let select = document.getElementById('reversalSessionSelect');
+    let targetId = select ? select.value : "";
+    if (!targetId) { alert("Please select a session to reverse."); return; }
+
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    let targetSession = archive.find(s => String(s.id) === String(targetId));
+    if (!targetSession) return;
+
+    if (!confirm(`Are you absolutely sure you want to mathematically REVERSE the session:\n\n"${targetSession.sessionName}"?\n\nThis will subtract all items that were added during this session.`)) return;
+
+    let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+    
+    // 1. Run the negative math
+    let ledgerResult = InventoryEngine.reverseLedgerMath(
+        targetSession.scannedObjects,
+        DatabaseManager.db,
+        currentAllocations,
+        targetSession.workflowType
+    );
+
+    // 2. Save the negated database locally
+    localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
+    this.syncAllocationsToCloud();
+    DatabaseManager.db = ledgerResult.updatedDb;
+    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+
+    // 3. Create the new Reversal Payload for the Audit Log
+    let revScannedObjects = targetSession.scannedObjects.map(item => {
+        return { ...item, qty: -(item.qty), itemNote: `REVERSAL of ${targetSession.id}` };
+    });
+
+    let revSession = {
+      id: Date.now().toString(),
+      status: 'Completed',
+      userName: this.currentUserName || 'Thomas',
+      sessionName: `[REVERSED] ${targetSession.sessionName}`,
+      orderNum: targetSession.orderNum,
+      workflowType: targetSession.workflowType,
+      dateStr: new Date().toLocaleDateString().replace(/\//g, '.'),
+      startStr: new Date().toLocaleTimeString(),
+      manifestEnabled: false,
+      expectedManifest: [],
+      scannedObjects: revScannedObjects,
+      pendingNewItems: [],
+      pendingUpdates: [],
+      lastUpdated: Date.now()
+    };
+
+    // 4. Push to archive and cloud
+    archive.unshift(revSession);
+    localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+    this.pushToCloudArchive(revSession);
+
+    // 5. Sync the updated catalog math
+    if (this.getActiveArchiveUrl()) {
+      let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+      let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
+      let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
+
+      let dbPayload = { 
+        action: "SYNC_LOCAL_DB", 
+        payload: { items: DatabaseManager.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors } 
+      };
+      fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+    }
+
+    alert("Session successfully reversed! The database and cloud audit log have been updated with the negative quantities.");
+    this.loadReversibleSessions(); 
+  },
+
   renderManifestReconciliation() {
     const card = document.getElementById('manifestReconcileCard');
     const list = document.getElementById('manifestReconcileList');

@@ -725,6 +725,11 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   openDevTools() {
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenDevTools').style.display = 'block';
+    
+    // NEW: Load available sessions into the reversal dropdown
+    if (typeof SessionManager !== 'undefined' && typeof SessionManager.loadReversibleSessions === 'function') {
+      SessionManager.loadReversibleSessions();
+    }
   },
 
   closeDevTools() {

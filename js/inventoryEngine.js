@@ -231,5 +231,71 @@ const InventoryEngine = {
     });
 
     return { updatedDb: currentDb, updatedAllocations: currentAllocations };
+  },
+  /**
+   * GATE 6: REVERSAL LEDGER MATH
+   * Safely negates quantities from a prior session to undo accidental additions.
+   */
+  reverseLedgerMath(scannedObjects, currentDb, currentAllocations, originalWorkflow) {
+    let onHandChanges = {};
+    let reservedChanges = {};
+    let wType = (originalWorkflow || '').toUpperCase();
+
+    scannedObjects.forEach(item => {
+      let ref = (item.ref || item.sku || '').toUpperCase().trim();
+      let actionTag = (item.actionTag || '').toUpperCase().trim();
+      let rawTag = (item.customerTag || '').toUpperCase().trim();
+      let tag = rawTag.split('(')[0].split('-')[0].trim();
+
+      if (typeof onHandChanges[ref] === 'undefined') {
+          onHandChanges[ref] = 0;
+          reservedChanges[ref] = 0;
+      }
+
+      // REVERSAL MATH: Convert the original quantity to a negative integer
+      let revQty = -(item.qty);
+
+      // We apply the exact same workflow routing, but adding a negative number subtracts it safely
+      if (wType.includes('RECEIVING')) {
+        onHandChanges[ref] += revQty; 
+        if (actionTag === 'RESERVED' && tag && currentAllocations[tag] && currentAllocations[tag][ref]) {
+           reservedChanges[ref] += revQty;
+           currentAllocations[tag][ref].qty += revQty;
+           currentAllocations[tag][ref].details.push({
+               lot: item.lot, exp: item.exp, orderNum: 'REVERSAL', sessionId: 'REVERSAL', qty: revQty
+           });
+        }
+      }
+      else if (wType.includes('RESERVING') || wType.includes('PICK & RESERVE') || wType === 'RESERVE') {
+         if (tag && currentAllocations[tag] && currentAllocations[tag][ref]) {
+             reservedChanges[ref] += revQty;
+             currentAllocations[tag][ref].qty += revQty;
+             currentAllocations[tag][ref].details.push({
+                 lot: item.lot, exp: item.exp, orderNum: 'REVERSAL', sessionId: 'REVERSAL', qty: revQty
+             });
+         }
+      }
+    });
+
+    // STANDARD GARBAGE COLLECTION
+    Object.keys(currentAllocations).forEach(t => {
+      Object.keys(currentAllocations[t]).forEach(ref => {
+          if (currentAllocations[t][ref].qty <= 0) delete currentAllocations[t][ref];
+      });
+      if (Object.keys(currentAllocations[t]).length === 0) delete currentAllocations[t];
+    });
+
+    // APPLY TO DATABASE WITH FLOOR SAFETY
+    currentDb.forEach(dbItem => {
+      let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
+      if (typeof onHandChanges[ref] !== 'undefined') {
+        dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0);
+        dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
+        if (dbItem.onHand < 0) dbItem.onHand = 0;
+        if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
+      }
+    });
+
+    return { updatedDb: currentDb, updatedAllocations: currentAllocations };
   }
 };
