@@ -209,17 +209,20 @@ const SessionManager = {
               allocMap[a.customerName][a.ref] = { qty: 0, details: [] };
           }
           
-          // FIX: Strip timezone/timestamp garbage injected by Google Sheets
+          // Strip timezone/timestamp garbage injected by Google Sheets
           let cleanExp = a.exp || 'NO_EXP';
           if (typeof cleanExp === 'string' && cleanExp.includes('T')) {
               cleanExp = cleanExp.split('T')[0];
           }
           
-          allocMap[a.customerName][a.ref].qty += a.qty;
+          // FIX: Parse string quantities into integers before adding
+          let safeQty = parseInt(a.qty, 10) || 0;
+          
+          allocMap[a.customerName][a.ref].qty += safeQty;
           allocMap[a.customerName][a.ref].details.push({
              lot: a.lot, 
              exp: cleanExp, 
-             qty: a.qty, 
+             qty: safeQty, 
              orderNum: a.orderNum, 
              sessionId: a.sessionId
           });
