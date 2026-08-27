@@ -1166,6 +1166,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     // NEW ITEM HANDLING
     let isNewItem = !matchedDbItem;
     if (isNewItem) {
+       // --- NEW TYPO PREVENTION GATE ---
+       let confirmNew = confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.\n\nAre you sure you want to create a BRAND NEW item? If this is a typo, click Cancel and fix the REF.`);
+       if (!confirmNew) return; 
+       // --------------------------------
+
        let alreadyPending = this.pendingNewItems.find(i => i.ref === ref);
        if (!alreadyPending) {
            this.pendingNewItems.push({

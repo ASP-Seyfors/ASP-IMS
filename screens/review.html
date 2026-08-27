@@ -73,19 +73,25 @@
 
     <!-- Secondary info compressed -->
     <div style="font-size: 0.85rem; color: #555; margin-bottom: 15px;">
-      <div style="margin-bottom: 4px;"><strong>Manufacturer:</strong> <span id="revMfr">--</span> <button class="btn-confirm" id="btnConfirmMfr" style="display:none; padding:2px 6px; margin-left:6px;" onclick="confirmFieldUpdate('mfr')" title="Confirm and update the database with this manufacturer.">Update</button></div>
-      <div style="margin-bottom: 4px;"><strong>GTIN:</strong> <span id="revGtin">--</span> <button class="btn-confirm" id="btnConfirmGtin" style="display:none; padding:2px 6px; margin-left:6px;" onclick="confirmFieldUpdate('gtin')" title="Confirm and link this GTIN to the REF in the database.">Update</button></div>
-      <div id="gtinDiffBanner" class="gtin-diff-banner" style="display:none; padding:4px;"></div>
+      <div style="margin-bottom: 4px;"><strong>Manufacturer:</strong> <span id="revMfr">--</span></div>
+      <div style="margin-bottom: 4px;"><strong>GTIN:</strong> <span id="revGtin">--</span></div>
       <div style="margin-bottom: 4px;"><strong>Desc:</strong> <span id="revDesc">--</span></div>
     </div>
 
     <!-- Buttons -->
-    <div style="text-align: center; margin-bottom: 15px;">
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff;" onclick="returnToEdit()" title="Go back to the scanning screen to fix a mistake before saving.">Return to Edit Item Details</button>
+    <div id="gtinDiffBanner" class="gtin-diff-banner" style="display:none; padding:8px; margin-bottom:10px; font-size:0.9rem;"></div>
+    
+    <div id="updateActionsRow" class="flex-between" style="gap: 8px; margin-bottom: 10px;">
+        <button class="btn-action btn-auto" id="btnConfirmMfr" style="display:none; flex:1; background-color: #1565c0; color: #ffffff;" onclick="SessionManager.confirmFieldUpdate('mfr')" title="Confirm and update the database with this manufacturer.">🔄 Update MFR</button>
+        <button class="btn-action btn-auto" id="btnConfirmGtin" style="display:none; flex:1; background-color: #1565c0; color: #ffffff;" onclick="SessionManager.confirmFieldUpdate('gtin')" title="Confirm and link this GTIN to the REF in the database.">🔄 Update GTIN</button>
     </div>
-    <div class="flex-between">
-      <button class="btn-action btn-cancel btn-auto" onclick="cancelScannedItem()" title="Discard this scan completely.">Cancel Item</button>
-      <button class="btn-action btn-save btn-auto" onclick="saveItemLog()" title="Confirm and log this item to the current session.">Save Item</button>
+
+    <div style="text-align: center; margin-bottom: 15px;">
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; width:100%;" onclick="SessionManager.returnToEdit()" title="Go back to the scanning screen to fix a mistake before saving.">Return to Edit Item Details</button>
+    </div>
+    <div class="flex-between" style="gap: 8px;">
+      <button class="btn-action btn-cancel btn-auto" style="flex:1;" onclick="SessionManager.cancelScannedItem()" title="Discard this scan completely.">Cancel Item</button>
+      <button class="btn-action btn-save btn-auto" style="flex:1;" onclick="SessionManager.saveItemLog()" title="Confirm and log this item to the current session.">Save Item</button>
     </div>
   </div>
 </div>
