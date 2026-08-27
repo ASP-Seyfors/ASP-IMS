@@ -710,15 +710,25 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
     try {
       let localLastSync = parseInt(localStorage.getItem('asp_last_cloud_sync') || '0', 10);
-      
-      // Fast lightweight ping (does NOT download the database)
       let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=CHECK_VERSION`);
       let data = await res.json();
 
-      if (data && data.lastUpdated) {
-        if (data.lastUpdated > localLastSync) {
-          indicator.textContent = "🔴 Cloud Updates Available";
-          indicator.style.display = 'inline-block';
+      if (data && data.lastUpdated && data.lastUpdated > localLastSync) {
+        
+        let pendingNew = JSON.parse(localStorage.getItem('asp_pending_new_items')) || [];
+        let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
+        
+        // SAFETY GATE: Only sync if the user is sitting idle on the home screen
+        let isSafeToSync = !SessionManager.isSessionActive && pendingNew.length === 0 && pendingUpd.length === 0;
+
+        if (isSafeToSync && typeof DatabaseManager.downloadCloudDatabase === 'function') {
+            await DatabaseManager.downloadCloudDatabase(null, true);
+            localStorage.setItem('asp_last_cloud_sync', Date.now().toString());
+            indicator.style.display = 'none'; // Hide badge once synced
+        } else {
+            // Unsafe to sync automatically. Show the warning badge to the user.
+            indicator.textContent = "🔴 Cloud Updates Available";
+            indicator.style.display = 'inline-block';
         }
       }
     } catch (err) {

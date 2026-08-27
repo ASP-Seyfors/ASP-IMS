@@ -134,6 +134,13 @@ window.onload = async () => {
   if (typeof UIManager.evaluateSyncIndicator === 'function') {
     UIManager.evaluateSyncIndicator();
   }
+
+  // Start the background listener to check for cloud updates every 3 minutes
+  setInterval(() => {
+    if (typeof UIManager.checkForCloudUpdates === 'function') {
+      UIManager.checkForCloudUpdates();
+    }
+  }, 180000);
 };
 
 window.masterSystemSync = async (event) => {

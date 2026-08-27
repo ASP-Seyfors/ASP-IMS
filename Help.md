@@ -76,3 +76,7 @@ Located inside the **Traceability** button on the Home Screen.
 * **🧹 Offload & Purge Local History:** Cleans up the tablet's memory by deleting old completed sessions while keeping pending sessions safe.
 * **🗑️ Force Update / Clear Cache:** The "Nuclear Option." Wipes the app completely and forces it to download the newest version of the code from the internet. Use this if the app is glitching. 
 * **🐞 Live Debug Console:** Opens a floating window that tracks background code execution to help track down bugs while using the app.
+
+## 10. Licensing & Intellectual Property
+**Proprietary Software:** The ASP Inventory Management System (ASP IMS) architectural codebase, routing algorithms, and workflow structures are the proprietary intellectual property of Thomas Seyfors. 
+**Usage License:** Licensed exclusively for internal use by Allied Surgical Products. Unauthorized distribution, reverse engineering, or external commercial deployment of this codebase is strictly prohibited.
