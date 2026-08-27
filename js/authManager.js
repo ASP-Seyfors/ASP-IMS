@@ -21,19 +21,20 @@
 const AuthManager = {
   currentUser: null,
   isGuest: false,
+  isWorkstation: false, // NEW FLAG
   
   // NOTE: This is the actual Google Cloud Client ID to allow secure Google Sign-in.
   clientId: "578227168676-721gv6n3bt5qqcd67v1vhi6111c35fcc.apps.googleusercontent.com",
 
   // Add your authorized admin emails here
-  ADMIN_EMAILS: ['jessica@alliedsurgicalproducts.com', 'thomas@alliedsurgicalproducts.com'],
+  ADMIN_EMAILS: ['jessica@alliedsurgicalproducts.com', 'thomas@alliedsurgicalproducts.com', 'asp.techops.workstation@gmail.com'],
 
   init() {
-    // SECURITY UPGRADE: Use sessionStorage so it clears when the app/tab is closed
     let savedSession = sessionStorage.getItem('asp_auth_session');
     if (savedSession) {
       this.currentUser = JSON.parse(savedSession);
       this.isGuest = false;
+      this.isWorkstation = this.currentUser.email.toLowerCase() === 'asp.techops.workstation@gmail.com';
       this.unlockApp();
     } else {
       this.showLoginScreen();
@@ -49,7 +50,7 @@ const AuthManager = {
   renderGoogleButton() {
     if (window.google && window.google.accounts) {
       google.accounts.id.initialize({
-        client_id: this.clientId, // <-- Uses your defined clientId string
+        client_id: this.clientId, 
         callback: (response) => this.handleCredentialResponse(response),
         auto_select: false,
         prompt: 'select_account',
@@ -57,7 +58,7 @@ const AuthManager = {
       });
 
       google.accounts.id.renderButton(
-        document.getElementById('googleAuthButton'), // <-- Matches login.html ID
+        document.getElementById('googleAuthButton'), 
         { theme: 'outline', size: 'large', width: '100%' }
       );
     }
@@ -66,16 +67,18 @@ const AuthManager = {
   handleCredentialResponse(response) {
     const payload = this.parseJwt(response.credential);
     
-    // Domain Verification Lockdown
-    if (payload.email && payload.email.endsWith('@alliedsurgicalproducts.com')) {
+    // Domain Verification Lockdown + Workstation Override
+    let isWorkstationEmail = payload.email.toLowerCase() === 'asp.techops.workstation@gmail.com';
+    
+    if (payload.email && (payload.email.endsWith('@alliedsurgicalproducts.com') || isWorkstationEmail)) {
       
       // RBAC Check for Price/Cost Editing
       let isAdmin = this.ADMIN_EMAILS.includes(payload.email.toLowerCase());
       
       this.currentUser = { name: payload.name, email: payload.email, verified: true, isAdmin: isAdmin };
       this.isGuest = false;
+      this.isWorkstation = isWorkstationEmail;
       
-      // Save to sessionStorage instead of localStorage
       sessionStorage.setItem('asp_auth_session', JSON.stringify(this.currentUser));
       this.unlockApp();
     } else {
@@ -143,12 +146,23 @@ const AuthManager = {
       if (advLabel) advLabel.style.display = 'flex';
       if (archiveBtn) archiveBtn.style.display = 'inline-block';
       if (lookupBtn) lookupBtn.style.display = 'inline-block';
-      if (userNameInput) userNameInput.value = this.currentUser.name.split(' ')[0];
+      
+      let userNameSelect = document.getElementById('userNameSelect');
+      
+      if (this.isWorkstation) {
+         if (userNameInput) userNameInput.style.display = 'none';
+         if (userNameSelect) userNameSelect.style.display = 'block';
+      } else {
+         if (userNameInput) {
+             userNameInput.style.display = 'block';
+             userNameInput.value = this.currentUser.name.split(' ')[0];
+         }
+         if (userNameSelect) userNameSelect.style.display = 'none';
+      }
 
       let rowQboSettings = document.getElementById('rowQboSettings');
-      if (rowQboSettings) rowQboSettings.style.display = this.currentUser.isAdmin ? 'flex' : 'none';
+      if (rowQboSettings) rowQboSettings.style.display = (this.currentUser.isAdmin && !this.isWorkstation) ? 'flex' : 'none';
 
-      // NEW: Reveal the Dev Tools ONLY for the lead developer
       let devToolsContainer = document.getElementById('devToolsContainer');
       if (devToolsContainer) {
         let isDeveloper = this.currentUser.email.toLowerCase() === 'thomas@alliedsurgicalproducts.com';
@@ -157,12 +171,12 @@ const AuthManager = {
 
       // Strict Admin Check for QBO Sync
       if (rowQboSync) {
-        rowQboSync.style.display = this.currentUser.isAdmin ? 'flex' : 'none';
+        rowQboSync.style.display = (this.currentUser.isAdmin && !this.isWorkstation) ? 'flex' : 'none';
       }
 
       if (roleBadge) {
-        roleBadge.textContent = "Verified Workspace";
-        roleBadge.style.backgroundColor = "#2e7d32";
+        roleBadge.textContent = this.isWorkstation ? "Warehouse Workstation" : "Verified Workspace";
+        roleBadge.style.backgroundColor = this.isWorkstation ? "#0277bd" : "#2e7d32";
       }
       
       // Restore standard lists
@@ -170,7 +184,7 @@ const AuthManager = {
       DatabaseManager.customers = JSON.parse(localStorage.getItem('asp_wh_customers')) || ["+ Add Customer"];
       DatabaseManager.populatePartners();
       DatabaseManager.populateItemCustomerSelect();
-      if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
+      if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();    
 
       // === NEW AUTO-SYNC LOGIC ===
       // Automatically trigger the Master System Sync for verified users.

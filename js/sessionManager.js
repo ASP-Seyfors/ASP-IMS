@@ -471,7 +471,12 @@ const SessionManager = {
   },
 
   startStocktakeSession(mode) {
-    const uName = document.getElementById('userNameInput').value.trim();
+    let uName = document.getElementById('userNameInput').value.trim();
+    if (typeof AuthManager !== 'undefined' && AuthManager.isWorkstation) {
+        let sel = document.getElementById('userNameSelect');
+        uName = sel ? sel.value : "";
+        if (!uName) { alert("Please select your User Name from the dropdown before starting a session."); return; }
+    }
     
     this.currentUserName = uName || "Operator";
     this.currentSessionName = mode + " Stocktake";
@@ -519,7 +524,13 @@ const SessionManager = {
 
   startSession() {
     try {
-      const uName = document.getElementById('userNameInput').value.trim();
+      let uName = document.getElementById('userNameInput').value.trim();
+      if (typeof AuthManager !== 'undefined' && AuthManager.isWorkstation) {
+          let sel = document.getElementById('userNameSelect');
+          uName = sel ? sel.value : "";
+          if (!uName) { alert("Please select your User Name from the dropdown before starting a session."); return; }
+      }
+      
       const type = document.querySelector('input[name="sessionType"]:checked').value;
       let partner = type === 'Shipment' ? document.getElementById('supplierSelect').value : document.getElementById('customerSelect').value;
       const oDetails = document.getElementById('orderDetailsInput').value.trim();

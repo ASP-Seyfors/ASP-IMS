@@ -90,6 +90,14 @@
     <div class="form-label">User Name:</div>
     <div class="input-wrapper">
       <input type="text" id="userNameInput" placeholder="e.g. User" title="Enter your name for the audit log.">
+      
+      <!-- NEW: Workstation Dropdown (Hidden by Default) -->
+      <select id="userNameSelect" style="display:none;" title="Select your name for the audit log.">
+        <option value="">-- Select Your Name --</option>
+        <option value="Thomas">Thomas</option>
+        <option value="Jessica">Jessica</option>
+        <option value="Operator">Warehouse Operator</option>
+      </select>
     </div>
   </div>
 
@@ -124,7 +132,10 @@
   <!-- Bottom Navigation & Utility Footer Grid (Cleaned Up) -->
   <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px; gap: 10px;">
     <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()" title="View, restore, or upload past scanning sessions.">Session Archive</button>
-    <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools.">⚙️ Settings</button>
+    <div style="display: flex; gap: 8px;">
+      <a href="mailto:thomas@alliedsurgicalproducts.com?subject=ASP%20IMS%20Bug%20Report%20(v4.1.5)&body=User:%20%0D%0ADate:%20%0D%0A%0D%0ABug%20Description:%20" class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem; text-decoration: none;" title="Submit a bug report directly to IT Operations.">🐛</a>
+      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools.">⚙️ Settings</button>
+    </div>
   </div>
   
   <!-- NEW: Developer Tools Button (Hidden by default) -->
