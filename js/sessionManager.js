@@ -850,39 +850,50 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     
     if (banner) banner.style.display = 'block';
     if (tracker) tracker.style.display = 'block';
-    
+
+    // FIX: Aggregate Expected Manifest by REF
+    let expectedMap = {};
+    this.expectedManifest.forEach(exp => {
+        expectedMap[exp.ref] = (expectedMap[exp.ref] || 0) + exp.expectedQty;
+    });
+
+    let scannedMap = {};
+    this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
+
     let expHtml = '';
     let totalExpected = 0;
     let totalScannedExp = 0;
     let totalUnexpected = 0;
 
-    let scannedMap = {};
-    this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
-
-    this.expectedManifest.forEach(exp => {
-      totalExpected += exp.expectedQty;
-      let sQty = scannedMap[exp.ref] || 0;
-      totalScannedExp += Math.min(sQty, exp.expectedQty); // Cap expected scanned
-      let diff = sQty - exp.expectedQty;
-      if (diff > 0) totalUnexpected += diff;
-      
-      let color = sQty >= exp.expectedQty ? '#2e7d32' : (sQty > 0 ? '#f57f17' : '#555');
-      let icon = sQty >= exp.expectedQty ? '✅' : '⏳';
-      
-      expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px;">
-        <span style="font-weight:bold; color:${color};">${icon} ${exp.ref}</span>
-        <span style="color:${color}; font-weight:bold;">${sQty} / ${exp.expectedQty}</span>
-      </div>`;
+    Object.keys(expectedMap).sort().forEach(ref => {
+        let eQty = expectedMap[ref];
+        let sQty = scannedMap[ref] || 0;
+        
+        totalExpected += eQty;
+        totalScannedExp += Math.min(sQty, eQty);
+        
+        let color = sQty >= eQty ? '#2e7d32' : (sQty > 0 ? '#f57f17' : '#555');
+        let icon = sQty >= eQty ? '✅' : '⏳';
+        
+        expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px;">
+          <span style="font-weight:bold; color:${color};">${icon} ${ref}</span>
+          <span style="color:${color}; font-weight:bold;">${sQty} / ${eQty}</span>
+        </div>`;
     });
 
-    Object.keys(scannedMap).forEach(sRef => {
-      if (!this.expectedManifest.find(e => e.ref === sRef)) {
-        totalUnexpected += scannedMap[sRef];
-        expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px; background-color: #fff3e0;">
-          <span style="font-weight:bold; color:#e65100;">⚠️ ${sRef} (Unexpected)</span>
-          <span style="color:#e65100; font-weight:bold;">${scannedMap[sRef]}</span>
-        </div>`;
-      }
+    Object.keys(scannedMap).sort().forEach(sRef => {
+        let sQty = scannedMap[sRef];
+        let eQty = expectedMap[sRef] || 0;
+        if (sQty > eQty) {
+            let diff = sQty - eQty;
+            totalUnexpected += diff;
+            if (eQty === 0) {
+                expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px; background-color: #fff3e0;">
+                  <span style="font-weight:bold; color:#e65100;">⚠️ ${sRef} (Unexpected)</span>
+                  <span style="color:#e65100; font-weight:bold;">${sQty}</span>
+                </div>`;
+            }
+        }
     });
 
     document.getElementById('manifestScannedQty').textContent = totalScannedExp;
@@ -951,12 +962,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (refProgRow) refProgRow.style.display = 'flex';
       if (totalProgRow) totalProgRow.style.display = 'flex';
       
-      let manifestItem = this.expectedManifest.find(i => i.ref === ref);
+      // FIX: Sum up all expected occurrences of this REF
+      let totalExpectedForRef = this.expectedManifest.filter(i => i.ref === ref).reduce((acc, curr) => acc + curr.expectedQty, 0);
+
       let scannedRefQtySoFar = this.scannedObjects.filter(i => i.ref === ref).reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
       let newTotalScannedForRef = scannedRefQtySoFar + qty;
       
       if (refProgText) {
-        if (manifestItem) refProgText.textContent = `${newTotalScannedForRef} Scanned / ${manifestItem.expectedQty} Expected`;
+        if (totalExpectedForRef > 0) refProgText.textContent = `${newTotalScannedForRef} Scanned / ${totalExpectedForRef} Expected`;
         else refProgText.innerHTML = `<span class="badge-info badge-alert">⚠️ Unexpected Item (Not on Manifest)</span>`;
       }
       
@@ -1559,18 +1572,24 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let scannedMap = {};
     this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
 
+    let expectedMap = {};
+    this.expectedManifest.forEach(exp => {
+        expectedMap[exp.ref] = (expectedMap[exp.ref] || 0) + exp.expectedQty;
+    });
+
     let hasDiscrepancy = false;
     let html = '';
 
-    this.expectedManifest.forEach((exp, idx) => {
-      let scannedQty = scannedMap[exp.ref] || 0;
-      if (scannedQty !== exp.expectedQty) {
+    Object.keys(expectedMap).sort().forEach(ref => {
+      let eQty = expectedMap[ref];
+      let sQty = scannedMap[ref] || 0;
+      if (sQty !== eQty) {
         hasDiscrepancy = true;
         html += `
-          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; background:#fff; padding:8px; border:1px solid #ccc; border-radius:4px;">
-            <input type="text" id="recRef_${idx}" value="${exp.ref}" style="flex:2; text-transform:uppercase; font-weight:bold; color:#0277bd;">
-            <input type="number" id="recQty_${idx}" value="${exp.expectedQty}" min="1" style="flex:1;">
-            <span style="font-size:0.8rem; color:#555; flex:1.5;">Scanned: <strong>${scannedQty}</strong></span>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; background:#fff; padding:8px; border:1px solid #ccc; border-radius:4px;" class="manifest-rec-row">
+            <input type="text" class="rec-ref-input" value="${ref}" style="flex:2; text-transform:uppercase; font-weight:bold; color:#0277bd;" readonly>
+            <input type="number" class="rec-qty-input" data-original="${eQty}" value="${eQty}" min="0" style="flex:1;">
+            <span style="font-size:0.8rem; color:#555; flex:1.5;">Scanned: <strong>${sQty}</strong></span>
           </div>
         `;
       }
@@ -1585,14 +1604,28 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   saveManifestReconciliation() {
-    this.expectedManifest.forEach((exp, idx) => {
-      let refEl = document.getElementById(`recRef_${idx}`);
-      let qtyEl = document.getElementById(`recQty_${idx}`);
-      if (refEl && qtyEl) {
-        exp.ref = refEl.value.trim().toUpperCase();
-        exp.expectedQty = parseInt(qtyEl.value, 10) || 1;
+    const list = document.getElementById('manifestReconcileList');
+    if (!list) return;
+
+    let rows = list.querySelectorAll('.manifest-rec-row');
+    rows.forEach(row => {
+      let ref = row.querySelector('.rec-ref-input').value.trim().toUpperCase();
+      let newQty = parseInt(row.querySelector('.rec-qty-input').value, 10) || 0;
+      let origQty = parseInt(row.querySelector('.rec-qty-input').getAttribute('data-original'), 10) || 0;
+      
+      if (newQty !== origQty) {
+         let diff = newQty - origQty;
+         let targetExp = this.expectedManifest.find(e => e.ref === ref);
+         if (targetExp) {
+             targetExp.expectedQty += diff;
+             if (targetExp.expectedQty < 0) targetExp.expectedQty = 0;
+         } else {
+             this.expectedManifest.push({ ref: ref, expectedQty: newQty, allocations: [] });
+         }
       }
     });
+
+    this.expectedManifest = this.expectedManifest.filter(e => e.expectedQty > 0);
     localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
     alert("Manifest updated! Recalculating session summaries...");
     this.goToSummaryScreen();

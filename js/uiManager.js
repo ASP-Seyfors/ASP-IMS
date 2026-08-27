@@ -146,8 +146,10 @@ const UIManager = {// GLOBAL CONFIGURATIONS
             
             // Build the item rows for this customer
             Object.keys(items).sort().forEach(ref => {
-                // Extract qty from the new object structure, with fallback
-                let qty = typeof items[ref] === 'object' ? (items[ref].qty || 0) : (items[ref] || 0);
+                // FIX: Force Javascript to treat the value as an integer using parseInt
+                let rawQty = typeof items[ref] === 'object' ? (items[ref].qty || 0) : (items[ref] || 0);
+                let qty = parseInt(rawQty, 10) || 0; 
+                
                 if (qty <= 0) return;
                 
                 totalItems += qty;
