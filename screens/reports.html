@@ -12,7 +12,6 @@
  *   - Expiration Warning Generator
  *   - Out-of-Stock / On-Hand Stock Reports
  *   - Custom Promotional Flyers & Internal Sales Reports
- *   - Shopify & Thrive E-commerce Exports
  *
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
@@ -20,7 +19,6 @@
 <!-- SCREEN 8: REPORTS & ANALYTICS HUB -->
 <div id="screenReports" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #7b1fa2; padding-bottom: 6px; margin-bottom: 15px;">
-    <!-- 13a: Changed title to "Reports & Analytics" -->
     <h2 style="border:none; margin:0; padding:0; color: #7b1fa2;">Reports & Analytics</h2>
     <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()">🔙 Return</button>
   </div>
@@ -29,33 +27,10 @@
   <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <!-- 13b: Changed to Export Missing Price/Cost Report -->
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Export Missing Price/Cost Report</button>
-      
-      <!-- 13c: Changed to Export Out of Stock Report -->
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Export Out of Stock Report</button>
-      
-      <!-- 13d: Changed to Export On-Hand Stock Report -->
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')">📦 Export On-Hand Stock Report</button>
-      
-      <!-- 13e: Removed the two CSV buttons -->
-      
-      <!-- 13f: Changed to Export RevMed / DotMed CSV -->
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openRevMedReportModal()">📋 Export RevMed / DotMed CSV</button>
-    </div>
-  </div>
-
-  <!-- E-Commerce & Master Data Exports -->
-  <div style="background: #e0f7fa; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #01579b;">🛒 E-Commerce & Master Exports</h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveCreates()">➕ Thrive Bulk Create</button>
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveVariants()">🏷️ Thrive Edit Variants</button>
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveProducts()">📝 Thrive Edit Products</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportShopifyProducts()">🛍️ Shopify Products</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportShopifyInventory()">📦 Shopify Inventory</button>
-      <!-- 13i: Changed to Export Updated Database.json -->
-      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.exportUpdatedDatabaseJSON()">💾 Export Updated Database.json</button>
     </div>
   </div>
 
@@ -74,11 +49,9 @@
   </div>
 
   <!-- End of Week Rollup -->
-  <!-- 13j: Centered the button wrapper div -->
   <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
     <h4 style="margin: 0 0 10px 0; color: #0277bd; text-align: left;">End of Week Rollup Report</h4>
     <p style="font-size: 0.8rem; color: #555; margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
-    <!-- 13k: Changed button text to Export Week Summary Report -->
     <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()">📊 Export Week Summary Report</button>
   </div>
 
