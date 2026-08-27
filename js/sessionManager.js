@@ -1,15 +1,22 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/sessionManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   Core session lifecycle engine for the ASP Scanner application. Handles
- *   session initialization, workflow state management, real-time scanning
- *   memory storage, pre-load manifest verification, and local storage archiving.
+ *   Session lifecycle orchestrator. Handles workflow state management, 
+ *   real-time scanning memory storage, Pre-Load Manifest verification, 
+ *   and API payloads to Google Apps Script.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Pre-Load Manifests & Discrepancy Trackers
+ *   - QBO Feeder Integration
+ *   - Cloud Archiving & Payload Auto-Splitting
+ *   - Local Device History & Offloading
+ *   - Sandbox / Production API Routing
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const SessionManager = {
@@ -70,20 +77,83 @@ const SessionManager = {
     }
   },
 
-  pushToCloudArchive(sessionObj) {
+  async pushToCloudArchive(sessionObj) {
     if (!this.getActiveArchiveUrl()) return; 
     
-    let payload = {
-      action: "ARCHIVE_SESSION",
-      payload: sessionObj
-    };
+    let chunks = this.splitPayloadIfNeeded(sessionObj);
+    
+    for (let chunk of chunks) {
+      let payload = {
+        action: "ARCHIVE_SESSION",
+        payload: chunk
+      };
 
-    fetch(this.getActiveArchiveUrl(), {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    }).catch(err => console.warn("Background Cloud Archive push failed:", err));
+      try {
+        await fetch(this.getActiveArchiveUrl(), {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+      } catch(err) {
+        console.warn("Background Cloud Archive push failed for chunk:", err);
+      }
+    }
+  },
+
+  splitPayloadIfNeeded(sessionObj) {
+    const MAX_CHARS = 45000;
+    let fullString = JSON.stringify(sessionObj);
+    if (fullString.length <= MAX_CHARS) {
+      return [sessionObj];
+    }
+
+    // Group scans by REF to prevent mathematical zero-outs during Event Replay
+    let scansByRef = {};
+    sessionObj.scannedObjects.forEach(scan => {
+      let ref = scan.ref || 'UNKNOWN';
+      if (!scansByRef[ref]) scansByRef[ref] = [];
+      scansByRef[ref].push(scan);
+    });
+
+    let chunks = [];
+    let currentScans = [];
+    let baseSession = { ...sessionObj, scannedObjects: [] };
+    let currentSize = JSON.stringify(baseSession).length + 50;
+
+    for (let ref in scansByRef) {
+      let refScans = scansByRef[ref];
+      let refStrLen = JSON.stringify(refScans).length;
+      
+      if (currentSize + refStrLen > MAX_CHARS && currentScans.length > 0) {
+        chunks.push(currentScans);
+        currentScans = [];
+        currentSize = JSON.stringify(baseSession).length + 50;
+      }
+      currentScans.push(...refScans);
+      currentSize += refStrLen + 1;
+    }
+    if (currentScans.length > 0) chunks.push(currentScans);
+
+    let splitSessions = [];
+    let baseId = parseInt(sessionObj.id, 10);
+    if (isNaN(baseId)) baseId = Date.now();
+
+    for (let i = 0; i < chunks.length; i++) {
+      let newSess = JSON.parse(JSON.stringify(baseSession));
+      newSess.scannedObjects = chunks[i];
+      newSess.sessionName = `${sessionObj.sessionName} (Part ${i + 1} of ${chunks.length})`;
+      newSess.id = String(baseId + i);
+      
+      // CRITICAL: Prevent subsequent parts from wiping the database during Event Replay
+      if (i > 0 && newSess.workflowType === 'Full Stocktake') {
+        newSess.workflowType = 'Selection Stocktake';
+      }
+      
+      splitSessions.push(newSess);
+    }
+    
+    return splitSessions;
   },
 
   switchArchiveTab(tabName) {
@@ -218,13 +288,16 @@ const SessionManager = {
     let successCount = 0;
     for (let session of completedSessions) {
       try {
-        let payload = { action: "ARCHIVE_SESSION", payload: session };
-        await fetch(this.getActiveArchiveUrl(), {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
+        let chunks = this.splitPayloadIfNeeded(session);
+        for (let chunk of chunks) {
+            let payload = { action: "ARCHIVE_SESSION", payload: chunk };
+            await fetch(this.getActiveArchiveUrl(), {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(payload)
+            });
+        }
         session.isSynced = true;
         successCount++;
       } catch (err) {
@@ -1708,6 +1781,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let filterVal = document.getElementById('archiveFilter').value;
+    // NEW: Search Input Value
+    let searchVal = document.getElementById('archiveSearchInput') ? document.getElementById('archiveSearchInput').value.trim().toLowerCase() : '';
     let hideCancelled = document.getElementById('chkHideCancelled') ? document.getElementById('chkHideCancelled').checked : false;
     let onlyActive = document.getElementById('chkOnlyActive') ? document.getElementById('chkOnlyActive').checked : false;
     
@@ -1721,6 +1796,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (cutoff > 0 && s.lastUpdated && s.lastUpdated < cutoff) return false;
       if (hideCancelled && s.status === 'Cancelled') return false;
       if (onlyActive && s.status !== 'Pending') return false; 
+      
+      // NEW: Apply the text search filter
+      if (searchVal) {
+          let searchTarget = `${s.sessionName} ${s.orderNum} ${s.dateStr} ${s.id}`.toLowerCase();
+          if (!searchTarget.includes(searchVal)) return false;
+      }
+      
       return true;
     });
 
@@ -1791,21 +1873,57 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     if (isCloud) {
       try {
+        let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+        let targetLite = dir.find(s => String(s.id) === String(id));
+        if (!targetLite) return;
+
+        let partsToFetch = [targetLite];
+        let baseName = targetLite.sessionName;
+
+        // Auto-detect if this is part of a split session
+        let match = targetLite.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)$/i);
+        if (match) {
+          baseName = match[1].trim();
+          partsToFetch = dir.filter(s => {
+              let smatch = s.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)$/i);
+              let sBase = smatch ? smatch[1].trim() : s.sessionName;
+              return sBase === baseName && s.dateStr === targetLite.dateStr;
+          }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        }
+
         let overlay = document.createElement('div');
         overlay.id = 'downloadOverlay';
         overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; color:#fff; font-size:1.2rem; font-weight:bold; flex-direction:column;';
-        overlay.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">☁️</div><div>Downloading session payload...</div>`;
+        overlay.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">☁️</div><div id="dlText">Downloading session payload...</div>`;
         document.body.appendChild(overlay);
 
-        let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${id}`);
-        sessionData = await res.json();
-        
+        let combinedScans = [];
+        for (let i = 0; i < partsToFetch.length; i++) {
+          let partLite = partsToFetch[i];
+          let dlText = document.getElementById('dlText');
+          if (dlText && partsToFetch.length > 1) dlText.textContent = `Downloading part ${i+1} of ${partsToFetch.length}...`;
+
+          let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${partLite.id}`);
+          let partData = await res.json();
+          
+          if (!partData || partData.status === "error") {
+            document.body.removeChild(overlay);
+            alert("Failed to download payload: " + (partData ? partData.message : "Unknown error"));
+            return;
+          }
+          if (i === 0) sessionData = partData;
+          combinedScans = combinedScans.concat(partData.scannedObjects || []);
+        }
         document.body.removeChild(overlay);
 
-        if (!sessionData || sessionData.status === "error") {
-          alert("Failed to download payload: " + (sessionData ? sessionData.message : "Unknown error"));
-          return;
+        if (partsToFetch.length > 1) {
+          sessionData.scannedObjects = combinedScans;
+          sessionData.sessionName = baseName;
+          if (sessionData.workflowType === 'Selection Stocktake' && baseName.toUpperCase().includes('FULL-INV')) {
+             sessionData.workflowType = 'Full Stocktake';
+          }
         }
+
       } catch (err) {
         let overlay = document.getElementById('downloadOverlay');
         if (overlay) document.body.removeChild(overlay);
@@ -1846,7 +1964,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let tagRow = document.getElementById('rowCustomerTag');
 
     if (this.currentWorkflowType.includes('Receiving & Reserving')) {
-      this.currentItemAction = 'Inventory'; // Default back to Inventory for receiving
+      this.currentItemAction = 'Inventory'; 
       if (destRow) destRow.style.display = 'flex';
       if (tagRow) tagRow.style.display = 'none';
       if (typeof UIManager !== 'undefined' && UIManager.setItemAction) UIManager.setItemAction('Inventory');

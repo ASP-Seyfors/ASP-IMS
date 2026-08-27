@@ -1,17 +1,22 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: css/styles.css
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   Master stylesheet defining CSS custom properties (themes: Slate, Sage,
- *   Gold), responsive card layouts, mobile-first and desktop media queries,
- *   status badges, and global font scaling utilities.
+ *   Master stylesheet defining the visual layout, themes, modal aesthetics, 
+ *   and responsive mobile-friendly designs for the Progressive Web App.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Theming (Slate, Sage, Gold)
+ *   - Responsive UI Scaling & Flexbox Grids
+ *   - Custom UI Components (Buttons, Cards, Badges, Modals)
+ *   - Camera Overlay & Highlight Animations
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
- * ======================================================================= */ 
+ * ======================================================================= */
 /* Theme Variables */
 body, body.theme-sage {
   --bg-color: #23332b;

@@ -1,15 +1,22 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/auditManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
  *   Audit, report generation, and traceability engine. Constructs TXT and
  *   printable HTML/PDF session summaries, calculates live session metrics,
- *   parses multi-log uploads, and builds Thrive CSV export formats.
+ *   parses multi-log uploads, and executes the Event Replay System Restore.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Session Summary Output (PDF & TXT)
+ *   - End of Week & Daily Internal Sales Reports
+ *   - Thrive & Shopify CSV Exports
+ *   - Cloud Traceability & FEFO Lot Tracking
+ *   - Cloud Event Replay (System Restore Tool)
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const AuditManager = {
@@ -2121,12 +2128,15 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `database_updated_${Date.now()}.json`, 'application/json');
   },
 
-  openRestoreModal() {
+ openRestoreModal() {
     let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     
-    // FIX: Look at the sessionName for 'FULL-INV' or 'Stocktake' and sort by numeric ID
-    let stocktakes = dir.filter(s => (s.sessionName.includes('FULL-INV') || s.sessionName.includes('Stocktake')) && s.status === 'Completed')
-                        .sort((a,b) => parseInt(b.id) - parseInt(a.id));
+    // FIX: Filter out subsequent parts from the dropdown, only show Part 1 or un-split sessions
+    let stocktakes = dir.filter(s => {
+        let isStocktake = (s.sessionName.includes('FULL-INV') || s.sessionName.includes('Stocktake')) && s.status === 'Completed';
+        let isSubsequentPart = s.sessionName.match(/Part [2-9]/i) || s.sessionName.match(/\(Part [2-9]+ of/i);
+        return isStocktake && !isSubsequentPart;
+    }).sort((a,b) => parseInt(b.id) - parseInt(a.id));
 
     if (stocktakes.length === 0) {
       UIManager.showCustomAlert("Restore Failed", "No 'Full Stocktake' sessions found in the Cloud Vault.");

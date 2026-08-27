@@ -1,13 +1,22 @@
 <!-- =======================================================================
-  ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: screens/archive.html
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
+ * Description: 
+ *   User interface component for the Session Archive. Displays a toggleable
+ *   list of locally saved sessions and remote cloud vault payloads, with
+ *   filtering and text-search capabilities.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Local Session Recovery
+ *   - Cloud Vault Directory Browsing
+ *   - Payload Deletion & Management
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
- * ======================================================================= --> 
+ * ======================================================================= -->
 <!-- SCREEN 6: SESSION ARCHIVE -->
 <div id="screenArchive" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
@@ -31,6 +40,10 @@
   <div class="form-row">
     <div class="form-label" style="color: #0277bd;">Filter & View:</div>
     <div class="input-wrapper" style="display:flex; flex-direction:column; gap:8px;">
+      
+      <!-- NEW: Text Search Filter -->
+      <input type="text" id="archiveSearchInput" placeholder="🔍 Search Name, PO, or ID..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onkeyup="SessionManager.renderArchiveList()">
+      
       <select id="archiveFilter" onchange="SessionManager.renderArchiveList()" style="border: 2px solid #0277bd; font-weight: bold; width:100%;">
         <option value="today">Today (Last 24 Hrs)</option>
         <option value="week">This Week (Last 7 Days)</option>

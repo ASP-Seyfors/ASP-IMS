@@ -1,15 +1,23 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/uiManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   User interface interaction manager handling theme toggling, dynamic font
- *   scaling, field validation/attention highlighting, date formatting, modal
- *   controls, and native file download/share triggers.
+ *   User interface interaction manager handling theme toggling, dynamic font 
+ *   scaling, field validation highlighting, dynamic modals, and native 
+ *   file download triggers.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Customer Bin & Damaged Bin Viewers
+ *   - Quick Item Lookup Modal
+ *   - Alert & Confirmation Modals
+ *   - Sandbox Environment Toggles
+ *   - Live Debug Console Floating UI
+ *   - Native Blob / PDF File Downloader
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const UIManager = {// GLOBAL CONFIGURATIONS

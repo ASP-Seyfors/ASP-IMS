@@ -1,15 +1,22 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/app.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
  *   Main application entry point and global event binding layer. Handles
- *   DOM load initialization, window-level function bridges, and service
- *   worker lifecycle registration.
+ *   DOM load initialization, window-level function bridges, and Service
+ *   Worker lifecycle registration.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Application Load & Screen Initialization
+ *   - Service Worker / PWA Offline Caching
+ *   - PWA Version Updating (Force Clear Cache)
+ *   - Global Javascript Window Bridging
+ *   - Master Auto-Sync
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 async function checkAppUpdates() {

@@ -1,17 +1,23 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: sw.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   Service Worker engine enabling Progressive Web App (PWA) functionality,
- *   offline caching strategies, asset cache busting, and version management.
+ *   The Service Worker file responsible for Progressive Web App (PWA) 
+ *   offline capabilities. Intercepts network requests and caches core 
+ *   assets for disconnected warehouse use.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Offline App Loading
+ *   - Cache Management & Versioning
+ *   - Network-First vs Cache-First Routing Policies
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-const CACHE_NAME = 'asp-ims-v4.1.2';
+const CACHE_NAME = 'asp-ims-v4.1.4';
 
 
 const ASSETS_TO_CACHE = [

@@ -1,21 +1,74 @@
 <!-- =======================================================================
-  ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
-  File: screens/help.html
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/help.html
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
+ * Description: 
+ *   User interface component for the Operations Guide. Contains the complete 
+ *   documentation and interactive search tool for navigating application procedures.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Interactive Document Search (Highlighting)
+ *   - Markdown Help Rendering
+ *   - Operational Reference Guide
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
-======================================================================= -->
-<!-- SCREEN 10: IN-APP HELP & OPERATIONS MANUAL -->
+ * ======================================================================= -->
+<!-- SCREEN 9: HELP & DOCUMENTATION PAGE -->
 <div id="screenHelp" style="display: none;" class="card">
-  <div class="flex-between" style="border-bottom: 2px solid #0277bd; padding-bottom: 6px; margin-bottom: 12px;">
-    <h2 style="border:none; margin:0; padding:0; color: #0277bd;">📖 Operations Guide</h2>
+  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
+    <h2 style="border:none; margin:0; padding:0;">📖 Operations Guide</h2>
     <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeHelpScreen()">🔙 Return</button>
   </div>
-  
-  <div id="helpContentContainer" style="max-height: 75vh; overflow-y: auto; padding: 10px 14px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; line-height: 1.5; color: #333;">
-    <div style="text-align:center; padding: 20px; color: #777;">⏳ Loading manual from Help.md...</div>
+
+  <!-- NEW: Help Search Bar -->
+  <div style="margin-bottom: 15px; position: sticky; top: 0; background: #fff; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+    <input type="text" id="helpSearchInput" placeholder="🔍 Search the guide for a keyword..." style="width: 100%; padding: 10px; border: 2px solid #0277bd; border-radius: 4px; font-size: 1rem;" onkeyup="searchHelpText()">
+  </div>
+
+  <div id="helpContentContainer" style="font-size: 0.9rem; line-height: 1.5; color: #333; max-height: 65vh; overflow-y: auto; padding-right: 10px;">
+    <!-- Markdown content loaded here -->
   </div>
 </div>
+
+<script>
+// Simple Highlight Search for the Help Document
+function searchHelpText() {
+  let input = document.getElementById('helpSearchInput').value.toLowerCase();
+  let container = document.getElementById('helpContentContainer');
+  
+  // Reset previous highlights
+  let originalHtml = container.getAttribute('data-original-html');
+  if (!originalHtml) {
+    originalHtml = container.innerHTML;
+    container.setAttribute('data-original-html', originalHtml);
+  } else {
+    container.innerHTML = originalHtml;
+  }
+
+  if (!input) return;
+
+  // Use a TreeWalker to safely highlight text nodes without breaking HTML tags
+  let walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+  let nodesToWrap = [];
+  while (walker.nextNode()) {
+    let node = walker.currentNode;
+    if (node.nodeValue.toLowerCase().includes(input) && node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
+      nodesToWrap.push(node);
+    }
+  }
+
+  nodesToWrap.forEach(node => {
+    let regex = new RegExp(`(${input})`, 'gi');
+    let spanWrapper = document.createElement('span');
+    spanWrapper.innerHTML = node.nodeValue.replace(regex, `<mark style="background-color: #ffeb3b; padding: 0 2px;">$1</mark>`);
+    node.parentNode.replaceChild(spanWrapper, node);
+  });
+  
+  // Scroll to the first match
+  let firstMark = container.querySelector('mark');
+  if (firstMark) firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+</script>

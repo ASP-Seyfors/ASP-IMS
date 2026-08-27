@@ -1,15 +1,20 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/scannerManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   Hardware and camera barcode engine integrating HTML5-QRCode viewfinder,
- *   OCR processing, GS1 2D DataMatrix/1D parsing, and real-time GTIN/LOT/EXP
- *   field auto-population.
+ *   Hardware and camera barcode engine integrating HTML5-QRCode viewfinder, 
+ *   GS1 2D DataMatrix parsing, and real-time GTIN/LOT/EXP extraction.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Device Camera Initialization & Focus Controls
+ *   - GS1 String Decryption (01, 10, 17 parsing)
+ *   - Scan Field Auto-Population
+ *   - AI Vision OCR Bridging
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const ScannerManager = {

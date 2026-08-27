@@ -1,11 +1,20 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/reportsManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
+ * Description:
+ *   Enterprise analytics and reporting generator. Compiles live data into 
+ *   standalone business intelligence reports without requiring Excel.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Full On-Hand Stock Reports
+ *   - Expiration Warning Reports
+ *   - Stocktake Variance & Financial Impact Reports
+ *   - End of Week Shipping & Revenue Summaries
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const ReportsManager = {

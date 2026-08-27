@@ -1,12 +1,19 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/componentManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
- * Description: UI Stitcher for Componentized HTML Architecture
+ * Description:
+ *   UI Component Stitcher. Asynchronously fetches multiple standalone HTML 
+ *   files and injects them into the main index document to maintain a clean, 
+ *   modular Single Page Application (SPA) architecture.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Single Page Application Loading
+ *   - HTML Component Injection
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const ComponentManager = {

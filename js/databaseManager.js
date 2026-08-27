@@ -1,14 +1,22 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/databaseManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   Local database controller for warehouse inventory catalog lookup, GTIN/SKU
- *   cross-referencing, manufacturer mapping, and live item description matching.
+ *   Local database controller for warehouse inventory catalog lookup, 
+ *   GTIN/SKU cross-referencing, Manufacturer mapping, and cloud 
+ *   synchronization of the Master Item Catalog.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Barcode Database Matching & Fallbacks
+ *   - GTIN Auto-Linking
+ *   - Database Editor UI Grid
+ *   - Partner/Vendor Dropdown Population
+ *   - Master JSON Sync (Downloads & Uploads)
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const defaultVendors = [

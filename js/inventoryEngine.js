@@ -1,15 +1,23 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/inventoryEngine.js
- * Description: Strict mathematical engine and validation gatekeeper.
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
+ * Description:
+ *   The core mathematical engine and validation gatekeeper. Enforces exact 
+ *   addition and subtraction rules for standard inventory and Customer Bins.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - UOM Multiplier Conversions (Box to Each)
+ *   - Over-pack Validation & Fault Tolerance Logic
+ *   - General Ledger Math (On-Hand +/-)
+ *   - FEFO Lot Subtraction (First Expiring, First Out)
+ *   - Active Allocations Tracking & Cleanup
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-
 const InventoryEngine = {
 
   /**

@@ -1,15 +1,21 @@
 /* =======================================================================
- * ALLIED SURGICAL PRODUCTS - SCANNER APPLICATION
+ * Allied Surgical Products - Inventory Management System
  * File: js/authManager.js
- * Author: Thomas Paul Seyfors
- * Date: August 2026
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
  * 
  * Description:
- *   Audit, report generation, and traceability engine. Constructs TXT and
- *   printable HTML/PDF session summaries, calculates live session metrics,
- *   parses multi-log uploads, and builds Thrive CSV export formats.
+ *   Security and authentication gatekeeper. Manages Google Workspace 
+ *   OAuth 2.0 sign-in, session storage tokens, and Role-Based Access Control 
+ *   (RBAC) for Admin functionality.
  *
- * Copyright (c) 2026 Thomas Paul Seyfors / Allied Surgical Products.
+ * Affected Features:
+ *   - Google Account Sign-In
+ *   - Guest Mode Restrictions
+ *   - UI Locking & Element Visibility
+ *   - Developer Tools Access
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
 const AuthManager = {

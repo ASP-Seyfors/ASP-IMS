@@ -1,60 +1,78 @@
 # ASP Inventory Management System – Operations Guide
 
-Welcome to the Allied Surgical Products (ASP) Inventory Management System application. This platform is a cloud-synchronized, Progressive Web App (PWA) designed for warehouse inventory management, GS1 barcode data extraction, and FEFO (First-Expired-First-Out) traceability.
+Welcome to the ASP Inventory Management System! This application is designed to help you quickly scan, track, and manage warehouse inventory.
+
+## Table of Contents
+* [1. Login & Security](#1-login-security)
+* [2. The Home Screen](#2-the-home-screen)
+* [3. Enterprise Tools & Database](#3-enterprise-tools-database)
+* [4. Pre-Loading Orders](#4-pre-loading-orders)
+* [5. Scanning Items](#5-scanning-items)
+* [6. Reviewing & Completing Sessions](#6-reviewing-completing-sessions)
+* [7. Traceability & Damaged Goods](#7-traceability-damaged-goods)
+* [8. Session Archive](#8-session-archive)
+* [9. Developer & Admin Tools](#9-developer-admin-tools)
 
 ---
 
-## 1. Authentication & Security (Login Screen)
-The app is protected by a Google Workspace gatekeeper.
-* **Google Sign-In:** Users must log in with an `@alliedsurgicalproducts.com` email address.
-* **Guest Mode:** Allows temporary entry but strictly locks down the app. Guests cannot access the Enterprise Hub, Stocktake features, or edit the master database.
-* **Role-Based Access (RBAC):** The system recognizes approved Admin emails. Only Admins can view or modify the restricted "Unit Cost" field in the Database Editor. Non-admins will see this field masked as `***`.
+## 1. Login & Security
+To keep our inventory data safe, the app requires a verified login.
+* **Google Sign-In:** You must log in using your `@alliedsurgicalproducts.com` email address. 
+* **Guest Mode:** If you do not have an ASP email, you can enter as a Guest. Guest mode is strictly locked down: you can scan items, but you cannot view the master database, customer bins, or enterprise reports.
+* **Admin Access:** Certain features (like editing pricing or accessing Developer Tools) are automatically restricted to authorized Administrators only. 
 
-## 2. Session Setup (Home Screen)
-This is the main launchpad for all daily operations.
-* **🔄 Sync System:** The master button. It automatically pushes pending logs to the Cloud, pulls down new Master Catalog updates, downloads the Cloud Vault Directory, and fetches the latest orders from QuickBooks Online.
-* **🔴 Updates Pending / Cloud Updates Available:** A visual indicator that alerts the user when local data needs to be pushed, or when the master Google Sheet has been modified remotely.
-* **Advanced Checkbox:** Toggles the visibility of Enterprise tools. When unchecked, the UI is simplified for standard warehouse floor scanning.
-* **Session Type (Shipment vs. Order):** * *Shipment:* Defaults the workflow to "Receiving & Reserving" and asks for a Supplier.
-  * *Order:* Defaults the workflow to either "Reserving" or "Picking & Packing" and asks for a Customer.
-* **🔍 Item Lookup:** A quick-search tool to instantly verify the on-hand quantity, price, and manufacturer of a specific REF/SKU without starting a full session.
+## 2. The Home Screen
+This is your main dashboard where you start every task.
+* **🔄 Sync System:** Click this button at the start of your shift! It downloads the latest database catalog and uploads any pending logs you have saved locally.
+* **🔴 Updates Pending:** A red warning text will appear here if you have unsaved data on your device that needs to be synced to the cloud.
+* **Advanced Checkbox:** Check this box to reveal the Enterprise Data Hub, Reports, and Pre-Load tools. Leave it unchecked for a clean, simple scanning screen.
+* **Session Type:** 
+  * *Shipment (Incoming):* Use this when items are arriving at the warehouse. It will ask you to select a Supplier.
+  * *Order (Outgoing):* Use this when items are leaving the warehouse or being set aside. It will ask you to select a Customer.
+* **🔍 Item Lookup:** A quick way to scan a barcode or type a REF to instantly see its description, price, and how many are currently sitting on the warehouse shelves.
 
-## 3. Pre-Load Manifests & QBO Sync (Advanced Mode)
-Used for intelligent fulfillment against expected orders.
-* **☁️ QBO Invoice Sync:** Located in the Settings panel. Pulls open invoices directly from QuickBooks Online and stages them in the dropdown feed for immediate picking.
-* **Copy/Paste Parser:** Allows the user to paste a raw spreadsheet. It automatically detects SKUs, Quantities, and Customer POs.
-* **SHELF Splitter:** If a pasted row contains "SHELF", the app intelligently splits the quantity—reserving the requested amount for the specific customer and routing the remainder to standard Inventory.
+## 3. Enterprise Tools & Database
+*(Requires the "Advanced" checkbox to be ticked)*
+* **🗄️ Database Editor:** Allows you to view the master catalog. Admins can use this to update prices, costs, and descriptions directly from the tablet. 
+* **📊 Reports & Analytics:** Use this to generate printable PDF reports of On-Hand Stock, Out-of-Stock items, or create Custom Promotional Flyers to email to customers.
+* **🗃️ Customer Bins:** A quick-view tool that lists every item currently sitting in a physical reserve bin for a specific customer. 
 
-## 4. The Scanning Engine
-The core data capture screen utilizing the device camera.
-* **📷 Open Camera:** Launches the HTML5 viewfinder. It automatically parses standard 1D barcodes and complex 2D GS1 DataMatrix codes.
-* **Raw Barcode Scans:** The system extracts the GTIN (01), Lot (10), and Expiration Date (17) from GS1 strings automatically, ignoring formatting brackets.
-* **N/A Checkboxes:** If an item lacks a Lot or Expiration, checking "N/A" safely bypasses the validation warning.
-* **Destination Tags:** * *Inventory:* Routes the item to standard warehouse stock.
-  * *Reserved:* Attaches a specific Customer/Order tag to the item to reserve it for fulfillment.
-* **⚠️ Add Item Issue / Note:** Attaches a specific damage or discrepancy note directly to that exact item's scan record.
+## 4. Pre-Loading Orders
+*(Requires the "Advanced" checkbox to be ticked)*
+Instead of scanning items blindly, you can tell the app what items you *expect* to scan.
+* **Pre-Load Order Information:** Check this box to type in a manual list of expected items (or paste a spreadsheet from an email). The app will track your progress as you scan them.
+* **☁️ Fetch Orders (QBO):** Pulls open invoices directly from QuickBooks Online. You can select an invoice from the dropdown, and the app will automatically pre-load the expected items for you.
 
-## 5. Review & Summary
-The final checkpoints before committing a session.
-* **GTIN Difference Banner:** If a scanned GTIN differs from what the database expects, a warning appears allowing the user to update the master record instantly.
-* **Manifest Tracker:** Shows live progress (e.g., "5/10 Expected"). Unexpected items are flagged in orange.
-* **Discrepancy Detection:** On the summary screen, any shortages or overages against the expected manifest are highlighted for immediate reconciliation.
-* **Resolve New Items:** Prompts the user to enter descriptions for any newly discovered REFs before completing the session. A quick-link Google Search button is provided to find the manufacturer's product page.
-* **Session Commit:** When a session is "Completed", the payload is immediately processed into the master inventory calculation and uploaded to the Google Sheets Cloud Archive.
+## 5. Scanning Items
+The core screen where you capture barcodes using the tablet's camera.
+* **📷 Open Camera:** Launches the camera. It automatically reads both standard 1D barcodes and the square 2D medical barcodes.
+* **N/A Checkboxes:** If an item's box is missing a Lot Number or Expiration Date, simply check the "N/A" box so the system knows it isn't a mistake.
+* **Item Destination:** 
+  * *Inventory:* Sends the item to standard warehouse stock.
+  * *Reserved:* Attaches a specific Customer tag to the item so it is set aside for an order.
+* **⚠️ Add Item Issue / Note:** Use this if a box is crushed or damaged. Whatever you type here will be permanently attached to that item's history.
 
-## 6. Enterprise Data Hub
-Generates standalone business intelligence documents and audits.
-* **🗄️ Database Editor:** A direct interface to the master catalog. Allows Admins to safely edit Price, Cost, and Descriptions, and push updates back to Google Sheets.
-* **📊 Reports Hub:** Generates complete inventory PDFs, Customer Stock Flyers, and Internal Sales intelligence briefs.
-* **📋 Stocktake (Full vs. Selection):** * *Full Stocktake:* Mandates a Session Note. It zeroes out the *entire* local database first, then applies only the newly counted items. 
-  * *Selection Stocktake:* Lightweight audit. Only zeroes out the specific REFs that are scanned, leaving the rest of the warehouse catalog untouched. Both modes automatically generate a Variance Report PDF detailing net financial impact.
-* **📦 Traceability (FEFO Calculation):** The engine dynamically parses all historical session payloads to calculate live Expiration Risk and track a specific Lot's journey from Receiving to Fulfillment.
+## 6. Reviewing & Completing Sessions
+* **Verify Screen:** Before saving an item, the app shows you exactly what it captured. If the scanner grabbed the wrong date, hit "Return to Edit" to fix it.
+* **Discrepancies:** If you used a Pre-Load manifest, the Summary screen will highlight any shortages (missing items) or overages (extra items) in bright orange so you can fix them before finishing.
+* **Session Actions:** 
+  * *Complete Session:* Saves the math to the database and uploads it to the cloud.
+  * *Suspend / Save as Pending:* Pauses the session so you can come back and finish scanning later. 
+  * *Cancel:* Throws away everything you just scanned.
 
-## 7. Session Archive & Cloud Vault
-The historical record and device storage management center.
-* **📱 Local Device:** Displays active, pending, or recently completed sessions stored directly on the device memory.
-* **☁️ Cloud Vault:** Connects to the master Google Sheets backend. Displays a lightweight directory of all historical sessions across the organization. Users can click "Download & Restore" to pull a specific historical payload back into their active scanner memory for review.
-* **🧹 Offload & Purge (Settings Screen):** A storage optimization tool that safely verifies all completed sessions are backed up to the cloud, then wipes the heavy JSON payloads from the local device to maintain maximum app performance.
+## 7. Traceability & Damaged Goods
+Located inside the **Traceability** button on the Home Screen.
+* **Lot Traceability:** Type in a specific Lot Number to see exactly when it arrived, who scanned it, and what customer it was shipped to.
+* **⚠️ Damaged Inventory Hub:** If items are flagged as damaged during scanning, they are quarantined here. You can view the list of damaged goods or export it to a spreadsheet to send back to a vendor.
 
----
-*Developed for Allied Surgical Products | Copyright © 2026 Thomas Paul Seyfors*
+## 8. Session Archive
+* **📱 Local Archive:** Shows sessions saved directly on your tablet.
+* **☁️ Cloud Archive:** Connects to the master Google Vault to show every session ever performed by any user. You can click "Download & Restore" to pull an old session back onto your screen.
+* **Search Bar:** Use the search bar at the top of the archive to quickly find a specific session by Customer name, PO number, or Date.
+
+## 9. Developer & Admin Tools
+*(Accessible via Settings. Restricted to System Administrators.)*
+* **🛠️ Developer Tools:** A highly restricted page for maintaining the app.
+* **🧹 Offload & Purge Local History:** Cleans up the tablet's memory by deleting old completed sessions while keeping pending sessions safe.
+* **🗑️ Force Update / Clear Cache:** The "Nuclear Option." Wipes the app completely and forces it to download the newest version of the code from the internet. Use this if the app is glitching. 
+* **🐞 Live Debug Console:** Opens a floating window that tracks background code execution to help track down bugs while using the app.
