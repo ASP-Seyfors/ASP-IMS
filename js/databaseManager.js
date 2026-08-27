@@ -462,27 +462,44 @@ const DatabaseManager = {
   getItemVendor: (item) => (item && (item.mfr || item.vendor || item.manufacturer || '').toString().trim()) || '',
   getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || '',
 
-  // 1. DOWNLOAD ONLY
+  // 1. CHUNKED DOWNLOAD ENGINE
   async downloadCloudDatabase(event, silent = false) {
     const btn = event ? event.target : null;
-    const originalText = btn ? btn.textContent : "☁️ Download Cloud DB";
-    if (btn) { btn.textContent = "⏳ Downloading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+    const originalText = btn ? btn.textContent : "☁️ Sync Cloud DB";
+    if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=SYNC_DATABASE&t=${Date.now()}`);
-      let text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch(e) { throw new Error("Connection blocked by Google. Check permissions."); }
+      let page = 1;
+      let totalPages = 1;
+      let fullDb = { items: [], customers: [], suppliers: [], vendors: [] };
       
-      if (data.status === "success" && data.db) {
-         this.importCloudDatabase(data.db);
-         if (!silent) UIManager.showCustomAlert("Sync Complete", `✅ Master Database successfully downloaded!\n\nImported ${data.db.items.length} total items.`);
-         
-         if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
-           this.renderDbGridEditor(); 
-         }
-      } else {
-         throw new Error(data.message || "Unknown Apps Script connection error.");
+      do {
+        if (btn) btn.textContent = `⏳ Syncing Batch ${page}...`;
+        let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=SYNC_DATABASE_CHUNKED&page=${page}&t=${Date.now()}`);
+        let text = await res.text();
+        let data;
+        
+        try { data = JSON.parse(text); } catch(e) { throw new Error("Connection blocked by Google. Check permissions."); }
+        
+        if (data.status === "success" && data.db) {
+          fullDb.items = fullDb.items.concat(data.db.items || []);
+          if (page === 1) {
+            fullDb.customers = data.db.customers || [];
+            fullDb.suppliers = data.db.suppliers || [];
+            fullDb.vendors = data.db.vendors || [];
+          }
+          totalPages = data.totalPages || 1;
+          page++;
+        } else {
+           throw new Error(data.message || "Unknown Apps Script connection error.");
+        }
+      } while (page <= totalPages);
+
+      this.importCloudDatabase(fullDb);
+      if (!silent) UIManager.showCustomAlert("Sync Complete", `✅ Master Database successfully downloaded!\n\nImported ${fullDb.items.length} total items.`);
+      
+      if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
+        this.renderDbGridEditor(); 
       }
     } catch (err) {
       if (!silent) UIManager.showCustomAlert("Sync Error", "Error downloading database: " + err.message);

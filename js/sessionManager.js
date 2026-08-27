@@ -1660,25 +1660,27 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let select = document.getElementById('reversalSessionSelect');
     if (!select) return;
     
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let cutoff = Date.now() - (24 * 60 * 60 * 1000); // Strict 24-hour limit
+    // NEW: Pull the directory directly from the Cloud Vault instead of local storage
+    let archive = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+    let cutoff = Date.now() - (24 * 60 * 60 * 1000); 
     
-    // Safety Net: Only allow Receiving or Reserving sessions from last 24h
     let reversible = archive.filter(s => {
         if (s.status !== 'Completed') return false;
-        if (s.lastUpdated < cutoff) return false;
-        let w = (s.workflowType || '').toUpperCase();
+        // Parse the timestamp properly
+        let sTime = parseInt(s.id, 10);
+        if (isNaN(sTime) || sTime < cutoff) return false;
         
-        // Explicitly forbid packing or stocktakes from being reversed
+        let w = (s.workflowType || '').toUpperCase();
         if (w.includes('PACK') || w.includes('STOCKTAKE')) return false;
         return w.includes('RECEIV') || w.includes('RESERV');
-    }).sort((a,b) => b.lastUpdated - a.lastUpdated);
+    }).sort((a,b) => parseInt(b.id) - parseInt(a.id));
 
     select.innerHTML = '<option value="">-- Select Session to Reverse --</option>';
     reversible.forEach(s => {
         let opt = document.createElement('option');
         opt.value = s.id;
-        opt.textContent = `${s.dateStr} | ${s.sessionName} (${s.workflowType})`;
+        // Highlight that it is a cloud pull
+        opt.textContent = `☁️ ${s.dateStr} | ${s.sessionName} (${s.workflowType})`;
         select.appendChild(opt);
     });
   },
@@ -1688,15 +1690,26 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let targetId = select ? select.value : "";
     if (!targetId) { alert("Please select a session to reverse."); return; }
 
-    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let targetSession = archive.find(s => String(s.id) === String(targetId));
-    if (!targetSession) return;
+    let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+    let targetLite = dir.find(s => String(s.id) === String(targetId));
+    if (!targetLite) return;
 
-    if (!confirm(`Are you absolutely sure you want to mathematically REVERSE the session:\n\n"${targetSession.sessionName}"?\n\nThis will subtract all items that were added during this session.`)) return;
+    if (!confirm(`Are you absolutely sure you want to mathematically REVERSE the session:\n\n"${targetLite.sessionName}"?\n\nThis will download the payload from the cloud and subtract all items that were originally added.`)) return;
+
+    // 1. Fetch the actual payload from the cloud
+    let targetSession = null;
+    try {
+        let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${targetId}`);
+        targetSession = await res.json();
+        if (!targetSession || targetSession.status === "error") throw new Error("Cloud payload missing.");
+    } catch(err) {
+        alert("Failed to download session payload from cloud: " + err.message);
+        return;
+    }
 
     let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
     
-    // 1. Run the negative math
+    // 2. Run the negative math
     let ledgerResult = InventoryEngine.reverseLedgerMath(
         targetSession.scannedObjects,
         DatabaseManager.db,
@@ -1704,13 +1717,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         targetSession.workflowType
     );
 
-    // 2. Save the negated database locally
+    // 3. Save the negated database locally
     localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
     this.syncAllocationsToCloud();
     DatabaseManager.db = ledgerResult.updatedDb;
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
 
-    // 3. Create the new Reversal Payload for the Audit Log
+    // 4. Create the new Reversal Payload for the Audit Log
     let revScannedObjects = targetSession.scannedObjects.map(item => {
         return { ...item, qty: -(item.qty), itemNote: `REVERSAL of ${targetSession.id}` };
     });
@@ -1732,12 +1745,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       lastUpdated: Date.now()
     };
 
-    // 4. Push to archive and cloud
-    archive.unshift(revSession);
-    localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+    // 5. Push to local archive and cloud
+    let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    localArchive.unshift(revSession);
+    localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
     this.pushToCloudArchive(revSession);
 
-    // 5. Sync the updated catalog math
+    // 6. Sync the updated catalog math
     if (this.getActiveArchiveUrl()) {
       let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
       let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
