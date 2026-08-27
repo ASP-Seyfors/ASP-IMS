@@ -732,6 +732,23 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     document.getElementById('screenSetup').style.display = 'block';
   },
 
+  sendBugReport() {
+    const email = "thomas@alliedsurgicalproducts.com";
+    const subject = "ASP IMS Bug Report (v4.1.6)";
+    
+    // Dynamically grab the active user's name
+    let user = "Unknown Operator";
+    if (typeof AuthManager !== 'undefined' && AuthManager.currentUser) {
+      user = AuthManager.currentUser.name;
+    }
+    
+    const date = new Date().toLocaleDateString();
+    const body = `User: ${user}\nDate: ${date}\n\nBug Description:\n`;
+    
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  },
+
   initDebugConsole() {
     if (this.debugConsoleInitialized) return;
     this.debugConsoleInitialized = true;

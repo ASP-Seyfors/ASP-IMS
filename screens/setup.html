@@ -133,7 +133,8 @@
   <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px; gap: 10px;">
     <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()" title="View, restore, or upload past scanning sessions.">Session Archive</button>
     <div style="display: flex; gap: 8px;">
-      <a href="mailto:thomas@alliedsurgicalproducts.com?subject=ASP%20IMS%20Bug%20Report%20(v4.1.5)&body=User:%20%0D%0ADate:%20%0D%0A%0D%0ABug%20Description:%20" class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem; text-decoration: none;" title="Submit a bug report directly to IT Operations.">🐛</a>
+      <!-- FIX: Replaced anchor tag with a standard button calling our JS function -->
+      <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="UIManager.sendBugReport()" title="Submit a bug report directly to IT Operations.">🐛</button>
       <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools.">⚙️ Settings</button>
     </div>
   </div>

@@ -59,7 +59,7 @@ const AuthManager = {
 
       google.accounts.id.renderButton(
         document.getElementById('googleAuthButton'), 
-        { theme: 'outline', size: 'large', width: '100%' }
+        { theme: 'outline', size: 'large', width: 350 }
       );
     }
   },
