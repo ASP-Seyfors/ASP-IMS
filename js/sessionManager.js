@@ -1098,6 +1098,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (!finalCustomerTag) finalCustomerTag = baseCustomer;
       if (!finalOrderNum) finalOrderNum = this.currentOrderNum;
     }
+    
+    // NEW: If the item is being routed to the Damaged bin, map the Note into the OrderNum field 
+    // so it properly lands in Column B of the DMGD_ITEMS tab.
+    if (finalCustomerTag.toUpperCase().trim() === "ASP DAMAGED INVENTORY" && iNote) {
+      finalOrderNum = iNote;
+    }
 
     let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
 

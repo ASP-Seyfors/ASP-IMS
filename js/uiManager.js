@@ -129,9 +129,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let modal = document.getElementById('binViewerModal');
     if (modal) modal.remove(); // Force a fresh render
 
-    // 1. Fetch live allocations
+    // 1. Fetch live allocations and filter out the internal damaged bin
     let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-    let customersWithStock = Object.keys(allocations).sort();
+    let customersWithStock = Object.keys(allocations).filter(c => c.toUpperCase() !== "ASP DAMAGED INVENTORY").sort();    
 
     // 2. Build the HTML content
     let contentHtml = '';
@@ -203,6 +203,92 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     `;
     
     document.body.appendChild(modal);
+  },
+
+  openDamagedBinViewerModal() {
+    let modal = document.getElementById('damagedBinViewerModal');
+    if (modal) modal.remove();
+
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+    let damagedItems = allocations["ASP DAMAGED INVENTORY"] || {};
+    let totalItems = 0;
+    let rowsHtml = '';
+
+    Object.keys(damagedItems).sort().forEach(ref => {
+        let data = damagedItems[ref];
+        if (data.details && data.details.length > 0) {
+            data.details.forEach(det => {
+                if (det.qty > 0) {
+                    totalItems += det.qty;
+                    rowsHtml += `
+                        <div style="padding:8px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-weight:bold; color:#c62828;">${ref}</span>
+                                <span style="font-weight:bold; color:#333;">Qty: ${det.qty}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#555;">
+                                <span>Lot: ${det.lot} | Exp: ${det.exp}</span>
+                                <span style="font-style:italic;">Note: ${det.orderNum || 'None'}</span>
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+    });
+
+    let contentHtml = totalItems === 0 
+      ? `<div style="text-align:center; padding:20px; color:#777; font-style:italic;">No damaged items currently recorded.</div>`
+      : rowsHtml;
+
+    modal = document.createElement('div');
+    modal.id = 'damagedBinViewerModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; max-height:85vh; display:flex; flex-direction:column; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #c62828; padding-bottom:8px; margin-bottom:15px; flex-shrink:0;">
+          <h3 style="margin:0; color:#c62828;">⚠️ Damaged Inventory (${totalItems} Units)</h3>
+          <button onclick="document.getElementById('damagedBinViewerModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div style="overflow-y:auto; flex-grow:1; padding-right:4px;">
+            ${contentHtml}
+        </div>
+        <div style="margin-top:15px; display:flex; justify-content:space-between; flex-shrink:0; border-top:1px solid #eee; padding-top:12px;">
+            <button class="btn-small btn-auto" style="background:#0277bd; color:#fff; padding:8px 16px;" onclick="UIManager.exportDamagedItemsCSV()">📥 Export CSV</button>
+            <button class="btn-small btn-cancel" style="padding:8px 16px;" onclick="document.getElementById('damagedBinViewerModal').remove()">Close Viewer</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  exportDamagedItemsCSV() {
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+    let damagedItems = allocations["ASP DAMAGED INVENTORY"] || {};
+    
+    let csvContent = "REF/SKU,QUANTITY,LOT,EXPIRATION,NOTE/REASON\r\n";
+    let hasData = false;
+
+    Object.keys(damagedItems).sort().forEach(ref => {
+        let data = damagedItems[ref];
+        if (data.details && data.details.length > 0) {
+            data.details.forEach(det => {
+                if (det.qty > 0) {
+                    hasData = true;
+                    let safeNote = String(det.orderNum || '').replace(/"/g, '""');
+                    csvContent += `"${ref}",${det.qty},"${det.lot}","${det.exp}","${safeNote}"\r\n`;
+                }
+            });
+        }
+    });
+
+    if (!hasData) {
+        alert("No damaged items to export.");
+        return;
+    }
+
+    let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+    this.triggerShareOrDownload(csvContent, `ASP_Damaged_Items_${dateStr}.csv`, 'text/csv');
   },
 
   loadSavedAdvancedMode() {

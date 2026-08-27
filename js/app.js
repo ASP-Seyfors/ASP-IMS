@@ -217,6 +217,7 @@ window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);
 window.openDevTools = () => UIManager.openDevTools();
 window.closeDevTools = () => UIManager.closeDevTools();
 window.toggleDebugConsole = () => UIManager.toggleDebugConsole();
+window.openDamagedBinViewerModal = () => UIManager.openDamagedBinViewerModal();
 
 window.handlePartnerSelect = (val, type) => DatabaseManager.handlePartnerSelect(val, type);
 window.runMasterLookup = () => DatabaseManager.runMasterLookup();
