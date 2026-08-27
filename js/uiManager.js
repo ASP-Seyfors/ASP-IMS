@@ -385,30 +385,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let dbReserved = parseInt(item.reservedQty, 10) || 0;
     let dbAvailable = dbOnHand - dbReserved;
 
-    let allSessions = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    let lotMap = {};
-
-    allSessions.forEach(sess => {
-      if (sess.status === 'Completed' && sess.scannedObjects) {
-        sess.scannedObjects.forEach(s => {
-          if (s.ref === ref) {
-            let key = `${s.lot}_${s.exp}`;
-            if (!lotMap[key]) lotMap[key] = { lot: s.lot, exp: s.exp, qty: 0 };
-            if (sess.workflowType.includes('Stocktake') || sess.workflowType.includes('Receiving')) { lotMap[key].qty += s.qty;
-            } else if (sess.workflowType.includes('Packing')) { lotMap[key].qty -= s.qty; }
-          }
-        });
-      }
-    });
-
-    let lotRows = '';
-    Object.values(lotMap).filter(l => l.qty > 0).sort((a,b) => new Date(a.exp) - new Date(b.exp)).forEach(l => {
-      let expDate = new Date(l.exp);
-      let monthsLeft = (expDate - new Date()) / (1000 * 60 * 60 * 24 * 30);
-      let alertBadge = monthsLeft <= 6 ? '<span style="color:#d32f2f; font-weight:bold;">🚨 Short-Dated (<6 Mo)</span>' : (monthsLeft <= 12 ? '<span style="color:#f57f17; font-weight:bold;">⚠️ Short-Dated (<12 Mo)</span>' : '');
-      lotRows += `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px;"><strong>${l.lot}</strong></td><td style="padding:4px;">${l.exp}</td><td style="padding:4px; text-align:center; font-weight:bold;">${l.qty}</td><td style="padding:4px; text-align:right; font-size:0.75rem;">${alertBadge}</td></tr>`;
-    });
-
+    // --- NEW LIVE CLOUD LOT TRACING ---
     resContainer.innerHTML = `
       <div style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:12px;">
         <div style="font-size:1.1rem; font-weight:bold; color:#00796b;">REF: ${ref}</div>
@@ -422,9 +399,63 @@ const UIManager = {// GLOBAL CONFIGURATIONS
           <span>Total On-Hand: ${dbOnHand}</span>
           <span style="color:${dbAvailable > 0 ? '#2e7d32' : '#c62828'};">Available to Sell: ${dbAvailable}</span>
         </div>
-        ${lotRows ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd;"><tr style="background:#eee; text-align:left;"><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty</th><th style="padding:4px; text-align:right;">Status</th></tr>${lotRows}</table>` : '<div style="font-size:0.8rem; color:#777; font-style:italic;">No active FEFO lot history stored on local device.</div>'}
+        <div id="quickLookupLotBox" style="text-align:center; padding:10px; color:#00796b; font-weight:bold;">⏳ Querying Live Cloud Ledger for Lot History...</div>
       </div>
     `;
+
+    if (dbOnHand > 0 || dbReserved > 0) {
+      // If we have inventory, fetch the cloud log to build the exact lots
+      fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`)
+        .then(res => res.text())
+        .then(text => {
+          let responseData = JSON.parse(text);
+          if (responseData.status !== "success" || !responseData.data) throw new Error("Failed");
+
+          let lotMap = {};
+          responseData.data.forEach(row => {
+            let rowRef = row['REF / SKU'];
+            let lot = row['Lot'];
+            let exp = row['Exp Date'];
+            let qty = parseInt(row['Qty Moved'], 10) || 0;
+            let workflow = row['Workflow'] || '';
+            
+            if (rowRef === ref && lot && lot !== 'N/A') {
+              let key = `${lot}_${exp}`;
+              if (!lotMap[key]) lotMap[key] = { lot: lot, exp: exp, qty: 0 };
+              
+              if (workflow.includes('Receiving') || workflow.includes('Stocktake')) { lotMap[key].qty += qty; }
+              else if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) { lotMap[key].qty -= qty; }
+            }
+          });
+
+          let lotRows = '';
+          Object.values(lotMap).filter(l => l.qty > 0).sort((a,b) => new Date(a.exp) - new Date(b.exp)).forEach(l => {
+            let expDate = new Date(l.exp);
+            let monthsLeft = (expDate - new Date()) / (1000 * 60 * 60 * 24 * 30);
+            let alertBadge = monthsLeft <= 6 ? '<span style="color:#d32f2f; font-weight:bold;">🚨 Short (<6m)</span>' : (monthsLeft <= 12 ? '<span style="color:#f57f17; font-weight:bold;">⚠️ Short (<12m)</span>' : '');
+            lotRows += `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px;"><strong>${l.lot}</strong></td><td style="padding:4px;">${l.exp}</td><td style="padding:4px; text-align:center; font-weight:bold;">${l.qty}</td><td style="padding:4px; text-align:right; font-size:0.75rem;">${alertBadge}</td></tr>`;
+          });
+
+          let box = document.getElementById('quickLookupLotBox');
+          if (box) {
+            box.innerHTML = lotRows 
+              ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd; margin-top:8px;"><tr style="background:#eee; text-align:left;"><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty</th><th style="padding:4px; text-align:right;">Status</th></tr>${lotRows}</table>`
+              : `<div style="font-size:0.8rem; color:#777; font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
+            box.style.textAlign = 'left';
+            box.style.padding = '0';
+          }
+        })
+        .catch(err => {
+          let box = document.getElementById('quickLookupLotBox');
+          if (box) box.innerHTML = `<span style="color:#c62828;">⚠️ Cloud ledger unreachable.</span>`;
+        });
+    } else {
+      let box = document.getElementById('quickLookupLotBox');
+      if (box) {
+        box.innerHTML = `<div style="font-size:0.8rem; color:#777; font-style:italic; padding:10px;">No physical inventory available to track.</div>`;
+        box.style.padding = '0';
+      }
+    }
   },
 
   openStocktakeModal() {

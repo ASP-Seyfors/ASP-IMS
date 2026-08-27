@@ -27,10 +27,10 @@
   <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Export Missing Price/Cost Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Export Out of Stock Report</button>
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')">📦 Export On-Hand Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openRevMedReportModal()">📋 Export RevMed / DotMed CSV</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Export Out of Stock Report</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')">📋 Current RevMed Catalog</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')">📋 On-Hand Stock Not on RevMed</button>
     </div>
   </div>
 

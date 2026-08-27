@@ -271,5 +271,8 @@ window.exportThriveVariants = () => AuditManager.exportThriveVariants();
 window.exportThriveProducts = () => AuditManager.exportThriveProducts();
 window.exportShopifyProducts = () => AuditManager.exportShopifyProducts();
 window.exportShopifyInventory = () => AuditManager.exportShopifyInventory();
+window.exportEcommerceData = (platform, isNew) => AuditManager.exportEcommerceData(platform, isNew);
+
+window.generateRevMedPDF = (mode) => ReportsManager.generateRevMedPDF(mode);
 
 window.forceAppUpdate = forceAppUpdate;

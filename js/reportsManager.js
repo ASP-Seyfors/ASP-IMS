@@ -638,118 +638,70 @@ const ReportsManager = {
     UIManager.triggerShareOrDownload(csvContent, filename, 'text/csv');
   },
 
-  // --- REV-MED / DOT-MED DUAL-MODE REPORT ---
-  openRevMedReportModal() {
-    let localSessions = [];
-    try {
-      localSessions = JSON.parse(localStorage.getItem('asp_session_archive') || '[]');
-    } catch(e) { localSessions = []; }
+  generateRevMedPDF(mode) {
+    let db = DatabaseManager.db.slice().sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
+    let filtered = [];
+    let title = "";
+    let fileSuffix = "";
 
-    let sessionOptionsHtml = localSessions.length > 0 
-      ? localSessions.map(s => `<option value="${s.id}">${s.sessionName || 'Session'} (${s.dateStr || 'Recent'})</option>`).join('')
-      : `<option value="">No local sessions found</option>`;
-
-    let modal = document.createElement('div');
-    modal.id = 'revmedReportModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
-
-    modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px; font-family:sans-serif;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0277bd; padding-bottom:8px; margin-bottom:15px;">
-          <h3 style="margin:0; color:#0277bd;">📋 RevMed / DotMed Report</h3>
-          <button onclick="document.getElementById('revmedReportModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-        </div>
-        
-        <div style="margin-bottom:12px;">
-          <label style="display:block; font-size:0.85rem; font-weight:bold; color:#333; margin-bottom:4px;">Report Mode:</label>
-          <select id="reportModeSelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" onchange="ReportsManager.toggleReportSource()">
-            <option value="onhand">All On-Hand Inventory (Available Qty > 0)</option>
-            <option value="session">Specific Local Device Session</option>
-          </select>
-        </div>
-
-        <div id="sessionSourceContainer" style="margin-bottom:20px; display:none;">
-          <label style="display:block; font-size:0.85rem; font-weight:bold; color:#333; margin-bottom:4px;">Select Local Session:</label>
-          <select id="targetSessionSelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-            ${sessionOptionsHtml}
-          </select>
-        </div>
-
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button onclick="document.getElementById('revmedReportModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="ReportsManager.generateRevMedReportExport()" style="background:#0277bd; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📥 Export CSV</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  },
-
-  toggleReportSource() {
-    const mode = document.getElementById('reportModeSelect').value;
-    const container = document.getElementById('sessionSourceContainer');
-    if (container) {
-      container.style.display = mode === 'session' ? 'block' : 'none';
-    }
-  },
-
-  generateRevMedReportExport() {
-    const mode = document.getElementById('reportModeSelect').value;
-    let reportData = [];
-
-    if (mode === 'onhand') {
-      let db = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db : [];
-      reportData = db
-        .filter(i => {
-          let total = parseInt(i.onHand || i.TotalQty, 10) || 0;
-          let res = parseInt(i.reservedQty, 10) || 0;
-          return (total - res) > 0;
-        })
-        .map(i => {
-          let total = parseInt(i.onHand || i.TotalQty, 10) || 0;
-          let res = parseInt(i.reservedQty, 10) || 0;
-          return {
-            ref: i.ref || i.sku || i['REF / SKU'],
-            desc: i.desc || i.Description || 'N/A',
-            exp: i.exp || 'N/A',
-            price: i.price || i.Price || '$0.00',
-            qty: total - res
-          };
-        });
-    } else {
-      const selectedId = document.getElementById('targetSessionSelect').value;
-      let localSessions = [];
-      try {
-        localSessions = JSON.parse(localStorage.getItem('asp_session_archive') || '[]');
-      } catch(e) {}
-
-      const targetSession = localSessions.find(s => String(s.id) === String(selectedId));
-      if (!targetSession || !targetSession.scannedObjects) {
-        alert('Selected session contains no scanned items.');
-        return;
-      }
-
-      reportData = targetSession.scannedObjects.map(obj => ({
-        ref: obj.ref || 'N/A',
-        desc: obj.desc || 'N/A',
-        exp: obj.exp || 'N/A',
-        price: obj.price || '$0.00',
-        qty: obj.qty || 1
-      }));
+    if (mode === 'current') {
+      title = "Current RevMed Catalog";
+      fileSuffix = "Current_RevMed_Catalog";
+      filtered = db.filter(i => String(i.onRevMed).toUpperCase() === 'TRUE');
+    } else if (mode === 'not_on_revmed') {
+      title = "On-Hand Stock Not on RevMed";
+      fileSuffix = "Not_On_RevMed";
+      filtered = db.filter(i => {
+        let isFalse = String(i.onRevMed).toUpperCase() !== 'TRUE';
+        let total = parseInt(i.onHand || 0, 10);
+        let res = parseInt(i.reservedQty || 0, 10);
+        let avail = total - res;
+        let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
+        let numPrice = parseFloat(priceStr) || 0;
+        return isFalse && avail > 0 && numPrice > 0;
+      });
     }
 
-    let csvContent = "REF/SKU,DESCRIPTION,EXPIRATION,PRICE,AVAILABLE QTY\r\n";
-    reportData.forEach(row => {
-      let safeDesc = String(row.desc).replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
-      csvContent += `"${row.ref}","${safeDesc}","${row.exp}","${row.price}",${row.qty}\r\n`;
+    if (filtered.length === 0) { alert("No items match this criteria."); return; }
+
+    let html = `<!DOCTYPE html><html><head><title>${title}</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
+      .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0277bd; padding-bottom: 10px; margin-bottom: 15px; }
+      h2 { color: #0277bd; margin: 0; font-size: 20px; text-transform: uppercase; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; text-align: left; }
+      td { border: 1px solid #eee; padding: 8px; vertical-align: top; }
+    </style></head><body>
+    <div class="header">
+      <div><h2>${title}</h2><div style="font-weight:bold; color:#555; margin-top:4px;">Allied Surgical Products</div></div>
+      <div style="text-align:right;">Generated: ${new Date().toLocaleDateString()}<br>Total Items: ${filtered.length}</div>
+    </div>
+    <table><thead><tr><th>REF / SKU</th><th>Manufacturer</th><th>Description</th><th style="text-align:center;">Available Qty</th><th style="text-align:right;">RevMed Price</th></tr></thead><tbody>`;
+
+    filtered.forEach(item => {
+      let avail = (parseInt(item.onHand || 0, 10)) - (parseInt(item.reservedQty || 0, 10));
+      let rmPriceRaw = String(item.revMedPrice || '').replace(/[^0-9.-]+/g, '');
+      let rmPriceNum = parseFloat(rmPriceRaw) || 0;
+      let priceDisplay = rmPriceNum > 0 ? '$' + rmPriceNum.toFixed(2) : '<span style="color:#c62828; font-weight:bold;">PRICE NEEDED</span>';
+
+      html += `<tr>
+        <td style="font-weight:bold; color:#0277bd;">${item.ref || item.sku}</td>
+        <td>${item.mfr}</td>
+        <td style="font-size:11px; color:#555;">${item.desc}</td>
+        <td style="text-align:center; font-weight:bold; font-size:14px; color:#2e7d32;">${avail}</td>
+        <td style="text-align:right; font-weight:bold;">${priceDisplay}</td>
+      </tr>`;
     });
 
+    html += `</tbody></table></body></html>`;
+    
     let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
-    let filename = `RevMed_DotMed_Report_${mode}_${dateStr}.csv`;
-
-    // Route through the secure Blob API (No Magic Dot needed for direct CSV downloads)
-    UIManager.triggerShareOrDownload(csvContent, filename, 'text/csv');
-
-    let modal = document.getElementById('revmedReportModal');
-    if (modal) modal.remove();
+    let win = window.open('', '_blank');
+    if (win) { 
+      win.document.write(html); 
+      win.document.title = `ASP_${fileSuffix}_Report_(${dateStr})`.replace(/\./g, '\u2024'); 
+      win.focus(); setTimeout(() => win.print(), 1600);
+    }
   }
 };

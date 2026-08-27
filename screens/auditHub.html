@@ -40,24 +40,10 @@
   </div>
 
   <!-- DAMAGED INVENTORY HUB -->
-  <div style="background: #ffebee; border: 1px solid #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+  <div style="background: #ffebee; border: 1px solid #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
     <h4 style="margin: 0 0 10px 0; color: #c62828;">⚠️ Damaged Inventory Hub</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0;">View, manage, and export items currently quarantined as damaged.</p>
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()">📦 Open Damaged Items Viewer</button>
-  </div>
-
-  <div class="form-row" style="margin-bottom: 20px;">
-    <div class="form-label" style="color: #0277bd;">Timeframe:</div>
-    <div class="input-wrapper" style="display:flex; gap:8px;">
-      <select id="traceTimeframe" style="flex:2; border: 2px solid #0277bd; font-weight: bold; padding: 10px; border-radius: 4px;">
-        <option value="24h">Today (Last 24 Hours)</option>
-        <option value="7d" selected>Last 7 Days (End of Week)</option>
-        <option value="30d">Last 30 Days (Monthly)</option>
-        <option value="90d">Last 90 Days (Quarterly)</option>
-        <option value="all">Year-to-Date / All Time</option>
-      </select>
-      <button id="btnGenerateTrace" class="btn-action btn-auto" style="margin:0; flex:1; background-color: #0277bd; color: #fff; padding: 10px;" onclick="AuditManager.fetchAndCompileTraceability()">🔍 Generate Traceability</button>
-    </div>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">View, manage, and export items currently quarantined as damaged.</p>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; max-width: 350px; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()">📦 Damaged Items Bin</button>
   </div>
 
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">

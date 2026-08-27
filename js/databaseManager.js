@@ -225,15 +225,13 @@ const DatabaseManager = {
     return null;
   },
 
-  // --- UPDATED: TEXT-WRAP GRID EDITOR WITH ADMIN-LOCKED COST & PRICE ---
+  // --- UPDATED: CLEAN GRID EDITOR WITH EDIT MODAL ---
   renderDbGridEditor() {
     const tbody = document.getElementById('dbGridBody');
     if (!tbody) return;
     
     let searchQuery = (document.getElementById('dbSearchInput') ? document.getElementById('dbSearchInput').value.toLowerCase().trim() : '');
     let mfrFilter = (document.getElementById('dbMfrFilter') ? document.getElementById('dbMfrFilter').value : 'ALL');
-    
-    // NEW: Check the toggle state
     let needsPriceFilter = document.getElementById('chkNeedsPrice') ? document.getElementById('chkNeedsPrice').checked : false;
 
     let mfrDropdown = document.getElementById('dbMfrFilter');
@@ -244,58 +242,24 @@ const DatabaseManager = {
       });
     }
 
-    let dbCopy = this.db.map(i => ({ 
-        ...i, 
-        category: i.category || '', 
-        cost: i.cost || '$0.00',
-        status: i.status ? i.status.toUpperCase() : 'ACTIVE' 
-      }))
-      .filter(i => {
+    let dbCopy = this.db.filter(i => {
         let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
         let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;
-        
-        // CORRECTION: Filter out items if they have both a valid price AND a valid cost
-        let matchesPrice = needsPriceFilter ? 
-          (!i.price || i.price === '$0.00' || i.price === '0' || !i.cost || i.cost === '$0.00' || i.cost === '0') 
-          : true;
-        
+        let matchesPrice = needsPriceFilter ? (!i.price || i.price === '$0.00' || i.price === '0' || !i.cost || i.cost === '$0.00' || i.cost === '0') : true;
         return matchesSearch && matchesMfr && matchesPrice;
       })
       .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     
     let html = '';
-    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
-
     dbCopy.forEach((item, idx) => {
-      // SECURITY: Restrict both Price and Cost editing to Admin accounts (Jessica & Thomas)
-      let priceInputHtml = isAdmin 
-        ? `<input type="text" id="grid_price_${idx}" value="${item.price || '$0.00'}" style="width:75px; padding:4px;">` 
-        : `<input type="text" id="grid_price_${idx}" value="${item.price || '$0.00'}" style="width:75px; padding:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to edit pricing.">`;
-
-      let costInputHtml = isAdmin 
-        ? `<input type="text" id="grid_cost_${idx}" value="${item.cost || '$0.00'}" style="width:75px; padding:4px;">` 
-        : `<input type="text" id="grid_cost_${idx}" value="***" style="width:75px; padding:4px; background-color:#f5f5f5; color:#999; text-align:center;" readonly title="Restricted Admin Data">`;
-
+      let safeRef = String(item.ref || item.sku || '').replace(/"/g, '&quot;');
       html += `
-        <tr style="border-bottom: 1px solid #eee;">
-          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_mfr_${idx}" value="${item.mfr || ''}" style="width:90px; padding:4px;"></td>
-          <td style="padding:4px; font-weight:bold; vertical-align:top;">${item.ref || item.sku}</td>
-          <td style="padding:4px; vertical-align:top;">
-            <textarea id="grid_desc_${idx}" style="width:100%; padding:4px; resize:vertical; min-height:40px; font-family:inherit; font-size:0.85rem; line-height:1.2;">${item.desc || ''}</textarea>
-          </td>
-          <td style="padding:4px; vertical-align:top;"><input type="text" id="grid_cat_${idx}" value="${item.category || ''}" placeholder="Category" style="width:90px; padding:4px;"></td>
-          
-          <td style="padding:4px; vertical-align:top;">
-            <select id="grid_status_${idx}" style="padding:4px; width:100px; font-weight:bold; color:${item.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">
-              <option value="ACTIVE" ${item.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
-              <option value="INACTIVE" ${item.status !== 'ACTIVE' ? 'selected' : ''}>INACTIVE</option>
-            </select>
-          </td>
-
-          <td style="padding:4px; vertical-align:top;">${priceInputHtml}</td>
-          <td style="padding:4px; vertical-align:top;">
-             ${costInputHtml}
-             <input type="hidden" id="grid_ref_${idx}" value="${item.ref || item.sku}">
+        <tr style="border-bottom: 1px solid #eee; background-color: ${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
+          <td style="padding:10px; color:#555;">${item.mfr || '--'}</td>
+          <td style="padding:10px; font-weight:bold; color:#00796b;">${item.ref || item.sku}</td>
+          <td style="padding:10px; font-size:0.85rem; color:#333;">${item.desc || '--'}</td>
+          <td style="padding:10px; text-align:center;">
+            <button class="btn-small btn-auto" style="background-color:#00796b; color:#fff; padding:6px 12px;" onclick="DatabaseManager.openEditModal('${safeRef}')">✏️ Edit Details</button>
           </td>
         </tr>
       `;
@@ -303,52 +267,126 @@ const DatabaseManager = {
     tbody.innerHTML = html;
   },
 
+  openEditModal(refVal) {
+    let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === refVal.toUpperCase());
+    if (!dbItem) return;
+
+    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
+    
+    let priceInputHtml = isAdmin 
+      ? `<input type="text" id="modalPrice" value="${dbItem.price || '$0.00'}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">` 
+      : `<input type="text" id="modalPrice" value="${dbItem.price || '$0.00'}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to edit pricing.">`;
+
+    let costInputHtml = isAdmin 
+      ? `<input type="text" id="modalCost" value="${dbItem.cost || '$0.00'}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">` 
+      : `<input type="text" id="modalCost" value="***" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#999;" readonly title="Restricted Admin Data">`;
+
+    let modal = document.createElement('div');
+    modal.id = 'itemEditModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #00796b; padding-bottom:8px; margin-bottom:15px;">
+          <h3 style="margin:0; color:#00796b;">✏️ Edit Item Details</h3>
+          <button onclick="document.getElementById('itemEditModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div style="margin-bottom:10px;">
+          <label style="font-weight:bold; font-size:0.85rem; color:#555;">REF / SKU (Read-Only)</label>
+          <input type="text" id="modalRef" value="${dbItem.ref || dbItem.sku}" readonly style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background:#f0f0f0; font-weight:bold; color:#00796b;">
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="font-weight:bold; font-size:0.85rem; color:#555;">Manufacturer</label>
+          <input type="text" id="modalMfr" value="${dbItem.mfr || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="font-weight:bold; font-size:0.85rem; color:#555;">Description</label>
+          <textarea id="modalDesc" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; resize:vertical; min-height:60px;">${dbItem.desc || ''}</textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <div style="flex:1;">
+            <label style="font-weight:bold; font-size:0.85rem; color:#555;">Category</label>
+            <input type="text" id="modalCat" value="${dbItem.category || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+          </div>
+          <div style="flex:1;">
+            <label style="font-weight:bold; font-size:0.85rem; color:#555;">Status</label>
+            <select id="modalStatus" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:${dbItem.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">
+              <option value="ACTIVE" ${dbItem.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+              <option value="INACTIVE" ${dbItem.status !== 'ACTIVE' ? 'selected' : ''}>INACTIVE</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;">
+          <div style="flex:1;">
+            <label style="font-weight:bold; font-size:0.85rem; color:#555;">Selling Price</label>
+            ${priceInputHtml}
+          </div>
+          <div style="flex:1;">
+            <label style="font-weight:bold; font-size:0.85rem; color:#555;">Unit Cost</label>
+            ${costInputHtml}
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+          <button onclick="document.getElementById('itemEditModal').remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button onclick="DatabaseManager.saveModalEdits()" style="flex:1; background:#00796b; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">💾 Apply Changes</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  saveModalEdits() {
+    let ref = document.getElementById('modalRef').value;
+    let mfr = document.getElementById('modalMfr').value.trim();
+    let desc = document.getElementById('modalDesc').value.trim();
+    let cat = document.getElementById('modalCat').value.trim();
+    let status = document.getElementById('modalStatus').value;
+    let price = document.getElementById('modalPrice').value.trim();
+    let costEl = document.getElementById('modalCost');
+    
+    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
+    let cost = (isAdmin && costEl) ? costEl.value.trim() : null;
+
+    let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+    if (dbItem) {
+      let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
+      
+      if (changed) {
+        dbItem.mfr = mfr;
+        dbItem.desc = desc;
+        dbItem.category = cat;
+        dbItem.status = status;
+        if (isAdmin) {
+          dbItem.price = price;
+          if (cost !== null) dbItem.cost = cost;
+        }
+
+        // Add to pending updates so it pushes to the cloud later
+        let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
+        let existingUpd = pendingUpd.find(u => u.ref === ref);
+        if (!existingUpd) {
+          pendingUpd.push({ ref: ref, timestamp: Date.now() });
+          localStorage.setItem('asp_pending_updates', JSON.stringify(pendingUpd));
+        }
+
+        localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
+        UIManager.showCustomAlert("Item Updated", `✅ ${ref} has been updated locally.\n\nClick "Upload Pending Sessions" later to push these changes to the cloud.`);
+        this.renderDbGridEditor(); // Refresh the grid visually
+      }
+    }
+    document.getElementById('itemEditModal').remove();
+  },
+
   backupFullDatabase() {
     let outJSON = { vendors: this.vendors, items: this.db };
     UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `ASP_Database_Backup_${Date.now()}.json`, 'application/json');
-  },
-
-  exportGridChanges() {
-    const tbody = document.getElementById('dbGridBody');
-    let rows = tbody.querySelectorAll('tr');
-    let updatedCount = 0;
-    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
-
-    rows.forEach((row, idx) => {
-      let ref = document.getElementById(`grid_ref_${idx}`).value;
-      let mfr = document.getElementById(`grid_mfr_${idx}`).value.trim();
-      let desc = document.getElementById(`grid_desc_${idx}`).value.trim();
-      let cat = document.getElementById(`grid_cat_${idx}`).value.trim();
-      let status = document.getElementById(`grid_status_${idx}`).value; // NEW
-      let price = document.getElementById(`grid_price_${idx}`).value.trim();
-      let costEl = document.getElementById(`grid_cost_${idx}`);
-      let cost = (isAdmin && costEl) ? costEl.value.trim() : null;
-
-      let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
-      if (dbItem) {
-        let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
-        if (changed) {
-          dbItem.mfr = mfr;
-          dbItem.desc = desc;
-          dbItem.category = cat;
-          dbItem.status = status; // NEW
-          if (isAdmin) {
-            dbItem.price = price;
-            if (cost !== null) dbItem.cost = cost;
-          }
-          updatedCount++;
-        }
-      }
-    });
-
-    if (updatedCount > 0) {
-      localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
-      let outJSON = { vendors: this.vendors, items: this.db };
-      UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `database_master_export_${Date.now()}.json`, 'application/json');
-    } else {
-      alert("No changes detected in the grid to export.");
-    }
-  },
+  },  
 
   runMasterLookup() {
     let curRef = document.getElementById('refInput').value.trim().toUpperCase();

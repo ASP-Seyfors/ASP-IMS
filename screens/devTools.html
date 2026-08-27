@@ -58,21 +58,38 @@
     <h4 style="margin: 0 0 10px 0; color: #0277bd;">⚙️ Admin Utilities</h4>
     <div style="display: flex; flex-direction: column; gap: 8px;">
       <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()">☁️ QuickBooks Online Sync</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Export Missing Price/Cost Report</button>
       <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)">🧹 Offload & Purge Local History</button>
       <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()">🗑️ Force Update / Clear Cache</button>
     </div>
   </div>
 
-  <!-- E-Commerce & Master Data Exports (Moved from Reports) -->
+  <!-- E-Commerce & Master Data Exports -->
   <div style="background: #e8eaf6; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #01579b;">🛒 E-Commerce & Master Exports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveCreates()">➕ Thrive Bulk Create</button>
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveVariants()">🏷️ Thrive Edit Variants</button>
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportThriveProducts()">📝 Thrive Edit Products</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportShopifyProducts()">🛍️ Shopify Products</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportShopifyInventory()">📦 Shopify Inventory</button>
-      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff;" onclick="AuditManager.exportUpdatedDatabaseJSON()">💾 Export Updated Database.json</button>
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', true)">➕ Thrive New Items Export</button>
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', false)">🏷️ Thrive Updates Export</button>
+      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', true)">🛍️ Shopify New Items Export</button>
+      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', false)">📦 Shopify Updates Export</button>
+      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.exportUpdatedDatabaseJSON()">💾 Export Updated Database.json</button>
+    </div>
+  </div>
+
+  <!-- Traceability Generation -->
+  <div style="background: #e8f5e9; border: 1px solid #2e7d32; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">📊 Generate Traceability Report</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a timeframe to pull a comprehensive lifecycle audit from the live Cloud Ledger.</p>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <label style="font-weight:bold; font-size:0.85rem;">Timeframe:</label>
+      <select id="traceTimeframe" style="flex:1; padding:6px; border:1px solid #2e7d32; border-radius:4px;">
+        <option value="24h">Last 24 Hours</option>
+        <option value="7d" selected>Last 7 Days (End of Week)</option>
+        <option value="30d">Last 30 Days (Monthly)</option>
+        <option value="90d">Last 90 Days (Quarterly)</option>
+        <option value="all">Year-to-Date / All Time</option>
+      </select>
+      <button id="btnGenerateTrace" class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; margin:0; padding: 6px 12px;" onclick="AuditManager.fetchAndCompileTraceability()">📍 Generate</button>
     </div>
   </div>
 
