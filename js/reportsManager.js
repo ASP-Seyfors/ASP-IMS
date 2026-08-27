@@ -120,7 +120,7 @@ const ReportsManager = {
 
     <div class="header-container">
       <div class="brand-section">
-        <img src="https://raw.githubusercontent.com/ASP-Seyfors/ASP-Scanner/main/ASP_Icon_192.png" class="logo-img" alt="ASP Logo">
+        <img src="https://raw.githubusercontent.com/ASP-Seyfors/ASP-IMS/main/ASP_Icon_192.png" class="logo-img" alt="ASP Logo">
         <div>
           <div class="company-name">Allied Surgical Products</div>
           <h2>${title}</h2>
