@@ -727,8 +727,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
             indicator.style.display = 'none'; // Hide badge once synced
         } else {
             // Unsafe to sync automatically. Show the warning badge to the user.
-            indicator.textContent = "🔴 Cloud Updates Available";
+            indicator.innerHTML = '<i data-lucide="circle-alert" style="width:14px; height:14px; vertical-align:text-bottom;"></i> Cloud Updates Available';
             indicator.style.display = 'inline-block';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
       }
     } catch (err) {

@@ -259,7 +259,9 @@ const DatabaseManager = {
           <td style="padding:10px; font-weight:bold; color:#00796b;">${item.ref || item.sku}</td>
           <td style="padding:10px; font-size:0.85rem; color:#333;">${item.desc || '--'}</td>
           <td style="padding:10px; text-align:center;">
-            <button class="btn-small btn-auto" style="background-color:#00796b; color:#fff; padding:6px 12px;" onclick="DatabaseManager.openEditModal('${safeRef}')">✏️ Edit Details</button>
+            <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; margin-right: 5px; display:flex; align-items:center; gap:6px;" onclick="DatabaseManager.downloadCloudDatabase(event)">
+              <i data-lucide="cloud-download" style="width:16px; height:16px;"></i> Sync Cloud DB
+            </button>
           </td>
         </tr>
       `;
@@ -342,11 +344,14 @@ const DatabaseManager = {
 
         <div style="display:flex; justify-content:space-between; gap:10px;">
           <button onclick="document.getElementById('itemEditModal').remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="DatabaseManager.saveModalEdits()" style="flex:1; background:#00796b; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">💾 Apply Changes</button>
+          <button onclick="DatabaseManager.saveModalEdits()" style="flex:1; background:#00796b; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+            <i data-lucide="save" style="width:16px; height:16px;"></i> Apply Changes
+          </button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   saveModalEdits() {

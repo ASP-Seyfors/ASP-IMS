@@ -53,7 +53,10 @@ const ReportsManager = {
 
         <div style="display:flex; justify-content:flex-end; gap:10px;">
           <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="ReportsManager.generateInventoryReport('in_stock')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Generate Report</button>
+          
+          <button onclick="ReportsManager.generateInventoryReport('in_stock')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px;">
+             <i data-lucide="printer" style="width:16px; height:16px;"></i> Generate Report
+          </button>
         </div>
       </div>
     `;

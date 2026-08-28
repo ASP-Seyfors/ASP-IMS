@@ -971,7 +971,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         totalScannedExp += Math.min(sQty, eQty);
         
         let color = sQty >= eQty ? '#2e7d32' : (sQty > 0 ? '#f57f17' : '#555');
-        let icon = sQty >= eQty ? '✅' : '⏳';
+        let icon = sQty >= eQty 
+            ? '<i data-lucide="check-circle-2" style="width:16px; height:16px; vertical-align:text-bottom;"></i>' 
+            : '<i data-lucide="hourglass" style="width:16px; height:16px; vertical-align:text-bottom;"></i>';
         
         expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:8px 4px; align-items:center;">
           <div><span style="font-weight:bold; color:${color};">${icon} ${ref}</span>${shelfStr}</div>
@@ -1002,6 +1004,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     if (document.getElementById('liveManifestList')) {
       document.getElementById('liveManifestList').innerHTML = expHtml;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
   },
 
