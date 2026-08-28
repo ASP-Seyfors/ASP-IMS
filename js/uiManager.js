@@ -173,7 +173,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
             contentHtml += `
                 <details style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:4px; margin-bottom:8px; padding:6px;">
                     <summary style="cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; outline:none;">
-                        <span style="color:#0277bd;">📁 ${cust}</span>
+                        <span style="color:#0277bd; display:flex; align-items:center; gap:6px;"><i data-lucide="folder" style="width:16px; height:16px;"></i> ${cust}</span>
                         <span class="badge-info" style="background:#f57f17; color:#fff;">${totalItems} Total Units</span>
                     </summary>
                     <div style="padding-top:8px; margin-top:6px; border-top:2px solid #0277bd;">
@@ -213,6 +213,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     `;
     
     document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   openDamagedBinViewerModal() {
@@ -781,9 +782,8 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
   sendBugReport() {
     const email = "thomas@alliedsurgicalproducts.com";
-    const subject = "ASP IMS Bug Report (v4.1.6)";
+    const subject = "ASP IMS Bug Report";
     
-    // Dynamically grab the active user's name
     let user = "Unknown Operator";
     if (typeof AuthManager !== 'undefined' && AuthManager.currentUser) {
       user = AuthManager.currentUser.name;
@@ -793,7 +793,14 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     const body = `User: ${user}\nDate: ${date}\n\nBug Description:\n`;
     
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoUrl;
+    
+    // PWAs bypass standard location redirects. Simulated click required.
+    let a = document.createElement('a');
+    a.href = mailtoUrl;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   },
 
   initDebugConsole() {

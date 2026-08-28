@@ -153,7 +153,7 @@
     <p style="font-size:0.85rem; color:#555;"><strong>Full Stocktake:</strong> A formal session to document and overwrite all current inventory quantities.<br><br><strong>Selection Stocktake:</strong> A lightweight session to gather a list of items or update specific REFs without clearing the rest of the database.</p>
     <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
       <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Start Full Stocktake</button>
-      <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff;" onclick="SessionManager.startStocktakeSession('Selection')">🎯 Start Selection Stocktake</button>
+      <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="SessionManager.startStocktakeSession('Selection')"><i data-lucide="target" style="width:16px; height:16px;"></i> Start Selection Stocktake</button>
       <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
     </div>
   </div>
