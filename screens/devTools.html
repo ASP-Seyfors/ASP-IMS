@@ -22,8 +22,8 @@
 <!-- SCREEN 11: DEVELOPER TOOLS -->
 <div id="screenDevTools" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #c62828; padding-bottom: 6px; margin-bottom: 15px;">
-    <h2 style="border:none; margin:0; padding:0; color: #c62828;">🛠️ Developer Tools</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDevTools()">🔙 Return</button>
+    <h2 style="border:none; margin:0; padding:0; color: #c62828;"><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</h2>
+    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDevTools()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
 
   <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px;">Restricted administrative and debugging utilities. Do not run without supervision.</p>
@@ -39,7 +39,7 @@
 
   <!-- Session Reversal Tool -->
   <div style="background: #fce4ec; border: 1px solid #d81b60; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #d81b60;">🔄 Undo / Reverse Session</h4>
+    <h4 style="margin: 0 0 10px 0; color: #d81b60;"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Undo / Reverse Session</h4>
     <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
     <div style="display: flex; gap: 8px;">
       <select id="reversalSessionSelect" style="flex: 2; padding: 8px; border: 1px solid #d81b60; border-radius: 4px; font-weight: bold;"></select>
@@ -49,36 +49,36 @@
 
   <!-- System Restore -->
   <div style="background: #fff3e0; border: 1px solid #e65100; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #e65100;">⚠️ Event Replay & Restore</h4>
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="AuditManager.openRestoreModal()">⏪ Execute System Restore</button>
+    <h4 style="margin: 0 0 10px 0; color: #e65100;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Event Replay & Restore</h4>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="AuditManager.openRestoreModal()"><i data-lucide="rewind" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Execute System Restore</button>
   </div>
 
   <!-- Admin Utilities (Moved from Settings) -->
   <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #0277bd;">⚙️ Admin Utilities</h4>
+    <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Admin Utilities</h4>
     <div style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()">☁️ QuickBooks Online Sync</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')">🏷️ Export Missing Price/Cost Report</button>
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)">🧹 Offload & Purge Local History</button>
-      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()">🗑️ Force Update / Clear Cache</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>QuickBooks Online Sync</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Offload & Purge Local History</button>
+      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()"><i data-lucide="trash-2" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Force Update / Clear Cache</button>
     </div>
   </div>
 
   <!-- E-Commerce & Master Data Exports -->
   <div style="background: #e8eaf6; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #01579b;">🛒 E-Commerce & Master Exports</h4>
+    <h4 style="margin: 0 0 10px 0; color: #01579b;"><i data-lucide="shopping-cart" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>E-Commerce & Master Exports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', true)">➕ Thrive New Items Export</button>
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', false)">🏷️ Thrive Updates Export</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', true)">🛍️ Shopify New Items Export</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', false)">📦 Shopify Updates Export</button>
-      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.exportUpdatedDatabaseJSON()">💾 Export Updated Database.json</button>
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', true)"><i data-lucide="plus" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Thrive New Items Export</button>
+      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', false)"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Thrive Updates Export</button>
+      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', true)"><i data-lucide="shopping-bag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shopify New Items Export</button>
+      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', false)"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shopify Updates Export</button>
+      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.exportUpdatedDatabaseJSON()"><i data-lucide="save" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Updated Database.json</button>
     </div>
   </div>
 
   <!-- Traceability Generation -->
   <div style="background: #e8f5e9; border: 1px solid #2e7d32; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">📊 Generate Traceability Report</h4>
+    <h4 style="margin: 0 0 10px 0; color: #2e7d32;"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Generate Traceability Report</h4>
     <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a timeframe to pull a comprehensive lifecycle audit from the live Cloud Ledger.</p>
     <div style="display: flex; gap: 8px; align-items: center;">
       <label style="font-weight:bold; font-size:0.85rem;">Timeframe:</label>
@@ -89,13 +89,13 @@
         <option value="90d">Last 90 Days (Quarterly)</option>
         <option value="all">Year-to-Date / All Time</option>
       </select>
-      <button id="btnGenerateTrace" class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; margin:0; padding: 6px 12px;" onclick="AuditManager.fetchAndCompileTraceability()">📍 Generate</button>
+      <button id="btnGenerateTrace" class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; margin:0; padding: 6px 12px;" onclick="AuditManager.fetchAndCompileTraceability()"><i data-lucide="map-pin" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Generate</button>
     </div>
   </div>
 
   <!-- Floating Debug Console Toggle -->
   <div style="background: #e8f5e9; border: 1px solid #2e7d32; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">🐞 Live Debug Console</h4>
+    <h4 style="margin: 0 0 10px 0; color: #2e7d32;"><i data-lucide="bug" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Live Debug Console</h4>
     <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Open a floating console window to monitor background execution while using the app.</p>
     <button class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="UIManager.toggleDebugConsole()">Toggle Floating Console</button>
   </div>

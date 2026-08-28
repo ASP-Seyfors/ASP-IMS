@@ -952,19 +952,30 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let totalScannedExp = 0;
     let totalUnexpected = 0;
 
-    Object.keys(expectedMap).sort().forEach(ref => {
+    // Sort manifest items by Shelf Location first, then by REF
+    Object.keys(expectedMap).sort((a, b) => {
+        let dbItemA = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === a) || {};
+        let dbItemB = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === b) || {};
+        let shelfA = dbItemA.shelf || 'ZZZ-UNASSIGNED';
+        let shelfB = dbItemB.shelf || 'ZZZ-UNASSIGNED';
+        return shelfA.localeCompare(shelfB) || a.localeCompare(b);
+    }).forEach(ref => {
         let eQty = expectedMap[ref];
         let sQty = scannedMap[ref] || 0;
         
+        let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref) || {};
+        let shelfStr = (dbMatch.shelf && dbMatch.shelf !== 'ZZZ-UNASSIGNED') ? 
+            `<span style="font-size:0.7rem; background:#e0e0e0; color:#333; padding:2px 6px; border-radius:4px; margin-left:8px;">📍 ${dbMatch.shelf}</span>` : '';
+
         totalExpected += eQty;
         totalScannedExp += Math.min(sQty, eQty);
         
         let color = sQty >= eQty ? '#2e7d32' : (sQty > 0 ? '#f57f17' : '#555');
         let icon = sQty >= eQty ? '✅' : '⏳';
         
-        expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px;">
-          <span style="font-weight:bold; color:${color};">${icon} ${ref}</span>
-          <span style="color:${color}; font-weight:bold;">${sQty} / ${eQty}</span>
+        expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:8px 4px; align-items:center;">
+          <div><span style="font-weight:bold; color:${color};">${icon} ${ref}</span>${shelfStr}</div>
+          <span style="color:${color}; font-weight:bold; font-size:1.1rem;">${sQty} / ${eQty}</span>
         </div>`;
     });
 

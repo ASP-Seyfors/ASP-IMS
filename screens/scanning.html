@@ -46,9 +46,9 @@
   <div class="card">
     <div class="raw-section">
       <div class="flex-between" style="margin-bottom: 8px;">
-        <button class="btn-small btn-clear btn-auto" onclick="resetScanLinesAndFields()" title="Clear all raw barcode inputs below.">🧹 Clear Fields</button>
-        <button class="btn-small btn-cam btn-auto" id="btnToggleCam" onclick="toggleCameraScanner()" title="Launch device camera to scan barcodes.">📷 Open Camera</button>
-        <!-- UPLOAD COMMENTED OUT <button class="btn-small btn-upload" onclick="...">📁 Upload Image</button> -->
+        <button class="btn-small btn-clear btn-auto" onclick="resetScanLinesAndFields()" title="Clear all raw barcode inputs below."><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Clear Fields</button>
+        <button class="btn-small btn-cam btn-auto" id="btnToggleCam" onclick="toggleCameraScanner()" title="Launch device camera to scan barcodes."><i data-lucide="camera" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Open Camera</button>
+        <!-- UPLOAD COMMENTED OUT <button class="btn-small btn-upload" onclick="..."><i data-lucide="folder" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Upload Image</button> -->
       </div>
       <h2 style="margin-top: 10px;">Raw Barcode Scans</h2>
 
@@ -57,7 +57,7 @@
           <span id="tagGtin" class="status-tag">GTIN</span>
           <span id="tagLot" class="status-tag">LOT</span>
           <span id="tagExp" class="status-tag">EXP</span>
-          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()" title="Force a manual snapshot if auto-focus is struggling.">📸 Snap</button>
+          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()" title="Force a manual snapshot if auto-focus is struggling."><i data-lucide="camera" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Snap</button>
         </div>
         <div id="cameraViewfinder"></div>
       </div>
@@ -80,7 +80,7 @@
       </div>
 
       <div style="text-align: center; margin-top: 8px;">
-        <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()" title="Add another raw barcode input field.">+ Add Barcode Line</button>
+        <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()" title="Add another raw barcode input field."><i data-lucide="plus" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Add Barcode Line</button>
       </div>
     </div>
   </div>
@@ -164,7 +164,7 @@
     <!-- Item Note Checkbox moved to bottom -->
     <div style="text-align: left; width: 100%; margin-bottom: 10px; margin-top: 10px;">
       <label style="font-size:0.85rem; font-weight:bold; color:#d32f2f; cursor:pointer;" title="Attach a specific note or flag damage for this item.">
-        <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()"> ⚠️ Add Item Issue / Note
+        <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()"> <i data-lucide="triangle-alert" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Add Item Issue / Note
       </label>
     </div>
     <div class="form-row" id="rowItemNote" style="display:none;">
@@ -184,7 +184,7 @@
   <!-- NEW: PINNED MANIFEST TRACKER -->
   <div id="liveManifestTracker" class="card" style="display:none; margin-top: 12px; background-color: #f8f9fa; border-color: #0277bd;">
     <div style="font-size: 0.9rem; font-weight: bold; color: #0277bd; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px;" title="Items expected to be scanned in this session.">
-      📋 Expected Items Tracker
+      <i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Expected Items Tracker
     </div>
     <div id="liveManifestList" style="max-height: 180px; overflow-y: auto; font-size: 0.85rem;">
       <!-- Populated via JS -->

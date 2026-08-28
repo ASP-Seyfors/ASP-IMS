@@ -27,9 +27,9 @@
       ASP Inventory Management System <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
     </h2>
     <div style="display: flex; gap: 10px; align-items: center;">
-      <span id="syncIndicator" style="display:none; color:#c62828; font-weight:bold; font-size:0.85rem;" title="You have pending offline data. Click Sync System to upload.">🔴 Updates Pending</span>
+      <span id="syncIndicator" style="display:none; color:#c62828; font-weight:bold; font-size:0.85rem;" title="You have pending offline data. Click Sync System to upload."><i data-lucide="circle-alert" style="width:14px; height:14px; vertical-align:text-bottom; color:red; margin-right:4px;"></i>Updates Pending</span>
       
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 4px 10px;" onclick="masterSystemSync(event)" title="Download the latest cloud database and upload local history.">🔄 Sync System</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 4px 10px;" onclick="masterSystemSync(event)" title="Download the latest cloud database and upload local history."><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Sync System</button>
       <label style="font-size: 0.85rem; font-weight: bold; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="Reveal enterprise tools and order pre-loading options.">
         <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> Advanced
       </label>
@@ -45,8 +45,8 @@
 
   <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 15px; text-align: center; display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-      <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;">☁️ Shipments & Orders Feed</span>
-      <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="SessionManager.triggerQboSync(event)" title="Pull the latest open invoices from QuickBooks Online.">☁️ Fetch Orders</button>
+      <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shipments & Orders Feed</span>
+      <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="SessionManager.triggerQboSync(event)" title="Pull the latest open invoices from QuickBooks Online."><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Fetch Orders</button>
     </div>
     <select id="stagedOrdersSelect" style="width: 100%; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)" title="Select an order to pre-load its items into a manifest.">
       <option value="">-- Select Staged Order --</option>
@@ -57,10 +57,10 @@
     <div class="form-label">Session Type:</div>
     <div class="input-wrapper" style="justify-content: space-around;">
       <label style="cursor:pointer; font-weight:bold;" title="Use for items arriving at the warehouse.">
-        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> 📦 Shipment (Incoming)
+        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> <i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shipment (Incoming)
       </label>
       <label style="cursor:pointer; font-weight:bold;" title="Use for items leaving the warehouse or being set aside.">
-        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> 🛒 Order (Outgoing)
+        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> <i data-lucide="shopping-cart" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Order (Outgoing)
       </label>
     </div>
   </div>
@@ -105,27 +105,27 @@
     <div class="form-label">Process:</div>
     <div class="input-wrapper">
       <select id="workflowTypeSelect" title="Select whether to reserve items or physically pack them for shipping.">
-        <option value="Reserving">🚩 Picking & Reserving</option>
-        <option value="Picking & Packing">🖐️ Picking & Packing</option>
+        <option value="Reserving"><i data-lucide="flag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Picking & Reserving</option>
+        <option value="Picking & Packing"><i data-lucide="hand" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Picking & Packing</option>
       </select>
     </div>
   </div>
 
   <!-- Start Button -->
    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px auto; width: 100%; max-width: 420px;">
-    <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #ffffff; color: #000000; border: 1px solid #000000; padding: 10px 14px !important; margin: 0; font-weight: bold; white-space: nowrap;" onclick="UIManager.openQuickLookupModal()" title="Quickly check item prices, descriptions, and stock levels without starting a session.">🔍 Item Lookup</button>
+    <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #ffffff; color: #000000; border: 1px solid #000000; padding: 10px 14px !important; margin: 0; font-weight: bold; white-space: nowrap;" onclick="UIManager.openQuickLookupModal()" title="Quickly check item prices, descriptions, and stock levels without starting a session.">Item Lookup</button>
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; margin: 0; flex: 1;" onclick="startSession()" title="Begin scanning items for this session.">Start Scanning Session</button>
   </div>
 
   <!-- 3. Enterprise Data Hub -->
   <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
-    <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;">📈 Enterprise Data Hub</h3>
+    <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Enterprise Data Hub</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()" title="Generate inventory levels, expiration warnings, and Thrive exports.">📊 Reports & Analytics</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()" title="Manually edit item descriptions, categories, and prices.">🗄️ Database Editor</button>
-      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()" title="Audit and correct physical warehouse inventory counts.">📋 Stocktake</button>
-      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()" title="Trace lot numbers and review historical session logs.">📦 Traceability</button>
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; grid-column: 1 / -1;" onclick="UIManager.openBinViewerModal()" title="View all items currently sitting in physical customer reserve bins.">🗃️ Customer Bins</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()" title="Generate inventory levels, expiration warnings, and Thrive exports."><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Reports & Analytics</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()" title="Manually edit item descriptions, categories, and prices."><i data-lucide="database" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Database Editor</button>
+      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()" title="Audit and correct physical warehouse inventory counts."><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Stocktake</button>
+      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()" title="Trace lot numbers and review historical session logs."><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Traceability</button>
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; grid-column: 1 / -1;" onclick="UIManager.openBinViewerModal()" title="View all items currently sitting in physical customer reserve bins."><i data-lucide="archive" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Bins</button>
     </div>
   </div>
 
@@ -134,14 +134,14 @@
     <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()" title="View, restore, or upload past scanning sessions.">Session Archive</button>
     <div style="display: flex; gap: 8px;">
       <!-- FIX: Replaced anchor tag with a standard button calling our JS function -->
-      <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="UIManager.sendBugReport()" title="Submit a bug report directly to IT Operations.">🐛</button>
-      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools.">⚙️ Settings</button>
+      <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="UIManager.sendBugReport()" title="Submit a bug report directly to IT Operations."><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle;"></i></button>
+      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools."><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Settings</button>
     </div>
   </div>
   
   <!-- NEW: Developer Tools Button (Hidden by default) -->
   <div id="devToolsContainer" style="display: none; justify-content: center; margin-top: 15px;">
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; padding: 8px 16px; font-size: 0.85rem;" onclick="UIManager.openDevTools()" title="Access restricted administrative and debugging utilities.">🛠️ Developer Tools</button>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; padding: 8px 16px; font-size: 0.85rem;" onclick="UIManager.openDevTools()" title="Access restricted administrative and debugging utilities."><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</button>
   </div>
   
 </div>
@@ -149,10 +149,10 @@
 <!-- STOCKTAKE MODAL -->
 <div id="stocktakeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
   <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
-    <h3 style="margin-top:0; color:#7b1fa2; border-bottom:2px solid #7b1fa2; padding-bottom:8px;">📋 Select Stocktake Mode</h3>
+    <h3 style="margin-top:0; color:#7b1fa2; border-bottom:2px solid #7b1fa2; padding-bottom:8px;"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Select Stocktake Mode</h3>
     <p style="font-size:0.85rem; color:#555;"><strong>Full Stocktake:</strong> A formal session to document and overwrite all current inventory quantities.<br><br><strong>Selection Stocktake:</strong> A lightweight session to gather a list of items or update specific REFs without clearing the rest of the database.</p>
     <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-      <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')">📦 Start Full Stocktake</button>
+      <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Start Full Stocktake</button>
       <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff;" onclick="SessionManager.startStocktakeSession('Selection')">🎯 Start Selection Stocktake</button>
       <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
     </div>

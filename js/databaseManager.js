@@ -308,10 +308,18 @@ const DatabaseManager = {
         </div>
 
         <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <div style="display:flex; gap:10px; margin-bottom:10px;">
           <div style="flex:1;">
             <label style="font-weight:bold; font-size:0.85rem; color:#555;">Category</label>
             <input type="text" id="modalCat" value="${dbItem.category || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
           </div>
+          <div style="flex:1;">
+            <label style="font-weight:bold; font-size:0.85rem; color:#555;">Shelf Location</label>
+            <input type="text" id="modalShelf" value="${dbItem.shelf || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; text-transform:uppercase;" placeholder="e.g. A-14">
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
           <div style="flex:1;">
             <label style="font-weight:bold; font-size:0.85rem; color:#555;">Status</label>
             <select id="modalStatus" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:${dbItem.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">
@@ -346,6 +354,7 @@ const DatabaseManager = {
     let mfr = document.getElementById('modalMfr').value.trim();
     let desc = document.getElementById('modalDesc').value.trim();
     let cat = document.getElementById('modalCat').value.trim();
+    let shelf = document.getElementById('modalShelf').value.trim().toUpperCase(); // NEW
     let status = document.getElementById('modalStatus').value;
     let price = document.getElementById('modalPrice').value.trim();
     let costEl = document.getElementById('modalCost');
@@ -357,10 +366,11 @@ const DatabaseManager = {
     if (dbItem) {
       let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
       
-      if (changed) {
+      if (changed || dbItem.shelf !== shelf) { // Updated to detect shelf changes
         dbItem.mfr = mfr;
         dbItem.desc = desc;
         dbItem.category = cat;
+        dbItem.shelf = shelf; // NEW
         dbItem.status = status;
         if (isAdmin) {
           dbItem.price = price;

@@ -32,7 +32,9 @@ const ReportsManager = {
     modal.innerHTML = `
       <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2e7d32; padding-bottom:8px; margin-bottom:15px;">
-          <h3 style="margin:0; color:#2e7d32;">📦 Full On-Hand Stock Options</h3>
+          <h3 style="margin:0; color:#2e7d32; display:flex; align-items:center; gap:8px;">
+            <i data-lucide="package" style="width:20px; height:20px;"></i> Full On-Hand Stock Options
+          </h3>
           <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         <div style="margin-bottom:15px; font-size:0.85rem; color:#555;">Select the columns you want to include in the PDF export:</div>
@@ -56,6 +58,11 @@ const ReportsManager = {
       </div>
     `;
     document.body.appendChild(modal);
+  
+    // NEW: Render the SVGs immediately after the modal is added to the screen
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   },
 
   generateInventoryReport(type) {

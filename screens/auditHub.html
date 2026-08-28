@@ -21,7 +21,7 @@
 <div id="screenAuditHub" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
     <h2 style="border:none; margin:0; padding:0;">Traceability & Audit Tool</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="closeAuditHub()">🔙 Return</button>
+    <button class="btn-small btn-cancel btn-auto" onclick="closeAuditHub()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
   
   <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">
@@ -30,7 +30,7 @@
 
   <!-- LOT TRACEABILITY TOOL -->
   <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #0277bd;">🔎 Active Recall & Lot Traceability</h4>
+    <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="search" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Active Recall & Lot Traceability</h4>
     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
       <!-- 15a: Applied flex:1 to both elements and added btn-auto to the button -->
       <input type="text" id="lotSearchInput" placeholder="Scan or type Lot Number..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="this.value = this.value.toUpperCase();">
@@ -41,9 +41,9 @@
 
   <!-- DAMAGED INVENTORY HUB -->
   <div style="background: #ffebee; border: 1px solid #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
-    <h4 style="margin: 0 0 10px 0; color: #c62828;">⚠️ Damaged Inventory Hub</h4>
+    <h4 style="margin: 0 0 10px 0; color: #c62828;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Inventory Hub</h4>
     <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">View, manage, and export items currently quarantined as damaged.</p>
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; max-width: 350px; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()">📦 Damaged Items Bin</button>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; max-width: 350px; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Items Bin</button>
   </div>
 
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">
@@ -53,8 +53,8 @@
       <h4 style="margin: 0 0 8px 0; color: #0277bd;">Export Multi-Session Reports</h4>
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <select id="auditExportDropdown" style="flex: 2; padding: 8px; font-size: 0.85rem;">
-          <option value="pdf">🖨️ Export PDF Audit Report</option>
-          <option value="txt">📄 Export TXT Summary</option>
+          <option value="pdf"><i data-lucide="printer" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export PDF Audit Report</option>
+          <option value="txt"><i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export TXT Summary</option>
         </select>
         <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin: 0; padding: 8px 14px;" onclick="executeAuditExport()">Generate</button>
       </div>      

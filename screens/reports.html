@@ -20,17 +20,17 @@
 <div id="screenReports" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #7b1fa2; padding-bottom: 6px; margin-bottom: 15px;">
     <h2 style="border:none; margin:0; padding:0; color: #7b1fa2;">Reports & Analytics</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()">🔙 Return</button>
+    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
 
   <!-- General Inventory Reports -->
   <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')">📦 Export On-Hand Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')">🚫 Export Out of Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')">📋 Current RevMed Catalog</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')">📋 On-Hand Stock Not on RevMed</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export On-Hand Stock Report</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')"><i data-lucide="ban" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Out of Stock Report</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Current RevMed Catalog</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Not on RevMed</button>
     </div>
   </div>
 
@@ -44,7 +44,7 @@
         <option value="12">Expiring in next 12 Months</option>
         <option value="24">Expiring in next 24 Months</option>
       </select>
-      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateExpirationReport()">⚠️ Run Report</button>
+      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Run Report</button>
     </div>
   </div>
 
@@ -52,7 +52,7 @@
   <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
     <h4 style="margin: 0 0 10px 0; color: #0277bd; text-align: left;">End of Week Rollup Report</h4>
     <p style="font-size: 0.8rem; color: #555; margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
-    <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()">📊 Export Week Summary Report</button>
+    <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Week Summary Report</button>
   </div>
 
   <!-- Legacy Customer Reports -->
@@ -71,9 +71,9 @@
     </div>
 
     <div id="customerReportControls" style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()">📈 Customer Internal Sales</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()">📄 Customer Stock Flyer</button>
-      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="AuditManager.openCustomSalesFlyer()">✨ Custom Sales Flyer</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Internal Sales</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()"><i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Stock Flyer</button>
+      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="AuditManager.openCustomSalesFlyer()"><i data-lucide="sparkles" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Custom Sales Flyer</button>
     </div>
   </div>
 </div>

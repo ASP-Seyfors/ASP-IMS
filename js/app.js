@@ -141,6 +141,11 @@ window.onload = async () => {
       UIManager.checkForCloudUpdates();
     }
   }, 180000);
+
+  // Initialize Lucide SVG Icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
 };
 
 window.masterSystemSync = async (event) => {
