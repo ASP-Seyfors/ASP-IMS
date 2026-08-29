@@ -815,11 +815,18 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : "Unknown Operator";
     let isSandbox = document.getElementById('chkSandboxMode') ? document.getElementById('chkSandboxMode').checked : false;
     
+    // Dynamically grab the version from settings.html
+    let versionText = "Unknown";
+    let versionEl = document.getElementById('appVersionDisplay');
+    if (versionEl) {
+      versionText = versionEl.textContent.replace('App Version:', '').trim();
+    }
+    
     let payload = {
       action: "REPORT_BUG",
       payload: {
         userName: userName,
-        appVersion: "v4.2.5",
+        appVersion: versionText, // Now dynamically linked!
         sessionName: (typeof SessionManager !== 'undefined') ? SessionManager.currentSessionName : "None",
         workflowType: (typeof SessionManager !== 'undefined') ? SessionManager.currentWorkflowType : "None",
         description: desc,
