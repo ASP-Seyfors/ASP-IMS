@@ -69,6 +69,10 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
           console.log('Service Worker registered.');
+          
+          // Force the browser to aggressively check the server for a new sw.js
+          reg.update();
+          
         }).catch(err => console.warn('Service Worker registration skipped or delayed:', err));
         
         // Listen for the aggressive takeover from sw.js
