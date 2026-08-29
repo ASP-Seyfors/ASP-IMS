@@ -790,7 +790,18 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         <h3 style="margin:0 0 10px 0; color:#c62828; display:flex; align-items:center; gap:6px;"><i data-lucide="bug" style="width:20px; height:20px;"></i> Report a System Issue</h3>
         <p style="font-size:0.85rem; color:#555; margin-top:0;">Please describe the error or unexpected behavior below. Diagnostic data will be attached automatically.</p>
         
-        <textarea id="bugDescInput" rows="5" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; resize:vertical; font-family:inherit; font-size:0.9rem;" placeholder="What were you doing when the issue occurred?"></textarea>
+        <div style="margin-bottom:12px;">
+          <label style="font-weight:bold; font-size:0.85rem; color:#333; display:block; margin-bottom:4px;">Issue Category:</label>
+          <select id="bugCategorySelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:0.9rem;">
+            <option value="General Bug / App Error">🐞 General Bug / App Error</option>
+            <option value="Scanning / Barcode Issue">📦 Scanning / Barcode Issue</option>
+            <option value="Database Correction">🗄️ Database / Item Info Correction</option>
+            <option value="Feature Request">✨ Feature Request / Suggestion</option>
+            <option value="Other">❓ Other / Not Sure</option>
+          </select>
+        </div>
+
+        <textarea id="bugDescInput" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; resize:vertical; font-family:inherit; font-size:0.9rem;" placeholder="What were you doing when the issue occurred?"></textarea>
         
         <div style="display:flex; justify-content:space-between; gap:10px; margin-top:15px;">
           <button onclick="document.getElementById('bugReportModal').remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
@@ -808,6 +819,10 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       alert("Please provide a description of the issue.");
       return;
     }
+
+    // Grab the category and format it into the description payload
+    let category = document.getElementById('bugCategorySelect').value;
+    let formattedDesc = `[${category}]\n${desc}`;
     
     let btn = document.getElementById('btnSubmitBug');
     if (btn) { btn.textContent = "Sending..."; btn.disabled = true; }
@@ -815,7 +830,6 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : "Unknown Operator";
     let isSandbox = document.getElementById('chkSandboxMode') ? document.getElementById('chkSandboxMode').checked : false;
     
-    // Dynamically grab the version from settings.html
     let versionText = "Unknown";
     let versionEl = document.getElementById('appVersionDisplay');
     if (versionEl) {
@@ -826,10 +840,10 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       action: "REPORT_BUG",
       payload: {
         userName: userName,
-        appVersion: versionText, // Now dynamically linked!
+        appVersion: versionText,
         sessionName: (typeof SessionManager !== 'undefined') ? SessionManager.currentSessionName : "None",
         workflowType: (typeof SessionManager !== 'undefined') ? SessionManager.currentWorkflowType : "None",
-        description: desc,
+        description: formattedDesc,
         environment: isSandbox ? "Sandbox" : "Production"
       }
     };
