@@ -1952,29 +1952,66 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     let filtered = db.filter(item => {
       let flag = platform === 'Thrive' ? String(item.syncedThrive).toUpperCase() : String(item.syncedShopify).toUpperCase();
-      return isNew ? flag !== 'TRUE' : flag === 'TRUE';
+      let matchesFlag = isNew ? flag !== 'TRUE' : flag === 'TRUE';
+      
+      // NEW: Exclude UOM Bundles from New Item Creations
+      // A UOM Bundle is identified by having a parentRef and a multiplier > 1
+      if (isNew && item.parentRef && parseInt(item.uomMult, 10) > 1) {
+          return false;
+      }
+      
+      return matchesFlag;
     });
 
     if (filtered.length === 0) { alert(`No items found for ${platform} (${isNew ? 'New' : 'Updates'}).`); return; }
 
-    let headers = ['REF', 'Manufacturer', 'Description', 'GTIN', 'Price', 'Cost', 'Available Qty', 'Categories'];
-    let csvContent = headers.join(',') + '\n';
+    let csvContent = '';
 
-    filtered.forEach(item => {
-      let ref = String(item.ref || item.sku || '').replace(/"/g, '""');
-      let mfr = String(item.mfr || '').replace(/"/g, '""');
-      let desc = String(item.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
-      let gtin = String(item.gtin || '').replace(/"/g, '""');
-      let price = String(item.price || '').replace(/"/g, '""');
-      let cost = String(item.cost || '').replace(/"/g, '""');
-      let cat = String(item.category || '').replace(/"/g, '""');
+    // ========================================================
+    // FORMAT 1: THRIVE BULK EDIT PRODUCTS (UPDATES TEMPLATE)
+    // ========================================================
+    if (platform === 'Thrive' && !isNew) {
+      // 25-column exact match to Thrive Bulk Edit Export
+      let headers = ['ID', 'Product Name', 'New Product Name', 'Product Categories', 'New Product Categories', 'Product Description', 'New Product Description', 'Shipping Width', 'New Shipping Width', 'Shipping Length', 'New Shipping Length', 'Shipping Height', 'New Shipping Height', 'Shipping Dimension Unit (in, cm)', 'New Shipping Dimension Unit (in, cm)', 'Shipping Weight', 'New Shipping Weight', 'Shipping Weight Unit (g, oz, lb, kg)', 'New Shipping Weight Unit (g, oz, lb, kg)', 'Active (ACTIVE, INACTIVE)', 'New Active (ACTIVE, INACTIVE)', 'PH Warehouse Enabled', 'New PH Warehouse Enabled', 'PH Warehouse - (Shopify) PH Warehouse Enabled', 'New PH Warehouse - (Shopify) PH Warehouse Enabled'];
+      csvContent += headers.join(',') + '\n';
+
+      // Sort alphabetically by REF to match Thrive's default export sorting
+      filtered.sort((a, b) => (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
+
+      filtered.forEach(item => {
+        let ref = String(item.ref || item.sku || '').replace(/"/g, '""');
+        let desc = String(item.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
+        let cat = String(item.category || '').replace(/"/g, '""');
+        let cleanPrice = parseFloat(String(item.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+        let activeStatus = (item.status === 'INACTIVE' || cleanPrice === 0) ? 'INACTIVE' : 'ACTIVE';
+        
+        // Leaves ID blank. You can copy the 'New Product Categories', 'New Product Description', and 'New Active' columns directly into your downloaded Thrive file.
+        csvContent += `,"${ref}","","${cat}","","${desc}","","","","","","","","","","","","","","${activeStatus}","","ENABLED","","ENABLED",""\n`;
+      });
       
-      let avail = (parseInt(item.onHand || 0, 10)) - (parseInt(item.reservedQty || 0, 10));
-      csvContent += `"${ref}","${mfr}","${desc}","${gtin}","${price}","${cost}",${avail},"${cat}"\n`;
-    });
+    // ========================================================
+    // FORMAT 2: STANDARD NEW ITEMS CREATION (THRIVE & SHOPIFY)
+    // ========================================================
+    } else {
+      let headers = ['REF', 'Manufacturer', 'Description', 'GTIN', 'Price', 'Cost', 'Available Qty', 'Categories'];
+      csvContent += headers.join(',') + '\n';
+
+      filtered.forEach(item => {
+        let ref = String(item.ref || item.sku || '').replace(/"/g, '""');
+        let mfr = String(item.mfr || '').replace(/"/g, '""');
+        let desc = String(item.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
+        let gtin = String(item.gtin || '').replace(/"/g, '""').trim();
+        let price = String(item.price || '').replace(/"/g, '""');
+        let cost = String(item.cost || '').replace(/"/g, '""');
+        let cat = String(item.category || '').replace(/"/g, '""');
+        
+        let avail = (parseInt(item.onHand || 0, 10)) - (parseInt(item.reservedQty || 0, 10));
+        csvContent += `"${ref}","${mfr}","${desc}","${gtin}","${price}","${cost}",${avail},"${cat}"\n`;
+      });
+    }
 
     let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
-    UIManager.triggerShareOrDownload(csvContent, `${platform}_${isNew ? "New_Items" : "Updates"}_Export_${dateStr}.csv`, 'text/csv');
+    UIManager.triggerShareOrDownload(csvContent, `${platform}_${isNew ? "New_Items" : "Bulk_Edit_Template"}_Export_${dateStr}.csv`, 'text/csv');
     
     if (isNew && confirm(`Export complete!\n\nWould you like to automatically mark these ${filtered.length} items as "Synced with ${platform}" in your database?`)) {
         filtered.forEach(item => {
