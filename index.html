@@ -67,8 +67,19 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .catch(err => console.warn('Service Worker registration skipped or delayed:', err));
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          console.log('Service Worker registered.');
+        }).catch(err => console.warn('Service Worker registration skipped or delayed:', err));
+        
+        // Listen for the aggressive takeover from sw.js
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            alert("✨ A new version of the ASP Scanner is available! The app will now reload to apply the update.");
+            window.location.reload(true);
+          }
+        });
       });
     }
   </script>
