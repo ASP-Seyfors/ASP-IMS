@@ -781,26 +781,68 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   sendBugReport() {
-    const email = "thomas@alliedsurgicalproducts.com";
-    const subject = "ASP IMS Bug Report";
+    let modal = document.createElement('div');
+    modal.id = 'bugReportModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
-    let user = "Unknown Operator";
-    if (typeof AuthManager !== 'undefined' && AuthManager.currentUser) {
-      user = AuthManager.currentUser.name;
+    modal.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+        <h3 style="margin:0 0 10px 0; color:#c62828; display:flex; align-items:center; gap:6px;"><i data-lucide="bug" style="width:20px; height:20px;"></i> Report a System Issue</h3>
+        <p style="font-size:0.85rem; color:#555; margin-top:0;">Please describe the error or unexpected behavior below. Diagnostic data will be attached automatically.</p>
+        
+        <textarea id="bugDescInput" rows="5" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; resize:vertical; font-family:inherit; font-size:0.9rem;" placeholder="What were you doing when the issue occurred?"></textarea>
+        
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-top:15px;">
+          <button onclick="document.getElementById('bugReportModal').remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
+          <button id="btnSubmitBug" onclick="UIManager.submitBugPayload()" style="flex:1; background:#c62828; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">Submit Report</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  async submitBugPayload() {
+    let desc = document.getElementById('bugDescInput').value.trim();
+    if (!desc) {
+      alert("Please provide a description of the issue.");
+      return;
     }
     
-    const date = new Date().toLocaleDateString();
-    const body = `User: ${user}\nDate: ${date}\n\nBug Description:\n`;
+    let btn = document.getElementById('btnSubmitBug');
+    if (btn) { btn.textContent = "Sending..."; btn.disabled = true; }
     
-    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : "Unknown Operator";
+    let isSandbox = document.getElementById('chkSandboxMode') ? document.getElementById('chkSandboxMode').checked : false;
     
-    // PWAs bypass standard location redirects. Simulated click required.
-    let a = document.createElement('a');
-    a.href = mailtoUrl;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    let payload = {
+      action: "REPORT_BUG",
+      payload: {
+        userName: userName,
+        appVersion: "v4.2.5",
+        sessionName: (typeof SessionManager !== 'undefined') ? SessionManager.currentSessionName : "None",
+        workflowType: (typeof SessionManager !== 'undefined') ? SessionManager.currentWorkflowType : "None",
+        description: desc,
+        environment: isSandbox ? "Sandbox" : "Production"
+      }
+    };
+
+    try {
+      let activeUrl = (typeof SessionManager !== 'undefined') ? SessionManager.cloudArchiveUrl : "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec";
+      
+      await fetch(activeUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      
+      document.getElementById('bugReportModal').remove();
+      this.showCustomAlert("Report Sent", "✅ Thank you! Your bug report and diagnostic data have been sent to IT Operations.");
+    } catch (err) {
+      alert("Failed to send bug report. Please check your internet connection.");
+      if (btn) { btn.textContent = "Submit Report"; btn.disabled = false; }
+    }
   },
 
   initDebugConsole() {

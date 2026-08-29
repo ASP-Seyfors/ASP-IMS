@@ -1136,6 +1136,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
     }
 
+    // Reset Bundle UI
+    let bundleChk = document.getElementById('chkIsBundle');
+    let bundleRow = document.getElementById('rowBundleData');
+    if (bundleChk) bundleChk.checked = false;
+    if (bundleRow) bundleRow.style.display = 'none';
+    if (document.getElementById('bundleParentRef')) document.getElementById('bundleParentRef').value = '';
+    if (document.getElementById('bundleMult')) document.getElementById('bundleMult').value = '';
+
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'block';
   },
@@ -1152,7 +1160,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
   },
 
-  saveItemLog() {
+  saveItemLog(ignoreOverpack = false) {
     let rawGtin = document.getElementById('gtinInput').value.trim();
     let ref = document.getElementById('refInput').value.trim().toUpperCase();
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
@@ -1160,12 +1168,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const vendor = document.getElementById('vendorSelect').value;
     let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
     
-    // Grab item-level form inputs
     const itemCust = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
     const itemOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-    // Gracefully handle null matches so new items can be added
     let matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
     let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty, ref);
     
@@ -1180,13 +1186,24 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     ref = uomResult.trueRef;
     qty = uomResult.trueQty;
 
-    // NEW ITEM HANDLING
     let isNewItem = !matchedDbItem;
+    let pRef = "";
+    let uMult = 1;
+
     if (isNewItem) {
-       // --- NEW TYPO PREVENTION GATE ---
        let confirmNew = confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.\n\nAre you sure you want to create a BRAND NEW item? If this is a typo, click Cancel and fix the REF.`);
        if (!confirmNew) return; 
-       // --------------------------------
+
+       // CAPTURE NEW BUNDLE LOGIC
+       let bundleChk = document.getElementById('chkIsBundle');
+       if (bundleChk && bundleChk.checked) {
+           pRef = document.getElementById('bundleParentRef').value.trim().toUpperCase();
+           uMult = parseInt(document.getElementById('bundleMult').value, 10) || 1;
+           if (!pRef || uMult <= 1) {
+               UIManager.showCustomAlert("Bundle Error", "Please provide a valid Parent REF and a Units Per Box quantity greater than 1.");
+               return;
+           }
+       }
 
        let alreadyPending = this.pendingNewItems.find(i => i.ref === ref);
        if (!alreadyPending) {
@@ -1195,12 +1212,20 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
                gtin: rawGtin,
                mfr: vendor,
                price: "$0.00",
-               desc: "Navigate to vendor website for item description."
+               desc: "Navigate to vendor website for item description.",
+               parentRef: pRef,
+               uomMult: uMult
            });
+       }
+
+       // Apply math instantly for this current scan
+       if (pRef && uMult > 1) {
+           ref = pRef;
+           qty = qty * uMult;
+           matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === pRef);
        }
     }
 
-    // Determine the action tag
     let effectiveTag = this.currentItemAction;
     if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
       if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
@@ -1208,7 +1233,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       else effectiveTag = 'Inventory';
     }
 
-    // AUTO-POPULATION FOR ORDERS
     let finalCustomerTag = itemCust;
     let finalOrderNum = itemOrder;
 
@@ -1218,8 +1242,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (!finalOrderNum) finalOrderNum = this.currentOrderNum;
     }
     
-    // NEW: If the item is being routed to the Damaged bin, map the Note into the OrderNum field 
-    // so it properly lands in Column B of the DMGD_ITEMS tab.
     if (finalCustomerTag.toUpperCase().trim() === "ASP DAMAGED INVENTORY" && iNote) {
       finalOrderNum = iNote;
     }
@@ -1228,12 +1250,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-      // FIX: Pass cTagCombined instead of the blank item-level string!
-      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, false, this.currentWorkflowType);
+      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, ignoreOverpack, this.currentWorkflowType);
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
-        let userConfirmed = confirm(error.message.replace('OVERPACK_WARNING: ', ''));
-        if (!userConfirmed) return; 
+        let friendlyMsg = `You just scanned an item that isn't on the original reserve list or exceeds the expected quantity for this customer.\n\nDo you want to pull this from general inventory and add it to their shipment anyway?`;
+        UIManager.showCustomConfirm("📦 Extra Item Detected", friendlyMsg, () => {
+          SessionManager.saveItemLog(true); // Bypass triggers upon confirmation
+        });
+        return; 
       } else {
         UIManager.showCustomAlert("Inventory Error", error.message, true);
         return; 

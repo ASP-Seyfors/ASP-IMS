@@ -231,6 +231,57 @@ const AuditManager = {
     if (controls) controls.style.display = 'flex';
   },
 
+  async fetchBugReports(event) {
+    let btn = event.target;
+    let origText = btn.innerHTML;
+    btn.innerHTML = "⏳ Fetching...";
+    btn.disabled = true;
+
+    try {
+      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_BUG_REPORTS&t=${Date.now()}`);
+      let data = await res.json();
+      
+      if (data.status !== "success") throw new Error("Failed to fetch reports.");
+      
+      let reports = data.reports || [];
+      if (reports.length === 0) {
+        UIManager.showCustomAlert("Bug Reports", "No bug reports found in the database.");
+        return;
+      }
+
+      let rows = reports.map(r => `
+        <div style="background:#f9f9f9; border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:4px; text-align:left;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.8rem; color:#555;">
+            <strong>${r.timestamp}</strong> <span>Env: ${r.env} | v${r.version}</span>
+          </div>
+          <div style="font-size:0.85rem; margin-bottom:6px;">
+            <strong>User:</strong> ${r.user}<br>
+            <strong>Session:</strong> ${r.session} (${r.workflow})
+          </div>
+          <div style="background:#fff; border-left:3px solid #c62828; padding:8px; font-family:monospace; font-size:0.85rem; color:#c62828; white-space:pre-wrap;">${r.desc}</div>
+        </div>
+      `).join('');
+
+      let modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+      modal.innerHTML = `
+        <div style="background:#fff; border-radius:8px; width:100%; max-width:600px; max-height:85vh; padding:20px; display:flex; flex-direction:column;">
+          <h3 style="margin:0 0 15px 0; color:#c62828; border-bottom:2px solid #c62828; padding-bottom:8px;">🐞 System Bug Reports</h3>
+          <div style="overflow-y:auto; flex:1; padding-right:5px;">
+            ${rows}
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" style="background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; margin-top:15px; width:100%;">Close Viewer</button>
+        </div>`;
+      document.body.appendChild(modal);
+
+    } catch (err) {
+      UIManager.showCustomAlert("Error", "Could not load bug reports: " + err.message);
+    } finally {
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    }
+  },
+
   executeSessionAction() {
     const val = document.getElementById('exportDropdown').value;
     if (!val) {

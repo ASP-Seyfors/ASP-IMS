@@ -78,6 +78,17 @@
       <div style="margin-bottom: 4px;"><strong>Desc:</strong> <span id="revDesc">--</span></div>
     </div>
 
+    <!-- NEW: Bundle / Box Creation Toggle -->
+    <div style="text-align: left; width: 100%; margin-bottom: 10px; margin-top: 10px;">
+      <label style="font-size:0.85rem; font-weight:bold; color:#00796b; cursor:pointer;" title="Mark this barcode as a Box or Bundle containing multiple individual units.">
+        <input type="checkbox" id="chkIsBundle" onchange="document.getElementById('rowBundleData').style.display = this.checked ? 'flex' : 'none';"> <i data-lucide="package-plus" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Is this a Box / Bundle?
+      </label>
+    </div>
+    <div id="rowBundleData" style="display:none; background-color:#e0f2f1; padding:8px; border:1px dashed #00796b; border-radius:4px; margin-bottom:15px; flex-direction:row; gap:6px;">
+      <input type="text" id="bundleParentRef" placeholder="Parent REF (Individual SKU)" style="flex: 2; padding: 6px; text-transform:uppercase; border:1px solid #ccc; border-radius:4px;">
+      <input type="number" id="bundleMult" placeholder="Units Per Box" min="2" style="flex: 1; padding: 6px; text-align:center; border:1px solid #ccc; border-radius:4px;">
+    </div>
+
     <!-- Buttons -->
     <div id="gtinDiffBanner" class="gtin-diff-banner" style="display:none; padding:8px; margin-bottom:10px; font-size:0.9rem;"></div>
     
