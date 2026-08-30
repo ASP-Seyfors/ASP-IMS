@@ -17,14 +17,11 @@
  * All Rights Reserved.
  * ======================================================================= -->
 <!-- DATABASE GRID EDITOR -->
+<!-- Top Header -->
 <div id="screenDbEditor" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #00796b; padding-bottom: 6px; margin-bottom: 10px;">
     <h2 style="border:none; margin:0; padding:0; color: #00796b;">Database Editor</h2>
-    <div style="display:flex; gap:8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; margin-right: 5px;" onclick="DatabaseManager.downloadCloudDatabase(event)"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Sync Cloud DB</button>
-      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff; margin:0;" onclick="DatabaseManager.uploadPendingData(event)"><i data-lucide="upload-cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Upload Pending Sessions</button>
-      <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
-    </div>
+    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDbEditor()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
   <p style="font-size: 0.8rem; color: #555;">Edit fields directly in the table. Click "Export Database Updates" below to save changes for control review.</p>
   
@@ -54,7 +51,12 @@
     </table>
   </div>
 
-  <div style="text-align: right; margin-top: 10px;">
-    <button class="btn-action btn-save btn-auto" onclick="DatabaseManager.exportGridChanges()"><i data-lucide="save" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Database Updates</button>
+  <!-- Bottom Footer -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="DatabaseManager.downloadCloudDatabase(event)"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Sync Cloud DB</button>
+      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="DatabaseManager.uploadPendingData(event)"><i data-lucide="upload-cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Upload Pending</button>
+    </div>
+    <button class="btn-action btn-save btn-auto" style="margin:0; padding: 10px 20px;" onclick="DatabaseManager.exportGridChanges()"><i data-lucide="save" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Updates</button>
   </div>
 </div>

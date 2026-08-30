@@ -101,11 +101,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   // ADVANCED MODE CONTROLLER
   toggleAdvancedMode(forceState = null) {
     let chk = document.getElementById('chkAdvancedMode');
-    
-    if (forceState !== null && chk) {
-      chk.checked = forceState;
-    }
-    
+    if (forceState !== null && chk) chk.checked = forceState;
     let isAdv = chk ? chk.checked : false;
     localStorage.setItem('asp_advanced_mode', isAdv ? 'true' : 'false');
 
@@ -115,7 +111,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let elHub = document.getElementById('panelEnterpriseHub');
     if (elHub) elHub.style.display = isAdv ? 'block' : 'none';
     
-    // Force feed check
+    let elDamaged = document.getElementById('panelDamagedHub');
+    if (elDamaged) elDamaged.style.display = isAdv ? 'block' : 'none';
+    
     this.togglePreloadFeed();
   },
 
@@ -556,6 +554,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenReports').style.display = 'block';
     if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
+    if (typeof AuditManager.loadCloudSessionsForExport === 'function') AuditManager.loadCloudSessionsForExport();
   },
 
   closeReportsHub() {

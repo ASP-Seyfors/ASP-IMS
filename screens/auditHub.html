@@ -39,11 +39,9 @@
     <div id="lotTraceResults"></div>
   </div>
 
-  <!-- DAMAGED INVENTORY HUB -->
-  <div style="background: #ffebee; border: 1px solid #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
-    <h4 style="margin: 0 0 10px 0; color: #c62828;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Inventory Hub</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">View, manage, and export items currently quarantined as damaged.</p>
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; max-width: 350px; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Items Bin</button>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+      <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #ffffff; color: #000000; border: 1px solid #000000; padding: 10px; margin: 0; font-weight: bold;" onclick="UIManager.openQuickLookupModal()"><i data-lucide="search" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Item Lookup</button>
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 10px;" onclick="UIManager.openBinViewerModal()"><i data-lucide="archive" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Bins</button>
   </div>
 
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">

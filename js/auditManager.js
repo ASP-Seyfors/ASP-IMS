@@ -27,6 +27,87 @@ const AuditManager = {
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim() || 'N/A';
   },
 
+  loadCloudSessionsForExport() {
+    let select = document.getElementById('cloudExportSessionSelect');
+    if (!select) return;
+
+    let archive = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+    let completed = archive.filter(s => s.status === 'Completed').sort((a,b) => parseInt(b.id) - parseInt(a.id));
+
+    select.innerHTML = '<option value="">-- Select an Archived Session --</option>';
+    completed.forEach(s => {
+        let opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.dateStr} | ${s.sessionName} (${s.workflowType})`;
+        select.appendChild(opt);
+    });
+  },
+
+  async exportCloudSessionData() {
+    let select = document.getElementById('cloudExportSessionSelect');
+    let format = document.getElementById('cloudExportFormat').value;
+    let sessionId = select ? select.value : "";
+    
+    if (!sessionId) {
+      alert("Please select a session from the dropdown.");
+      return;
+    }
+
+    let btn = document.getElementById('btnExportCloudSession');
+    let origText = btn.textContent;
+    btn.textContent = "⏳ Fetching...";
+    btn.disabled = true;
+
+    try {
+      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sessionId}`);
+      let sessionData = await res.json();
+
+      if (!sessionData || sessionData.status === "error") {
+        throw new Error("Could not download session payload from the cloud.");
+      }
+
+      // Temporarily mock SessionManager state
+      let tempState = {
+        scannedObjects: SessionManager.scannedObjects,
+        currentSessionName: SessionManager.currentSessionName,
+        currentOrderNum: SessionManager.currentOrderNum,
+        currentWorkflowType: SessionManager.currentWorkflowType,
+        sessionDateStr: SessionManager.sessionDateStr,
+        sessionStartStr: SessionManager.sessionStartStr,
+        currentUserName: SessionManager.currentUserName,
+        isManifestEnabled: SessionManager.isManifestEnabled,
+        expectedManifest: SessionManager.expectedManifest,
+        pendingNewItems: SessionManager.pendingNewItems,
+        pendingFieldUpdates: SessionManager.pendingFieldUpdates
+      };
+
+      // Override with cloud data
+      SessionManager.scannedObjects = sessionData.scannedObjects || [];
+      SessionManager.currentSessionName = sessionData.sessionName || "Archived Session";
+      SessionManager.currentOrderNum = sessionData.orderNum || "";
+      SessionManager.currentWorkflowType = sessionData.workflowType || "General";
+      SessionManager.sessionDateStr = sessionData.dateStr || "";
+      SessionManager.sessionStartStr = sessionData.startStr || "";
+      SessionManager.currentUserName = sessionData.userName || "";
+      SessionManager.isManifestEnabled = sessionData.manifestEnabled || false;
+      SessionManager.expectedManifest = sessionData.expectedManifest || [];
+      SessionManager.pendingNewItems = sessionData.pendingNewItems || [];
+      SessionManager.pendingFieldUpdates = sessionData.pendingUpdates || [];
+
+      // Run the export generator
+      await this.exportSessionData(format);
+
+      // Restore the local state immediately
+      Object.assign(SessionManager, tempState);
+
+    } catch(err) {
+      alert("Export failed: " + err.message);
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  },
+
   updateSessionSummaryView() {
     let container = document.getElementById('summaryListContainer');
     let elUnique = document.getElementById('sumUniqueRefs');

@@ -113,7 +113,6 @@
 
   <!-- Start Button -->
    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px auto; width: 100%; max-width: 420px;">
-    <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #ffffff; color: #000000; border: 1px solid #000000; padding: 10px 14px !important; margin: 0; font-weight: bold; white-space: nowrap;" onclick="UIManager.openQuickLookupModal()" title="Quickly check item prices, descriptions, and stock levels without starting a session.">Item Lookup</button>
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; margin: 0; flex: 1;" onclick="startSession()" title="Begin scanning items for this session.">Start Scanning Session</button>
   </div>
 
@@ -121,12 +120,18 @@
   <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
     <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Enterprise Data Hub</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()" title="Generate inventory levels, expiration warnings, and Thrive exports."><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Reports & Analytics</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()" title="Manually edit item descriptions, categories, and prices."><i data-lucide="database" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Database Editor</button>
-      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()" title="Audit and correct physical warehouse inventory counts."><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Stocktake</button>
-      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()" title="Trace lot numbers and review historical session logs."><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Traceability</button>
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; grid-column: 1 / -1;" onclick="UIManager.openBinViewerModal()" title="View all items currently sitting in physical customer reserve bins."><i data-lucide="archive" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Bins</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Reports & Analytics</button>
+      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Traceability</button>
+      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Stocktake</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()"><i data-lucide="database" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Database Editor</button>
     </div>
+  </div>
+
+  <!-- DAMAGED INVENTORY HUB (Moved from Audit Hub) -->
+  <div id="panelDamagedHub" class="card" style="background-color: #ffebee; border: 1px solid #c62828; padding: 15px; margin-bottom: 20px; text-align: center; display: none;">
+    <h4 style="margin: 0 0 10px 0; color: #c62828;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Inventory Hub</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">View, manage, and export items currently quarantined as damaged.</p>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; max-width: 350px; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Items Bin</button>
   </div>
 
   <!-- Bottom Navigation & Utility Footer Grid (Cleaned Up) -->
