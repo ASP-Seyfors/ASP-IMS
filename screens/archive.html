@@ -17,7 +17,7 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
-<!-- SCREEN 6: SESSION ARCHIVE -->
+<!-- SESSION ARCHIVE -->
 <div id="screenArchive" style="display: none;" class="card">
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 10px;">
     <h2 style="border:none; margin:0; padding:0;">Session Archive</h2>
@@ -41,7 +41,7 @@
     <div class="form-label" style="color: #0277bd;">Filter & View:</div>
     <div class="input-wrapper" style="display:flex; flex-direction:column; gap:8px;">
       
-      <!-- NEW: Text Search Filter -->
+      <!-- Text Search Filter -->
       <input type="text" id="archiveSearchInput" placeholder="Search Name, PO, or ID..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onkeyup="SessionManager.renderArchiveList()">
       
       <select id="archiveFilter" onchange="SessionManager.renderArchiveList()" style="border: 2px solid #0277bd; font-weight: bold; width:100%;">

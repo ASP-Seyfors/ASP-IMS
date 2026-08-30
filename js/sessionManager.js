@@ -215,7 +215,7 @@ const SessionManager = {
               cleanExp = cleanExp.split('T')[0];
           }
           
-          // FIX: Parse string quantities into integers before adding
+          // Parse string quantities into integers before adding
           let safeQty = parseInt(a.qty, 10) || 0;
           
           allocMap[a.customerName][a.ref].qty += safeQty;
@@ -938,7 +938,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (banner) banner.style.display = 'block';
     if (tracker) tracker.style.display = 'block';
 
-    // FIX: Aggregate Expected Manifest by REF
+    // Aggregate Expected Manifest by REF
     let expectedMap = {};
     this.expectedManifest.forEach(exp => {
         expectedMap[exp.ref] = (expectedMap[exp.ref] || 0) + exp.expectedQty;
@@ -1048,7 +1048,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const vendor = document.getElementById('vendorSelect').value;
     const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
     
-    // FIX: Safely grab the Customer and Order strings for the Review Screen
+    // Safely grab the Customer and Order strings for the Review Screen
     const custVal = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
     const ordVal = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const cTag = custVal + (ordVal ? ` - ${ordVal}` : '');
@@ -1063,7 +1063,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (refProgRow) refProgRow.style.display = 'flex';
       if (totalProgRow) totalProgRow.style.display = 'flex';
       
-      // FIX: Sum up all expected occurrences of this REF
+      // Sum up all expected occurrences of this REF
       let totalExpectedForRef = this.expectedManifest.filter(i => i.ref === ref).reduce((acc, curr) => acc + curr.expectedQty, 0);
 
       let scannedRefQtySoFar = this.scannedObjects.filter(i => i.ref === ref).reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
@@ -1509,7 +1509,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       
       if (this.getActiveArchiveUrl()) {
-          // FIX: Clean and attach the Partners/Vendors arrays so they sync automatically
+          // Clean and attach the Partners/Vendors arrays so they sync automatically
           let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
           let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
           let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
@@ -1698,7 +1698,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let select = document.getElementById('reversalSessionSelect');
     if (!select) return;
     
-    // NEW: Pull the directory directly from the Cloud Vault instead of local storage
+    // Pull the directory directly from the Cloud Vault instead of local storage
     let archive = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     let cutoff = Date.now() - (24 * 60 * 60 * 1000); 
     
@@ -1734,7 +1734,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     if (!confirm(`Are you absolutely sure you want to mathematically REVERSE the session:\n\n"${targetLite.sessionName}"?\n\nThis will download the payload from the cloud and subtract all items that were originally added.`)) return;
 
-    // 1. Fetch the actual payload from the cloud
+    // Fetch the actual payload from the cloud
     let targetSession = null;
     try {
         let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${targetId}`);
@@ -1747,7 +1747,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
     
-    // 2. Run the negative math
+    // Run the negative math
     let ledgerResult = InventoryEngine.reverseLedgerMath(
         targetSession.scannedObjects,
         DatabaseManager.db,
@@ -1755,13 +1755,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         targetSession.workflowType
     );
 
-    // 3. Save the negated database locally
+    // Save the negated database locally
     localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
     this.syncAllocationsToCloud();
     DatabaseManager.db = ledgerResult.updatedDb;
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
 
-    // 4. Create the new Reversal Payload for the Audit Log
+    // Create the new Reversal Payload for the Audit Log
     let revScannedObjects = targetSession.scannedObjects.map(item => {
         return { ...item, qty: -(item.qty), itemNote: `REVERSAL of ${targetSession.id}` };
     });
@@ -1783,13 +1783,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       lastUpdated: Date.now()
     };
 
-    // 5. Push to local archive and cloud
+    // Push to local archive and cloud
     let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     localArchive.unshift(revSession);
     localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
     this.pushToCloudArchive(revSession);
 
-    // 6. Sync the updated catalog math
+    // Sync the updated catalog math
     if (this.getActiveArchiveUrl()) {
       let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
       let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
@@ -1950,7 +1950,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let filterVal = document.getElementById('archiveFilter').value;
-    // NEW: Search Input Value
+    // Search Input Value
     let searchVal = document.getElementById('archiveSearchInput') ? document.getElementById('archiveSearchInput').value.trim().toLowerCase() : '';
     let hideCancelled = document.getElementById('chkHideCancelled') ? document.getElementById('chkHideCancelled').checked : false;
     let onlyActive = document.getElementById('chkOnlyActive') ? document.getElementById('chkOnlyActive').checked : false;
@@ -1966,7 +1966,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (hideCancelled && s.status === 'Cancelled') return false;
       if (onlyActive && s.status !== 'Pending') return false; 
       
-      // NEW: Apply the text search filter
+      // Apply the text search filter
       if (searchVal) {
           let searchTarget = `${s.sessionName} ${s.orderNum} ${s.dateStr} ${s.id}`.toLowerCase();
           if (!searchTarget.includes(searchVal)) return false;

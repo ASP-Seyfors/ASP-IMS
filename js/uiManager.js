@@ -42,7 +42,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       "Switch Environments?", 
       "Switching between Production and Sandbox will completely wipe this device's local memory to prevent cross-contamination.\n\nYou will need to click 'Sync System' afterward to download the correct database.", 
       () => {
-        // CONFIRMED: Wipe the memory
+        // Wipe the memory
         localStorage.removeItem('asp_wh_db');
         localStorage.removeItem('asp_session_archive');
         localStorage.removeItem('asp_allocations');
@@ -137,11 +137,11 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let modal = document.getElementById('binViewerModal');
     if (modal) modal.remove(); // Force a fresh render
 
-    // 1. Fetch live allocations and filter out the internal damaged bin
+    // Fetch live allocations and filter out the internal damaged bin
     let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
     let customersWithStock = Object.keys(allocations).filter(c => c.toUpperCase() !== "ASP DAMAGED INVENTORY").sort();    
 
-    // 2. Build the HTML content
+    // Build the HTML content
     let contentHtml = '';
     
     if (customersWithStock.length === 0) {
@@ -184,7 +184,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         });
     }
 
-    // 3. Render the Modal
+    // Render the Modal
     modal = document.createElement('div');
     modal.id = 'binViewerModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
@@ -386,7 +386,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let dbReserved = parseInt(item.reservedQty, 10) || 0;
     let dbAvailable = dbOnHand - dbReserved;
 
-    // --- NEW LIVE CLOUD LOT TRACING ---
+    // --- LIVE CLOUD LOT TRACING ---
     resContainer.innerHTML = `
       <div style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:12px;">
         <div style="font-size:1.1rem; font-weight:bold; color:#00796b;">REF: ${ref}</div>
@@ -769,7 +769,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenDevTools').style.display = 'block';
     
-    // NEW: Load available sessions into the reversal dropdown
+    // Load available sessions into the reversal dropdown
     if (typeof SessionManager !== 'undefined' && typeof SessionManager.loadReversibleSessions === 'function') {
       SessionManager.loadReversibleSessions();
     }

@@ -58,7 +58,7 @@
   <script src="js/databaseManager.js"></script>
   <script src="js/uiManager.js"></script>
   <script src="js/scannerManager.js"></script>
-  <script src="js/inventoryEngine.js"></script> <!-- ADD THIS LINE HERE -->
+  <script src="js/inventoryEngine.js"></script>
   <script src="js/sessionManager.js"></script>
   <script src="js/auditManager.js"></script>
   <script src="js/reportsManager.js"></script>
@@ -71,11 +71,12 @@
           console.log('Service Worker registered.');
           
           // Force the browser to aggressively check the server for a new sw.js
-          reg.update();
+          //reg.update();
           
         }).catch(err => console.warn('Service Worker registration skipped or delayed:', err));
         
         // Listen for the aggressive takeover from sw.js
+        /*
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (!refreshing) {
@@ -83,7 +84,7 @@
             alert("✨ A new version of the ASP Scanner is available! The app will now reload to apply the update.");
             window.location.reload(true);
           }
-        });
+        });*/
       });
     }
   </script>

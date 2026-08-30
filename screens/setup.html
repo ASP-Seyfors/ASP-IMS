@@ -18,7 +18,7 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
-<!-- SCREEN 1: SESSION SETUP PHASE -->
+<!-- SESSION SETUP PHASE -->
 <div id="screenSetup" class="card">
   
   <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
@@ -36,7 +36,7 @@
     </div>
   </div>
 
-  <!-- 2. Pre-Load Checkbox -->
+  <!-- Pre-Load Checkbox -->
   <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 10px; display: none;">
     <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;" title="Automatically pull expected items from a QuickBooks order.">
       <input type="checkbox" id="chkPreloadManifest" onchange="UIManager.togglePreloadFeed()"> Pre-Load Order Information
@@ -91,7 +91,7 @@
     <div class="input-wrapper">
       <input type="text" id="userNameInput" placeholder="e.g. User" title="Enter your name for the audit log.">
       
-      <!-- NEW: Workstation Dropdown (Hidden by Default) -->
+      <!-- Workstation Dropdown (Hidden by Default) -->
       <select id="userNameSelect" style="display:none;" title="Select your name for the audit log.">
         <option value="">-- Select Your Name --</option>
         <option value="Thomas">Thomas</option>
@@ -117,7 +117,7 @@
     <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; margin: 0; flex: 1;" onclick="startSession()" title="Begin scanning items for this session.">Start Scanning Session</button>
   </div>
 
-  <!-- 3. Enterprise Data Hub -->
+  <!-- Enterprise Data Hub -->
   <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
     <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Enterprise Data Hub</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -133,13 +133,13 @@
   <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px; gap: 10px;">
     <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()" title="View, restore, or upload past scanning sessions.">Session Archive</button>
     <div style="display: flex; gap: 8px;">
-      <!-- FIX: Replaced anchor tag with a standard button calling our JS function -->
+      <!-- Replaced anchor tag with a standard button calling our JS function -->
       <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="UIManager.sendBugReport()" title="Submit a bug report directly to IT Operations."><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle;"></i></button>
       <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools."><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Settings</button>
     </div>
   </div>
   
-  <!-- NEW: Developer Tools Button (Hidden by default) -->
+  <!-- Developer Tools Button (Hidden by default) -->
   <div id="devToolsContainer" style="display: none; justify-content: center; margin-top: 15px;">
     <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; padding: 8px 16px; font-size: 0.85rem;" onclick="UIManager.openDevTools()" title="Access restricted administrative and debugging utilities."><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</button>
   </div>

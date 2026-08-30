@@ -225,7 +225,7 @@ const DatabaseManager = {
     return null;
   },
 
-  // --- UPDATED: CLEAN GRID EDITOR WITH EDIT MODAL ---
+  // --- CLEAN GRID EDITOR WITH EDIT MODAL ---
   renderDbGridEditor() {
     const tbody = document.getElementById('dbGridBody');
     if (!tbody) return;
@@ -477,7 +477,7 @@ const DatabaseManager = {
   getItemVendor: (item) => (item && (item.mfr || item.vendor || item.manufacturer || '').toString().trim()) || '',
   getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || '',
 
-  // 1. CHUNKED DOWNLOAD ENGINE
+  // CHUNKED DOWNLOAD ENGINE
   async downloadCloudDatabase(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "☁️ Sync Cloud DB";
@@ -523,7 +523,7 @@ const DatabaseManager = {
     }
   },
 
-  // 2. UPLOAD PENDING ONLY
+  // UPLOAD PENDING ONLY
   async uploadPendingData(event) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "⬆️ Upload Pending Data";

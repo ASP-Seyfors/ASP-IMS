@@ -21,7 +21,7 @@
 const InventoryEngine = {
 
   /**
-   * GATE 1: NORMALIZATION & LOOKUP
+   * NORMALIZATION & LOOKUP
    * Forces all inputs to uppercase and attempts a database match.
    */
   lookupAndNormalize(ref, gtin, currentDb) {
@@ -33,12 +33,12 @@ const InventoryEngine = {
       (i.gtin && i.gtin === cleanGtin)
     );
 
-    // FIXED: Return null instead of throwing a hard error so new items can proceed
+    // Return null instead of throwing a hard error so new items can proceed
     return match || null;
   },
 
   /**
-   * GATE 2: UOM MULTIPLIER (BOX TO EACH)
+   * UOM MULTIPLIER (BOX TO EACH)
    */
   calculateUOM(matchedItem, scannedQty, fallbackRef) {
     let finalQty = parseInt(scannedQty, 10) || 1;
@@ -53,10 +53,10 @@ const InventoryEngine = {
   },
 
   /**
-   * GATE 3: AVAILABILITY VALIDATION
+   * AVAILABILITY VALIDATION
    */
   validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations, ignoreOverpack = false, workflowType = '') {
-    // FIXED: If we are RECEIVING, we are bringing items into the building. Skip availability checks.
+    // If we are RECEIVING, we are bringing items into the building. Skip availability checks.
     if (workflowType.toUpperCase().includes('RECEIVING')) {
         return true;
     }
@@ -75,11 +75,11 @@ const InventoryEngine = {
     }
 
     if (action === 'Pack & Ship') {
-      // FIX: Strip order number to match the base customer bin (e.g. 'SYNERGY')
+      // Strip order number to match the base customer bin (e.g. 'SYNERGY')
       let baseTag = (customerTag || '').toUpperCase().split('(')[0].split('-')[0].trim();
       
       let allocData = (currentAllocations[baseTag] && currentAllocations[baseTag][trueRef]) ? currentAllocations[baseTag][trueRef] : 0;
-      // FIX: Safely extract the qty whether it's the new object structure or an old number
+      // Safely extract the qty whether it's the new object structure or an old number
       let allocatedToCust = typeof allocData === 'object' ? (allocData.qty || 0) : allocData;
       
       if (requestedQty > allocatedToCust && !ignoreOverpack) {
@@ -96,7 +96,7 @@ const InventoryEngine = {
   },
   
  /**
-   * GATE 5: FINAL LEDGER COMMIT
+   * FINAL LEDGER COMMIT
    * Executes the exact addition and subtraction math for the database
    * and the Active Allocations ledger.
    */
@@ -113,7 +113,7 @@ const InventoryEngine = {
       let actionTag = (item.actionTag || '').toUpperCase().trim();
       let rawTag = (item.customerTag || '').toUpperCase().trim(); 
 
-      // 1. THE TAG NORMALIZATION FIX
+      // THE TAG NORMALIZATION FIX
       // Strips away hyphens and parentheses so reserving and packing tags match perfectly
       let tag = rawTag.split('(')[0].split('-')[0].trim();
       
@@ -137,7 +137,7 @@ const InventoryEngine = {
 
       // --- STRICT FAULT-TOLERANT LOGIC GATES ---
 
-      // GATE A: "Receiving" or "Receiving & Reserving" (Supports your Reconcile Strategy)
+      // "Receiving" or "Receiving & Reserving" (Supports your Reconcile Strategy)
       if (wType.includes('RECEIVING')) {
         onHandChanges[ref] += item.qty; // ALWAYS updates Total Qty for Receiving
         
@@ -149,7 +149,7 @@ const InventoryEngine = {
            });
         }
       } 
-      // GATE B: "Reserving" or "Pick & Reserve" (DOES NOT ADD TO TOTAL QTY)
+      // "Reserving" or "Pick & Reserve" (DOES NOT ADD TO TOTAL QTY)
       else if (wType.includes('RESERVING') || wType.includes('PICK & RESERVE') || wType === 'RESERVE') {
          if (tag) {
              reservedChanges[ref] += item.qty;
@@ -159,7 +159,7 @@ const InventoryEngine = {
              });
          }
       }
-      // GATE C: "Picking & Packing" or "Pack & Ship"
+      // "Picking & Packing" or "Pack & Ship"
       else if (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK')) {
         onHandChanges[ref] -= item.qty; // Subtracts from Total Qty
         
@@ -171,7 +171,7 @@ const InventoryEngine = {
             let targetLot = item.lot || 'NO_LOT';
             let targetExp = item.exp || 'NO_EXP';
 
-            // 1. EXACT MATCH DEDUCTION
+            // EXACT MATCH DEDUCTION
             let exactMatches = currentAllocations[tag][ref].details.filter(d => d.lot === targetLot && d.exp === targetExp && d.qty > 0);
             for (let i = 0; i < exactMatches.length; i++) {
                 if (deduct <= 0) break;
@@ -180,7 +180,7 @@ const InventoryEngine = {
                 deduct -= take;
             }
 
-            // 2. FEFO FALLBACK DEDUCTION (First Expiring, First Out)
+            // FEFO FALLBACK DEDUCTION (First Expiring, First Out)
             if (deduct > 0) {
                 currentAllocations[tag][ref].details.sort((a, b) => {
                     if (a.exp === 'NO_EXP') return 1;
@@ -203,7 +203,7 @@ const InventoryEngine = {
             currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
         }
       }
-      // GATE D: "Stocktake"
+      // "Stocktake"
       // INTENTIONALLY EMPTY! Stocktake does NOT add or subtract here, preserving your UOM Bundle integrity. 
     });
 
@@ -233,7 +233,7 @@ const InventoryEngine = {
     return { updatedDb: currentDb, updatedAllocations: currentAllocations };
   },
   /**
-   * GATE 6: REVERSAL LEDGER MATH
+   * REVERSAL LEDGER MATH
    * Safely negates quantities from a prior session to undo accidental additions.
    */
   reverseLedgerMath(scannedObjects, currentDb, currentAllocations, originalWorkflow) {

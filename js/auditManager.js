@@ -609,7 +609,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `<div class="session-notes"><strong>Session Notes:</strong> ${sNote}</div>`;
     }
 
-    // 1. SCANNED ITEM BREAKDOWN
+    // SCANNED ITEM BREAKDOWN
     html += `<div class="section-title">📦 SCANNED ITEM BREAKDOWN</div>`;
     html += `<table class="data-table"><thead><tr><th>REF / MFR</th><th>Description & GTIN</th><th>Inventory Lots & Quantities</th><th style="text-align:center;">Total Qty</th></tr></thead><tbody>`;
     
@@ -634,7 +634,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
     html += `</tbody></table>`;
 
-    // 2. ROUTED TO CUSTOMER BINS (MOVED AFTER BREAKDOWN)
+    // ROUTED TO CUSTOMER BINS (MOVED AFTER BREAKDOWN)
     let reservedItems = SessionManager.scannedObjects.filter(i => i.customerTag);
     if (reservedItems.length > 0) {
       let totalReservedQty = reservedItems.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
@@ -646,7 +646,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       html += `</tbody></table></div>`;
     }
 
-    // 3. ITEMS REQUIRING PRICING (AT VERY END)
+    // ITEMS REQUIRING PRICING (AT VERY END)
     if (SessionManager.currentWorkflowType.includes('Receiving')) {
       let unpricedItems = Object.values(scannedMap).filter(i => !i.price || i.price === "$0.00" || i.price === "0");
       if (unpricedItems.length > 0) {
@@ -929,7 +929,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   },
 
   openCustomSalesFlyer() {
-    // 1. Remove the strict customer requirement. Use "PROMO" if the dropdown is blank.
+    // Remove the strict customer requirement. Use "PROMO" if the dropdown is blank.
     let custInput = document.getElementById('customerReportSelect');
     let cust = (custInput && custInput.value) ? custInput.value : 'PROMO';
 
@@ -940,7 +940,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     modal.id = 'stockReportEditorModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
-    // 2. Pull ALL available inventory directly from the master database
+    // Pull ALL available inventory directly from the master database
     let availableItems = [];
     if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
       availableItems = DatabaseManager.db.filter(dbItem => {
@@ -1172,7 +1172,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let cleanCust = cust.toUpperCase().trim();
     let skuVolumeMap = {};
 
-    // 1. Primary Source: Aggregate directly from active master allocations
+    // Primary Source: Aggregate directly from active master allocations
     let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
     let custAllocations = allocations[cleanCust] || {};
     
@@ -1181,7 +1181,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + custAllocations[ref];
     });
 
-    // 2. Layer in remote analytics if present (for historical context)
+    // Layer in remote analytics if present (for historical context)
     let analytics = JSON.parse(localStorage.getItem('asp_remote_analytics')) || {};
     let remoteSkuCounts = analytics[cleanCust] || {};
     Object.keys(remoteSkuCounts).forEach(ref => {
@@ -1234,7 +1234,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       printWin.document.write(fileContent);
       printWin.document.close();
 
-      // NEW: The "Magic Dot" Trick 
+      // The "Magic Dot" Trick 
       // Replaces standard periods with a Unicode Dot Leader (\u2024) to bypass the OS extension bug
       let safeTitle = baseFilename.replace(/\./g, '\u2024');
       printWin.document.title = safeTitle;
@@ -1324,7 +1324,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             let parsed = AuditManager.parseTXTExportContent(text, file.name);
             
             if (parsed && parsed.items && parsed.items.length > 0) {
-              // 1. Normalize Date to standard YYYY.MM.DD
+              // Normalize Date to standard YYYY.MM.DD
               let rawDate = (parsed.date || '2026.01.01').trim();
               let dateParts = rawDate.split(/[\.\-\/]/);
               let normalizedDateStr = rawDate;
@@ -1336,7 +1336,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                 }
               }
 
-              // 2. Generate clean 13-digit numeric timestamp ID
+              // Generate clean 13-digit numeric timestamp ID
               let baseTimestamp = new Date(normalizedDateStr.replace(/\./g, '-')).getTime();
               if (isNaN(baseTimestamp)) baseTimestamp = Date.now();
               // Offset slightly by file index to guarantee absolute uniqueness
@@ -1954,7 +1954,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let flag = platform === 'Thrive' ? String(item.syncedThrive).toUpperCase() : String(item.syncedShopify).toUpperCase();
       let matchesFlag = isNew ? flag !== 'TRUE' : flag === 'TRUE';
       
-      // NEW: Exclude UOM Bundles from New Item Creations
+      // Exclude UOM Bundles from New Item Creations
       // A UOM Bundle is identified by having a parentRef and a multiplier > 1
       if (isNew && item.parentRef && parseInt(item.uomMult, 10) > 1) {
           return false;
@@ -1968,7 +1968,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let csvContent = '';
 
     // ========================================================
-    // FORMAT 1: THRIVE BULK EDIT PRODUCTS (UPDATES TEMPLATE)
+    // THRIVE BULK EDIT PRODUCTS (UPDATES TEMPLATE)
     // ========================================================
     if (platform === 'Thrive' && !isNew) {
       // 25-column exact match to Thrive Bulk Edit Export
@@ -1990,7 +1990,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       });
       
     // ========================================================
-    // FORMAT 2: STANDARD NEW ITEMS CREATION (THRIVE & SHOPIFY)
+    // STANDARD NEW ITEMS CREATION (THRIVE & SHOPIFY)
     // ========================================================
     } else {
       let headers = ['REF', 'Manufacturer', 'Description', 'GTIN', 'Price', 'Cost', 'Available Qty', 'Categories'];
@@ -2055,7 +2055,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
  openRestoreModal() {
     let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     
-    // FIX: Filter out subsequent parts from the dropdown, only show Part 1 or un-split sessions
+    // Filter out subsequent parts from the dropdown, only show Part 1 or un-split sessions
     let stocktakes = dir.filter(s => {
         let isStocktake = (s.sessionName.includes('FULL-INV') || s.sessionName.includes('Stocktake')) && s.status === 'Completed';
         let isSubsequentPart = s.sessionName.match(/Part [2-9]/i) || s.sessionName.match(/\(Part [2-9]+ of/i);
@@ -2144,7 +2144,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     try {
       logMsg(`Starting restore from baseline ID: ${baselineId}...`, '#64b5f6');
       
-      // 1. Identify sessions to replay (Sort chronologically by numeric ID)
+      // Identify sessions to replay (Sort chronologically by numeric ID)
       let sessionsToFetch = dir.filter(s => s.status === 'Completed' && parseInt(s.id) >= parseInt(baselineLite.id))
                                .sort((a,b) => parseInt(a.id) - parseInt(b.id));
       
@@ -2152,7 +2152,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       
       let fullSessions = [];
       
-      // 2. Batch download payloads
+      // Batch download payloads
       for (let i = 0; i < sessionsToFetch.length; i++) {
         let sLite = sessionsToFetch[i];
         let pct = Math.floor((i / sessionsToFetch.length) * 40); // First 40% is downloading
@@ -2172,7 +2172,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       updateProgress(`Wiping current database quantities...`, 45);
       logMsg(`Wiping all active quantities from memory to prepare for baseline...`, '#ffb74d');
 
-      // 3. Wipe current quantities
+      // Wipe current quantities
       DatabaseManager.db.forEach(dbItem => {
         dbItem.onHand = 0;
         dbItem.reservedQty = 0;
@@ -2181,7 +2181,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
       updateProgress(`Rebuilding mathematical ledger...`, 50);
 
-      // 4. Replay history through the Engine
+      // Replay history through the Engine
       for (let i = 0; i < fullSessions.length; i++) {
         let sess = fullSessions[i];
         let pct = 50 + Math.floor((i / fullSessions.length) * 40); // 50% to 90% is processing
@@ -2190,7 +2190,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         logMsg(`[MATH] Processing ${sess.workflowType}: ${sess.sessionName} (${sess.dateStr})`, '#ffb74d');
 
         // ==========================================
-        // LEGACY DATA TRANSFORMER (ITEMS 7a-7d)
+        // LEGACY DATA TRANSFORMER
         // ==========================================
         let transformedScans = (sess.scannedObjects || []).map(item => {
            let tRef = (item.ref || item.sku || '').toUpperCase().trim();
@@ -2200,21 +2200,21 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
            let tAction = item.actionTag || '';
            let tSessionId = item.sessionId || '';
 
-           // 7a. UOM Bundle Conversion
+           // UOM Bundle Conversion
            let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === tRef);
            if (dbMatch && dbMatch.parentRef && dbMatch.uomMult > 1) {
                tRef = dbMatch.parentRef.toUpperCase().trim();
                tQty = tQty * dbMatch.uomMult;
            }
 
-           // 7b. Legacy Pick & Pack Missing Tags
+           // Legacy Pick & Pack Missing Tags
            let wTypeUpper = (sess.workflowType || '').toUpperCase();
            let sNameUpper = (sess.sessionName || '').toUpperCase();
            if ((wTypeUpper.includes('PACKING') || wTypeUpper.includes('PACK & SHIP')) && !tTag) {
                tTag = sNameUpper;
            }
 
-           // 7c. Split Concatenated Customer Tags & Orders (UPDATED: Force overwrite)
+           // Split Concatenated Customer Tags & Orders (UPDATED: Force overwrite)
            if (tTag.includes(' - ')) {
                let parts = tTag.split(' - ');
                tTag = parts[0].trim();
@@ -2242,7 +2242,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                }
            }
 
-           // 7d. Fallback Session ID
+           // Fallback Session ID
            if (!tSessionId) {
                tSessionId = `${sess.dateStr} - ${sess.sessionName}`;
            }
@@ -2296,7 +2296,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       updateProgress(`Syncing rebuilt ledger to the cloud...`, 95);
       logMsg(`Saving rebuilt universe to local memory...`, '#64b5f6');
       
-      // 5. Save the rebuilt universe
+      // Save the rebuilt universe
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       localStorage.setItem('asp_allocations', JSON.stringify(activeAllocations));
       

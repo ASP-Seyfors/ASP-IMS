@@ -64,7 +64,7 @@ async function checkAppUpdates() {
 }
 
 window.forceAppUpdate = async function() {
-    // 1. Circuit Breaker: Prevent infinite loops
+    // Circuit Breaker: Prevent infinite loops
     if (sessionStorage.getItem('isUpdating') === 'true') {
         console.warn('Update already in progress. Halting to prevent infinite loop.');
         sessionStorage.removeItem('isUpdating'); // Clear it for the next manual click
@@ -75,7 +75,7 @@ window.forceAppUpdate = async function() {
     sessionStorage.setItem('isUpdating', 'true');
     
     try {
-        // 2. Unregister all Service Workers
+        // Unregister all Service Workers
         if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (let registration of registrations) {
@@ -84,7 +84,7 @@ window.forceAppUpdate = async function() {
             }
         }
 
-        // 3. Clear all PWA Caches
+        // Clear all PWA Caches
         const cacheKeys = await caches.keys();
         for (let key of cacheKeys) {
             await caches.delete(key);
@@ -93,7 +93,7 @@ window.forceAppUpdate = async function() {
 
         console.log('Local caches cleared successfully. Reloading application...');
         
-        // 4. Reload from the server, bypassing the cache
+        // Reload from the server, bypassing the cache
         window.location.reload(true);
         
     } catch (error) {
@@ -130,7 +130,7 @@ window.onload = async () => {
     UIManager.checkForCloudUpdates();
   }
 
-  // NEW: Check if we need to show the red dot on load
+  // Check if we need to show the red dot on load
   if (typeof UIManager.evaluateSyncIndicator === 'function') {
     UIManager.evaluateSyncIndicator();
   }
@@ -182,7 +182,7 @@ window.masterSystemSync = async (event) => {
     }
     updateStep(1, "Local History Uploaded", 33);
 
-    // FIX: Download fresh items from the cloud using the correct function name
+    // Download fresh items from the cloud using the correct function name
     if (typeof DatabaseManager.downloadCloudDatabase === 'function') {
       await DatabaseManager.downloadCloudDatabase(null, true);
     }

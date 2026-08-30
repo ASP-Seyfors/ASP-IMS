@@ -62,7 +62,7 @@ const ReportsManager = {
     `;
     document.body.appendChild(modal);
   
-    // NEW: Render the SVGs immediately after the modal is added to the screen
+    // Render the SVGs immediately after the modal is added to the screen
     if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }
@@ -109,8 +109,6 @@ const ReportsManager = {
 
     filtered.sort((a, b) => (a.mfr || '').localeCompare(b.mfr || '') || (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
     let totalUnits = filtered.reduce((acc, i) => acc + ((parseInt(i.onHand, 10) || 0) - (parseInt(i.reservedQty, 10) || 0)), 0);
-
-    // ... (Keep your existing HTML generation here) ...
 
     let html = `<!DOCTYPE html><html><head><title>${title}</title>
     <style>
@@ -178,7 +176,7 @@ const ReportsManager = {
 
     html += `</tbody></table></body></html>`;
     
-    // 3. Fix the Filename and Print Truncation
+    // Fix the Filename and Print Truncation
     let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
     // Remove the .pdf here
     let filename = `ASP_${fileSuffix}_Report_(${dateStr})`; 
@@ -274,7 +272,7 @@ const ReportsManager = {
     if (btn) { btn.textContent = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
 
     try {
-      // 1. Fetch live ledger
+      // Fetch live ledger
       let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
       let text = await res.text();
       let responseData = JSON.parse(text);
@@ -285,7 +283,7 @@ const ReportsManager = {
 
       let auditLog = responseData.data;
 
-      // 2. Filter for the last 7 days
+      // Filter for the last 7 days
       let cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - 7);
       cutoffDate.setHours(0,0,0,0);
@@ -300,7 +298,7 @@ const ReportsManager = {
         return;
       }
 
-      // 3. Calculate KPIs
+      // Calculate KPIs
       let sessionsSet = new Set();
       let inboundSessions = new Set();
       let outboundSessions = new Set();
@@ -386,7 +384,7 @@ const ReportsManager = {
         newlyAddedRefs.add(item.ref);
       });
 
-      // 4. Build the HTML output
+      // Build the HTML output
       let auditedSessionsHtml = '';
       let sortedDates = Object.keys(sessionsByDate).sort().reverse(); 
       if (sortedDates.length > 0) {
@@ -467,7 +465,7 @@ const ReportsManager = {
 
       </body></html>`;
 
-      // 5. Trigger the hidden iframe print with Magic Dot Title
+      // Trigger the hidden iframe print with Magic Dot Title
       let iframe = document.getElementById('pdfPrintFrame');
       if (!iframe) {
         iframe = document.createElement('iframe');
@@ -507,7 +505,7 @@ const ReportsManager = {
     if (btn) { btn.textContent = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
 
     try {
-      // 1. Fetch the live audit log directly from the master Google Sheet
+      // Fetch the live audit log directly from the master Google Sheet
       let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
       let text = await res.text();
       let responseData;
@@ -525,7 +523,7 @@ const ReportsManager = {
       let auditLog = responseData.data;
       let lotMap = {};
 
-      // 2. Crunch the ledger math to find active lots
+      // Crunch the ledger math to find active lots
       auditLog.forEach(row => {
         let ref = row['REF / SKU'];
         let lot = row['Lot'];
@@ -554,7 +552,7 @@ const ReportsManager = {
         }
       });
 
-      // 3. Filter against the selected timeframe
+      // Filter against the selected timeframe
       let cutoffDate = new Date();
       cutoffDate.setMonth(cutoffDate.getMonth() + months);
 
@@ -562,7 +560,7 @@ const ReportsManager = {
       let atRisk = Object.values(lotMap).filter(l => l.qty > 0 && new Date(l.exp) <= cutoffDate);
       atRisk.sort((a,b) => new Date(a.exp) - new Date(b.exp));
 
-      // 4. Build and Print the PDF
+      // Build and Print the PDF
       let html = `<!DOCTYPE html><html><head><title>Expiration Warning Report</title>
       <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; }
