@@ -22,6 +22,10 @@ const AuthManager = {
   currentUser: null,
   isGuest: false,
   isWorkstation: false, // NEW FLAG
+
+  idleTimeout: null,
+  idleDuration: 60 * 60 * 1000, // 1 hour in milliseconds
+  activityEvents: ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'],
   
   // NOTE: This is the actual Google Cloud Client ID to allow secure Google Sign-in.
   clientId: "578227168676-721gv6n3bt5qqcd67v1vhi6111c35fcc.apps.googleusercontent.com",
@@ -197,14 +201,90 @@ const AuthManager = {
       }
       // ----------------------------------------
     }
+
+    // Start tracking inactivity on successful authentication
+    this.startIdleTimer();
   },
 
-  logout() {
-    if (!confirm("Are you sure you want to log out?")) return;
+  /**
+   * Initializes the idle auto-logout timer and attaches event listeners.
+   */
+  startIdleTimer() {
+    this.stopIdleTimer(); // Clear any existing timer/listeners
+
+    // Bind handler so 'this' consistently refers to authManager
+    this.handleUserActivity = this.resetIdleTimer.bind(this);
+
+    // Attach listeners with passive flag for performance
+    this.activityEvents.forEach((event) => {
+      window.addEventListener(event, this.handleUserActivity, { passive: true });
+    });
+
+    // Start the initial countdown
+    this.resetIdleTimer();
+  },
+
+  /**
+   * Resets the inactivity timer whenever user action is detected.
+   */
+  resetIdleTimer() {
+    if (this.idleTimeout) {
+      clearTimeout(this.idleTimeout);
+    }
+
+    this.idleTimeout = setTimeout(() => {
+      this.handleIdleTimeout();
+    }, this.idleDuration);
+  },
+
+  /**
+   * Removes event listeners and clears the active timer.
+   */
+  stopIdleTimer() {
+    if (this.idleTimeout) {
+      clearTimeout(this.idleTimeout);
+      this.idleTimeout = null;
+    }
+
+    if (this.handleUserActivity) {
+      this.activityEvents.forEach((event) => {
+        window.removeEventListener(event, this.handleUserActivity);
+      });
+      this.handleUserActivity = null;
+    }
+  },
+
+  /**
+   * Triggered when 60 minutes of inactivity elapse.
+   */
+  handleIdleTimeout() {
+    this.stopIdleTimer();
+    console.warn('Session expired due to 1 hour of inactivity.');
+    alert('You have been logged out due to inactivity.');
+    
+    // Pass 'true' to force the logout without asking for confirmation
+    this.logout(true); 
+  },
+
+  logout(force = false) {
+    // Only ask for confirmation if this is a manual logout
+    if (!force && !confirm("Are you sure you want to log out?")) return;
+    
+    // Stop the timer and remove listeners only after we know we are logging out
+    this.stopIdleTimer();
+    
     this.currentUser = null;
     this.isGuest = false;
+    
+    // Clear Authentication Tokens
     localStorage.removeItem('asp_auth_session');
     sessionStorage.removeItem('asp_auth_session');
+    
+    // SECURITY PATCH: Wipe sensitive warehouse data upon logout
+    localStorage.removeItem('asp_allocations');
+    localStorage.removeItem('asp_remote_analytics');
+    
+    // Reload to enforce lockdown
     window.location.reload();
   },
 
