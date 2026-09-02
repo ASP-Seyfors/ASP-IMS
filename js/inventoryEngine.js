@@ -82,11 +82,15 @@ const InventoryEngine = {
       // Safely extract the qty whether it's the new object structure or an old number
       let allocatedToCust = typeof allocData === 'object' ? (allocData.qty || 0) : allocData;
       
-      if (requestedQty > allocatedToCust && !ignoreOverpack) {
+      if (requestedQty > allocatedToCust) {
         let extraNeeded = requestedQty - allocatedToCust;
+        
+        // 1. ALWAYS prevent negative inventory, regardless of warnings
         if (extraNeeded > available) {
             throw new Error(`HARD ERROR: Insufficient stock to over-pack. You need ${extraNeeded} extra units, but only ${available} are available on the shelf.`);
-        } else {
+        } 
+        // 2. Only show the over-pack warning if we aren't explicitly ignoring it
+        else if (!ignoreOverpack) {
             throw new Error(`OVERPACK_WARNING: You are packing ${requestedQty}, but this customer only has ${allocatedToCust} reserved. This will pull ${extraNeeded} extra unit(s) from standard inventory. Proceed?`);
         }
       }

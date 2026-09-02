@@ -1279,9 +1279,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
 
+    // ✨ FIX: Automatically bypass the "Extra Item" warning if there is no pre-loaded manifest
+    let bypassOverpackWarning = ignoreOverpack || !this.isManifestEnabled;
+
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, ignoreOverpack, this.currentWorkflowType);
+      InventoryEngine.validateAvailability(ref, qty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, bypassOverpackWarning, this.currentWorkflowType);
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
         let friendlyMsg = `You just scanned an item that isn't on the original reserve list or exceeds the expected quantity for this customer.\n\nDo you want to pull this from general inventory and add it to their shipment anyway?`;

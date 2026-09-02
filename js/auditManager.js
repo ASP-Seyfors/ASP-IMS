@@ -2107,6 +2107,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
   exportUpdatedDatabaseJSON() {
     let currentDB = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
     let currentVendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || [];
+    let currentCustomers = JSON.parse(localStorage.getItem('asp_wh_customers')) || [];
+    let currentSuppliers = JSON.parse(localStorage.getItem('asp_wh_suppliers')) || [];
     let newItemsMap = new Map(), updatesMap = new Map();
     
     this.parsedAuditSessions.forEach(sess => {
@@ -2129,7 +2131,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       }
     });
 
-    let outJSON = { vendors: currentVendors, items: currentDB };
+    // ✨ FIX: Bundle all four arrays into the final JSON export
+    let outJSON = { 
+        customers: currentCustomers,
+        suppliers: currentSuppliers,
+        vendors: currentVendors, 
+        items: currentDB 
+    };
     UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `database_updated_${Date.now()}.json`, 'application/json');
   },
 

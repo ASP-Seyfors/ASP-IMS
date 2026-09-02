@@ -399,9 +399,15 @@ const DatabaseManager = {
   },
 
   backupFullDatabase() {
-    let outJSON = { vendors: this.vendors, items: this.db };
+    // ✨ FIX: Bundle all four arrays into the final JSON backup
+    let outJSON = { 
+        customers: this.customers,
+        suppliers: this.suppliers,
+        vendors: this.vendors, 
+        items: this.db 
+    };
     UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `ASP_Database_Backup_${Date.now()}.json`, 'application/json');
-  },  
+  },
 
   runMasterLookup() {
     let curRef = document.getElementById('refInput').value.trim().toUpperCase();
