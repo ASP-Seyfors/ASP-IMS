@@ -2242,17 +2242,17 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         
         let success = false;
         let attempts = 0;
-        let maxAttempts = 5;
-        let waitTime = 3000; // Start with a 3-second penalty wait
+        let maxAttempts = 6;
+        let waitTime = 5000; // Start with a 5-second penalty wait if blocked
 
         while (!success && attempts < maxAttempts) {
           try {
             let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sLite.id}`);
-            let rawText = await res.text();
+            let rawText = (await res.text()).trim();
             
-            // Catch Google's HTML Error Pages immediately
-            if (rawText.includes("<!DOCTYPE") || rawText.includes("<html") || rawText.includes("<HTML")) {
-              throw new Error("Google Rate Limit HTML Response");
+            // ✨ BULLETPROOF CHECK: If it doesn't start with { or [, it is an HTML error page
+            if (!rawText.startsWith("{") && !rawText.startsWith("[")) {
+              throw new Error("Google sent back an HTML Error Page instead of data.");
             }
             
             let sessionData = JSON.parse(rawText);
@@ -2268,16 +2268,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           } catch (fetchErr) {
             attempts++;
             if (attempts >= maxAttempts) {
-               throw new Error(`Failed to download session after ${maxAttempts} attempts. Google is permanently blocking the connection.`);
+               throw new Error(`Google is actively blocking the connection. Please wait 5 minutes and try the restore again.`);
             }
-            logMsg(`  ⚠️ Google throttled connection (Attempt ${attempts}). Pausing ${waitTime/1000} seconds...`, '#ffeb3b');
+            logMsg(`  ⚠️ Google throttled connection (Attempt ${attempts}/5). Pausing ${waitTime/1000} seconds...`, '#ffeb3b');
             await new Promise(resolve => setTimeout(resolve, waitTime));
-            waitTime += 2000; // Exponentially increase the penalty wait time (3s, 5s, 7s, 9s...)
+            waitTime += 3000; // Exponentially increase penalty wait (5s, 8s, 11s, 14s)
           }
         }
         
-        // ✨ Standard delay between successful downloads to keep under the radar
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        // ✨ INCREASED STANDARD DELAY: Wait 2 full seconds between downloads to stay under quota
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
       updateProgress(`Wiping current database quantities...`, 45);
