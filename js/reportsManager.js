@@ -501,59 +501,41 @@ const ReportsManager = {
   async generateUnifiedExpirationReport() {
     let btn = document.querySelector('button[onclick="ReportsManager.generateUnifiedExpirationReport()"]');
     let origText = btn ? btn.innerHTML : "⚠️ Run Expiration Report";
-    if (btn) { btn.innerHTML = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
+    if (btn) { btn.innerHTML = "⏳ Calculating Local Ledger..."; btn.disabled = true; }
 
     try {
-      // Fetch the live audit log directly from the master Google Sheet
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
-      let text = await res.text();
-      let responseData;
-      
-      try {
-        responseData = JSON.parse(text);
-      } catch(e) { 
-        throw new Error("Connection blocked by Google. Check Apps Script permissions."); 
-      }
+      // 1. Pull the active lots from local memory instead of relying on a slow Google fetch
+      let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+      let activeLots = [];
 
-      if (responseData.status !== "success" || !responseData.data) {
-        throw new Error(responseData.message || "Failed to load audit log from cloud.");
-      }
-
-      let auditLog = responseData.data;
-      let lotMap = {};
-
-      // Crunch the ledger math to find active lots
-      auditLog.forEach(row => {
-        let ref = row['REF / SKU'];
-        let lot = row['Lot'];
-        let exp = row['Exp Date'];
-        let qty = parseInt(row['Qty Moved'], 10) || 0;
-        let workflow = row['Workflow'] || '';
-        
-        // Skip invalid rows or items without expiration tracking
-        if (!ref || !lot || lot === 'N/A' || !exp || exp === 'N/A' || exp === 'NO_EXP') return;
-
-        let key = `${ref}_${lot}_${exp}`;
-        if (!lotMap[key]) {
-          let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
-            ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) 
-            : null;
-          let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
-          lotMap[key] = { ref, lot, exp, mfr, qty: 0 };
-        }
-
-        // FEFO Math: Add inbound receiving, subtract outbound packing
-        if (workflow.includes('Receiving') || workflow.includes('Stocktake')) {
-          lotMap[key].qty += qty;
-        } else if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) {
-          lotMap[key].qty -= qty;
-        }
+      // 2. Loop through all allocations (both standard bins and damaged inventory)
+      Object.keys(currentAllocations).forEach(custTag => {
+        let custData = currentAllocations[custTag];
+        Object.keys(custData).forEach(ref => {
+          let itemData = custData[ref];
+          
+          if (itemData.details && Array.isArray(itemData.details)) {
+             itemData.details.forEach(det => {
+               if (det.qty > 0 && det.exp && det.exp !== 'NO_EXP' && det.exp !== 'N/A') {
+                 
+                 let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+                 let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
+                 
+                 activeLots.push({
+                   ref: ref,
+                   lot: det.lot,
+                   exp: det.exp,
+                   mfr: mfr,
+                   qty: det.qty,
+                   customer: custTag
+                 });
+               }
+             });
+          }
+        });
       });
 
-      // Filter to only active physical stock
-      let activeLots = Object.values(lotMap).filter(l => l.qty > 0);
-
-      // Define Time Brackets
+      // 3. Define Time Brackets
       let today = new Date();
       let sixMonths = new Date(); sixMonths.setMonth(today.getMonth() + 6);
       let twelveMonths = new Date(); twelveMonths.setMonth(today.getMonth() + 12);
@@ -566,6 +548,7 @@ const ReportsManager = {
         twentyFour: []
       };
 
+      // 4. Sort items into brackets
       activeLots.forEach(item => {
         let expDate = new Date(item.exp);
         if (expDate < today) groups.expired.push(item);
@@ -574,22 +557,24 @@ const ReportsManager = {
         else if (expDate <= twentyFourMonths) groups.twentyFour.push(item);
       });
 
-      // Helper function to build table sections
+      // 5. Helper function to build table sections
       const buildSection = (title, color, icon, items) => {
         if (items.length === 0) return '';
         items.sort((a, b) => new Date(a.exp) - new Date(b.exp));
         
         let sectionHtml = `
           <h3 style="color:${color}; border-bottom:2px solid ${color}; padding-bottom:6px; margin-top:20px;">${icon} ${title} (${items.length} Lots)</h3>
-          <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th style="text-align:center;">Remaining Qty</th></tr></thead><tbody>
+          <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th>Location</th><th style="text-align:center;">Qty</th></tr></thead><tbody>
         `;
         items.forEach(item => {
-          sectionHtml += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:${color}; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold; font-size:14px;">${item.qty}</td></tr>`;
+          let locTag = item.customer === 'ASP DAMAGED INVENTORY' ? `<span style="color:#c62828; font-weight:bold;">Damaged Bin</span>` : item.customer;
+          sectionHtml += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:${color}; font-weight:bold;">${item.exp}</td><td style="font-size:11px; color:#555;">${locTag}</td><td style="text-align:center; font-weight:bold; font-size:14px;">${item.qty}</td></tr>`;
         });
         sectionHtml += `</tbody></table>`;
         return sectionHtml;
       };
 
+      // 6. Build HTML Wrapper
       let html = `<!DOCTYPE html><html><head><title>Unified Expiration Report</title>
       <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; color:#333; }
@@ -609,7 +594,7 @@ const ReportsManager = {
           <div>Generated: ${new Date().toLocaleDateString()}</div>
         </div>
       </div>
-      <p style="font-style:italic; color:#777; margin-bottom:20px;">This report flags active physical inventory that has either expired or is at risk of expiring within the next 24 months, calculated directly from the live Cloud Ledger.</p>
+      <p style="font-style:italic; color:#777; margin-bottom:20px;">This report flags physically allocated inventory that has either expired or is at risk of expiring within the next 24 months, calculated from the local system allocations cache.</p>
       `;
 
       let hasData = false;
@@ -619,7 +604,7 @@ const ReportsManager = {
       if (groups.twentyFour.length > 0) { html += buildSection('Expiring within 24 Months', '#0277bd', 'ℹ️', groups.twentyFour); hasData = true; }
 
       if (!hasData) {
-        html += `<div style="text-align:center; padding:30px; font-size:14px; color:#555; border:1px dashed #ccc; border-radius:6px; background:#f9f9f9;">No active inventory is set to expire within the next 24 months.</div>`;
+        html += `<div style="text-align:center; padding:30px; font-size:14px; color:#555; border:1px dashed #ccc; border-radius:6px; background:#f9f9f9;">No allocated inventory is set to expire within the next 24 months.</div>`;
       }
 
       html += `</body></html>`;
