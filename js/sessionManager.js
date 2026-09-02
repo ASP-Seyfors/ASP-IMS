@@ -650,20 +650,29 @@ const SessionManager = {
 
       let destRow = document.getElementById('rowItemDestination');
       let tagRow = document.getElementById('rowCustomerTag');
+      
+      // ✨ FIX: Grab the bundle checkbox wrapper
+      let chkBundle = document.getElementById('chkIsBundle'); 
+      let bundleWrapper = chkBundle ? chkBundle.parentElement : null;
+
       if (this.currentWorkflowType.includes('Receiving & Reserving')) {
         if (destRow) destRow.style.display = 'flex';
         if (tagRow) tagRow.style.display = this.currentItemAction === 'Reserved' ? 'flex' : 'none';
+        if (bundleWrapper) bundleWrapper.style.display = 'block'; // Show during Receiving
       } else if (this.currentWorkflowType.includes('Reserving')) {
         if (destRow) destRow.style.display = 'none';
         if (tagRow) tagRow.style.display = 'none';
+        if (bundleWrapper) bundleWrapper.style.display = 'none'; // Hide
         this.currentItemAction = 'Reserved';
       } else if (this.currentWorkflowType.includes('Packing')) {
         if (destRow) destRow.style.display = 'none';
         if (tagRow) tagRow.style.display = 'none'; 
+        if (bundleWrapper) bundleWrapper.style.display = 'none'; // Hide
         this.currentItemAction = 'Pack & Ship';
       } else {
         if (destRow) destRow.style.display = 'none';
         if (tagRow) tagRow.style.display = 'none';
+        if (bundleWrapper) bundleWrapper.style.display = 'none'; // Hide
         this.currentItemAction = 'Inventory';
       }
 
@@ -1186,6 +1195,15 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
     let matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
+    
+    // ✨ FIX: Check if we already approved this as a new item earlier in this session
+    if (!matchedDbItem) {
+      let pendingMatch = this.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+      if (pendingMatch) {
+        matchedDbItem = pendingMatch; // Trick the system into knowing it's safe
+      }
+    }
+
     let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty, ref);
     
     if (matchedDbItem && uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
