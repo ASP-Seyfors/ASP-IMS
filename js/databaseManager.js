@@ -245,7 +245,8 @@ const DatabaseManager = {
     let dbCopy = this.db.filter(i => {
         let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
         let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;
-        let matchesPrice = needsPriceFilter ? (!i.price || i.price === '$0.00' || i.price === '0' || !i.cost || i.cost === '$0.00' || i.cost === '0') : true;
+        // ✨ FIX: Only check if the Selling Price is missing, ignoring cost
+        let matchesPrice = needsPriceFilter ? (!i.price || i.price === '$0.00' || i.price === '0') : true;
         return matchesSearch && matchesMfr && matchesPrice;
       })
       .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));

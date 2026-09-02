@@ -1254,6 +1254,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
            ref = pRef;
            qty = qty * uMult;
            matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === pRef);
+           
+           // ✨ FIX: If the individual parent item doesn't exist, we must explicitly create it too!
+           if (!matchedDbItem) {
+               let parentAlreadyPending = this.pendingNewItems.find(i => i.ref === pRef);
+               if (!parentAlreadyPending) {
+                   this.pendingNewItems.push({
+                       ref: pRef,
+                       gtin: "", 
+                       mfr: vendor,
+                       price: "$0.00",
+                       desc: "Navigate to vendor website for item description.",
+                       parentRef: "", 
+                       uomMult: 1
+                   });
+               }
+           }
        }
     }
 
