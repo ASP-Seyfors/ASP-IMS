@@ -33,8 +33,8 @@ This is your main dashboard where you start every task.
 
 ## 3. Enterprise Tools & Database
 *(Requires the "Advanced" checkbox to be ticked)*
-* **🗄️ Database Editor:** Allows you to view the master catalog. Admins can use this to update prices, costs, and descriptions directly from the tablet. 
-* **📊 Reports & Analytics:** Use this to generate printable PDF reports of On-Hand Stock, Out-of-Stock items, or create Custom Promotional Flyers to email to customers.
+* **🗄️ Database Editor:** Allows you to view the master catalog. Click the "Edit" button next to any item to update its description, shelf location, or active status.  
+* **📊 Reports & Analytics:** Used to generate reports of On-Hand Stock, Unified Expiration Warnings (FEFO), RevMed Catalog data, or create Custom Promotional Flyers to email to customers.
 * **🗃️ Customer Bins:** A quick-view tool that lists every item currently sitting in a physical reserve bin for a specific customer. 
 
 ## 4. Pre-Loading Orders
@@ -72,7 +72,10 @@ Located inside the **Traceability** button on the Home Screen.
 
 ## 9. Developer & Admin Tools
 *(Accessible via Settings. Restricted to System Administrators.)*
+* 📊 End of Week Rollup: Automatically pulls the live Cloud Ledger to generate a master KPI summary for the last 7 days.
 * **🛠️ Developer Tools:** A highly restricted page for maintaining the app.
+* ⏪ Reverse Session: Used to reverse a recent Receiving or Reserving session from the last 24 hours.
+* ⚠️ System Restore: Rebuilds from the selected Stocktake. Downloads a historical "Full Stocktake" baseline and mathematically replays every subsequent session.
 * **🧹 Offload & Purge Local History:** Cleans up the tablet's memory by deleting old completed sessions while keeping pending sessions safe.
 * **🗑️ Force Update / Clear Cache:** The "Nuclear Option." Wipes the app completely and forces it to download the newest version of the code from the internet. Use this if the app is glitching. 
 * **🐞 Live Debug Console:** Opens a floating window that tracks background code execution to help track down bugs while using the app.

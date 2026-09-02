@@ -259,14 +259,16 @@ const DatabaseManager = {
           <td style="padding:10px; font-weight:bold; color:#00796b;">${item.ref || item.sku}</td>
           <td style="padding:10px; font-size:0.85rem; color:#333;">${item.desc || '--'}</td>
           <td style="padding:10px; text-align:center;">
-            <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; margin-right: 5px; display:flex; align-items:center; gap:6px;" onclick="DatabaseManager.downloadCloudDatabase(event)">
-              <i data-lucide="cloud-download" style="width:16px; height:16px;"></i> Sync Cloud DB
+            <button class="btn-small btn-auto" style="background-color: #00796b; color: #fff; margin:0; padding:6px 12px; display:flex; align-items:center; gap:6px;" onclick="DatabaseManager.openEditModal('${safeRef}')">
+              <i data-lucide="pencil" style="width:14px; height:14px;"></i> Edit
             </button>
           </td>
         </tr>
       `;
     });
     tbody.innerHTML = html;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   openEditModal(refVal) {

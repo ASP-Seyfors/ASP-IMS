@@ -498,11 +498,10 @@ const ReportsManager = {
     }
   },
 
-  async generateExpirationReport() {
-    let months = parseInt(document.getElementById('expirationFilter').value, 10);
-    let btn = document.querySelector('button[onclick="ReportsManager.generateExpirationReport()"]');
-    let origText = btn ? btn.textContent : "⚠️ Run Report";
-    if (btn) { btn.textContent = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
+  async generateUnifiedExpirationReport() {
+    let btn = document.querySelector('button[onclick="ReportsManager.generateUnifiedExpirationReport()"]');
+    let origText = btn ? btn.innerHTML : "⚠️ Run Expiration Report";
+    if (btn) { btn.innerHTML = "⏳ Fetching Live Ledger..."; btn.disabled = true; }
 
     try {
       // Fetch the live audit log directly from the master Google Sheet
@@ -536,7 +535,6 @@ const ReportsManager = {
 
         let key = `${ref}_${lot}_${exp}`;
         if (!lotMap[key]) {
-          // Cross-reference with master catalog to get the Manufacturer name
           let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
             ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) 
             : null;
@@ -552,39 +550,82 @@ const ReportsManager = {
         }
       });
 
-      // Filter against the selected timeframe
-      let cutoffDate = new Date();
-      cutoffDate.setMonth(cutoffDate.getMonth() + months);
+      // Filter to only active physical stock
+      let activeLots = Object.values(lotMap).filter(l => l.qty > 0);
 
-      // Only show lots that actually have remaining physical stock > 0
-      let atRisk = Object.values(lotMap).filter(l => l.qty > 0 && new Date(l.exp) <= cutoffDate);
-      atRisk.sort((a,b) => new Date(a.exp) - new Date(b.exp));
+      // Define Time Brackets
+      let today = new Date();
+      let sixMonths = new Date(); sixMonths.setMonth(today.getMonth() + 6);
+      let twelveMonths = new Date(); twelveMonths.setMonth(today.getMonth() + 12);
+      let twentyFourMonths = new Date(); twentyFourMonths.setMonth(today.getMonth() + 24);
 
-      // Build and Print the PDF
-      let html = `<!DOCTYPE html><html><head><title>Expiration Warning Report</title>
+      let groups = {
+        expired: [],
+        six: [],
+        twelve: [],
+        twentyFour: []
+      };
+
+      activeLots.forEach(item => {
+        let expDate = new Date(item.exp);
+        if (expDate < today) groups.expired.push(item);
+        else if (expDate <= sixMonths) groups.six.push(item);
+        else if (expDate <= twelveMonths) groups.twelve.push(item);
+        else if (expDate <= twentyFourMonths) groups.twentyFour.push(item);
+      });
+
+      // Helper function to build table sections
+      const buildSection = (title, color, icon, items) => {
+        if (items.length === 0) return '';
+        items.sort((a, b) => new Date(a.exp) - new Date(b.exp));
+        
+        let sectionHtml = `
+          <h3 style="color:${color}; border-bottom:2px solid ${color}; padding-bottom:6px; margin-top:20px;">${icon} ${title} (${items.length} Lots)</h3>
+          <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th style="text-align:center;">Remaining Qty</th></tr></thead><tbody>
+        `;
+        items.forEach(item => {
+          sectionHtml += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:${color}; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold; font-size:14px;">${item.qty}</td></tr>`;
+        });
+        sectionHtml += `</tbody></table>`;
+        return sectionHtml;
+      };
+
+      let html = `<!DOCTYPE html><html><head><title>Unified Expiration Report</title>
       <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; }
-        h2 { color: #e65100; border-bottom: 2px solid #e65100; padding-bottom: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #fff3e0; border: 1px solid #ffcc80; padding: 8px; text-align: left; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; font-size:12px; color:#333; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0277bd; padding-bottom: 10px; margin-bottom: 10px; }
+        h1 { margin:0; color:#0277bd; font-size:20px; text-transform:uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f5f5f5; border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 11px; text-transform:uppercase;}
         td { border: 1px solid #eee; padding: 8px; }
       </style></head><body>
-      <h2>⚠️ Expiration Warning (Next ${months} Months)</h2>
-      <table><thead><tr><th>MFR</th><th>REF</th><th>Lot</th><th>Exp Date</th><th style="text-align:center;">Remaining Qty</th></tr></thead><tbody>`;
+      
+      <div class="header">
+        <div>
+          <h1>Unified Expiration Report (FEFO)</h1>
+          <div style="font-size:12px; font-weight:bold; color:#555; margin-top:4px;">Allied Surgical Products</div>
+        </div>
+        <div style="text-align:right; font-size:11px; color:#555;">
+          <div>Generated: ${new Date().toLocaleDateString()}</div>
+        </div>
+      </div>
+      <p style="font-style:italic; color:#777; margin-bottom:20px;">This report flags active physical inventory that has either expired or is at risk of expiring within the next 24 months, calculated directly from the live Cloud Ledger.</p>
+      `;
 
-      if (atRisk.length === 0) {
-        html += `<tr><td colspan="5" style="text-align:center; color:#555; padding:15px; font-style:italic;">No active inventory is expiring within this timeframe.</td></tr>`;
-      } else {
-        atRisk.forEach(item => {
-          html += `<tr><td>${item.mfr}</td><td style="font-weight:bold;">${item.ref}</td><td>${item.lot}</td><td style="color:#d32f2f; font-weight:bold;">${item.exp}</td><td style="text-align:center; font-weight:bold; font-size:14px;">${item.qty}</td></tr>`;
-        });
+      let hasData = false;
+      if (groups.expired.length > 0) { html += buildSection('Already Expired', '#c62828', '❌', groups.expired); hasData = true; }
+      if (groups.six.length > 0) { html += buildSection('Expiring within 6 Months', '#e65100', '🚨', groups.six); hasData = true; }
+      if (groups.twelve.length > 0) { html += buildSection('Expiring within 12 Months', '#f57f17', '⚠️', groups.twelve); hasData = true; }
+      if (groups.twentyFour.length > 0) { html += buildSection('Expiring within 24 Months', '#0277bd', 'ℹ️', groups.twentyFour); hasData = true; }
+
+      if (!hasData) {
+        html += `<div style="text-align:center; padding:30px; font-size:14px; color:#555; border:1px dashed #ccc; border-radius:6px; background:#f9f9f9;">No active inventory is set to expire within the next 24 months.</div>`;
       }
 
-      html += `</tbody></table></body></html>`;
+      html += `</body></html>`;
       
       let safeDate = new Date().toLocaleDateString().replace(/\//g, '.');
-      // Remove the .pdf here
-      let filename = `Expiration_Warning_Report_${months}_Months_${safeDate}`;
+      let filename = `ASP_Unified_Expiration_Report_(${safeDate})`;
       let safeTitle = filename.replace(/\./g, '\u2024'); 
       
       let win = window.open('', '_blank');
@@ -592,13 +633,13 @@ const ReportsManager = {
         win.document.write(html); 
         win.document.title = safeTitle; 
         win.focus(); 
-        setTimeout(() => win.print(), UIManager.printTimeout); // Increased timeout
+        setTimeout(() => win.print(), UIManager.printTimeout);
       }
 
     } catch (err) {
       alert("Error generating expiration report: " + err.message);
     } finally {
-      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      if (btn) { btn.innerHTML = origText; btn.disabled = false; }
     }
   },
 

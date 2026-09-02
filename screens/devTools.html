@@ -26,45 +26,6 @@
     <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDevTools()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
 
-  <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px;">Restricted administrative and debugging utilities. Do not run without supervision.</p>
-
-  <!-- Sandbox Toggle -->
-  <div style="background: #ffebee; border: 1px dashed #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <label for="chkSandboxMode" style="color: #c62828; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1rem;">
-      <input type="checkbox" id="chkSandboxMode" name="chkSandboxMode" onchange="handleSandboxToggle(this)" style="transform: scale(1.2);">
-      Enable Testing Sandbox Mode
-    </label>
-    <div style="font-size: 0.8rem; color: #c62828; margin-top: 6px;">Routes all saves, databases, and syncs to the TEST DATABASE.</div>
-  </div>
-
-  <!-- Session Reversal Tool -->
-  <div style="background: #fce4ec; border: 1px solid #d81b60; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #d81b60;"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Undo / Reverse Session</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
-    <div style="display: flex; gap: 8px;">
-      <select id="reversalSessionSelect" style="flex: 2; padding: 8px; border: 1px solid #d81b60; border-radius: 4px; font-weight: bold;"></select>
-      <button class="btn-action btn-auto" style="flex: 1; background-color: #d81b60; color: #fff; margin: 0; padding: 8px;" onclick="SessionManager.executeSessionReversal()">Reverse Math</button>
-    </div>
-  </div>
-
-  <!-- System Restore -->
-  <div style="background: #fff3e0; border: 1px solid #e65100; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #e65100;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Event Replay & Restore</h4>
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="AuditManager.openRestoreModal()"><i data-lucide="rewind" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Execute System Restore</button>
-  </div>
-
-  <!-- Admin Utilities (Moved from Settings) -->
-  <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Admin Utilities</h4>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>QuickBooks Online Sync</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Offload & Purge Local History</button>
-      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()"><i data-lucide="trash-2" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Force Update / Clear Cache</button>
-      <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; margin:0; padding: 10px;" onclick="AuditManager.fetchBugReports(event)"><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>View Bug Reports</button>
-    </div>
-  </div>
-
   <!-- E-Commerce & Master Data Exports -->
   <div style="background: #e8eaf6; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #01579b;"><i data-lucide="shopping-cart" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>E-Commerce & Master Exports</h4>
@@ -94,6 +55,52 @@
     </div>
   </div>
 
+  <!-- End of Week Rollup -->
+  <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
+    <h4 style="margin: 0 0 10px 0; color: #0277bd; text-align: left;"><i data-lucide="calendar-check" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>End of Week Rollup Report</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
+    <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Week Summary Report</button>
+  </div>  
+
+  <!-- Admin Utilities (Moved from Settings) -->
+  <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Admin Utilities</h4>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>QuickBooks Online Sync</button>
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
+      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Offload & Purge Local History</button>
+      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()"><i data-lucide="trash-2" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Force Update / Clear Cache</button>
+      <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; margin:0; padding: 10px;" onclick="AuditManager.fetchBugReports(event)"><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>View Bug Reports</button>
+    </div>
+  </div>
+
+  <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px;">Restricted administrative and debugging utilities. Do not run without supervision.</p>
+
+  <!-- Sandbox Toggle -->
+  <div style="background: #ffebee; border: 1px dashed #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <label for="chkSandboxMode" style="color: #c62828; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1rem;">
+      <input type="checkbox" id="chkSandboxMode" name="chkSandboxMode" onchange="handleSandboxToggle(this)" style="transform: scale(1.2);">
+      Enable Testing Sandbox Mode
+    </label>
+    <div style="font-size: 0.8rem; color: #c62828; margin-top: 6px;">Routes all saves, databases, and syncs to the TEST DATABASE.</div>
+  </div>
+
+  <!-- Session Reversal Tool -->
+  <div style="background: #fce4ec; border: 1px solid #d81b60; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #d81b60;"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Undo / Reverse Session</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
+    <div style="display: flex; gap: 8px;">
+      <select id="reversalSessionSelect" style="flex: 2; padding: 8px; border: 1px solid #d81b60; border-radius: 4px; font-weight: bold;"></select>
+      <button class="btn-action btn-auto" style="flex: 1; background-color: #d81b60; color: #fff; margin: 0; padding: 8px;" onclick="SessionManager.executeSessionReversal()">Reverse Math</button>
+    </div>
+  </div>
+
+  <!-- System Restore -->
+  <div style="background: #fff3e0; border: 1px solid #e65100; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #e65100;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Event Replay & Restore</h4>
+    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="AuditManager.openRestoreModal()"><i data-lucide="rewind" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Execute System Restore</button>
+  </div>  
+  
   <!-- Floating Debug Console Toggle -->
   <div style="background: #e8f5e9; border: 1px solid #2e7d32; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #2e7d32;"><i data-lucide="bug" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Live Debug Console</h4>

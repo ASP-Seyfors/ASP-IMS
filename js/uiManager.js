@@ -368,8 +368,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     try {
         // USE THE NEW ENGINE STRICT LOOKUP
         item = InventoryEngine.lookupAndNormalize(searchRef, searchGtin, DatabaseManager.db);
+        if (!item) throw new Error("Item not found"); // Explicitly throw if null
     } catch (e) {
-        resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" is not in the local database catalog.</div>`;
+        resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" does not exist in the local catalog.</div>`;
         return;
     }
 

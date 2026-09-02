@@ -23,58 +23,26 @@
     <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
 
-  <!-- Cloud Session Generator -->
-  <div style="background: #e8eaf6; border: 1px solid #3f51b5; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #3f51b5;">Cloud Session Export Generator</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a previously archived session to generate its summary report without altering your local memory.</p>
-    
-    <select id="cloudExportSessionSelect" style="width: 100%; padding: 8px; border: 1px solid #3f51b5; border-radius: 4px; font-weight: bold; margin-bottom: 10px;">
-      <option value="">-- Select an Archived Session --</option>
-    </select>
-
-    <div style="display: flex; gap: 8px;">
-      <select id="cloudExportFormat" style="flex: 1; padding: 8px; border-radius: 4px;">
-        <option value="pdf">PDF Visual Report</option>
-        <option value="txt">TXT Data Log</option>
-      </select>
-      <button id="btnExportCloudSession" class="btn-action btn-auto" style="flex: 1; background-color: #3f51b5; color: #fff; margin: 0; padding: 8px;" onclick="AuditManager.exportCloudSessionData()">Generate Export</button>
-    </div>
-  </div>
-
   <!-- General Inventory Reports -->
   <div style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export On-Hand Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateInventoryReport('out_of_stock')"><i data-lucide="ban" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Out of Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Current RevMed Catalog</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Not on RevMed</button>
+      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateUnifiedExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Run Expiration Report</button>
     </div>
   </div>
 
-  <!-- Expiration Warnings -->
-  <div style="background: #fff3e0; border: 1px solid #ffcc80; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #e65100;">Expiration Risk Reports (FEFO)</h4>
-    <div style="display: flex; gap: 8px;">
-      <select id="expirationFilter" style="flex: 1; padding: 6px;">
-        <option value="0">Already Expired</option>
-        <option value="6">Expiring in next 6 Months</option>
-        <option value="12">Expiring in next 12 Months</option>
-        <option value="24">Expiring in next 24 Months</option>
-      </select>
-      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Run Report</button>
+  <!-- RevMed / DotMed Reports -->
+  <div style="background: #e8f5e9; border: 1px solid #81c784; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">RevMed / DotMed Reports</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Current RevMed Catalog</button>
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Not on RevMed</button>
     </div>
-  </div>
-
-  <!-- End of Week Rollup -->
-  <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
-    <h4 style="margin: 0 0 10px 0; color: #0277bd; text-align: left;">End of Week Rollup Report</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
-    <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Week Summary Report</button>
   </div>
 
   <!-- Legacy Customer Reports -->
-  <div style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px;">
+  <div style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #333;">Customer-Specific Reports</h4>
     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
       <select id="customerReportSelect" style="flex: 1; padding: 6px;"></select>
@@ -94,4 +62,23 @@
       <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="AuditManager.openCustomSalesFlyer()"><i data-lucide="sparkles" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Custom Sales Flyer</button>
     </div>
   </div>
+
+  <!-- Cloud Session Generator (Moved to Bottom) -->
+  <div style="background: #e8eaf6; border: 1px solid #3f51b5; padding: 12px; border-radius: 4px;">
+    <h4 style="margin: 0 0 10px 0; color: #3f51b5;">Cloud Session Export Generator</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a previously archived session to generate its summary report without altering your local memory.</p>
+    
+    <select id="cloudExportSessionSelect" style="width: 100%; padding: 8px; border: 1px solid #3f51b5; border-radius: 4px; font-weight: bold; margin-bottom: 10px;">
+      <option value="">-- Select an Archived Session --</option>
+    </select>
+
+    <div style="display: flex; gap: 8px;">
+      <select id="cloudExportFormat" style="flex: 1; padding: 8px; border-radius: 4px;">
+        <option value="pdf">PDF Visual Report</option>
+        <option value="txt">TXT Data Log</option>
+      </select>
+      <button id="btnExportCloudSession" class="btn-action btn-auto" style="flex: 1; background-color: #3f51b5; color: #fff; margin: 0; padding: 8px;" onclick="AuditManager.exportCloudSessionData()">Generate Export</button>
+    </div>
+  </div>
+
 </div>
