@@ -312,7 +312,6 @@ const DatabaseManager = {
         </div>
 
         <div style="display:flex; gap:10px; margin-bottom:10px;">
-          <div style="display:flex; gap:10px; margin-bottom:10px;">
           <div style="flex:1;">
             <label style="font-weight:bold; font-size:0.85rem; color:#555;">Category</label>
             <input type="text" id="modalCat" value="${dbItem.category || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">

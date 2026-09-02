@@ -823,7 +823,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntOnHand" checked> On-Hand Stock</label>
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntPrice" checked> Selling Price</label>
           <label style="cursor:pointer;"><input type="checkbox" id="chkIntCost" checked> Unit Cost</label>
-          <label style="cursor:pointer;"><input type="checkbox" id="chkIntMargin" checked> Gross Margin %</label>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -848,7 +847,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let incOnHand = document.getElementById('chkIntOnHand') ? document.getElementById('chkIntOnHand').checked : true;
     let incPrice = document.getElementById('chkIntPrice') ? document.getElementById('chkIntPrice').checked : true;
     let incCost = document.getElementById('chkIntCost') ? document.getElementById('chkIntCost').checked : true;
-    let incMargin = document.getElementById('chkIntMargin') ? document.getElementById('chkIntMargin').checked : true;
 
     let scopeTitle = limit === 'all' ? 'All Historical Items' : 'Top 10 Items';
     // Remove the .pdf here
@@ -895,16 +893,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           ${incOnHand ? '<th>On-Hand Stock</th>' : ''}
           ${incPrice ? '<th>Selling Price</th>' : ''}
           ${incCost ? '<th>Unit Cost</th>' : ''}
-          ${incMargin ? '<th>Gross Margin %</th>' : ''}
         </tr>
       </thead>
       <tbody>`;
 
     skuMap.forEach(item => {
-      let pVal = parseFloat((item.price || '0').replace(/[^0-9.-]+/g,"")) || 0;
-      let cVal = parseFloat((item.cost || '0').replace(/[^0-9.-]+/g,"")) || 0;
-      let margin = pVal > 0 ? (((pVal - cVal) / pVal) * 100).toFixed(1) + '%' : 'N/A';
-      
       let formattedPrice = item.price ? (item.price.startsWith('$') ? item.price : '$' + item.price) : '$0.00';
       let formattedCost = item.cost ? (item.cost.startsWith('$') ? item.cost : '$' + item.cost) : '$0.00';
 
@@ -916,7 +909,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           ${incOnHand ? `<td style="color:${item.onHand > 0 ? '#2e7d32' : '#c62828'}; font-weight:bold;">${item.onHand}</td>` : ''}
           ${incPrice ? `<td>${formattedPrice}</td>` : ''}
           ${incCost ? `<td>${formattedCost}</td>` : ''}
-          ${incMargin ? `<td style="font-weight:bold; color:#0277bd;">${margin}</td>` : ''}
         </tr>`;
     });
 
@@ -928,7 +920,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let safeTitle = filename.replace(/\./g, '\u2024');
       win.document.title = safeTitle; 
       win.focus(); 
-      setTimeout(() => win.print(), UIManager.printTimeout); // Increased timeout
+      setTimeout(() => win.print(), UIManager.printTimeout);
     }
     
     let modal = document.getElementById('internalReportOptionsModal');
@@ -1257,9 +1249,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
     let custAllocations = allocations[cleanCust] || {};
     
-    // Add any actively reserved items to the map
+    // ✨ FIX: Safely extract integer quantity if the data is an object
     Object.keys(custAllocations).forEach(ref => {
-      skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + custAllocations[ref];
+      let rawVal = custAllocations[ref];
+      let allocQty = typeof rawVal === 'object' ? (rawVal.qty || 0) : (parseInt(rawVal, 10) || 0);
+      skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + allocQty;
     });
 
     // Layer in remote analytics if present (for historical context)
