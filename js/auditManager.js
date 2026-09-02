@@ -2233,21 +2233,51 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       
       let fullSessions = [];
       
-      // Batch download payloads
+      // Batch download payloads with Google Rate-Limit Throttling & Exponential Backoff
       for (let i = 0; i < sessionsToFetch.length; i++) {
         let sLite = sessionsToFetch[i];
         let pct = Math.floor((i / sessionsToFetch.length) * 40); // First 40% is downloading
         updateProgress(`Downloading payload ${i+1} of ${sessionsToFetch.length}...`, pct);
         logMsg(`Fetching: ${sLite.dateStr} - ${sLite.sessionName}...`);
         
-        let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sLite.id}`);
-        let sessionData = await res.json();
-        if (sessionData && !sessionData.error) {
-          fullSessions.push(sessionData);
-          logMsg(`  ✓ Downloaded ${sessionData.scannedObjects ? sessionData.scannedObjects.length : 0} scanned items.`, '#fff');
-        } else {
-           logMsg(`  ❌ FAILED to download ${sLite.sessionName}!`, '#ff5252');
+        let success = false;
+        let attempts = 0;
+        let maxAttempts = 5;
+        let waitTime = 3000; // Start with a 3-second penalty wait
+
+        while (!success && attempts < maxAttempts) {
+          try {
+            let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sLite.id}`);
+            let rawText = await res.text();
+            
+            // Catch Google's HTML Error Pages immediately
+            if (rawText.includes("<!DOCTYPE") || rawText.includes("<html") || rawText.includes("<HTML")) {
+              throw new Error("Google Rate Limit HTML Response");
+            }
+            
+            let sessionData = JSON.parse(rawText);
+            
+            if (sessionData && !sessionData.error) {
+              fullSessions.push(sessionData);
+              logMsg(`  ✓ Downloaded ${sessionData.scannedObjects ? sessionData.scannedObjects.length : 0} scanned items.`, '#fff');
+              success = true; // Break the while loop
+            } else {
+               logMsg(`  ❌ FAILED: ${sessionData.message}`, '#ff5252');
+               break; // Server responded with a valid JSON error, do not retry
+            }
+          } catch (fetchErr) {
+            attempts++;
+            if (attempts >= maxAttempts) {
+               throw new Error(`Failed to download session after ${maxAttempts} attempts. Google is permanently blocking the connection.`);
+            }
+            logMsg(`  ⚠️ Google throttled connection (Attempt ${attempts}). Pausing ${waitTime/1000} seconds...`, '#ffeb3b');
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            waitTime += 2000; // Exponentially increase the penalty wait time (3s, 5s, 7s, 9s...)
+          }
         }
+        
+        // ✨ Standard delay between successful downloads to keep under the radar
+        await new Promise(resolve => setTimeout(resolve, 1200));
       }
 
       updateProgress(`Wiping current database quantities...`, 45);
