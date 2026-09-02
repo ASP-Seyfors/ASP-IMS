@@ -175,6 +175,12 @@ const SessionManager = {
   },
 
   async syncAllocationsToCloud() {
+    // ✨ CIRCUIT BREAKER ADDITION: Abort upload if we cannot verify we have the full picture
+    if (sessionStorage.getItem('asp_allocations_verified') !== 'true') {
+        console.warn("ABORTED: Cannot upload allocations because the local cache was not successfully verified with the cloud.");
+        return;
+    }
+
     let rawAllocations = localStorage.getItem('asp_allocations') || '{}';
     let allocationsObj = JSON.parse(rawAllocations);
     
@@ -228,9 +234,16 @@ const SessionManager = {
           });
         });
         localStorage.setItem('asp_allocations', JSON.stringify(allocMap));
+        
+        // ✨ CIRCUIT BREAKER ADDITION: Mark successful download
+        sessionStorage.setItem('asp_allocations_verified', 'true');
+      } else {
+        throw new Error("Invalid payload received from cloud.");
       }
     } catch (err) {
       console.warn("Failed to fetch cloud allocations:", err);
+      // ✨ CIRCUIT BREAKER ADDITION: Revoke upload permission if download fails
+      sessionStorage.removeItem('asp_allocations_verified');
     }
   },
 
@@ -1450,6 +1463,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       document.getElementById('screenReview').style.display = 'none';
       document.getElementById('screenSummary').style.display = 'none';
       document.getElementById('screenSetup').style.display = 'block';
+
+      this.currentItemAction = 'Inventory'; // FIX
     });
   },
 
@@ -1546,6 +1561,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       document.getElementById('screenSetup').style.display = 'block';
       this.isSessionActive = false; this.isManifestEnabled = false;
       localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
+
+      this.currentItemAction = 'Inventory'; // FIX
 
       this.saveToArchive('Completed');
     };
@@ -1654,6 +1671,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.isManifestEnabled = false;
     localStorage.setItem('asp_session_is_active', 'false'); 
     localStorage.setItem('asp_manifest_enabled', 'false');
+
+    this.currentItemAction = 'Inventory'; // FIX
 
     this.saveToArchive('Pending');
   },
