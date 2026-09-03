@@ -1156,9 +1156,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let btnMfr = document.getElementById('btnConfirmMfr');
     if (btnMfr) {
       btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
-    }
+    }    
 
-    // Reset Bundle UI
+    document.getElementById('screenScanning').style.display = 'none';
+    document.getElementById('screenReview').style.display = 'block';
+  },
+
+  returnToEdit() {
+    // ✨ FIX: Properly reset the bundle UI after the item is saved or cancelled
     let bundleChk = document.getElementById('chkIsBundle');
     let bundleRow = document.getElementById('rowBundleData');
     if (bundleChk) bundleChk.checked = false;
@@ -1166,11 +1171,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (document.getElementById('bundleParentRef')) document.getElementById('bundleParentRef').value = '';
     if (document.getElementById('bundleMult')) document.getElementById('bundleMult').value = '';
 
-    document.getElementById('screenScanning').style.display = 'none';
-    document.getElementById('screenReview').style.display = 'block';
-  },
-
-  returnToEdit() {
     document.getElementById('screenReview').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
   },
@@ -1503,8 +1503,13 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   completeSession(skipConfirm = false) {
-    // ✨ FIX: Added "async" so we can queue the uploads sequentially
-    const executeCompletion = async () => {
+    const executeCompletion = () => {
+      // ✨ FIX: 1. Instantly transition the screen and alert the user so there is ZERO wait time
+      document.getElementById('screenSummary').style.display = 'none';
+      document.getElementById('screenSetup').style.display = 'block';
+      if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ Math applied locally! Cloud sync is running safely in the background.");
+
+      // 2. Prep data locally
       this.scannedObjects.forEach((item, index) => {
         let qtyEl = document.getElementById(`editQty_${index}`);
         let tagEl = document.getElementById(`editTag_${index}`);
@@ -1539,18 +1544,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         });
       }
 
-      let ledgerResult = InventoryEngine.commitLedgerMath(
-        this.scannedObjects, 
-        DatabaseManager.db, 
-        currentAllocations, 
-        this.currentWorkflowType
-      );
-
+      let ledgerResult = InventoryEngine.commitLedgerMath(this.scannedObjects, DatabaseManager.db, currentAllocations, this.currentWorkflowType);
       localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
-      
-      // ✨ FIX: Upload Allocations, then physically pause the app for 2 seconds to defeat the 'no-cors' trap
-      await this.syncAllocationsToCloud();
-      await new Promise(resolve => setTimeout(resolve, 2000));
 
       if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
         this.pendingFieldUpdates.forEach(update => { 
@@ -1561,27 +1556,20 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       
       DatabaseManager.db = ledgerResult.updatedDb;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+
+      // Capture variables into memory before wiping the UI
+      let dbPayload = { 
+        action: "SYNC_LOCAL_DB", 
+        payload: { 
+          items: DatabaseManager.db,
+          customers: DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!"),
+          suppliers: DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!"),
+          vendors: DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!")
+        } 
+      };
+      let archiveUrl = this.getActiveArchiveUrl();
       
-      if (this.getActiveArchiveUrl()) {
-          let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
-          let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
-          let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
-
-          let dbPayload = { 
-            action: "SYNC_LOCAL_DB", 
-            payload: { 
-              items: DatabaseManager.db,
-              customers: cleanCustomers,
-              suppliers: cleanSuppliers,
-              vendors: cleanVendors
-            } 
-          };
-          
-          // ✨ FIX: Upload Master DB, then physically pause the app for 2 seconds before the final Archive log
-          await fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
-          await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-
+      // 3. Clear memory instantly so the next session is ready immediately
       this.pendingNewItems = []; this.pendingFieldUpdates = [];
       localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
       localStorage.setItem('asp_pending_updates', JSON.stringify([]));
@@ -1598,14 +1586,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       const chkPreload = document.getElementById('chkPreloadManifest');
       if (chkPreload) chkPreload.checked = false;
       
-      document.getElementById('screenSummary').style.display = 'none';
-      document.getElementById('screenSetup').style.display = 'block';
       this.isSessionActive = false; this.isManifestEnabled = false;
       localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
-
       this.currentItemAction = 'Inventory'; 
 
-      this.saveToArchive('Completed');
+      // ✨ FIX: 4. Background Sync Sequence (Solves the "Freeze" AND the "Race Condition")
+      (async () => {
+         await this.syncAllocationsToCloud();
+         await new Promise(r => setTimeout(r, 2000));
+         
+         if (archiveUrl) {
+             await fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+             await new Promise(r => setTimeout(r, 2000));
+         }
+         
+         this.saveToArchive('Completed');
+      })();
     };
 
     if (!skipConfirm) {
