@@ -1548,8 +1548,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
       localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
       
-      // ✨ FIX: Wait for the allocations to safely upload before starting the next payload
+      // ✨ FIX: Upload Allocations, then physically pause the app for 2 seconds to defeat the 'no-cors' trap
       await this.syncAllocationsToCloud();
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
         this.pendingFieldUpdates.forEach(update => { 
@@ -1575,8 +1576,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
               vendors: cleanVendors
             } 
           };
-          // ✨ FIX: Wait for the master database to safely upload before starting the final archive payload
+          
+          // ✨ FIX: Upload Master DB, then physically pause the app for 2 seconds before the final Archive log
           await fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+          await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
       this.pendingNewItems = []; this.pendingFieldUpdates = [];
