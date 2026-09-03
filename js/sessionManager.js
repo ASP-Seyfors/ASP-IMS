@@ -1601,6 +1601,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
          }
          
          this.saveToArchive('Completed');
+
+         // ✨ FIX: 5. Auto-Sync System - Wait 15 seconds for Google to finish writing, then silently sync and clear banners
+         await new Promise(r => setTimeout(r, 15000)); 
+         await this.syncCloudArchive(null, true);
+         
+         if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
+             UIManager.evaluateSyncIndicator();
+         }
       })();
     };
 
