@@ -1504,7 +1504,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
   completeSession(skipConfirm = false) {
     const executeCompletion = () => {
-      // ✨ FIX: 1. Instantly transition the screen and alert the user so there is ZERO wait time
+      // 1. Instantly transition the screen and alert the user so there is ZERO wait time
       document.getElementById('screenSummary').style.display = 'none';
       document.getElementById('screenSetup').style.display = 'block';
       if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ Math applied locally! Cloud sync is running safely in the background.");
@@ -1557,18 +1557,23 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       DatabaseManager.db = ledgerResult.updatedDb;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
 
-      // Capture variables into memory before wiping the UI
-      let dbPayload = { 
-        action: "SYNC_LOCAL_DB", 
-        payload: { 
-          items: DatabaseManager.db,
-          customers: DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!"),
-          suppliers: DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!"),
-          vendors: DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!")
-        } 
-      };
+      let dbPayload = null;
       let archiveUrl = this.getActiveArchiveUrl();
-      
+      if (archiveUrl) {
+          dbPayload = { 
+            action: "SYNC_LOCAL_DB", 
+            payload: { 
+              items: DatabaseManager.db,
+              customers: DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!"),
+              suppliers: DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!"),
+              vendors: DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!")
+            } 
+          };
+      }
+
+      // Capture the perfectly sealed session payload BEFORE wiping any UI variables
+      let completedSessionObj = this.saveToArchive('Completed');
+
       // 3. Clear memory instantly so the next session is ready immediately
       this.pendingNewItems = []; this.pendingFieldUpdates = [];
       localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
@@ -1590,19 +1595,23 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
       this.currentItemAction = 'Inventory'; 
 
-      // ✨ FIX: 4. Background Sync Sequence (Solves the "Freeze" AND the "Race Condition")
+      // 4. Background Sync Sequence
       (async () => {
          await this.syncAllocationsToCloud();
          await new Promise(r => setTimeout(r, 2000));
          
-         if (archiveUrl) {
+         if (archiveUrl && dbPayload) {
              await fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
              await new Promise(r => setTimeout(r, 2000));
          }
          
-         this.saveToArchive('Completed');
+         // Pass the sealed session object safely into the final background fetches
+         if (completedSessionObj) {
+             await this.pushToCloudArchive(completedSessionObj);
+             await this.pushQboWriteBack(completedSessionObj);
+         }
 
-         // ✨ FIX: 5. Auto-Sync System - Wait 15 seconds for Google to finish writing, then silently sync and clear banners
+         // 5. Auto-Sync System - Wait 15 seconds for Google to finish writing, then silently sync and clear banners
          await new Promise(r => setTimeout(r, 15000)); 
          await this.syncCloudArchive(null, true);
          
@@ -1723,7 +1732,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   saveToArchive(status = 'Pending') { 
-    if (!this.sessionId || this.scannedObjects.length === 0) return;
+    if (!this.sessionId || this.scannedObjects.length === 0) return null;
     
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     let sessionObj = {
@@ -1752,10 +1761,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
 
-    if (status === 'Completed') {
-      this.pushToCloudArchive(sessionObj);
-      this.pushQboWriteBack(sessionObj); 
-    }
+    // Return the sealed object so completeSession can queue it in the background thread
+    return sessionObj;
   },
 
   loadReversibleSessions() {
