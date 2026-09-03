@@ -1196,11 +1196,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
     
-    // ✨ FIX: Check if we already approved this as a new item earlier in this session
     if (!matchedDbItem) {
       let pendingMatch = this.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
       if (pendingMatch) {
-        matchedDbItem = pendingMatch; // Trick the system into knowing it's safe
+        matchedDbItem = pendingMatch; 
       }
     }
 
@@ -1225,7 +1224,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
        let confirmNew = confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.\n\nAre you sure you want to create a BRAND NEW item? If this is a typo, click Cancel and fix the REF.`);
        if (!confirmNew) return; 
 
-       // CAPTURE NEW BUNDLE LOGIC
        let bundleChk = document.getElementById('chkIsBundle');
        if (bundleChk && bundleChk.checked) {
            pRef = document.getElementById('bundleParentRef').value.trim().toUpperCase();
@@ -1249,13 +1247,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
            });
        }
 
-       // Apply math instantly for this current scan
        if (pRef && uMult > 1) {
            ref = pRef;
            qty = qty * uMult;
            matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === pRef);
            
-           // ✨ FIX: If the individual parent item doesn't exist, we must explicitly create it too!
            if (!matchedDbItem) {
                let parentAlreadyPending = this.pendingNewItems.find(i => i.ref === pRef);
                if (!parentAlreadyPending) {
@@ -1271,6 +1267,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
                }
            }
        }
+       
+       localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
     }
 
     let effectiveTag = this.currentItemAction;
@@ -1295,7 +1293,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
 
-    // ✨ FIX: Automatically bypass the "Extra Item" warning if there is no pre-loaded manifest
     let bypassOverpackWarning = ignoreOverpack || !this.isManifestEnabled;
 
     try {
@@ -1305,7 +1302,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (error.message.startsWith('OVERPACK_WARNING:')) {
         let friendlyMsg = `You just scanned an item that isn't on the original reserve list or exceeds the expected quantity for this customer.\n\nDo you want to pull this from general inventory and add it to their shipment anyway?`;
         UIManager.showCustomConfirm("📦 Extra Item Detected", friendlyMsg, () => {
-          SessionManager.saveItemLog(true); // Bypass triggers upon confirmation
+          SessionManager.saveItemLog(true); 
         });
         return; 
       } else {
@@ -1534,6 +1531,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         }
       });
 
+      // ✨ FIX: Inject pending new items BEFORE the ledger math runs
+      if (this.pendingNewItems && this.pendingNewItems.length > 0) {
+        this.pendingNewItems.forEach(newItem => { 
+          let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
+          if (!exists) DatabaseManager.db.push(newItem); 
+        });
+      }
+
       let ledgerResult = InventoryEngine.commitLedgerMath(
         this.scannedObjects, 
         DatabaseManager.db, 
@@ -1548,12 +1553,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         this.pendingFieldUpdates.forEach(update => { 
           let dbItem = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); 
           if (dbItem && update.field) dbItem[update.field] = update.value; 
-        });
-      }
-      if (this.pendingNewItems && this.pendingNewItems.length > 0) {
-        this.pendingNewItems.forEach(newItem => { 
-          let exists = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
-          if (!exists) ledgerResult.updatedDb.push(newItem); 
         });
       }
       
@@ -1599,7 +1598,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       this.isSessionActive = false; this.isManifestEnabled = false;
       localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
 
-      this.currentItemAction = 'Inventory'; // FIX
+      this.currentItemAction = 'Inventory'; 
 
       this.saveToArchive('Completed');
     };
