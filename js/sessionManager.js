@@ -1503,7 +1503,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   completeSession(skipConfirm = false) {
-    const executeCompletion = () => {
+    // ✨ FIX: Added "async" so we can queue the uploads sequentially
+    const executeCompletion = async () => {
       this.scannedObjects.forEach((item, index) => {
         let qtyEl = document.getElementById(`editQty_${index}`);
         let tagEl = document.getElementById(`editTag_${index}`);
@@ -1531,7 +1532,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         }
       });
 
-      // ✨ FIX: Inject pending new items BEFORE the ledger math runs
       if (this.pendingNewItems && this.pendingNewItems.length > 0) {
         this.pendingNewItems.forEach(newItem => { 
           let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
@@ -1547,7 +1547,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       );
 
       localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
-      this.syncAllocationsToCloud();
+      
+      // ✨ FIX: Wait for the allocations to safely upload before starting the next payload
+      await this.syncAllocationsToCloud();
 
       if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
         this.pendingFieldUpdates.forEach(update => { 
@@ -1560,7 +1562,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       
       if (this.getActiveArchiveUrl()) {
-          // Clean and attach the Partners/Vendors arrays so they sync automatically
           let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
           let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
           let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
@@ -1574,7 +1575,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
               vendors: cleanVendors
             } 
           };
-          fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+          // ✨ FIX: Wait for the master database to safely upload before starting the final archive payload
+          await fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
       }
 
       this.pendingNewItems = []; this.pendingFieldUpdates = [];
