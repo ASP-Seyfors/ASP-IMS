@@ -28,13 +28,19 @@ const InventoryEngine = {
     let cleanRef = (ref || '').trim().toUpperCase();
     let cleanGtin = (gtin || '').replace(/^(01|\(01\))/, '').trim();
     
-    let match = currentDb.find(i => 
-      (i.sku || i.ref || '').toUpperCase() === cleanRef || 
-      (i.gtin && i.gtin === cleanGtin)
-    );
+    // ✨ FIX: Exact REF match takes absolute priority over the GTIN field
+    if (cleanRef) {
+        let match = currentDb.find(i => (i.sku || i.ref || '').toUpperCase() === cleanRef);
+        if (match) return match;
+    }
 
-    // Return null instead of throwing a hard error so new items can proceed
-    return match || null;
+    // GTIN Fallback Match (Ignoring N/A)
+    if (cleanGtin && cleanGtin.toUpperCase() !== "N/A" && cleanGtin.toUpperCase() !== "NA") {
+        let match = currentDb.find(i => i.gtin && i.gtin === cleanGtin);
+        if (match) return match;
+    }
+
+    return null;
   },
 
   /**

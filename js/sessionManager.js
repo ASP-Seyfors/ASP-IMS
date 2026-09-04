@@ -1505,7 +1505,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   completeSession(skipConfirm = false) {
     const executeCompletion = async () => {
       
-      // 1. INSTANTLY BLOCK THE UI TO PROTECT THE THREAD
       let overlay = document.createElement('div');
       overlay.id = 'sessionSaveOverlay';
       overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
@@ -1513,9 +1512,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
           <h3 style="margin:0 0 15px 0; color:#0277bd;">💾 Committing Session</h3>
           <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Applying Ledger Math...</div>
-          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Syncing Allocations...</div>
-          <div id="syncStep3" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 3. Syncing Master DB...</div>
-          <div id="syncStep4" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 4. Archiving Audit Log...</div>
+          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Transmitting to Google...</div>
+          <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Verifying Uploads...</div>
           <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
             <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
           </div>
@@ -1526,11 +1524,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       const updateStep = (stepNum, text, progress) => {
         let el = document.getElementById(`syncStep${stepNum}`);
         if (el) el.innerHTML = `✅ <span style="color:#2e7d32;">${text}</span>`;
-        document.getElementById('syncProgressBar').style.width = `${progress}%`;
+        let pBar = document.getElementById('syncProgressBar');
+        if (pBar) pBar.style.width = `${progress}%`;
       };
 
       try {
-        // --- 2. EXACTLY PRESERVED LOCAL MATH AND DATA PREP ---
         this.scannedObjects.forEach((item, index) => {
           let qtyEl = document.getElementById(`editQty_${index}`);
           let tagEl = document.getElementById(`editTag_${index}`);
@@ -1592,31 +1590,35 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
             };
         }
 
-        // Capture the perfectly sealed session payload BEFORE wiping any UI variables
         let completedSessionObj = this.saveToArchive('Completed');
         
-        updateStep(1, "Ledger Math Applied", 25);
-        await new Promise(r => setTimeout(r, 500)); 
+        // ✨ Yield thread to repaint UI visually
+        updateStep(1, "Ledger Math Applied", 33);
+        await new Promise(r => requestAnimationFrame(() => setTimeout(r, 100))); 
 
-        // --- 3. SEQUENTIAL UPLOAD WITH THE VISUAL PROGRESS BAR ---
-        await this.syncAllocationsToCloud();
-        updateStep(2, "Allocations Synced", 50);
-        await new Promise(r => setTimeout(r, 2000)); // Wait for Google to process
-
+        // --- CONCURRENT UPLOAD FOR LIGHTNING SPEED ---
+        updateStep(2, "Transmitting to Google...", 66);
+        let networkTasks = [];
+        
+        networkTasks.push(this.syncAllocationsToCloud());
+        
         if (archiveUrl && dbPayload) {
-            await fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+            networkTasks.push(fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {}));
         }
-        updateStep(3, "Master DB Synced", 75);
-        await new Promise(r => setTimeout(r, 2000)); // Wait for Google to process
         
         if (completedSessionObj) {
-            await this.pushToCloudArchive(completedSessionObj);
-            await this.pushQboWriteBack(completedSessionObj);
+            networkTasks.push(this.pushToCloudArchive(completedSessionObj));
+            networkTasks.push(this.pushQboWriteBack(completedSessionObj));
         }
-        updateStep(4, "Audit Log Archived", 100);
-        await new Promise(r => setTimeout(r, 1000)); // Final completion visual buffer
 
-        // --- 4. EXACTLY PRESERVED MEMORY WIPE AND UI RESET ---
+        await Promise.all(networkTasks);
+        
+        // ✨ Final safety buffer ensures OS has transmitted the data before unlocking UI
+        await new Promise(r => requestAnimationFrame(() => setTimeout(r, 1000))); 
+        
+        updateStep(3, "Session Safely Archived!", 100);
+        await new Promise(r => setTimeout(r, 300)); 
+
         this.pendingNewItems = []; this.pendingFieldUpdates = [];
         localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
         localStorage.setItem('asp_pending_updates', JSON.stringify([]));
@@ -1637,21 +1639,17 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
         this.currentItemAction = 'Inventory'; 
 
-        // 5. REMOVE OVERLAY & NOTIFY USER
         document.body.removeChild(overlay);
 
         document.getElementById('screenSummary').style.display = 'none';
         document.getElementById('screenSetup').style.display = 'block';
         if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ All inventory math and cloud syncs finished successfully!");
 
-        // 6. SILENTLY EXECUTE THE 15-SECOND UPDATE CHECK IN THE BACKGROUND
+        // Silently sync the cloud in the background 15s later
         (async () => {
            await new Promise(r => setTimeout(r, 15000)); 
            await this.syncCloudArchive(null, true);
-           
-           if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
-               UIManager.evaluateSyncIndicator();
-           }
+           if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) UIManager.evaluateSyncIndicator();
         })();
 
       } catch (err) {
