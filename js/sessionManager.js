@@ -1503,126 +1503,166 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   completeSession(skipConfirm = false) {
-    const executeCompletion = () => {
-      // 1. Instantly transition the screen and alert the user so there is ZERO wait time
-      document.getElementById('screenSummary').style.display = 'none';
-      document.getElementById('screenSetup').style.display = 'block';
-      if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ Math applied locally! Cloud sync is running safely in the background.");
+    const executeCompletion = async () => {
+      
+      // 1. INSTANTLY BLOCK THE UI TO PROTECT THE THREAD
+      let overlay = document.createElement('div');
+      overlay.id = 'sessionSaveOverlay';
+      overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
+      overlay.innerHTML = `
+        <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+          <h3 style="margin:0 0 15px 0; color:#0277bd;">💾 Committing Session</h3>
+          <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Applying Ledger Math...</div>
+          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Syncing Allocations...</div>
+          <div id="syncStep3" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 3. Syncing Master DB...</div>
+          <div id="syncStep4" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 4. Archiving Audit Log...</div>
+          <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+            <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
 
-      // 2. Prep data locally
-      this.scannedObjects.forEach((item, index) => {
-        let qtyEl = document.getElementById(`editQty_${index}`);
-        let tagEl = document.getElementById(`editTag_${index}`);
-        if (qtyEl) {
-          item.qty = parseInt(qtyEl.value, 10) || 1;
-          if (tagEl) {
-            let newTag = tagEl.value.trim().toUpperCase();
-            item.customerTag = newTag;
-            if (newTag && this.currentWorkflowType.includes('Receiving')) {
-              item.actionTag = 'Reserved';
+      const updateStep = (stepNum, text, progress) => {
+        let el = document.getElementById(`syncStep${stepNum}`);
+        if (el) el.innerHTML = `✅ <span style="color:#2e7d32;">${text}</span>`;
+        document.getElementById('syncProgressBar').style.width = `${progress}%`;
+      };
+
+      try {
+        // --- 2. EXACTLY PRESERVED LOCAL MATH AND DATA PREP ---
+        this.scannedObjects.forEach((item, index) => {
+          let qtyEl = document.getElementById(`editQty_${index}`);
+          let tagEl = document.getElementById(`editTag_${index}`);
+          if (qtyEl) {
+            item.qty = parseInt(qtyEl.value, 10) || 1;
+            if (tagEl) {
+              let newTag = tagEl.value.trim().toUpperCase();
+              item.customerTag = newTag;
+              if (newTag && this.currentWorkflowType.includes('Receiving')) {
+                item.actionTag = 'Reserved';
+              }
             }
           }
+        });
+        localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
+
+        let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+
+        this.scannedObjects.forEach(item => {
+          if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
+             let manifestItem = this.expectedManifest.find(m => m.ref === item.ref.toUpperCase());
+             if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { 
+                 item.customerTag = manifestItem.allocations[0].customerTag; 
+             }
+          }
+        });
+
+        if (this.pendingNewItems && this.pendingNewItems.length > 0) {
+          this.pendingNewItems.forEach(newItem => { 
+            let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
+            if (!exists) DatabaseManager.db.push(newItem); 
+          });
         }
-      });
-      localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
 
-      let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+        let ledgerResult = InventoryEngine.commitLedgerMath(this.scannedObjects, DatabaseManager.db, currentAllocations, this.currentWorkflowType);
+        localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
 
-      this.scannedObjects.forEach(item => {
-        if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
-           let manifestItem = this.expectedManifest.find(m => m.ref === item.ref.toUpperCase());
-           if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { 
-               item.customerTag = manifestItem.allocations[0].customerTag; 
+        if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
+          this.pendingFieldUpdates.forEach(update => { 
+            let dbItem = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); 
+            if (dbItem && update.field) dbItem[update.field] = update.value; 
+          });
+        }
+        
+        DatabaseManager.db = ledgerResult.updatedDb;
+        localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+
+        let dbPayload = null;
+        let archiveUrl = this.getActiveArchiveUrl();
+        if (archiveUrl) {
+            dbPayload = { 
+              action: "SYNC_LOCAL_DB", 
+              payload: { 
+                items: DatabaseManager.db,
+                customers: DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!"),
+                suppliers: DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!"),
+                vendors: DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!")
+              } 
+            };
+        }
+
+        // Capture the perfectly sealed session payload BEFORE wiping any UI variables
+        let completedSessionObj = this.saveToArchive('Completed');
+        
+        updateStep(1, "Ledger Math Applied", 25);
+        await new Promise(r => setTimeout(r, 500)); 
+
+        // --- 3. SEQUENTIAL UPLOAD WITH THE VISUAL PROGRESS BAR ---
+        await this.syncAllocationsToCloud();
+        updateStep(2, "Allocations Synced", 50);
+        await new Promise(r => setTimeout(r, 2000)); // Wait for Google to process
+
+        if (archiveUrl && dbPayload) {
+            await fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
+        }
+        updateStep(3, "Master DB Synced", 75);
+        await new Promise(r => setTimeout(r, 2000)); // Wait for Google to process
+        
+        if (completedSessionObj) {
+            await this.pushToCloudArchive(completedSessionObj);
+            await this.pushQboWriteBack(completedSessionObj);
+        }
+        updateStep(4, "Audit Log Archived", 100);
+        await new Promise(r => setTimeout(r, 1000)); // Final completion visual buffer
+
+        // --- 4. EXACTLY PRESERVED MEMORY WIPE AND UI RESET ---
+        this.pendingNewItems = []; this.pendingFieldUpdates = [];
+        localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
+        localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+        
+        let recList = document.getElementById('manifestReconcileList');
+        let recCard = document.getElementById('manifestReconcileCard');
+        if (recList) recList.innerHTML = '';
+        if (recCard) recCard.style.display = 'none';
+
+        document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
+        document.getElementById('orderDetailsInput').value = ""; 
+        if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
+
+        const chkPreload = document.getElementById('chkPreloadManifest');
+        if (chkPreload) chkPreload.checked = false;
+        
+        this.isSessionActive = false; this.isManifestEnabled = false;
+        localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
+        this.currentItemAction = 'Inventory'; 
+
+        // 5. REMOVE OVERLAY & NOTIFY USER
+        document.body.removeChild(overlay);
+
+        document.getElementById('screenSummary').style.display = 'none';
+        document.getElementById('screenSetup').style.display = 'block';
+        if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ All inventory math and cloud syncs finished successfully!");
+
+        // 6. SILENTLY EXECUTE THE 15-SECOND UPDATE CHECK IN THE BACKGROUND
+        (async () => {
+           await new Promise(r => setTimeout(r, 15000)); 
+           await this.syncCloudArchive(null, true);
+           
+           if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
+               UIManager.evaluateSyncIndicator();
            }
-        }
-      });
+        })();
 
-      if (this.pendingNewItems && this.pendingNewItems.length > 0) {
-        this.pendingNewItems.forEach(newItem => { 
-          let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
-          if (!exists) DatabaseManager.db.push(newItem); 
-        });
+      } catch (err) {
+        let overlayEl = document.getElementById('sessionSaveOverlay');
+        if (overlayEl) document.body.removeChild(overlayEl);
+        alert("Error during session commit: " + err.message);
       }
-
-      let ledgerResult = InventoryEngine.commitLedgerMath(this.scannedObjects, DatabaseManager.db, currentAllocations, this.currentWorkflowType);
-      localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
-
-      if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
-        this.pendingFieldUpdates.forEach(update => { 
-          let dbItem = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); 
-          if (dbItem && update.field) dbItem[update.field] = update.value; 
-        });
-      }
-      
-      DatabaseManager.db = ledgerResult.updatedDb;
-      localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-
-      let dbPayload = null;
-      let archiveUrl = this.getActiveArchiveUrl();
-      if (archiveUrl) {
-          dbPayload = { 
-            action: "SYNC_LOCAL_DB", 
-            payload: { 
-              items: DatabaseManager.db,
-              customers: DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!"),
-              suppliers: DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!"),
-              vendors: DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!")
-            } 
-          };
-      }
-
-      // Capture the perfectly sealed session payload BEFORE wiping any UI variables
-      let completedSessionObj = this.saveToArchive('Completed');
-
-      // 3. Clear memory instantly so the next session is ready immediately
-      this.pendingNewItems = []; this.pendingFieldUpdates = [];
-      localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
-      localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-      
-      let recList = document.getElementById('manifestReconcileList');
-      let recCard = document.getElementById('manifestReconcileCard');
-      if (recList) recList.innerHTML = '';
-      if (recCard) recCard.style.display = 'none';
-
-      document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
-      document.getElementById('orderDetailsInput').value = ""; 
-      if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
-
-      const chkPreload = document.getElementById('chkPreloadManifest');
-      if (chkPreload) chkPreload.checked = false;
-      
-      this.isSessionActive = false; this.isManifestEnabled = false;
-      localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
-      this.currentItemAction = 'Inventory'; 
-
-      // 4. Background Sync Sequence
-      (async () => {
-         await this.syncAllocationsToCloud();
-         await new Promise(r => setTimeout(r, 2000));
-         
-         if (archiveUrl && dbPayload) {
-             await fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
-             await new Promise(r => setTimeout(r, 2000));
-         }
-         
-         // Pass the sealed session object safely into the final background fetches
-         if (completedSessionObj) {
-             await this.pushToCloudArchive(completedSessionObj);
-             await this.pushQboWriteBack(completedSessionObj);
-         }
-
-         // 5. Auto-Sync System - Wait 15 seconds for Google to finish writing, then silently sync and clear banners
-         await new Promise(r => setTimeout(r, 15000)); 
-         await this.syncCloudArchive(null, true);
-         
-         if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
-             UIManager.evaluateSyncIndicator();
-         }
-      })();
     };
 
     if (!skipConfirm) {
-      UIManager.showCustomConfirm("Complete Session", "Are you ready to complete this session? This will apply inventory math and return you to the home screen.", executeCompletion);
+      UIManager.showCustomConfirm("Complete Session", "Are you ready to complete this session?", executeCompletion);
     } else {
       executeCompletion();
     }

@@ -548,6 +548,30 @@ const DatabaseManager = {
 
     const confirmUpload = async () => {
         if (btn) { btn.textContent = "⏳ Uploading..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+        
+        // 1. INSTANTLY BLOCK THE UI TO PROTECT THE THREAD
+        let overlay = document.createElement('div');
+        overlay.id = 'dbUploadOverlay';
+        overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
+        overlay.innerHTML = `
+          <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+            <h3 style="margin:0 0 15px 0; color:#0277bd;">⬆️ Uploading Database Edits</h3>
+            <div id="updStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Packaging Data...</div>
+            <div id="updStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Syncing Master DB...</div>
+            <div id="updStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Clearing Local Queues...</div>
+            <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+              <div id="updProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const updateStep = (stepNum, text, progress) => {
+          let el = document.getElementById(`updStep${stepNum}`);
+          if (el) el.innerHTML = `✅ <span style="color:#2e7d32;">${text}</span>`;
+          document.getElementById('updProgressBar').style.width = `${progress}%`;
+        };
+
         try {
           let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
           let cleanSuppliers = this.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
@@ -558,18 +582,37 @@ const DatabaseManager = {
             payload: { items: this.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }
           };
           
+          updateStep(1, "Data Packaged", 33);
+          await new Promise(r => setTimeout(r, 500));
+          
           await fetch(SessionManager.cloudArchiveUrl, {
             method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(pushPayload)
           });
+          
+          updateStep(2, "Master DB Synced", 66);
+          // Wait for Google Apps Script to process the file within its 30-second LockService window
+          await new Promise(r => setTimeout(r, 2000)); 
 
           SessionManager.pendingNewItems = []; 
           SessionManager.pendingFieldUpdates = [];
           localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
           localStorage.setItem('asp_pending_updates', JSON.stringify([]));
 
+          updateStep(3, "Queues Cleared", 100);
+          await new Promise(r => setTimeout(r, 500)); // Small visual buffer so the user sees 100%
+
+          document.body.removeChild(overlay);
           UIManager.showCustomAlert("Upload Complete", "✅ Pending items and edits successfully pushed to the cloud.");
+          
+          // Re-evaluate the red notification dot on the home screen
+          if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
+              UIManager.evaluateSyncIndicator();
+          }
+
         } catch (err) {
+          let overlayEl = document.getElementById('dbUploadOverlay');
+          if (overlayEl) document.body.removeChild(overlayEl);
           UIManager.showCustomAlert("Upload Error", "Failed to push data: " + err.message);
         } finally {
           if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
