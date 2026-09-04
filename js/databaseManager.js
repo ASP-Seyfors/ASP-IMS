@@ -603,6 +603,9 @@ const DatabaseManager = {
           localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
           localStorage.setItem('asp_pending_updates', JSON.stringify([]));
 
+          // ✨ FIX: Update the Cloud Sync timestamp instantly
+          localStorage.setItem('asp_last_cloud_sync', Date.now().toString());
+
           updateStep(3, "Upload Verified", 100);
           await new Promise(r => setTimeout(r, 300)); 
 

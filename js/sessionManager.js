@@ -1613,11 +1613,23 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
         await Promise.all(networkTasks);
         
-        // ✨ Final safety buffer ensures OS has transmitted the data before unlocking UI
         await new Promise(r => requestAnimationFrame(() => setTimeout(r, 1000))); 
         
         updateStep(3, "Session Safely Archived!", 100);
         await new Promise(r => setTimeout(r, 300)); 
+
+        // ✨ FIX: Mark the local session as officially synced so the red dot doesn't appear
+        if (completedSessionObj) {
+            let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+            let targetIdx = localArchive.findIndex(s => s.id === completedSessionObj.id);
+            if (targetIdx > -1) {
+                localArchive[targetIdx].isSynced = true;
+                localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
+            }
+        }
+
+        // ✨ FIX: Update the Cloud Sync timestamp instantly so the app knows *we* caused the cloud update
+        localStorage.setItem('asp_last_cloud_sync', Date.now().toString());
 
         this.pendingNewItems = []; this.pendingFieldUpdates = [];
         localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
@@ -1644,13 +1656,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         document.getElementById('screenSummary').style.display = 'none';
         document.getElementById('screenSetup').style.display = 'block';
         if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ All inventory math and cloud syncs finished successfully!");
-
-        // Silently sync the cloud in the background 15s later
-        (async () => {
-           await new Promise(r => setTimeout(r, 15000)); 
-           await this.syncCloudArchive(null, true);
-           if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) UIManager.evaluateSyncIndicator();
-        })();
+        
+        if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) UIManager.evaluateSyncIndicator();
 
       } catch (err) {
         let overlayEl = document.getElementById('sessionSaveOverlay');
