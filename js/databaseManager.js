@@ -390,7 +390,7 @@ const DatabaseManager = {
     let mfr = document.getElementById('modalMfr').value.trim();
     let desc = document.getElementById('modalDesc').value.trim();
     let cat = document.getElementById('modalCat').value.trim();
-    let shelf = document.getElementById('modalShelf').value.trim().toUpperCase(); // NEW
+    let shelf = document.getElementById('modalShelf').value.trim().toUpperCase();
     let status = document.getElementById('modalStatus').value;
     let price = document.getElementById('modalPrice').value.trim();
     let costEl = document.getElementById('modalCost');
@@ -400,20 +400,32 @@ const DatabaseManager = {
 
     let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
     if (dbItem) {
+      let oldPrice = dbItem.price; // ✨ Capture old price for the email alert
+      
       let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
       
-      if (changed || dbItem.shelf !== shelf) { // Updated to detect shelf changes
+      if (changed || dbItem.shelf !== shelf) {
+        
+        // ✨ NEW: Compile an exact list of what changed for the Audit Log
+        let changeNotes = [];
+        if (dbItem.mfr !== mfr) changeNotes.push(`Mfr: ${dbItem.mfr} -> ${mfr}`);
+        if (dbItem.desc !== desc) changeNotes.push(`Desc Updated`);
+        if (dbItem.category !== cat) changeNotes.push(`Cat: ${dbItem.category} -> ${cat}`);
+        if (dbItem.shelf !== shelf) changeNotes.push(`Shelf: ${dbItem.shelf} -> ${shelf}`);
+        if (dbItem.status !== status) changeNotes.push(`Status: ${dbItem.status} -> ${status}`);
+        if (isAdmin && oldPrice !== price) changeNotes.push(`Price: ${oldPrice} -> ${price}`);
+        if (isAdmin && cost !== null && dbItem.cost !== cost) changeNotes.push(`Cost Updated`);
+
         dbItem.mfr = mfr;
         dbItem.desc = desc;
         dbItem.category = cat;
-        dbItem.shelf = shelf; // NEW
+        dbItem.shelf = shelf;
         dbItem.status = status;
         if (isAdmin) {
           dbItem.price = price;
           if (cost !== null) dbItem.cost = cost;
         }
 
-        // Add to pending updates so it pushes to the cloud later
         let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
         let existingUpd = pendingUpd.find(u => u.ref === ref);
         if (!existingUpd) {
@@ -422,8 +434,70 @@ const DatabaseManager = {
         }
 
         localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
-        UIManager.showCustomAlert("Item Updated", `✅ ${ref} has been updated locally.\n\nClick "Upload Pending Sessions" later to push these changes to the cloud.`);
-        this.renderDbGridEditor(); // Refresh the grid visually
+        
+        // ✨ NEW: Generate Ghost Session for the Audit Log
+        if (changeNotes.length > 0) {
+            let editPayload = {
+              id: Date.now().toString(),
+              status: "Completed",
+              userName: AuthManager.currentUser ? AuthManager.currentUser.name : "System Admin",
+              sessionName: "Database Editor Update",
+              orderNum: "",
+              workflowType: "Admin Adjustment",
+              dateStr: new Date().toLocaleDateString().replace(/\//g, '.'),
+              startStr: new Date().toLocaleTimeString(),
+              manifestEnabled: false,
+              expectedManifest: [],
+              scannedObjects: [{
+                 actionTag: "DB Edit",
+                 gtin: dbItem.gtin || "N/A",
+                 ref: ref,
+                 lot: "N/A",
+                 exp: "N/A",
+                 mfr: mfr,
+                 desc: "Database Update",
+                 price: price,
+                 qty: 0, // 0 Qty ensures it doesn't affect inventory math
+                 rawScanLines: [],
+                 isNew: false,
+                 customerTag: "",
+                 orderNum: "",
+                 sessionId: Date.now().toString(),
+                 itemNote: changeNotes.join(" | ")
+              }],
+              pendingNewItems: [],
+              pendingUpdates: [],
+              lastUpdated: Date.now()
+            };
+
+            let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+            archive.unshift(editPayload);
+            localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+            
+            if (typeof SessionManager !== 'undefined') {
+                SessionManager.pushToCloudArchive(editPayload); // Pushes straight to Google
+            }
+        }
+
+        // ✨ NEW: Fire Email Alert if Price Changed
+        if (isAdmin && oldPrice !== price) {
+            let alertPayload = {
+                action: "PRICE_ALERT",
+                payload: {
+                    user: AuthManager.currentUser ? AuthManager.currentUser.name : "Admin",
+                    ref: ref,
+                    oldPrice: oldPrice,
+                    newPrice: price
+                }
+            };
+            fetch(SessionManager.cloudArchiveUrl, {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(alertPayload)
+            }).catch(e => console.warn("Price alert email failed to send."));
+        }
+
+        UIManager.showCustomAlert("Item Updated", `✅ ${ref} has been updated locally.\n\nClick "Upload Pending Data" later to push these changes to the cloud.`);
+        this.renderDbGridEditor(); 
       }
     }
     document.getElementById('itemEditModal').remove();

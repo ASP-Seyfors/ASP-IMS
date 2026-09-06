@@ -625,8 +625,13 @@ const SessionManager = {
         const container = document.getElementById('manifestRowsContainer');
         if (container) container.innerHTML = '';
         
+        let isPreloaded = false; // ✨ NEW: Tracking flag
+
         if (preloadedAllocations.length > 0) {
             this.expectedManifest = preloadedAllocations;
+            isPreloaded = true;
+        } else if (this.expectedManifest && this.expectedManifest.length > 0) {
+            isPreloaded = true; // Set to true if it came from the QBO Staged Order feed
         }
 
         if (this.expectedManifest && this.expectedManifest.length > 0) {
@@ -640,7 +645,12 @@ const SessionManager = {
           this.addManifestRow();
         }
         
-        document.getElementById('screenManifestEntry').style.display = 'block';
+        // ✨ NEW: If data was preloaded, skip the entry screen and jump straight to Review
+        if (isPreloaded) {
+            this.goToManifestReview();
+        } else {
+            document.getElementById('screenManifestEntry').style.display = 'block';
+        }
       } else {
         this.expectedManifest = [];
         localStorage.setItem('asp_active_manifest', JSON.stringify([]));
