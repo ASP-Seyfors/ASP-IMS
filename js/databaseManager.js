@@ -63,10 +63,16 @@ const DatabaseManager = {
           if (!this.users.includes("+ New User")) this.users.push("+ New User");
           localStorage.setItem('asp_wh_users', JSON.stringify(this.users));
         }
+        
+        // ✨ FIX: Prevent static JSON from overwriting the live local database on reload
         if (jsonContent.items && jsonContent.items.length > 0) {
-          this.db = jsonContent.items;
-          localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
+          let existingDb = JSON.parse(localStorage.getItem('asp_wh_db')) || [];
+          if (existingDb.length === 0) {
+            this.db = jsonContent.items;
+            localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
+          }
         }
+        
         if (jsonContent.vendors && jsonContent.vendors.length > 0) {
           this.vendors = jsonContent.vendors;
           localStorage.setItem('asp_wh_vendors', JSON.stringify(this.vendors));
@@ -220,18 +226,28 @@ const DatabaseManager = {
     let cleanGtin = (gtinVal || '').replace(/^(01|\(01\))/, '').trim();
     let cleanRef = (refVal || '').trim().toUpperCase();
     
-    // ✨ FIX 1: Prioritize explicit REF match over GTIN to stop the typing freeze bug
+    // ✨ FIX 1: Prioritize explicit REF match over GTIN, and check Pending Items mid-session!
     if (cleanRef) {
       let match = this.db.find(i => this.getItemSku(i) === cleanRef);
+      if (!match && typeof SessionManager !== 'undefined') {
+        match = SessionManager.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === cleanRef);
+      }
       if (match) return match;
     }
 
-    // ✨ FIX 2: Only fall back to GTIN if it's a real barcode, completely ignoring "N/A"
+    // ✨ FIX 2: Check master and pending items for GTIN match
     if (cleanGtin && cleanGtin.toUpperCase() !== "N/A" && cleanGtin.toUpperCase() !== "NA") {
       let match = this.db.find(i => {
         let dbGtin = (i.gtin || '').toString().trim();
         return dbGtin && (dbGtin === cleanGtin || dbGtin.replace(/^0+/, '') === cleanGtin.replace(/^0+/, ''));
       });
+      
+      if (!match && typeof SessionManager !== 'undefined') {
+        match = SessionManager.pendingNewItems.find(i => {
+           let pGtin = (i.gtin || '').toString().trim();
+           return pGtin && (pGtin === cleanGtin || pGtin.replace(/^0+/, '') === cleanGtin.replace(/^0+/, ''));
+        });
+      }
       if (match) return match;
     }
     
