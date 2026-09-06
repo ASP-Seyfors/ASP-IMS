@@ -123,7 +123,8 @@ const AuditManager = {
     if (!container) return; container.innerHTML = '';
 
     if (SessionManager.scannedObjects.length === 0) {
-      container.innerHTML = '<div style="text-align:center; padding: 14px; color: #555;">No items scanned in this session yet.</div>';
+      // ✨ FIX: Changed #555 to var(--text-main)
+      container.innerHTML = '<div style="text-align:center; padding: 14px; color: var(--text-main);">No items scanned in this session yet.</div>';
       if(elUnique) elUnique.textContent = '0'; if(elTotal) elTotal.textContent = '0'; return;
     }
 
@@ -143,19 +144,23 @@ const AuditManager = {
       let details = document.createElement('details');
       details.className = 'summary-item-card';
       let summary = document.createElement('summary');
-      summary.innerHTML = `<span style="color:#0277bd;">[+] ${gIndex + 1}. REF: ${ref}</span> <span style="font-weight:bold;">Total Qty: ${group.total}</span>`;
+      
+      // ✨ FIX: Changed hardcoded blue to var(--heading-color)
+      summary.innerHTML = `<span style="color:var(--heading-color);">[+] ${gIndex + 1}. REF: ${ref}</span> <span style="font-weight:bold;">Total Qty: ${group.total}</span>`;
       details.appendChild(summary);
 
       let content = document.createElement('div');
-      content.style.paddingTop = '10px'; content.style.marginTop = '10px'; content.style.borderTop = '1px solid #eee'; content.style.fontSize = '0.85rem';
+      // ✨ FIX: Changed hardcoded #eee border to var(--border-color)
+      content.style.paddingTop = '10px'; content.style.marginTop = '10px'; content.style.borderTop = '1px solid var(--border-color)'; content.style.fontSize = '0.85rem';
 
       group.scans.forEach(scan => {
         let statusIcon = scan.actionTag === 'Reserved' ? '🚩' : (scan.actionTag === 'Pack & Ship' ? '🖐️' : '📦');
         let noteHtml = scan.itemNote ? `<div style="font-size:0.8rem; color:#d32f2f; margin-top:6px;"><em>Note: ${scan.itemNote}</em></div>` : '';
         let tagHtml = isTagWorkflow ? `<label style="font-weight:bold; font-size:0.8rem; margin-left:6px;">Tag:</label><input type="text" id="editTag_${scan.originalIndex}" value="${scan.customerTag || ''}" style="flex:1; padding:4px; text-transform:uppercase;">` : `<input type="hidden" id="editTag_${scan.originalIndex}" value="">`;
 
+        // ✨ FIX: Replaced background:#f5f5f5 and border:#e0e0e0 with CSS Variables!
         content.innerHTML += `
-          <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; padding:8px; margin-bottom:8px;">
+          <div style="background:var(--raw-bg); border:1px solid var(--border-color); border-radius:4px; padding:8px; margin-bottom:8px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
               <span><strong>Lot:</strong> ${scan.lot}</span><span><strong>Exp:</strong> ${scan.exp}</span><span>${statusIcon} ${scan.actionTag}</span>
             </div>
