@@ -175,17 +175,26 @@ const DatabaseManager = {
            newC = resolvedName;
         }
 
-        // We check against uppercase to prevent duplicating "AHS" and "ahs"
         let upperList = this.customers.map(c => c.toUpperCase());
-        if (!upperList.includes(newC.trim().toUpperCase())) {
-           this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase()); // Force customers to uppercase
+        let existingIdx = upperList.indexOf(newC.trim().toUpperCase());
+        let exactName = newC.trim();
+        
+        if (existingIdx === -1) {
+           // Add new customer using exactly what was resolved
+           this.customers.splice(this.customers.length - 1, 0, exactName);
            if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
              localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
            }
+        } else {
+           // ✨ THE FIX: Look up the exact original casing in the array so the HTML dropdown doesn't break
+           exactName = this.customers[existingIdx];
         }
+        
         this.populatePartners();
         this.populateItemCustomerSelect();
-        document.getElementById('itemCustomerSelect').value = newC.trim().toUpperCase();
+        
+        // ✨ THE FIX: Safely set the dropdown to the exact case-sensitive string
+        document.getElementById('itemCustomerSelect').value = exactName;
       } else {
         document.getElementById('itemCustomerSelect').selectedIndex = 0;
       }
@@ -204,14 +213,23 @@ const DatabaseManager = {
         }
 
         let upperList = this.suppliers.map(s => s.toUpperCase());
-        if (!upperList.includes(newS.trim().toUpperCase())) {
-           this.suppliers.splice(this.suppliers.length - 1, 0, newS.trim()); // Keep original case for suppliers
+        let existingIdx = upperList.indexOf(newS.trim().toUpperCase());
+        let exactName = newS.trim();
+
+        if (existingIdx === -1) {
+           this.suppliers.splice(this.suppliers.length - 1, 0, exactName);
            if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
              localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
            }
+        } else {
+           // ✨ THE FIX: Look up the exact original casing in the array
+           exactName = this.suppliers[existingIdx];
         }
+        
         this.populatePartners();
-        document.getElementById('supplierSelect').value = newS.trim();
+        
+        // ✨ THE FIX: Safely set the dropdown
+        document.getElementById('supplierSelect').value = exactName;
       } else {
         document.getElementById('supplierSelect').selectedIndex = 0;
       }
@@ -226,15 +244,24 @@ const DatabaseManager = {
         }
 
         let upperList = this.customers.map(c => c.toUpperCase());
-        if (!upperList.includes(newC.trim().toUpperCase())) {
-           this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
+        let existingIdx = upperList.indexOf(newC.trim().toUpperCase());
+        let exactName = newC.trim();
+
+        if (existingIdx === -1) {
+           this.customers.splice(this.customers.length - 1, 0, exactName);
            if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
              localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
            }
+        } else {
+           // ✨ THE FIX: Look up the exact original casing in the array
+           exactName = this.customers[existingIdx];
         }
+        
         this.populatePartners();
         this.populateItemCustomerSelect();
-        document.getElementById('customerSelect').value = newC.trim().toUpperCase();
+        
+        // ✨ THE FIX: Safely set the dropdown
+        document.getElementById('customerSelect').value = exactName;
       } else {
         document.getElementById('customerSelect').selectedIndex = 0;
       }
