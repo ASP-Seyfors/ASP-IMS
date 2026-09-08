@@ -588,11 +588,31 @@ const DatabaseManager = {
   getItemVendor: (item) => (item && (item.mfr || item.vendor || item.manufacturer || '').toString().trim()) || '',
   getItemDesc: (item) => (item && (item.desc || item.description || '').toString().trim()) || '',
 
-  // CHUNKED DOWNLOAD ENGINE
+  // CHUNKED DOWNLOAD ENGINE (OPTIMIZED MATRIX)
   async downloadCloudDatabase(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "☁️ Sync Cloud DB";
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
+
+    let modal = document.getElementById('syncProgressModal');
+    if (!silent && !modal) {
+      modal = document.createElement('div');
+      modal.id = 'syncProgressModal';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+      document.body.appendChild(modal);
+    }
+    if (!silent && modal) {
+      modal.innerHTML = `
+        <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+          <h3 style="margin:0 0 15px 0; color:#0277bd;">📥 Downloading Database</h3>
+          <div id="dlStep" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ Downloading compressed matrix...</div>
+          <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+            <div id="dlProgressBar" style="width:10%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
 
     try {
       let page = 1;
@@ -601,6 +621,11 @@ const DatabaseManager = {
       
       do {
         if (btn) btn.textContent = `⏳ Syncing Batch ${page}...`;
+        if (!silent && modal) {
+            document.getElementById('dlStep').textContent = `⏳ Downloading batch ${page} of ${totalPages}...`;
+            document.getElementById('dlProgressBar').style.width = `${(page/totalPages)*90}%`;
+        }
+        
         let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=SYNC_DATABASE_CHUNKED&page=${page}&t=${Date.now()}`);
         let text = await res.text();
         let data;
@@ -608,7 +633,16 @@ const DatabaseManager = {
         try { data = JSON.parse(text); } catch(e) { throw new Error("Connection blocked by Google. Check permissions."); }
         
         if (data.status === "success" && data.db) {
-          fullDb.items = fullDb.items.concat(data.db.items || []);
+          let matrix = data.db.matrix || [];
+          let mappedItems = matrix.map(row => ({
+            ref: row[0], mfr: row[1], desc: row[2], gtin: row[3], price: row[4],
+            cost: row[5], onHand: row[6], reservedQty: row[7], availableQty: row[8],
+            onRevMed: row[9], revMedPrice: row[10], syncedThrive: row[11], syncedShopify: row[12],
+            category: row[13], status: row[14], parentRef: row[15], uomMult: row[16], shelf: row[17]
+          }));
+          
+          fullDb.items = fullDb.items.concat(mappedItems);
+          
           if (page === 1) {
             fullDb.customers = data.db.customers || [];
             fullDb.suppliers = data.db.suppliers || [];
@@ -622,12 +656,18 @@ const DatabaseManager = {
       } while (page <= totalPages);
 
       this.importCloudDatabase(fullDb);
-      if (!silent) UIManager.showCustomAlert("Sync Complete", `✅ Master Database successfully downloaded!\n\nImported ${fullDb.items.length} total items.`);
+      
+      if (!silent && modal) {
+          document.getElementById('dlStep').innerHTML = `✅ <span style="color:#2e7d32;">Database updated successfully!</span>`;
+          document.getElementById('dlProgressBar').style.width = `100%`;
+          setTimeout(() => modal.style.display = 'none', 1000);
+      }
       
       if (document.getElementById('screenDbEditor') && document.getElementById('screenDbEditor').style.display === 'block') {
         this.renderDbGridEditor(); 
       }
     } catch (err) {
+      if (!silent && modal) modal.style.display = 'none';
       if (!silent) UIManager.showCustomAlert("Sync Error", "Error downloading database: " + err.message);
     } finally {
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }

@@ -2488,8 +2488,17 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         }
       });
 
+      // ✨ NEW: If not found in Production, offer the Deep Archive button
       if (foundEvents.length === 0) {
-        resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">No records found matching Lot Number: <strong>${targetLot}</strong></div>`;
+        resultsContainer.innerHTML = `
+          <div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center; margin-bottom:12px;">
+            No records found in the recent live ledger for Lot: <strong>${targetLot}</strong>
+          </div>
+          <div style="text-align:center;">
+             <button class="btn-action" style="background:#7b1fa2; color:#fff; padding:10px 20px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="AuditManager.traceDeepArchiveLotNumber('${targetLot}')">
+               🗄️ Search Deep Cold Storage Archive
+             </button>
+          </div>`;
         return;
       }
 
@@ -2507,6 +2516,51 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       resultsContainer.innerHTML = html;
     } catch(err) {
       resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching trace data: ${err.message}</div>`;
+    }
+  },
+
+  // ✨ NEW: Connects to the new App Script SEARCH_DEEP_ARCHIVE endpoint
+  async traceDeepArchiveLotNumber(targetLot) {
+    let resultsContainer = document.getElementById('lotTraceResults');
+    if (!resultsContainer) return;
+    
+    resultsContainer.innerHTML = '<div style="padding:15px; color:#7b1fa2; font-weight:bold; text-align:center;">⏳ Waking up Cold Storage... Searching deep archive ledgers...</div>';
+
+    try {
+      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=SEARCH_DEEP_ARCHIVE&lot=${encodeURIComponent(targetLot)}`);
+      let responseData = await res.json();
+      
+      if (responseData.status !== "success" || !responseData.data) throw new Error(responseData.message || "Failed to parse deep archive.");
+      
+      let foundEvents = responseData.data.map(row => ({
+          sessionName: row['Session / Reason'] || "Unknown Session",
+          workflow: row['Workflow'] || "Unknown Workflow",
+          date: row['Timestamp'] || "Unknown Date",
+          user: row['User'] || "Operator",
+          qty: row['Qty Moved'],
+          ref: row['REF / SKU'],
+          actionTag: row['Destination / Action']
+      }));
+
+      if (foundEvents.length === 0) {
+        resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">No records found anywhere in Cold Storage for Lot: <strong>${targetLot}</strong></div>`;
+        return;
+      }
+
+      let html = `<div style="margin-top:10px; padding:10px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px;">
+                    <h4 style="margin:0 0 8px 0; color:#7b1fa2;">🗄️ Deep Archive Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
+      foundEvents.forEach(ev => {
+        html += `<div style="background:#fff; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #7b1fa2; font-size:0.85rem;">
+                  <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
+                  <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                  <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
+                </div>`;
+      });
+      html += `</div>`;
+
+      resultsContainer.innerHTML = html;
+    } catch(err) {
+      resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching Deep Archive data: ${err.message}</div>`;
     }
   },
 
