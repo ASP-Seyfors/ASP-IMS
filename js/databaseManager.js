@@ -28,11 +28,22 @@ const defaultSuppliers = ["Medline", "GeoSurgical", "RevMed", "SPS", "All Dats M
 const defaultCustomers = ["AHS", "Animal Eye Care", "BL", "RFP", "CASCADE", "REDHEAD", "SUNCOAST", "MAP", "PMCY", "EMMANUEL", "EMMANUEL JR", "SurgiShop", "Synergy", "POSS", "+ Add Customer"];
 
 const DatabaseManager = {
-  users: JSON.parse(localStorage.getItem('asp_wh_users')) || ["Thomas", "Trey", "Jessica", "+ New User"], // ✨ NEW: Dynamic user list
+  users: JSON.parse(localStorage.getItem('asp_wh_users')) || ["Thomas", "Trey", "Jessica", "+ New User"],
   db: JSON.parse(localStorage.getItem('asp_wh_db')) || [],
   vendors: JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors,
   suppliers: JSON.parse(localStorage.getItem('asp_wh_suppliers')) || defaultSuppliers,
   customers: JSON.parse(localStorage.getItem('asp_wh_customers')) || defaultCustomers,
+
+  // ✨ NEW: Alias Dictionaries and Resolver Engine
+  customerAliases: JSON.parse(localStorage.getItem('asp_wh_cust_aliases')) || {},
+  supplierAliases: JSON.parse(localStorage.getItem('asp_wh_sup_aliases')) || {},
+
+  resolveAlias(name, type = 'customer') {
+    if (!name) return name;
+    let cleanName = String(name).trim().toUpperCase();
+    let dict = type === 'supplier' ? this.supplierAliases : this.customerAliases;
+    return dict[cleanName] ? dict[cleanName] : String(name).trim();
+  },
 
   async init() {
     // AUTO-SYNC: Merge any new hardcoded defaults into localStorage cache
@@ -157,10 +168,20 @@ const DatabaseManager = {
     if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
-        this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
-        // SECURITY: Prevent guests from permanently overwriting the verified master list
-        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
-          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        // ✨ NEW: Intercept and resolve alias
+        let resolvedName = this.resolveAlias(newC, 'customer');
+        if (resolvedName.toUpperCase() !== newC.trim().toUpperCase()) {
+           alert(`Alias Detected: Auto-correcting "${newC}" to primary account "${resolvedName}"`);
+           newC = resolvedName;
+        }
+
+        // We check against uppercase to prevent duplicating "AHS" and "ahs"
+        let upperList = this.customers.map(c => c.toUpperCase());
+        if (!upperList.includes(newC.trim().toUpperCase())) {
+           this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase()); // Force customers to uppercase
+           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+             localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+           }
         }
         this.populatePartners();
         this.populateItemCustomerSelect();
@@ -175,10 +196,19 @@ const DatabaseManager = {
     if (val === "+ Add Supplier") {
       let newS = prompt("Enter new Supplier/Vendor name:");
       if (newS) {
-        this.suppliers.splice(this.suppliers.length - 1, 0, newS.trim());
-        // SECURITY: Prevent guests from permanently overwriting the verified master list
-        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
-          localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+        // ✨ NEW: Intercept and resolve alias
+        let resolvedName = this.resolveAlias(newS, 'supplier');
+        if (resolvedName.toUpperCase() !== newS.trim().toUpperCase()) {
+           alert(`Alias Detected: Auto-correcting "${newS}" to primary account "${resolvedName}"`);
+           newS = resolvedName;
+        }
+
+        let upperList = this.suppliers.map(s => s.toUpperCase());
+        if (!upperList.includes(newS.trim().toUpperCase())) {
+           this.suppliers.splice(this.suppliers.length - 1, 0, newS.trim()); // Keep original case for suppliers
+           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+             localStorage.setItem('asp_wh_suppliers', JSON.stringify(this.suppliers));
+           }
         }
         this.populatePartners();
         document.getElementById('supplierSelect').value = newS.trim();
@@ -188,10 +218,19 @@ const DatabaseManager = {
     } else if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
-        this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
-        // SECURITY: Prevent guests from permanently overwriting the verified master list
-        if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
-          localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+        // ✨ NEW: Intercept and resolve alias
+        let resolvedName = this.resolveAlias(newC, 'customer');
+        if (resolvedName.toUpperCase() !== newC.trim().toUpperCase()) {
+           alert(`Alias Detected: Auto-correcting "${newC}" to primary account "${resolvedName}"`);
+           newC = resolvedName;
+        }
+
+        let upperList = this.customers.map(c => c.toUpperCase());
+        if (!upperList.includes(newC.trim().toUpperCase())) {
+           this.customers.splice(this.customers.length - 1, 0, newC.trim().toUpperCase());
+           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+             localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+           }
         }
         this.populatePartners();
         this.populateItemCustomerSelect();
@@ -771,6 +810,16 @@ const DatabaseManager = {
   },
 
   importCloudDatabase(cloudDb) {
+    // ✨ NEW: Save Aliases to tablet cache
+    if (cloudDb.customerAliases) {
+      this.customerAliases = cloudDb.customerAliases;
+      localStorage.setItem('asp_wh_cust_aliases', JSON.stringify(this.customerAliases));
+    }
+    if (cloudDb.supplierAliases) {
+      this.supplierAliases = cloudDb.supplierAliases;
+      localStorage.setItem('asp_wh_sup_aliases', JSON.stringify(this.supplierAliases));
+    }
+
     if (cloudDb.items && cloudDb.items.length > 0) {
       this.db = cloudDb.items;
       localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
