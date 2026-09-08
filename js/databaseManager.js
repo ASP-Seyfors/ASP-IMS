@@ -686,6 +686,10 @@ const DatabaseManager = {
             fullDb.customers = data.db.customers || [];
             fullDb.suppliers = data.db.suppliers || [];
             fullDb.vendors = data.db.vendors || [];
+            
+            // ✨ ADD THESE TWO LINES TO CATCH THE DICTIONARY FROM APPS SCRIPT
+            fullDb.customerAliases = data.db.customerAliases || {}; 
+            fullDb.supplierAliases = data.db.supplierAliases || {}; 
           }
           totalPages = data.totalPages || 1;
           page++;

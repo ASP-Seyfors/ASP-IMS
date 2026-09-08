@@ -548,7 +548,18 @@ const SessionManager = {
       }
       
       const type = document.querySelector('input[name="sessionType"]:checked').value;
-      let partner = type === 'Shipment' ? document.getElementById('supplierSelect').value : document.getElementById('customerSelect').value;
+      let supplier = document.getElementById('supplierSelect') ? document.getElementById('supplierSelect').value.trim() : '';
+      let customer = document.getElementById('customerSelect') ? document.getElementById('customerSelect').value.trim() : '';
+      
+      // ✨ NEW: Intercept aliases from the Setup Screen
+      if (supplier && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
+          supplier = DatabaseManager.resolveAlias(supplier, 'supplier');
+      }
+      if (customer && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
+          customer = DatabaseManager.resolveAlias(customer, 'customer');
+      }
+
+      let partner = type === 'Shipment' ? supplier : customer;
       const oDetails = document.getElementById('orderDetailsInput').value.trim();
       const wType = type === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
       let chkManifest = document.getElementById('chkPreloadManifest').checked;
@@ -556,6 +567,17 @@ const SessionManager = {
       if (!partner || partner === '+ Add Supplier' || partner === '+ Add Customer') {
         alert("Please select a valid Supplier or Customer.");
         return;
+      }
+
+      let baseSessName = document.getElementById('sessionNameInput') ? document.getElementById('sessionNameInput').value.trim() : '';
+      
+      // ✨ NEW: If they typed an alias directly into the custom Session Name box, fix it
+      if (baseSessName && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
+          let possibleCust = DatabaseManager.resolveAlias(baseSessName, 'customer');
+          let possibleSup = DatabaseManager.resolveAlias(baseSessName, 'supplier');
+          
+          if (possibleCust.toUpperCase() !== baseSessName.toUpperCase()) baseSessName = possibleCust;
+          else if (possibleSup.toUpperCase() !== baseSessName.toUpperCase()) baseSessName = possibleSup;
       }
 
       let preloadedAllocations = [];
@@ -593,7 +615,14 @@ const SessionManager = {
       }
 
       this.currentUserName = uName || "N/A";
-      this.currentSessionName = partner + (oDetails ? ` (${oDetails})` : '');
+      
+      // Override the automatic session name if baseSessName was provided (and alias-corrected)
+      if (baseSessName) {
+        this.currentSessionName = baseSessName;
+      } else {
+        this.currentSessionName = partner + (oDetails ? ` (${oDetails})` : '');
+      }
+
       this.currentOrderNum = oDetails;
       this.currentWorkflowType = wType;
       this.isSessionActive = true;
@@ -1204,6 +1233,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const itemOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
+    // ✨ NEW: Intercept aliases typed during active Receiving/Reserving
+    let cTag = itemCust.trim();
+    if (cTag && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
+        cTag = DatabaseManager.resolveAlias(cTag, 'customer');
+    }
+
     let matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
     
     if (!matchedDbItem) {
@@ -1298,7 +1333,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       else effectiveTag = 'Inventory';
     }
 
-    let finalCustomerTag = itemCust;
+    // ✨ NEW: Use the cTag variable we mapped through the dictionary earlier
+    let finalCustomerTag = cTag;
     let finalOrderNum = itemOrder;
 
     if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
