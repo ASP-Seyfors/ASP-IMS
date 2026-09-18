@@ -680,11 +680,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
 <div class="header-grid">
   <div>
-    <img src="ASP_Box_Web_RGB.png" style="max-height: 50px;" alt="ASP Logo" />
+    <img src="ASP_Box_Web_RGB_DEV.png" style="max-height: 50px;" alt="ASP Logo" />
   </div>
   <div class="company-info" style="margin-left: 15px;">
-    <h1>Allied Surgical Products</h1>
-    <p>737 Barbara Street</p>
+    <h1>Allied Surgical Products</h1>    
     <p>Palm Harbor, FL 34684</p>
   </div>
   <div class="report-meta">
@@ -814,38 +813,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
 
-    // Read the scope selected in screens/reports.html
     let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
     let limit = scopeRadio ? scopeRadio.value : '10';
 
-    let modal = document.createElement('div');
-    modal.id = 'internalReportOptionsModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
-    
-    modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #388e3c; padding-bottom:8px; margin-bottom:15px;">
-          <h3 style="margin:0; color:#388e3c;">📈 Internal Sales Report Options</h3>
-          <button onclick="document.getElementById('internalReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-        </div>
-        <div style="margin-bottom:15px; font-size:0.85rem;">Account: <strong>${cust}</strong><br>Select the columns you want to include in the PDF export:</div>
-        
-        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#fafafa; border:1px solid #ddd; padding:12px; border-radius:4px;">
-          <label style="cursor:pointer;"><input type="checkbox" id="chkIntDesc" checked> Description</label>
-          <label style="cursor:pointer;"><input type="checkbox" id="chkIntHist" checked> Historical Vol.</label>
-          <label style="cursor:pointer;"><input type="checkbox" id="chkIntOnHand" checked> On-Hand Stock</label>
-          <label style="cursor:pointer;"><input type="checkbox" id="chkIntPrice" checked> Selling Price</label>
-          <label style="cursor:pointer;"><input type="checkbox" id="chkIntCost" checked> Unit Cost</label>
-        </div>
+    document.getElementById('internalReportCustomerName').textContent = cust;
+    document.getElementById('btnExportInternalReport').onclick = () => {
+      ReportsManager.generateInternalSalesReport(cust, limit);
+      document.getElementById('internalReportOptionsModal').style.display = 'none';
+    };
 
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button onclick="document.getElementById('internalReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <!-- Pass the limit variable straight into generateInternalSalesReport -->
-          <button onclick="AuditManager.generateInternalSalesReport('${cust}', '${limit}')" style="background:#388e3c; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+    document.getElementById('internalReportOptionsModal').style.display = 'flex';
   },
 
   generateInternalSalesReport(cust) {
@@ -955,14 +932,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;
       return numPrice > 0;
     });
-    
-    let existingModal = document.getElementById('stockReportEditorModal');
-    if (existingModal) existingModal.remove();
 
-    let modal = document.createElement('div');
-    modal.id = 'stockReportEditorModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
-    
     let rowsHtml = '';
     items.forEach((it, idx) => {
       let safeDesc = (it.desc || '').replace(/"/g, '&quot;');
@@ -980,51 +950,29 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         </div>`;
     });
 
-    let top10Checked = limit === '10' ? 'checked' : '';
-    let allChecked = limit === 'all' ? 'checked' : '';
+    // 1. Configure the Modal UI for Customer Mode
+    document.getElementById('stockReportTitle').innerHTML = '📄 Build "Customer Inventory Stock Report"';
+    document.getElementById('stockReportTitle').style.color = '#7b1fa2';
+    document.getElementById('stockReportHeaderBox').innerHTML = `<strong>Account:</strong> ${cust}<br>Customize the SKUs, descriptions, stock quantities, and pricing below before exporting.`;
+    
+    // Hide Flyer-specific elements
+    document.getElementById('stockReportNoteContainer').style.display = 'none';
+    document.getElementById('stockReportActionRow').style.display = 'none';
+    document.getElementById('btnAddFlyerRow').style.display = 'inline-block';
 
-    modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #7b1fa2; padding-bottom:8px; margin-bottom:15px;">
-          <h3 style="margin:0; color:#7b1fa2;">📄 Build "Customer Inventory Stock Report"</h3>
-          <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-        </div>
+    // 2. Inject Data and Bind Buttons
+    document.getElementById('reportItemRowsContainer').innerHTML = rowsHtml;
+    document.getElementById('btnExportStockReportPdf').onclick = () => AuditManager.exportCustomerStockReportPDF(cust);
+    document.getElementById('btnExportStockReportEmail').onclick = () => AuditManager.draftEmailFlyer(cust);
 
-        <div style="background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px; padding:10px; margin-bottom:15px; font-size:0.85rem;">
-          <strong>Account:</strong> ${cust}<br>
-          Customize the SKUs, descriptions, stock quantities, and pricing below before exporting.
-        </div>
-
-        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:15px;">
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeDescFlyer" checked> Include Description</label>
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeQtyFlyer" checked> Include Quantity</label>
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludePriceInReport" checked> Include Unit Price</label>
-        </div>
-
-        <div id="reportItemRowsContainer">${rowsHtml}</div>
-        <button onclick="AuditManager.addBlankRowToReportEditor()" style="background:#0277bd; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.8rem; margin-top:8px; cursor:pointer;">+ Add Item to Flyer</button>
-
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
-          <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.exportCustomerStockReportPDF('${cust}')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
-          <button onclick="AuditManager.draftEmailFlyer('${cust}')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📧 Copy to Email</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+    // 3. Show Modal
+    document.getElementById('stockReportEditorModal').style.display = 'flex';
   },
 
   openCustomSalesFlyer() {
     // Remove the strict customer requirement. Use "PROMO" if the dropdown is blank.
     let custInput = document.getElementById('customerReportSelect');
     let cust = (custInput && custInput.value) ? custInput.value : 'PROMO';
-
-    let existingModal = document.getElementById('stockReportEditorModal');
-    if (existingModal) existingModal.remove();
-
-    let modal = document.createElement('div');
-    modal.id = 'stockReportEditorModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
     // Pull ALL available inventory directly from the master database
     let availableItems = [];
@@ -1049,7 +997,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let safeRef = String(it.ref || '').replace(/"/g, '&quot;'); 
       let safePrice = String(it.price || '').replace(/"/g, '&quot;');
       
-      // Removed the "checked" attribute so you don't have to uncheck hundreds of items manually
       rowsHtml += `
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px; padding:6px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;" class="flyer-item-row">
           <input type="checkbox" class="flyer-chk" style="width:20px; height:20px; cursor:pointer;">
@@ -1060,42 +1007,24 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         </div>`;
     });
 
-    modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f57f17; padding-bottom:8px; margin-bottom:15px;">
-          <h3 style="margin:0; color:#f57f17;">✨ Custom Promotional Flyer</h3>
-          <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-        </div>
-        <div style="background:#fff3e0; border:1px solid #ffcc80; border-radius:4px; padding:10px; margin-bottom:15px; font-size:0.85rem;">
-          Build a custom flyer from the <strong>Full Warehouse Inventory</strong>. Select items and set quantities below.
-        </div>
-        <div style="margin-bottom:15px; background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:4px; display:flex; flex-wrap:wrap; gap:15px;">
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeDescFlyer" checked> Include Description</label>
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludeQtyFlyer" checked> Include Quantity</label>
-          <label style="font-weight:bold; cursor:pointer; font-size:0.85rem; color:#333;"><input type="checkbox" id="chkIncludePriceInReport" checked> Include Unit Price</label>
-        </div>
-        <div style="margin-bottom:10px;">
-          <label style="font-size:0.85rem; font-weight:bold; color:#0277bd;">📝 Add Flyer Note / Intro Text:</label>
-          <textarea id="flyerNoteInput" rows="3" style="width:100%; padding:8px; font-size:0.85rem; resize:vertical;" placeholder="e.g. Good morning, we have the following items in stock..."></textarea>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding: 0 4px;">
-          <strong style="font-size:0.9rem; color:#333;">Available Inventory (${availableItems.length} items)</strong>
-          <div>
-            <button class="btn-small btn-auto" style="background:#0277bd; color:#fff; padding:4px 8px;" onclick="document.querySelectorAll('.flyer-chk').forEach(c => c.checked = true)">Select All</button>
-            <button class="btn-small btn-auto" style="background:#757575; color:#fff; padding:4px 8px;" onclick="document.querySelectorAll('.flyer-chk').forEach(c => c.checked = false)">Deselect All</button>
-          </div>
-        </div>
-        <div id="reportItemRowsContainer" style="max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:6px; border-radius:4px; background:#fff;">
-          ${rowsHtml.length > 0 ? rowsHtml : '<div style="text-align:center; padding:10px; color:#777;">No items currently available in stock.</div>'}
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
-          <button onclick="document.getElementById('stockReportEditorModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.exportCustomerStockReportPDF('${cust}')" style="background:#7b1fa2; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
-          <button onclick="AuditManager.draftEmailFlyer('${cust}')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">📧 Copy to Email</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+    // 1. Configure the Modal UI for Flyer Mode
+    document.getElementById('stockReportTitle').innerHTML = '✨ Custom Promotional Flyer';
+    document.getElementById('stockReportTitle').style.color = '#f57f17';
+    document.getElementById('stockReportHeaderBox').innerHTML = 'Build a custom flyer from the <strong>Full Warehouse Inventory</strong>. Select items and set quantities below.';
+    
+    // Show Flyer-specific elements
+    document.getElementById('stockReportNoteContainer').style.display = 'block';
+    document.getElementById('stockReportActionRow').style.display = 'flex';
+    document.getElementById('stockReportItemCount').innerText = `Available Inventory (${availableItems.length} items)`;
+    document.getElementById('btnAddFlyerRow').style.display = 'none';
+
+    // 2. Inject Data and Bind Buttons
+    document.getElementById('reportItemRowsContainer').innerHTML = rowsHtml.length > 0 ? rowsHtml : '<div style="text-align:center; padding:10px; color:#777;">No items currently available in stock.</div>';
+    document.getElementById('btnExportStockReportPdf').onclick = () => AuditManager.exportCustomerStockReportPDF(cust);
+    document.getElementById('btnExportStockReportEmail').onclick = () => AuditManager.draftEmailFlyer(cust);
+
+    // 3. Show Modal
+    document.getElementById('stockReportEditorModal').style.display = 'flex';
   },
 
   addBlankRowToReportEditor() {
@@ -1208,7 +1137,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     <div class="header-grid">
       <div class="company-info">
         <h1>Allied Surgical Products</h1>
-        <p>737 Barbara Street | Palm Harbor, FL 34684</p>
+        <p>Palm Harbor, FL 34684</p>
       </div>
       <div style="text-align:right;">
         <div style="font-size:13px; font-weight:bold; color:#333;">ACCOUNT: ${cust}</div>
@@ -1818,11 +1747,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 <body>
 <div class="header-grid">
 <div>
-  <img src="ASP_Box_Web_RGB.png" style="max-height: 65px;" alt="ASP Logo" />
+  <img src="ASP_Box_Web_RGB_DEV.png" style="max-height: 65px;" alt="ASP Logo" />
 </div>
 <div class="company-info" style="margin-left: 20px;">
   <h1>Allied Surgical Products</h1>
-  <p>737 Barbara Street | Palm Harbor, FL 34684</p>
+  <p>Palm Harbor, FL 34684</p>
 </div>
 <div class="report-meta">
   <h2>SHIPPING & RECEIVING WEEKLY SUMMARY</h2>
@@ -2040,30 +1969,17 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     let filtered = db.filter(item => {
       let flag = platform === 'Thrive' ? String(item.syncedThrive).toUpperCase() : String(item.syncedShopify).toUpperCase();
-      let matchesFlag = isNew ? flag !== 'TRUE' : flag === 'TRUE';
-      
-      // Exclude UOM Bundles from New Item Creations
-      // A UOM Bundle is identified by having a parentRef and a multiplier > 1
-      if (isNew && item.parentRef && parseInt(item.uomMult, 10) > 1) {
-          return false;
-      }
-      
-      return matchesFlag;
+      return isNew ? flag !== 'TRUE' : flag === 'TRUE';
     });
 
     if (filtered.length === 0) { alert(`No items found for ${platform} (${isNew ? 'New' : 'Updates'}).`); return; }
 
     let csvContent = '';
 
-    // ========================================================
-    // THRIVE BULK EDIT PRODUCTS (UPDATES TEMPLATE)
-    // ========================================================
     if (platform === 'Thrive' && !isNew) {
-      // 25-column exact match to Thrive Bulk Edit Export
       let headers = ['ID', 'Product Name', 'New Product Name', 'Product Categories', 'New Product Categories', 'Product Description', 'New Product Description', 'Shipping Width', 'New Shipping Width', 'Shipping Length', 'New Shipping Length', 'Shipping Height', 'New Shipping Height', 'Shipping Dimension Unit (in, cm)', 'New Shipping Dimension Unit (in, cm)', 'Shipping Weight', 'New Shipping Weight', 'Shipping Weight Unit (g, oz, lb, kg)', 'New Shipping Weight Unit (g, oz, lb, kg)', 'Active (ACTIVE, INACTIVE)', 'New Active (ACTIVE, INACTIVE)', 'PH Warehouse Enabled', 'New PH Warehouse Enabled', 'PH Warehouse - (Shopify) PH Warehouse Enabled', 'New PH Warehouse - (Shopify) PH Warehouse Enabled'];
       csvContent += headers.join(',') + '\n';
 
-      // Sort alphabetically by REF to match Thrive's default export sorting
       filtered.sort((a, b) => (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
 
       filtered.forEach(item => {
@@ -2072,14 +1988,72 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         let cat = String(item.category || '').replace(/"/g, '""');
         let cleanPrice = parseFloat(String(item.price || '').replace(/[^0-9.-]+/g, '')) || 0;
         let activeStatus = (item.status === 'INACTIVE' || cleanPrice === 0) ? 'INACTIVE' : 'ACTIVE';
-        
-        // Leaves ID blank. You can copy the 'New Product Categories', 'New Product Description', and 'New Active' columns directly into your downloaded Thrive file.
         csvContent += `,"${ref}","","${cat}","","${desc}","","","","","","","","","","","","","","${activeStatus}","","ENABLED","","ENABLED",""\n`;
       });
       
     // ========================================================
-    // STANDARD NEW ITEMS CREATION (THRIVE & SHOPIFY)
+    // SHOPIFY NEW ITEMS CREATION (EXACT SHOPIFY FORMAT)
     // ========================================================
+    } else if (platform === 'Shopify') {
+      // ✨ FIX: Added 'Variant Inventory Qty' to the headers
+      let headers = ['Handle', 'Title', 'Body (HTML)', 'Vendor', 'Type', 'Tags', 'Published', 'Option1 Name', 'Option1 Value', 'Variant SKU', 'Variant Inventory Tracker', 'Variant Inventory Qty', 'Variant Inventory Policy', 'Variant Fulfillment Service', 'Variant Price', 'Variant Barcode', 'Image Src', 'Status'];
+      csvContent += headers.join(',') + '\n';
+
+      // Sort by the Parent Handle so Variants are grouped sequentially in the CSV!
+      filtered.sort((a, b) => {
+        let handleA = (a.parentRef && parseInt(a.uomMult, 10) > 1) ? a.parentRef : (a.ref || a.sku || '');
+        let handleB = (b.parentRef && parseInt(b.uomMult, 10) > 1) ? b.parentRef : (b.ref || b.sku || '');
+        
+        // Secondary sort to ensure the "Each" (Parent) appears directly before the "Box" (Bundle)
+        let sortA = String(handleA).toLowerCase() + (a.parentRef ? 'B' : 'A');
+        let sortB = String(handleB).toLowerCase() + (b.parentRef ? 'B' : 'A');
+        return sortA.localeCompare(sortB);
+      });
+
+      filtered.forEach(item => {
+        let ref = String(item.ref || item.sku || '');
+        let isBundle = (item.parentRef && parseInt(item.uomMult, 10) > 1);
+        
+        let handleRef = isBundle ? item.parentRef : ref;
+        let handle = String(handleRef).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+        let title = String(handleRef).replace(/"/g, '""');
+        let desc = String(item.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
+        let vendor = String(item.mfr || '').replace(/"/g, '""');
+        
+        // ✨ FIX: Apply the standard taxonomy to manual CSV exports
+        let cat = String(item.category || item.categories || 'Medical Supplies').replace(/"/g, '""');
+        
+        let cleanPrice = parseFloat(String(item.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+        let rawStatus = String(item.status || "ACTIVE").toUpperCase();
+        let status = (rawStatus === "INACTIVE" || rawStatus === "DRAFT") ? "draft" : "active";
+        let published = status === "active" ? "TRUE" : "FALSE";
+        let gtin = String(item.gtin || '').replace(/"/g, '""').trim();
+        if (gtin === 'N/A') gtin = '';
+
+        let optName = "Unit of Measure";
+        let optValue = isBundle ? `Box of ${item.uomMult}` : "Each";
+        
+        // ✨ FIX: Dynamically calculate Bundle Availability based on Parent stock
+        let avail = 0;
+        if (isBundle) {
+            let parentItem = db.find(i => (i.sku || i.ref || '').toUpperCase() === String(item.parentRef).toUpperCase());
+            if (parentItem) {
+                let parentAvail = (parseInt(parentItem.onHand || 0, 10)) - (parseInt(parentItem.reservedQty || 0, 10));
+                avail = Math.floor(parentAvail / parseInt(item.uomMult, 10));
+            }
+        } else {
+            avail = (parseInt(item.onHand || 0, 10)) - (parseInt(item.reservedQty || 0, 10));
+        }
+
+        let row = [
+          `"${handle}"`, `"${title}"`, `"${desc}"`, `"${vendor}"`, `"${cat}"`, `"${cat}"`, `"${published}"`, 
+          `"${optName}"`, `"${optValue}"`, `"${ref}"`, `"shopify"`, `${avail}`, `"deny"`, `"manual"`, 
+          `"${cleanPrice.toFixed(2)}"`, `"${gtin}"`, `"https://asp-seyfors.github.io/ASP-IMS-DEV/ASP_Box_Web_RGB_DEV.png"`, `"${status}"`
+        ];
+        csvContent += row.join(',') + '\n';
+      });
+      
     } else {
       let headers = ['REF', 'Manufacturer', 'Description', 'GTIN', 'Price', 'Cost', 'Available Qty', 'Categories'];
       csvContent += headers.join(',') + '\n';
@@ -2092,7 +2066,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         let price = String(item.price || '').replace(/"/g, '""');
         let cost = String(item.cost || '').replace(/"/g, '""');
         let cat = String(item.category || '').replace(/"/g, '""');
-        
         let avail = (parseInt(item.onHand || 0, 10)) - (parseInt(item.reservedQty || 0, 10));
         csvContent += `"${ref}","${mfr}","${desc}","${gtin}","${price}","${cost}",${avail},"${cat}"\n`;
       });
@@ -2107,7 +2080,17 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             if (platform === 'Shopify') item.syncedShopify = 'TRUE';
         });
         localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-        alert(`Database updated locally. Please remember to click "Upload Pending Data" in the DB Editor to push these new flags to the cloud!`);
+        
+        let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+        let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
+        let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
+
+        fetch(SessionManager.getActiveArchiveUrl(), {
+          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }})
+        }).catch(e => console.warn("Failed to push DB flags."));
+
+        alert(`Database updated locally and instantly pushed to the cloud!`);
     }
   },
 
@@ -2150,8 +2133,6 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
  openRestoreModal() {
     let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
-    
-    // Filter out subsequent parts from the dropdown, only show Part 1 or un-split sessions
     let stocktakes = dir.filter(s => {
         let isStocktake = (s.sessionName.includes('FULL-INV') || s.sessionName.includes('Stocktake')) && s.status === 'Completed';
         let isSubsequentPart = s.sessionName.match(/Part [2-9]/i) || s.sessionName.match(/\(Part [2-9]+ of/i);
@@ -2163,28 +2144,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       return;
     }
 
-    let optionsHtml = stocktakes.map(s => `<option value="${s.id}">${s.dateStr} - ${s.sessionName}</option>`).join('');
-
-    let modal = document.createElement('div');
-    modal.id = 'systemRestoreModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
-    
-    modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:450px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-        <h3 style="margin:0 0 10px 0; color:#c62828; border-bottom:2px solid #c62828; padding-bottom:8px;">☁️ Cloud System Restore</h3>
-        <p style="font-size:0.85rem; color:#555;">Select a historical stocktake below. The system will download the required payloads from the Cloud Vault and mathematically replay all subsequent sessions to rebuild your inventory.</p>
-        
-        <select id="restoreBaselineSelect" style="width:100%; padding:10px; font-weight:bold; margin-bottom:20px; border:2px solid #c62828;">
-          ${optionsHtml}
-        </select>
-
-        <div style="display:flex; justify-content:space-between; gap:10px;">
-          <button onclick="document.getElementById('systemRestoreModal').remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
-          <button onclick="AuditManager.executeCloudEventReplay()" style="flex:1; background:#c62828; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">⚠️ Execute Replay</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+    document.getElementById('restoreBaselineSelect').innerHTML = stocktakes.map(s => `<option value="${s.id}">${s.dateStr} - ${s.sessionName}</option>`).join('');
+    document.getElementById('systemRestoreModal').style.display = 'flex';
   },
 
   async executeCloudEventReplay() {
@@ -2641,5 +2602,141 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     });
 
     UIManager.triggerShareOrDownload(csvContent, `Shopify_Inventory_Export_${SessionManager.sessionDateStr}.csv`, 'text/csv');
+  },
+
+  async executeShopifySeedTest() {
+    let db = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db : [];
+    if (db.length === 0) { alert("No inventory data loaded in memory."); return; }
+
+    // Grab exactly 3 distinct items to test
+    let testData = db.slice(0, 3).map(item => {
+      let total = parseInt(item.onHand || 0, 10);
+      let res = parseInt(item.reservedQty || 0, 10);
+      return {
+        ref: item.ref || item.sku,
+        desc: item.desc,
+        mfr: item.mfr,
+        gtin: item.gtin,
+        category: item.category || "Surgical Supply",
+        shopifyCategory: item.shopifyCategory || "Medical Supplies",
+        availableQty: total - res,
+        price: item.price || "$0.00"
+      };
+    });
+
+    if (!confirm(`Ready to test the live API connection?\n\nThis will send exactly 3 items to your Shopify Sandbox and attempt to create them as new products.`)) return;
+
+    this.fireShopifyApiPayload("TEST_SHOPIFY_CONNECTION", testData, "🧪 Shopify Seed Test");
+  },
+
+  async executeShopifySandboxSync() {
+      let btn = document.getElementById('btnShopifySync');
+      let progressContainer = document.getElementById('shopifySyncProgressContainer');
+      let progressBar = document.getElementById('shopifySyncProgressBar');
+      let statusText = document.getElementById('shopifySyncStatusText');
+
+      if (!DatabaseManager.db || DatabaseManager.db.length === 0) {
+          UIManager.showCustomAlert("Error", "Database not loaded yet. Please sync the system first.");
+          return;
+      }
+
+      // Filter out empty rows and bundles that don't need independent Shopify listings
+      let itemsToSync = DatabaseManager.db.filter(i => (i.ref || i.sku) && String(i.ref || i.sku).trim() !== "" && !i.parentRef);
+      
+      if (!confirm(`Are you sure you want to push all ${itemsToSync.length} master items to Shopify?\n\nThis will take several minutes to run in background batches.`)) return;
+
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+      
+      let overlay = document.createElement('div');
+      overlay.id = 'shopifyFullSyncOverlay';
+      overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
+      overlay.innerHTML = `
+        <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+          <h3 style="margin:0 0 15px 0; color:#f57f17;">☁️ Full Shopify Warehouse Sync</h3>
+          <div id="shopifySyncStatusText" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ Initializing...</div>
+          <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+            <div id="shopifySyncProgressBar" style="width:0%; height:100%; background:#f57f17; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      
+      let batchSize = 50; // Safe limit for Apps Script timeouts
+      let totalBatches = Math.ceil(itemsToSync.length / batchSize);
+      let successCount = 0;
+
+      for (let i = 0; i < totalBatches; i++) {
+          let batchRaw = itemsToSync.slice(i * batchSize, (i + 1) * batchSize);
+          
+          // ✨ NEW: Call the centralized Shopify Payload Builder
+          let batchRefs = batchRaw.map(dbItem => dbItem.ref || dbItem.sku);
+          let payloadBatch = DatabaseManager.buildShopifyPayload(batchRefs);
+
+          if (statusText) statusText.innerText = `Pushing Batch ${i + 1} of ${totalBatches}...`;
+          
+          try {
+              let response = await fetch(SessionManager.getActiveArchiveUrl(), {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ action: 'SYNC_SHOPIFY_SANDBOX', payload: payloadBatch })
+              });
+              let result = await response.json();
+              if (result.status === 'success') successCount += payloadBatch.length;
+          } catch(err) {
+              console.error("Batch Sync Error:", err);
+          }
+
+          // ✨ FIX: Pause for 1 second between batches to let the Google Apps Script breathe
+          await new Promise(r => setTimeout(r, 1000));
+
+          let percent = Math.round(((i + 1) / totalBatches) * 100);
+          if (progressBar) progressBar.style.width = `${percent}%`;
+          if (statusText) statusText.innerText = `${percent}% - Batch ${i + 1} Done`;
+      }
+
+      if (statusText) statusText.innerText = `Sync Complete! Processed ${successCount} items.`;
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      document.body.removeChild(overlay);
+      UIManager.showCustomAlert("Success", "Full Shopify Database Sync finished!");
+  },
+
+  // ✨ NEW: Reusable Network Function with Loading Overlay
+  async fireShopifyApiPayload(actionTarget, payloadData, overlayTitle) {
+    let overlay = document.createElement('div');
+    overlay.id = 'shopifySyncOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
+    overlay.innerHTML = `
+      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+        <h3 style="margin:0 0 15px 0; color:#f57f17;">${overlayTitle}</h3>
+        <div style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ Transmitting to Shopify API...</div>
+        <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+          <div style="width:100%; height:100%; background:#f57f17; animation: pulse 1.5s infinite;"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    try {
+      let reqPayload = {
+        action: actionTarget,
+        payload: payloadData
+      };
+
+      let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(reqPayload)
+      });
+
+      setTimeout(() => {
+        document.body.removeChild(overlay);
+        UIManager.showCustomAlert("Sync Dispatched", "✅ Payload transmitted! Check your Apps Script execution logs or email for the detailed API response.");
+      }, 2500);
+
+    } catch (err) {
+      if (document.getElementById('shopifySyncOverlay')) document.body.removeChild(overlay);
+      alert("Network Error: " + err.message);
+    }
   }
 };

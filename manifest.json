@@ -1,19 +1,19 @@
 {
-  "name": "ASP Inventory Management System v4.6.8",
-  "short_name": "ASP IMS",
-  "description": "Allied Surgical Products Warehouse Inventory Scanner & Management System",
+  "name": "ASP IMS (DEMO) v5.1.5",
+  "short_name": "ASP DEMO",
+  "description": "Allied Surgical Products Demonstration Sandbox",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1a1d20",
-  "theme_color": "#1a1d20",
+  "background_color": "#00b248",
+  "theme_color": "#00b248",
   "icons": [
     {
-      "src": "ASP_Icon_192.png",
+      "src": "ASP_Icon_192_DEMO.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "ASP_Icon_512.png",
+      "src": "ASP_Icon_512_DEMO.png",
       "sizes": "512x512",
       "type": "image/png"
     }

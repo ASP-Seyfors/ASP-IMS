@@ -1,0 +1,20 @@
+<div id="internalReportOptionsModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #388e3c; padding-bottom:8px; margin-bottom:15px;">
+      <h3 style="margin:0; color:#388e3c;">📈 Internal Sales Report Options</h3>
+      <button onclick="document.getElementById('internalReportOptionsModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div style="margin-bottom:15px; font-size:0.85rem;">Account: <strong id="internalReportCustomerName"></strong><br>Select the columns you want to include in the PDF export:</div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#fafafa; border:1px solid #ddd; padding:12px; border-radius:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="chkIntDesc" checked> Description</label>
+      <label style="cursor:pointer;"><input type="checkbox" id="chkIntHist" checked> Historical Vol.</label>
+      <label style="cursor:pointer;"><input type="checkbox" id="chkIntOnHand" checked> On-Hand Stock</label>
+      <label style="cursor:pointer;"><input type="checkbox" id="chkIntPrice" checked> Selling Price</label>
+      <label style="cursor:pointer;"><input type="checkbox" id="chkIntCost" checked> Unit Cost</label>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button onclick="document.getElementById('internalReportOptionsModal').style.display='none'" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+      <button id="btnExportInternalReport" style="background:#388e3c; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Export PDF</button>
+    </div>
+  </div>
+</div>

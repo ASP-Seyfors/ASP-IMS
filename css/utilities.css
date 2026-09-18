@@ -1,0 +1,158 @@
+/* GLOBAL FONT SIZE SCALING */
+body.font-small { font-size: 12px !important; }
+body.font-medium { font-size: 18px !important; }
+body.font-large { font-size: 24px !important; }
+
+body.font-small input, body.font-small select, body.font-small button { font-size: 0.82rem !important; }
+body.font-large input, body.font-large select, body.font-large button { font-size: 1.05rem !important; }
+
+.input-center {
+  text-align: center;
+  margin: 0 auto;
+  display: block;
+}
+
+.input-short {
+  max-width: 160px;
+}
+
+.input-micro {
+  max-width: 80px;
+}
+
+/* FIX FOR JAVASCRIPT MODALS IN DARK MODE */
+#workstationUserModal > div,
+#bugReportModal > div,
+#qboModal > div,
+#systemRestoreModal > div,
+#modalUnreserve > div {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
+}
+
+#workstationUserModal h3,
+#bugReportModal h3,
+#qboModal h3,
+#systemRestoreModal h3,
+#modalUnreserve h3 {
+    color: var(--heading-color) !important;
+}
+#workstationUserModal p,
+#bugReportModal p,
+#qboModal p,
+#systemRestoreModal p {
+    color: var(--text-main) !important;
+}
+
+.gtin-diff-banner {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #c62828;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  padding: 8px;
+  border-radius: 6px;
+  width: 100%;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.cam-status-overlay {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.status-tag {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.status-tag.captured {
+  color: #212529 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid #ced4da !important;
+  font-weight: 800;
+}
+
+/* =========================================================
+   REPORT MODALS & UI OVERRIDES FOR DARK MODE
+========================================================= */
+body.theme-slate #reportOptionsModal > div,
+body.theme-sage #reportOptionsModal > div,
+body.theme-slate #internalReportOptionsModal > div,
+body.theme-sage #internalReportOptionsModal > div,
+body.theme-slate #stockReportEditorModal > div,
+body.theme-sage #stockReportEditorModal > div,
+body.theme-slate #binViewerModal > div,
+body.theme-sage #binViewerModal > div,
+body.theme-slate #damagedBinViewerModal > div,
+body.theme-sage #damagedBinViewerModal > div,
+body.theme-slate #quickLookupModal > div,
+body.theme-sage #quickLookupModal > div,
+body.theme-slate #modalUnreserve > div,
+body.theme-sage #modalUnreserve > div {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
+}
+
+body.theme-slate #reportOptionsModal h3,
+body.theme-sage #reportOptionsModal h3,
+body.theme-slate #internalReportOptionsModal h3,
+body.theme-sage #internalReportOptionsModal h3,
+body.theme-slate #stockReportEditorModal h3,
+body.theme-sage #stockReportEditorModal h3,
+body.theme-slate #binViewerModal h3,
+body.theme-sage #binViewerModal h3,
+body.theme-slate #damagedBinViewerModal h3,
+body.theme-sage #damagedBinViewerModal h3,
+body.theme-slate #quickLookupModal h3,
+body.theme-sage #quickLookupModal h3,
+body.theme-slate #modalUnreserve h3,
+body.theme-sage #modalUnreserve h3 {
+    color: var(--heading-color) !important;
+}
+
+/* Target all the hardcoded light-colored summary boxes in modals */
+body.theme-slate [style*="background:#f3e5f5"], 
+body.theme-sage [style*="background:#f3e5f5"],
+body.theme-slate [style*="background:#e8f5e9"],
+body.theme-sage [style*="background:#e8f5e9"],
+body.theme-slate [style*="background:#fff3e0"],
+body.theme-sage [style*="background:#fff3e0"],
+body.theme-slate [style*="background:#f0f8ff"],
+body.theme-sage [style*="background:#f0f8ff"],
+body.theme-slate [style*="background:#fafafa"],
+body.theme-sage [style*="background:#fafafa"],
+body.theme-slate [style*="background:#f9f9f9"],
+body.theme-sage [style*="background:#f9f9f9"],
+body.theme-slate [style*="background:#f1f8e9"],
+body.theme-sage [style*="background:#f1f8e9"] {
+    background-color: var(--raw-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+
+/* Make inputs inside the Customer Flyer Builder visible in dark mode */
+body.theme-slate .flyer-item-row input[type="text"],
+body.theme-sage .flyer-item-row input[type="text"],
+body.theme-slate .flyer-item-row input[type="number"],
+body.theme-sage .flyer-item-row input[type="number"],
+body.theme-slate .flyer-item-row input[type="text"][readonly],
+body.theme-sage .flyer-item-row input[type="text"][readonly] {
+    background-color: var(--input-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}

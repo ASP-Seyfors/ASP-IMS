@@ -23,25 +23,16 @@
     <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
   </div>
 
-  <!-- General Inventory Reports -->
+  <!-- Warehouse Inventory Reports -->
   <div id="panelInventoryReports" style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export On-Hand Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateUnifiedExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Run Expiration Report</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Report</button>
+      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateUnifiedExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Expiration Report</button>
     </div>
   </div>
 
-  <!-- RevMed / DotMed Reports -->
-  <div id="panelRevMedReports" style="background: #e8f5e9; border: 1px solid #81c784; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">RevMed / DotMed Reports</h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Current RevMed Catalog</button>
-      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Not on RevMed</button>
-    </div>
-  </div>
-
-  <!-- Legacy Customer Reports -->
+  <!-- Customer Specific Reports -->
   <div id="panelCustomerReports" style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #333;">Customer-Specific Reports</h4>
     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -51,34 +42,68 @@
     <div style="margin-bottom: 12px; background: #e8f5e9; border: 1px solid #c8e6c9; padding: 8px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
       <strong style="color: #2e7d32;">Sales Report Scope:</strong>
       <div style="display: flex; gap: 12px;">
-        <label style="cursor:pointer;"><input type="radio" name="internalReportScope" value="10" checked> Top 10 Items</label>
-        <label style="cursor:pointer;"><input type="radio" name="internalReportScope" value="all"> Select All</label>
+        <label style="cursor:pointer;"><input type="radio" name="internalReportScope" value="10" checked> Top 10</label>
+        <label style="cursor:pointer;"><input type="radio" name="internalReportScope" value="all"> All</label>
       </div>
     </div>
 
     <div id="customerReportControls" style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Internal Sales</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()"><i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Stock Flyer</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Internal Sales Report</button>
+      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()"><i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Flyer</button>
       <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="AuditManager.openCustomSalesFlyer()"><i data-lucide="sparkles" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Custom Sales Flyer</button>
     </div>
   </div>
 
-  <!-- Cloud Session Generator (Moved to Bottom) -->
-  <div style="background: #e8eaf6; border: 1px solid #3f51b5; padding: 12px; border-radius: 4px;">
-    <h4 style="margin: 0 0 10px 0; color: #3f51b5;">Cloud Session Export Generator</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a previously archived session to generate its summary report without altering your local memory.</p>
-    
-    <select id="cloudExportSessionSelect" style="width: 100%; padding: 8px; border: 1px solid #3f51b5; border-radius: 4px; font-weight: bold; margin-bottom: 10px;">
-      <option value="">-- Select an Archived Session --</option>
-    </select>
+  <!-- Automated Stock Report Distribution List -->
+  <div id="panelSubscribers" style="background: #e1f5fe; border: 1px solid #03a9f4; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #01579b;">Automated Stock Report Distribution List</h4>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom: 10px; padding: 8px; background: #fff; border: 1px dashed #03a9f4; border-radius: 4px;">
+      <input type="text" id="subName" placeholder="Customer/Company Name" style="padding:4px; font-size:0.85rem;" />
+      <input type="email" id="subEmail" placeholder="Email Address" style="padding:4px; font-size:0.85rem;" />
+      <div style="display:flex; gap:6px;">
+        <select id="subFreq" style="flex:1; padding:4px; font-size:0.85rem;">
+          <option value="Quarterly">Quarterly</option>
+          <option value="Monthly">Monthly</option>
+          <option value="Weekly">Weekly</option>
+          <option value="Daily">Daily</option>
+        </select>
+        <select id="subStatus" style="flex:1; padding:4px; font-size:0.85rem;">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+      <button class="btn-small" style="background-color: #0277bd; color: #fff; width: 100%;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+    </div>
+    <div id="subListContainer" style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; font-size: 0.8rem;">
+      <p style="text-align:center; color:#777; margin:0;">Click 'Refresh' to view Active Subscribers.</p>
+    </div>
+    <button class="btn-small" style="background-color: #555; color: #fff; width: 100%; margin-top:6px;" onclick="ReportsManager.loadSubscribers()">Refresh</button>
+  </div>
 
-    <div style="display: flex; gap: 8px;">
-      <select id="cloudExportFormat" style="flex: 1; padding: 8px; border-radius: 4px;">
-        <option value="pdf">PDF Visual Report</option>
-        <option value="txt">TXT Data Log</option>
-      </select>
-      <button id="btnExportCloudSession" class="btn-action btn-auto" style="flex: 1; background-color: #3f51b5; color: #fff; margin: 0; padding: 8px;" onclick="AuditManager.exportCloudSessionData()">Generate Export</button>
+  <!-- RevMed Reports -->
+  <div id="panelRevMedReports" style="background: #e8f5e9; border: 1px solid #81c784; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">RevMed Reports</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Current RevMed Catalog</button>
+      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Not on RevMed</button>
     </div>
   </div>
 
+  <!-- Cloud Session Generator (Moved to Bottom) -->
+  <div id="panelArchiveExport" style="background: #e8eaf6; border: 1px solid #9fa8da; padding: 12px; border-radius: 4px;">
+    <h4 style="margin: 0 0 5px 0; color: #283593;">Session Reports</h4>
+    <p style="font-size: 0.8rem; color: #555; margin-bottom: 10px;">Select a previously archived session to generate a report from a previous session.</p>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <select id="archiveExportSelect" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+        <option value="">-- Select an Archived Session --</option>
+      </select>
+      <div style="display: flex; gap: 8px;">
+        <select id="archiveExportFormat" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+          <option value="pdf">PDF Report</option>
+          <option value="csv">CSV Report</option>
+        </select>
+        <button class="btn-small btn-auto" style="flex: 2; background-color: #3f51b5; color: #fff;" onclick="ReportsManager.exportArchivedSession()">Generate Export</button>
+      </div>
+    </div>
+  </div>
 </div>

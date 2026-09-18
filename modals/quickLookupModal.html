@@ -1,0 +1,18 @@
+<div id="quickLookupModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:#fff; border-radius:8px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #00796b; padding-bottom:8px; margin-bottom:15px;">
+      <h3 style="margin:0; color:#00796b;">🔍 Quick Lookup</h3>
+      <button onclick="document.getElementById('quickLookupModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div style="margin-bottom:15px;">
+      <label style="font-weight:bold; font-size:0.85rem; display:block; margin-bottom:4px;">Scan or Enter REF / GTIN:</label>
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="quickLookupInput" placeholder="e.g. 8698G or Scan 2D" style="flex:1; padding:8px; font-size:1rem; text-transform:uppercase;" onkeypress="if(event.key==='Enter') UIManager.executeQuickLookup()">
+        <button onclick="UIManager.executeQuickLookup()" style="background:#00796b; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Search</button>
+      </div>
+    </div>
+    <div id="quickLookupResult" style="min-height:120px;">
+      <div style="text-align:center; color:#777; padding:20px;">Scan or type a REF/GTIN above to inspect database records.</div>
+    </div>
+  </div>
+</div>

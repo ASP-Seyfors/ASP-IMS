@@ -107,6 +107,8 @@
       <select id="workflowTypeSelect" title="Select whether to reserve items or physically pack them for shipping.">
         <option value="Reserving"><i data-lucide="flag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Picking & Reserving</option>
         <option value="Picking & Packing"><i data-lucide="hand" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Picking & Packing</option>
+        <!-- ✨ NEW: Un-Reserve Feature Option -->
+        <!-- <option value="Un-Reserve"><i data-lucide="rotate-ccw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Un-Reserve (Return to Inventory)</option> -->        
       </select>
     </div>
   </div>
@@ -153,6 +155,28 @@
       <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Start Full Stocktake</button>
       <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="SessionManager.startStocktakeSession('Selection')"><i data-lucide="target" style="width:16px; height:16px;"></i> Start Selection Stocktake</button>
       <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✨ NEW: Un-Reserve Checklist Modal -->
+<div id="modalUnreserve" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+  <div class="modal-content" style="background: #fff; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%;">
+    <div style="display:flex; justify-content:space-between; border-bottom: 2px solid #e65100; padding-bottom: 10px; margin-bottom: 15px;">
+      <h3 style="margin: 0; color: #e65100;">Un-Reserve Items</h3>
+      <button style="background:none; border:none; font-size:1.2rem; cursor:pointer;" onclick="document.getElementById('modalUnreserve').style.display='none'">✕</button>
+    </div>
+    
+    <p style="font-size: 0.9rem; color: #555; margin-bottom: 5px;">Customer: <strong id="unreserveCustomerName"></strong></p>
+    <p style="font-size: 0.85rem; color: #777; margin-bottom: 15px;">Select the items you wish to return to inventory:</p>
+    
+    <div id="unreserveChecklistContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; padding: 10px; margin-bottom: 15px;">
+       <!-- Checkboxes dynamically inject here -->
+    </div>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="btn-small" style="background-color: #777; color: #fff;" onclick="document.getElementById('modalUnreserve').style.display='none'">Cancel</button>
+      <button class="btn-small" style="background-color: #e65100; color: #fff;" onclick="SessionManager.processUnreserve(event)">Process Un-Reserve</button>
     </div>
   </div>
 </div>

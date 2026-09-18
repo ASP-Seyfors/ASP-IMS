@@ -1,0 +1,104 @@
+/* =========================================
+   1. ASP Classic (Light Theme - Matches Website)
+   ========================================= */
+body, body.theme-gold {
+  --bg-color: #ecea7a; 
+  --desktop-bg: #e9ecef;
+  --card-bg: #c7a925;
+  --raw-bg: #f8f9fa;
+  --border-color: #e0e0e0;
+  --input-bg: #ffffff;
+  --input-color: #212529;
+  --input-border: #ced4da;
+  --text-main: #333333;
+  --heading-color: #0071ce;
+}
+
+/* =========================================
+   2. ASP Midnight (True Dark Theme)
+   ========================================= */
+body.theme-slate {
+  --bg-color: #121212;
+  --desktop-bg: #0a0a0a;
+  --card-bg: #1e1e1e;
+  --raw-bg: #2c2c2c;
+  --border-color: #333333;
+  --input-bg: #2c2c2c;
+  --input-color: #ffffff;
+  --input-border: #444444;
+  --text-main: #e0e0e0;
+  --heading-color: #64b5f6;
+}
+
+/* =========================================
+   3. ASP Twilight (Hybrid Navy Blue)
+   ========================================= */
+body.theme-sage {
+  --bg-color: #1a2634;
+  --desktop-bg: #111a24;
+  --card-bg: #233547;
+  --raw-bg: #2e4359;
+  --border-color: #3a506b;
+  --input-bg: #2e4359;
+  --input-color: #ffffff;
+  --input-border: #455a64;
+  --text-main: #eceff1;
+  --heading-color: #ffca28;
+}
+
+/* Base Body Styles */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  margin: 12px;
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* DESKTOP / WORKSTATION MEDIA QUERY */
+@media (min-width: 800px) {
+  body {
+    max-width: 850px;
+    margin: 30px auto !important;
+    background-color: var(--desktop-bg);
+  }
+
+  .card, .header-banner, .export-panel {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .form-label {
+    width: 200px;
+    font-size: 0.9rem;
+  }
+
+  input[type="text"], input[type="number"], select, textarea {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .btn-action {
+    padding: 14px;
+    font-size: 1.05rem;
+  }
+
+  .review-line {
+    padding: 12px 0;
+    font-size: 1rem;
+  }
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+

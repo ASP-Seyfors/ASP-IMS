@@ -30,11 +30,23 @@
   <div style="background: #e8eaf6; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #01579b;"><i data-lucide="shopping-cart" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>E-Commerce & Master Exports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', true)"><i data-lucide="plus" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Thrive New Items Export</button>
-      <button class="btn-small btn-auto" style="background-color: #0288d1; color: #fff;" onclick="AuditManager.exportEcommerceData('Thrive', false)"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Thrive Updates Export</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', true)"><i data-lucide="shopping-bag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shopify New Items Export</button>
-      <button class="btn-small btn-auto" style="background-color: #95bf47; color: #fff;" onclick="AuditManager.exportEcommerceData('Shopify', false)"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shopify Updates Export</button>
       <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.exportUpdatedDatabaseJSON()"><i data-lucide="save" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Updated Database.json</button>
+      
+      <!-- Live Shopify API Seed Test (3 Items) -->
+      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.executeShopifySeedTest()">
+        <i data-lucide="zap" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Live Shopify API Seed Test (3 Items)
+      </button>
+
+      <!-- Full Shopify Warehouse Sync -->
+      <button id="btnShopifySync" class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff; grid-column: 1 / -1; margin-top: 6px;" onclick="AuditManager.executeShopifySandboxSync()">
+        <i data-lucide="cloud-upload" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Full Shopify Warehouse Sync
+      </button>
+      
+      <!-- Progress Bar for Full Sync -->
+      <div id="shopifySyncProgressContainer" style="grid-column: 1 / -1; display: none; margin-top: 10px; background: #ddd; border-radius: 4px; height: 20px; overflow: hidden; position: relative;">
+          <div id="shopifySyncProgressBar" style="height: 100%; width: 0%; background-color: #2e7d32; transition: width 0.3s ease;"></div>
+          <span id="shopifySyncStatusText" style="position: absolute; width: 100%; text-align: center; font-size: 0.75rem; color: #fff; line-height: 20px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Initializing...</span>
+      </div>
     </div>
   </div>
 
@@ -85,7 +97,7 @@
     </label>
     <div style="font-size: 0.8rem; color: #c62828; margin-top: 6px;">Routes all saves, databases, and syncs to the TEST DATABASE.</div>
   </div>
-   -->
+  -->
 
   <!-- Session Reversal Tool -->
   <div style="background: #fce4ec; border: 1px solid #d81b60; padding: 12px; border-radius: 4px; margin-bottom: 15px;">

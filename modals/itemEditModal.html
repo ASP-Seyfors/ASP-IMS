@@ -1,0 +1,48 @@
+<div id="itemEditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #00796b; padding-bottom:8px; margin-bottom:15px;">
+      <h3 style="margin:0; color:#00796b;">✏️ Edit Item Details</h3>
+      <button onclick="document.getElementById('itemEditModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:bold; font-size:0.85rem; color:#555;">REF / SKU (Read-Only)</label>
+      <input type="text" id="modalRef" readonly style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background:#f0f0f0; font-weight:bold; color:#00796b;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:bold; font-size:0.85rem; color:#555;">Manufacturer</label>
+      <input type="text" id="modalMfr" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:bold; font-size:0.85rem; color:#555;">Description</label>
+      <textarea id="modalDesc" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; resize:vertical; min-height:60px;"></textarea>
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <div style="flex:1;">
+        <label style="font-weight:bold; font-size:0.85rem; color:#555;">Category</label>
+        <input type="text" id="modalCat" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+      <div style="flex:1;">
+        <label style="font-weight:bold; font-size:0.85rem; color:#555;">Shelf Location</label>
+        <input type="text" id="modalShelf" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; text-transform:uppercase;" placeholder="e.g. A-14">
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <div style="flex:1;">
+        <label style="font-weight:bold; font-size:0.85rem; color:#555;">Status</label>
+        <select id="modalStatus" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:bold;">
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="INACTIVE">INACTIVE</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;" id="modalPricingBlock">
+      <!-- Pricing injected via JS -->
+    </div>
+    <div style="display:flex; justify-content:space-between; gap:10px;">
+      <button onclick="document.getElementById('itemEditModal').style.display='none'" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
+      <button onclick="DatabaseManager.saveModalEdits(); document.getElementById('itemEditModal').style.display='none'" style="flex:1; background:#00796b; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
+        <i data-lucide="save" style="width:16px; height:16px;"></i> Apply Changes
+      </button>
+    </div>
+  </div>
+</div>

@@ -102,6 +102,16 @@ const InventoryEngine = {
       }
     }
 
+    if (action === 'Un-Reserve') {
+      let baseTag = (customerTag || '').toUpperCase().split('(')[0].split('-')[0].trim();
+      let allocData = (currentAllocations[baseTag] && currentAllocations[baseTag][trueRef]) ? currentAllocations[baseTag][trueRef] : 0;
+      let allocatedToCust = typeof allocData === 'object' ? (allocData.qty || 0) : allocData;
+      
+      if (requestedQty > allocatedToCust) {
+         throw new Error(`HARD ERROR: Cannot Un-Reserve ${requestedQty} units. Customer ${baseTag} only has ${allocatedToCust} units of ${trueRef} currently reserved.`);
+      }
+    }
+
     return true;
   },
   
@@ -113,8 +123,6 @@ const InventoryEngine = {
   commitLedgerMath(scannedObjects, currentDb, currentAllocations, workflowType) {
     let onHandChanges = {}; 
     let reservedChanges = {}; 
-    
-    // Force uppercase to catch all legacy string variations and prevent matching failures
     let wType = (workflowType || '').toUpperCase();
 
     scannedObjects.forEach(item => {
@@ -124,22 +132,16 @@ const InventoryEngine = {
       let rawTag = (item.customerTag || '').toUpperCase().trim(); 
 
       // THE TAG NORMALIZATION FIX
-      // Strips away hyphens and parentheses so reserving and packing tags match perfectly
       let tag = rawTag.split('(')[0].split('-')[0].trim();
-      
-      // Fallback: If tag is blank during packing, extract it from the historical session name
       if (!tag && (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK'))) {
         let sessName = (item.sessionId || SessionManager.currentSessionName || '').toUpperCase();
         let baseCust = sessName.split('(')[0].split('-')[0].trim();
         if (baseCust && !baseCust.includes('HISTORICAL')) tag = baseCust;
       }
 
-      // Prevents running 0s from wiping out active math
       if (typeof onHandChanges[ref] === 'undefined') { 
-          onHandChanges[ref] = 0; 
-          reservedChanges[ref] = 0; 
+          onHandChanges[ref] = 0; reservedChanges[ref] = 0; 
       }
-      
       if (tag) { 
         if (!currentAllocations[tag]) currentAllocations[tag] = {}; 
         if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] }; 
@@ -147,41 +149,47 @@ const InventoryEngine = {
 
       // --- STRICT FAULT-TOLERANT LOGIC GATES ---
 
-      // "Receiving" or "Receiving & Reserving" (Supports your Reconcile Strategy)
       if (wType.includes('RECEIVING')) {
-        onHandChanges[ref] += item.qty; // ALWAYS updates Total Qty for Receiving
+        onHandChanges[ref] += item.qty; 
         
         if (actionTag === 'RESERVED' && tag) {
            reservedChanges[ref] += item.qty;
            currentAllocations[tag][ref].qty += item.qty;
+           
+           let cleanLot = (item.lot === 'N/A' || item.lot === 'NA' || item.lot === 'NO_LOT') ? '' : item.lot;
+           let cleanExp = (item.exp === 'N/A' || item.exp === 'NA' || item.exp === 'NO_EXP') ? '' : item.exp;
+           let cleanOrder = (orderNum === 'N/A' || orderNum === 'NA') ? '' : orderNum;
+
            currentAllocations[tag][ref].details.push({
-               lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum, sessionId: item.sessionId || '', qty: item.qty
+               lot: cleanLot, exp: cleanExp, orderNum: cleanOrder, sessionId: item.sessionId || '', qty: item.qty
            });
         }
       } 
-      // "Reserving" or "Pick & Reserve" (DOES NOT ADD TO TOTAL QTY)
       else if (wType.includes('RESERVING') || wType.includes('PICK & RESERVE') || wType === 'RESERVE') {
          if (tag) {
              reservedChanges[ref] += item.qty;
              currentAllocations[tag][ref].qty += item.qty;
+             
+             let cleanLot = (item.lot === 'N/A' || item.lot === 'NA' || item.lot === 'NO_LOT') ? '' : item.lot;
+             let cleanExp = (item.exp === 'N/A' || item.exp === 'NA' || item.exp === 'NO_EXP') ? '' : item.exp;
+             let cleanOrder = (orderNum === 'N/A' || orderNum === 'NA') ? '' : orderNum;
+
              currentAllocations[tag][ref].details.push({
-                 lot: item.lot || 'NO_LOT', exp: item.exp || 'NO_EXP', orderNum: orderNum, sessionId: item.sessionId || '', qty: item.qty
+                 lot: cleanLot, exp: cleanExp, orderNum: cleanOrder, sessionId: item.sessionId || '', qty: item.qty
              });
          }
       }
-      // "Picking & Packing" or "Pack & Ship"
       else if (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK')) {
-        onHandChanges[ref] -= item.qty; // Subtracts from Total Qty
+        onHandChanges[ref] -= item.qty; 
         
         if (tag && currentAllocations[tag] && currentAllocations[tag][ref]) {
             let deduct = item.qty;
             reservedChanges[ref] -= deduct; 
             currentAllocations[tag][ref].qty -= deduct;
             
-            let targetLot = item.lot || 'NO_LOT';
-            let targetExp = item.exp || 'NO_EXP';
+            let targetLot = (item.lot === 'N/A' || item.lot === 'NO_LOT') ? '' : item.lot;
+            let targetExp = (item.exp === 'N/A' || item.exp === 'NO_EXP') ? '' : item.exp;
 
-            // EXACT MATCH DEDUCTION
             let exactMatches = currentAllocations[tag][ref].details.filter(d => d.lot === targetLot && d.exp === targetExp && d.qty > 0);
             for (let i = 0; i < exactMatches.length; i++) {
                 if (deduct <= 0) break;
@@ -190,11 +198,10 @@ const InventoryEngine = {
                 deduct -= take;
             }
 
-            // FEFO FALLBACK DEDUCTION (First Expiring, First Out)
             if (deduct > 0) {
                 currentAllocations[tag][ref].details.sort((a, b) => {
-                    if (a.exp === 'NO_EXP') return 1;
-                    if (b.exp === 'NO_EXP') return -1;
+                    if (!a.exp || a.exp === 'NO_EXP') return 1;
+                    if (!b.exp || b.exp === 'NO_EXP') return -1;
                     return new Date(a.exp) - new Date(b.exp);
                 });
 
@@ -208,16 +215,49 @@ const InventoryEngine = {
                     }
                 }
             }
-            
-            // Clean up empty lots
             currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
         }
       }
-      // "Stocktake"
-      // INTENTIONALLY EMPTY! Stocktake does NOT add or subtract here, preserving your UOM Bundle integrity. 
+      // ✨ NEW: "Un-Reserve" (Returns to Inventory from Bin)
+      else if (wType.includes('UN-RESERVE') || actionTag === 'UN-RESERVE') {
+        if (tag && currentAllocations[tag] && currentAllocations[tag][ref]) {
+            let deduct = item.qty;
+            reservedChanges[ref] -= deduct; 
+            currentAllocations[tag][ref].qty -= deduct;
+            
+            let targetLot = (item.lot === 'N/A' || item.lot === 'NO_LOT') ? '' : item.lot;
+            let targetExp = (item.exp === 'N/A' || item.exp === 'NO_EXP') ? '' : item.exp;
+
+            let exactMatches = currentAllocations[tag][ref].details.filter(d => d.lot === targetLot && d.exp === targetExp && d.qty > 0);
+            for (let i = 0; i < exactMatches.length; i++) {
+                if (deduct <= 0) break;
+                let take = Math.min(exactMatches[i].qty, deduct);
+                exactMatches[i].qty -= take;
+                deduct -= take;
+            }
+
+            if (deduct > 0) {
+                currentAllocations[tag][ref].details.sort((a, b) => {
+                    if (!a.exp || a.exp === 'NO_EXP') return 1;
+                    if (!b.exp || b.exp === 'NO_EXP') return -1;
+                    return new Date(a.exp) - new Date(b.exp);
+                });
+
+                for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {
+                    if (deduct <= 0) break;
+                    let det = currentAllocations[tag][ref].details[i];
+                    if (det.qty > 0) {
+                        let take = Math.min(det.qty, deduct);
+                        det.qty -= take;
+                        deduct -= take;
+                    }
+                }
+            }
+            currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
+        }
+      }
     });
 
-    // GARBAGE COLLECTION
     Object.keys(currentAllocations).forEach(t => { 
       Object.keys(currentAllocations[t]).forEach(ref => {
           if (currentAllocations[t][ref].qty <= 0) delete currentAllocations[t][ref];
@@ -225,16 +265,11 @@ const InventoryEngine = {
       if (Object.keys(currentAllocations[t]).length === 0) delete currentAllocations[t]; 
     });
 
-    // APPLY TO DATABASE
     currentDb.forEach(dbItem => {
-      let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
-      
-      // Ensure we only touch items that were actually scanned in this session
+      let ref = (dbItem.sku || dbItem.ref || '').toUpperCase().trim(); // ✨ FIX: Added .trim() to prevent trailing space mismatches!
       if (typeof onHandChanges[ref] !== 'undefined') {
         dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); 
         dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
-        
-        // Final floor safety check
         if (dbItem.onHand < 0) dbItem.onHand = 0; 
         if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
       }
@@ -297,7 +332,7 @@ const InventoryEngine = {
 
     // APPLY TO DATABASE WITH FLOOR SAFETY
     currentDb.forEach(dbItem => {
-      let ref = (dbItem.sku || dbItem.ref || '').toUpperCase();
+      let ref = (dbItem.sku || dbItem.ref || '').toUpperCase().trim(); // ✨ FIX: Added .trim() here too!
       if (typeof onHandChanges[ref] !== 'undefined') {
         dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0);
         dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);

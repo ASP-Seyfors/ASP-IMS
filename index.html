@@ -22,13 +22,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP IMS</title>
+  <title>ASP DEMO</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/component.css">
+  <link rel="stylesheet" href="css/utilities.css">
   <link rel="manifest" href="manifest.json">
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -45,15 +46,16 @@
     .progress-banner { background-color: #e8f5e9; border: 2px solid #2e7d32; color: #1b5e20; padding: 8px; border-radius: 4px; font-weight: bold; text-align: center; margin-bottom: 10px; }
     .badge-info { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.8rem; font-weight: bold; }
     .badge-alert { background-color: #ffcdd2; color: #c62828; }
-    .audit-card { background-color: #ffffff; border: 1px solid #0277bd; border-radius: 4px; padding: 10px; margin-bottom: 10px; }
+    .audit-card { background-color: #ffffff; border: 1px solid #0277bd; border-radius: 4px; padding: 10px; margin-bottom: 10px; }    
   </style>
 </head>
-<body class="theme-slate">
+<body class="theme-gold">
 
   <!-- THE APP WILL INJECT ALL SCREENS INTO THIS EMPTY CONTAINER -->
   <div id="app-root"></div>
 
   <!-- Scripts -->
+   <script src="js/config.js"></script>
   <script src="js/componentManager.js"></script>
   <script src="js/databaseManager.js"></script>
   <script src="js/uiManager.js"></script>

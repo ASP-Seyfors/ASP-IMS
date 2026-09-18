@@ -104,10 +104,19 @@ window.forceAppUpdate = async function() {
 };
 
 window.onload = async () => { 
+  // 1. Fetch and inject all HTML components FIRST
   if (typeof ComponentManager !== 'undefined') {
     await ComponentManager.loadAllScreens();
   }
 
+  // 2. Now it is safe to interact with the DOM elements
+  let loginLogo = document.getElementById('loginLogo');
+  if (loginLogo) loginLogo.src = ENV_CONFIG.LOGO_URL;
+
+  let versionDisplay = document.getElementById('appVersionDisplay');
+  if (versionDisplay) versionDisplay.textContent = "App Version: " + ENV_CONFIG.APP_VERSION;
+
+  // 3. Initialize remaining systems
   UIManager.loadSavedTheme(); 
   DatabaseManager.init(); 
   SessionManager.init();
@@ -125,24 +134,20 @@ window.onload = async () => {
     AuthManager.init();
   }
 
-  // Check for inbound updates from Google Sheets
   if (typeof UIManager.checkForCloudUpdates === 'function') {
     UIManager.checkForCloudUpdates();
   }
 
-  // Check if we need to show the red dot on load
   if (typeof UIManager.evaluateSyncIndicator === 'function') {
     UIManager.evaluateSyncIndicator();
   }
 
-  // Start the background listener to check for cloud updates every 3 minutes
   setInterval(() => {
     if (typeof UIManager.checkForCloudUpdates === 'function') {
       UIManager.checkForCloudUpdates();
     }
   }, 180000);
 
-  // Initialize Lucide SVG Icons
   if (typeof lucide !== 'undefined') {
     lucide.createIcons();
   }
@@ -284,6 +289,8 @@ window.exportThriveProducts = () => AuditManager.exportThriveProducts();
 window.exportShopifyProducts = () => AuditManager.exportShopifyProducts();
 window.exportShopifyInventory = () => AuditManager.exportShopifyInventory();
 window.exportEcommerceData = (platform, isNew) => AuditManager.exportEcommerceData(platform, isNew);
+window.executeShopifySeedTest = () => AuditManager.executeShopifySeedTest();
+window.executeShopifySandboxSync = () => AuditManager.executeShopifySandboxSync();
 
 window.generateRevMedPDF = (mode) => ReportsManager.generateRevMedPDF(mode);
 

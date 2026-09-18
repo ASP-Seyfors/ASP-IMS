@@ -1,0 +1,26 @@
+<div id="inventoryReportOptionsModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2e7d32; padding-bottom:8px; margin-bottom:15px;">
+      <h3 style="margin:0; color:#2e7d32; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="package" style="width:20px; height:20px;"></i> Full On-Hand Stock Options
+      </h3>
+      <button onclick="document.getElementById('inventoryReportOptionsModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div style="margin-bottom:15px; font-size:0.85rem; color:#555;">Select the columns you want to include in the PDF export:</div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#f1f8e9; border:1px solid #c8e6c9; padding:12px; border-radius:4px;">
+      <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvMfr" checked> Manufacturer</label>
+      <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvDesc" checked> Description</label>
+      <label style="cursor:pointer; font-weight:bold; color:#0277bd;"><input type="checkbox" id="chkInvAvail" checked> Available Quantity (Sales)</label>
+      <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvPrice" checked> Selling Price</label>
+      <div style="border-top:1px dashed #a5d6a7; margin:4px 0; padding-top:6px;"></div>
+      <label style="cursor:pointer; font-size:0.85rem; color:#555;"><input type="checkbox" id="chkInvTotal"> Total Physical Qty (Internal)</label>
+      <label style="cursor:pointer; font-size:0.85rem; color:#555;"><input type="checkbox" id="chkInvRes"> Reserved Qty (Internal)</label>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button onclick="document.getElementById('inventoryReportOptionsModal').style.display='none'" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
+      <button onclick="ReportsManager.generateInventoryReport('in_stock'); document.getElementById('inventoryReportOptionsModal').style.display='none';" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px;">
+         <i data-lucide="printer" style="width:16px; height:16px;"></i> Generate Report
+      </button>
+    </div>
+  </div>
+</div>

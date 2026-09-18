@@ -33,6 +33,9 @@
     <label style="font-weight:bold; cursor:pointer; margin-left: 15px; color: #d32f2f;">
       <input type="checkbox" id="chkNeedsPrice" onchange="DatabaseManager.renderDbGridEditor()"> Items Needing Price
     </label>
+    <label style="font-weight:bold; cursor:pointer; margin-left: 15px; color: #f57f17;">
+      <input type="checkbox" id="chkNeedsPriceInStock" onchange="DatabaseManager.renderDbGridEditor()"> Missing Price & In Stock
+    </label>
   </div>
   
   <div style="overflow-x: auto; max-height: 60vh; border: 1px solid #ccc; margin-bottom: 15px; border-radius: 4px;">
@@ -42,6 +45,7 @@
           <th style="padding: 10px; border-bottom: 1px solid #004d40; text-align: left;">MFR</th>
           <th style="padding: 10px; border-bottom: 1px solid #004d40; text-align: left;">REF / SKU</th>
           <th style="padding: 10px; border-bottom: 1px solid #004d40; text-align: left; width: 60%;">Description</th>
+          <th style="padding: 10px; border-bottom: 1px solid #004d40; text-align: left;">Available Qty</th>
           <th style="padding: 10px; border-bottom: 1px solid #004d40; text-align: center;">Actions</th>
         </tr>
       </thead>

@@ -19,24 +19,27 @@
 const ComponentManager = {
   async loadAllScreens() {
     const screens = [
-      'login.html',
-      'setup.html',
-      'manifestEntry.html',
-      'manifestReview.html',
-      'scanning.html',
-      'review.html',
-      'summary.html',
-      'auditHub.html',
-      'archive.html',
-      'settings.html',
-      'reports.html',
-      'dbEditor.html',
-      'help.html',
-      'devTools.html' 
+      'login.html', 'setup.html', 'manifestEntry.html', 'manifestReview.html',
+      'scanning.html', 'review.html', 'summary.html', 'auditHub.html',
+      'archive.html', 'settings.html', 'reports.html', 'dbEditor.html',
+      'help.html', 'devTools.html' 
+    ];
+
+    const modals = [
+      'itemEditModal.html',
+      'binViewerModal.html',
+      'quickLookupModal.html',
+      'qboModal.html',
+      'bugReportModal.html',
+      'inventoryReportOptionsModal.html',
+      'internalReportOptionsModal.html',
+      'stockReportEditorModal.html',
+      'systemRestoreModal.html'
     ];
 
     const appRoot = document.getElementById('app-root');
     
+    // 1. Load Screens
     for (let file of screens) {
       try {
         let res = await fetch(`screens/${file}`);
@@ -44,7 +47,19 @@ const ComponentManager = {
         let html = await res.text();
         appRoot.insertAdjacentHTML('beforeend', html);
       } catch (err) {
-        console.error(`Failed to load component: ${file}`, err);
+        console.error(`Failed to load screen: ${file}`, err);
+      }
+    }
+
+    // 2. Load Modals
+    for (let file of modals) {
+      try {
+        let res = await fetch(`modals/${file}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        let html = await res.text();
+        document.body.insertAdjacentHTML('beforeend', html);
+      } catch (err) {
+        console.error(`Failed to load modal: ${file}`, err);
       }
     }
   }

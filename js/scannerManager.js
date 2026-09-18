@@ -238,6 +238,12 @@ const ScannerManager = {
       let clean = rawLine.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
       let idx = 0;
       while (idx < clean.length) {
+        // ✨ V5.1 PATCH: Safely jump over the Ethicon Product Variant AI (20)
+        if (clean.substring(idx, idx + 2) === "20" && clean.length - idx >= 4 && /^\d{2}$/.test(clean.substring(idx + 2, idx + 4))) {
+            idx += 4; // Skip the AI (2) + the variant code (2)
+            continue;
+        }
+
         if (clean.substring(idx, idx + 2) === "17" && clean.length - idx >= 8 && /^\d{6}$/.test(clean.substring(idx + 2, idx + 8))) {
           let testMm = parseInt(clean.substring(idx + 4, idx + 6), 10);
           // STRICT MONTH VALIDATION: Ensure month is 01-12 to prevent matching inside "2017" variant strings
@@ -257,14 +263,32 @@ const ScannerManager = {
           idx += 16;
         } else if (clean.substring(idx, idx + 2) === "10") {
           let rem = clean.substring(idx + 2);
-          // Look for 11 (Prod Date), 17 (Exp Date), or 21 (Serial) as strict lot boundaries
+          
+          // ✨ V5.1 PATCH: Look for standard GS group separators or known fixed AIs (11, 17, 21)
           let breakIdx = rem.search(/(11\d{6}|17\d{6}|21[a-zA-Z0-9]{4,})/);
+          
           if (breakIdx > 1) {
             lot = rem.substring(0, breakIdx);
+            idx += 2 + breakIdx; // Fast-forward exactly to the start of the next AI
           } else {
-            lot = rem;
+            // ✨ V5.1 PATCH: Deep Heuristic Fallback (Fixes Cooper Surgical missing GS characters)
+            let swallowed17Match = rem.match(/^(.*?)(17)([2-3]\d(?:0[1-9]|1[0-2])(?:0[0-9]|[1-2]\d|3[0-1]))(.*)$/);
+            
+            if (swallowed17Match) {
+                lot = swallowed17Match[1]; // Everything before the hidden 17
+                let rawExp = swallowed17Match[3]; // The 6 digit date
+                
+                if (!exp) {
+                    let yy = parseInt(rawExp.substring(0, 2), 10);
+                    let year = yy < 50 ? (2000 + yy) : (1900 + yy);
+                    exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
+                }
+                idx += 2 + lot.length + 8; // Fast-forward past '10', the Lot, '17', and Date
+            } else {
+                lot = rem;
+                break;
+            }
           }
-          break;
         } else if (/^\d{12,14}$/.test(clean)) {
           if (!gtin) gtin = clean;
           break;

@@ -44,8 +44,8 @@ const SessionManager = {
   fetchedStagedData: {},
 
   // Cloud URLs
-  cloudArchiveUrl: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
-  googleFeederUrl: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
+  cloudArchiveUrl: ENV_CONFIG.CLOUD_ARCHIVE_URL,
+  googleFeederUrl: ENV_CONFIG.GOOGLE_FEEDER_URL,
 
   // Sandbox URLs
   /*
@@ -196,7 +196,9 @@ const SessionManager = {
     
     let payload = {
       action: "SYNC_ALLOCATIONS",
-      allocations: allocationsObj
+      allocations: allocationsObj,
+      // ✨ FIX: Transmit the alias dictionary so Apps Script can restore proper casing
+      aliases: DatabaseManager.customerAliases || {} 
     };
 
     try {
@@ -218,29 +220,28 @@ const SessionManager = {
       if (data.status === "success" && data.allocations) {
         let allocMap = {};
         data.allocations.forEach(a => {
-          if (!allocMap[a.customerName]) allocMap[a.customerName] = {};
+          // ✨ FIX: Run incoming cloud data through the Alias Resolver to auto-merge legacy/manual sheet entries!
+          let rawCustName = String(a.customerName).trim();
+          let resolvedName = (typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') 
+              ? DatabaseManager.resolveAlias(rawCustName, 'customer') 
+              : rawCustName;
+              
+          let cleanCustName = resolvedName.toUpperCase(); 
           
-          // Rebuild the object structure
-          if (!allocMap[a.customerName][a.ref]) {
-              allocMap[a.customerName][a.ref] = { qty: 0, details: [] };
+          if (!allocMap[cleanCustName]) allocMap[cleanCustName] = {};
+          
+          if (!allocMap[cleanCustName][a.ref]) {
+              allocMap[cleanCustName][a.ref] = { qty: 0, details: [] };
           }
           
-          // Strip timezone/timestamp garbage injected by Google Sheets
           let cleanExp = a.exp || 'NO_EXP';
-          if (typeof cleanExp === 'string' && cleanExp.includes('T')) {
-              cleanExp = cleanExp.split('T')[0];
-          }
+          if (typeof cleanExp === 'string' && cleanExp.includes('T')) cleanExp = cleanExp.split('T')[0];
           
-          // Parse string quantities into integers before adding
           let safeQty = parseInt(a.qty, 10) || 0;
           
-          allocMap[a.customerName][a.ref].qty += safeQty;
-          allocMap[a.customerName][a.ref].details.push({
-             lot: a.lot, 
-             exp: cleanExp, 
-             qty: safeQty, 
-             orderNum: a.orderNum, 
-             sessionId: a.sessionId
+          allocMap[cleanCustName][a.ref].qty += safeQty;
+          allocMap[cleanCustName][a.ref].details.push({
+             lot: a.lot, exp: cleanExp, qty: safeQty, orderNum: a.orderNum, sessionId: a.sessionId
           });
         });
         localStorage.setItem('asp_allocations', JSON.stringify(allocMap));
@@ -367,44 +368,64 @@ const SessionManager = {
   async fetchStagedSessions(silent = false) {
     if (!this.getActiveFeederUrl() || this.getActiveFeederUrl().includes("YOUR_")) return;
 
+    this.fetchedStagedData = {};
+    let manualData = { stagedSessions: {} };
+    let qboData = { stagedSessions: {} };
+
+    // 1. Fetch Manual Orders from the Feeder URL (Safely)
     try {
-      let res = await fetch(this.getActiveFeederUrl());
-      let data = await res.json();
-      
-      this.fetchedStagedData = data.stagedSessions || {};
-      
-      if (data.customerAnalytics) {
-        localStorage.setItem('asp_remote_analytics', JSON.stringify(data.customerAnalytics));
-        localStorage.setItem('asp_remote_customers', JSON.stringify(data.customerList));
+      let manualRes = await fetch(this.getActiveFeederUrl());
+      let manualText = await manualRes.text();
+      if (manualText.trim().startsWith('{')) {
+          manualData = JSON.parse(manualText);
       }
-      
-      let select = document.getElementById('stagedOrdersSelect');
-      if (select) {
-        select.innerHTML = '<option value="">-- Select Staged Order --</option>';
-        let count = 0;
-        for (let sessionName in this.fetchedStagedData) {
-          let sessionObj = this.fetchedStagedData[sessionName];
-          let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
-          if (sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED') continue;
+    } catch (e) { console.warn("Manual Orders Feed failed:", e); }
 
-          let opt = document.createElement('option');
-          opt.value = sessionName;
-          opt.textContent = `📦 ${sessionName} (${items.length} items)`;
-          select.appendChild(opt);
-          count++;
-        }
-
-        if (typeof UIManager !== 'undefined' && UIManager.populateCustomerDropdown) {
-          UIManager.populateCustomerDropdown();
-        }
-
-        if (!silent) {
-          if (count > 0) alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
-          else alert("Synced successfully, but no staged orders found on the ASP_Scanner_Feed tab.");
-        }
+    // 2. Fetch QBO Invoices from the Database URL (Safely)
+    try {
+      let qboRes = await fetch(`${this.getActiveArchiveUrl()}?action=GET_QBO_FEED`);
+      let qboText = await qboRes.text();
+      if (qboText.trim().startsWith('{')) {
+          qboData = JSON.parse(qboText);
       }
-    } catch (err) {
-      if (!silent) alert("Error syncing feed: " + err.message);
+    } catch (e) { console.warn("QBO Feed failed:", e); }
+
+    // Merge the session data safely
+    this.fetchedStagedData = {
+        ...(manualData.stagedSessions || {}),
+        ...(qboData.stagedSessions || {})
+    };
+    
+    // Preserve the Customer Analytics from the Orders Script
+    if (manualData.customerAnalytics) {
+      localStorage.setItem('asp_remote_analytics', JSON.stringify(manualData.customerAnalytics));
+      localStorage.setItem('asp_remote_customers', JSON.stringify(manualData.customerList));
+    }
+    
+    let select = document.getElementById('stagedOrdersSelect');
+    if (select) {
+      select.innerHTML = '<option value="">-- Select Staged Order --</option>';
+      let count = 0;
+      for (let sessionName in this.fetchedStagedData) {
+        let sessionObj = this.fetchedStagedData[sessionName];
+        let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
+        if (sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED') continue;
+
+        let opt = document.createElement('option');
+        opt.value = sessionName;
+        opt.textContent = `📦 ${sessionName} (${items.length} items)`;
+        select.appendChild(opt);
+        count++;
+      }
+
+      if (typeof UIManager !== 'undefined' && UIManager.populateCustomerDropdown) {
+        UIManager.populateCustomerDropdown();
+      }
+
+      if (!silent) {
+        if (count > 0) alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
+        else alert("Synced successfully, but no staged orders found in either feed.");
+      }
     }
   },
 
@@ -419,10 +440,11 @@ const SessionManager = {
     if (btn && !silent) { btn.textContent = "⏳ Fetching QBO..."; btn.disabled = true; btn.style.opacity = "0.7"; }
 
     try {
-      await fetch(this.getActiveFeederUrl(), {
+      // ✨ THE FIX: Target the Archive URL (Database Script) where QBO_Engine actually lives!
+      await fetch(this.getActiveArchiveUrl(), {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
         body: JSON.stringify({ action: "FETCH_QBO" })
       });
 
@@ -549,6 +571,15 @@ const SessionManager = {
   },
 
   startSession() {
+    // ✨ FIX: Intercept the start button using the correct dropdown values
+    const typeRadio = document.querySelector('input[name="sessionType"]:checked');
+    const wType = typeRadio && typeRadio.value === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
+    
+    //if (typeRadio && typeRadio.value === 'Order' && wType.includes('Un-Reserve')) {
+    //    this.openUnreserveModal();
+    //    return; // Stops the normal blank session from starting
+    //}
+    
     try {
       let uName = document.getElementById('userNameInput').value.trim();
       if (typeof AuthManager !== 'undefined' && AuthManager.isWorkstation) {
@@ -1232,18 +1263,35 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   saveItemLog(ignoreOverpack = false) {
-    let rawGtin = document.getElementById('gtinInput').value.trim();
-    let ref = document.getElementById('refInput').value.trim().toUpperCase();
-    const lot = document.getElementById('lotInput').value.trim().toUpperCase();
-    const exp = document.getElementById('expInput').value.trim();
-    const vendor = document.getElementById('vendorSelect').value;
-    let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    
-    const itemCust = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
-    const itemOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
-    const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
+        let rawGtin = document.getElementById('gtinInput').value.trim();
+        if (rawGtin.toUpperCase() === "N/A" || rawGtin.toUpperCase() === "NA") rawGtin = "";
+        
+        let ref = document.getElementById('refInput').value.trim().toUpperCase();
+        let lot = document.getElementById('lotInput').value.trim().toUpperCase();
+        if (lot === "N/A" || lot === "NA" || lot === "NO_LOT") lot = "";
+        
+        let exp = document.getElementById('expInput').value.trim();
+        if (exp.toUpperCase() === "N/A" || exp.toUpperCase() === "NA" || exp === "NO_EXP") exp = "";
+        
+        const vendor = document.getElementById('vendorSelect').value;
+        let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
+        
+        // Changed const to let so we can mutate it
+        let itemCust = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value.trim() : '';
+        const itemOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
+        const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-    // ✨ NEW: Intercept aliases typed during active Receiving/Reserving
+        // ✨ V5.1 PATCH: Enforce Strict Proper Case for Customer Names
+        if (itemCust) {
+            let upperTag = itemCust.toUpperCase();
+            let masterCustList = DatabaseManager.dbRaw && DatabaseManager.dbRaw.customers ? DatabaseManager.dbRaw.customers : [];
+            let matchedCust = masterCustList.find(c => String(c).toUpperCase().trim() === upperTag);
+            
+            if (matchedCust) {
+                itemCust = matchedCust; // Force it to the exact case from the DB
+            }
+        }
+
     let cTag = itemCust.trim();
     if (cTag && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
         cTag = DatabaseManager.resolveAlias(cTag, 'customer');
@@ -1253,24 +1301,15 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     
     if (!matchedDbItem) {
       let pendingMatch = this.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
-      if (pendingMatch) {
-        matchedDbItem = pendingMatch; 
-      }
+      if (pendingMatch) matchedDbItem = pendingMatch; 
     }
 
     let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty, ref);
-    
     if (matchedDbItem && uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
-      if (typeof UIManager !== 'undefined') {
-          UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${ref.toUpperCase()}) Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
-      }
-      rawGtin = "N/A"; 
-      
-      // ✨ FIX: Check the master DB first, then check the pending memory!
+      if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${ref.toUpperCase()}) Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
+      rawGtin = ""; 
       matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
-      if (!matchedDbItem) {
-          matchedDbItem = this.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
-      }
+      if (!matchedDbItem) matchedDbItem = this.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
     }
 
     ref = uomResult.trueRef;
@@ -1281,34 +1320,42 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let uMult = 1;
 
     if (isNewItem) {
+       // ✨ V5.1 PATCH: Block new item creation during outbound orders
+       let isOutbound = this.currentWorkflowType && (this.currentWorkflowType.toUpperCase().includes('ORDER') || this.currentWorkflowType.toUpperCase().includes('PACK'));
+       
+       if (isOutbound) {
+           UIManager.showCustomAlert("Action Blocked", `You are packing an outbound order, but the barcode ${ref} does not exist in the database. Please process this item through a Receiving session first to establish its identity.`);
+           return;
+       }
+       // -----------------------------------------------------------
+
        let bundleChk = document.getElementById('chkIsBundle');
        let isBundle = bundleChk && bundleChk.checked;
-       let bundleWarning = "";
-
+       
        if (isBundle) {
            pRef = document.getElementById('bundleParentRef').value.trim().toUpperCase();
            uMult = parseInt(document.getElementById('bundleMult').value, 10) || 1;
-           if (!pRef || uMult <= 1) {
-               UIManager.showCustomAlert("Bundle Error", "Please provide a valid Parent REF and a Units Per Box quantity greater than 1.");
+           if (!pRef || uMult <= 1 || pRef === ref) {
+               UIManager.showCustomAlert("Bundle Error", "Please provide a valid Parent REF. The Parent REF cannot be exactly the same as the Box Barcode.");
                return;
            }
-           // ✨ FIX: Modify the warning text to be explicit about creating two items
-           bundleWarning = `\n\n📦 BUNDLE DETECTED:\nThis will create the Box Barcode "${ref}" AND silently create the Individual Item "${pRef}" if it does not already exist.`;
        }
 
-       let confirmNew = confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.${bundleWarning}\n\nAre you sure you want to create a BRAND NEW item? If this is a typo, click Cancel and fix the REF.`);
-       if (!confirmNew) return; 
+       let confirmNew = confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.\n\nAre you sure you want to create a BRAND NEW item?`);
+       if (!confirmNew) return;
 
        let alreadyPending = this.pendingNewItems.find(i => i.ref === ref);
        if (!alreadyPending) {
            this.pendingNewItems.push({
-               ref: ref,
-               gtin: rawGtin,
-               mfr: vendor,
-               price: "$0.00",
-               desc: "Navigate to vendor website for item description.",
-               parentRef: pRef,
-               uomMult: uMult
+               ref: ref, gtin: rawGtin, mfr: vendor, price: "$0.00", cost: "$0.00",
+               onHand: 0, reservedQty: 0, availableQty: 0,
+               onRevMed: "FALSE", revMedPrice: "", onDotMed: "FALSE", dotMedPrice: "",
+               syncedThrive: "FALSE", syncedShopify: "FALSE",
+               desc: "Navigate to vendor website for item description.", 
+               category: "General", 
+               shopifyCategory: "Medical Supplies", 
+               status: "INACTIVE",
+               parentRef: pRef, uomMult: uMult, shelf: ""
            });
        }
 
@@ -1321,18 +1368,19 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
                let parentAlreadyPending = this.pendingNewItems.find(i => i.ref === pRef);
                if (!parentAlreadyPending) {
                    this.pendingNewItems.push({
-                       ref: pRef,
-                       gtin: "", 
-                       mfr: vendor,
-                       price: "$0.00",
-                       desc: "Navigate to vendor website for item description.",
-                       parentRef: "", 
-                       uomMult: 1
+                       ref: pRef, gtin: "", mfr: vendor, price: "$0.00", cost: "$0.00",
+                       onHand: 0, reservedQty: 0, availableQty: 0,
+                       onRevMed: "FALSE", revMedPrice: "", onDotMed: "FALSE", dotMedPrice: "",
+                       syncedThrive: "FALSE", syncedShopify: "FALSE",
+                       desc: "Navigate to vendor website for item description.", 
+                       category: "General", 
+                       shopifyCategory: "Medical Supplies", 
+                       status: "INACTIVE",
+                       parentRef: "", uomMult: 1, shelf: ""
                    });
                }
            }
        }
-       
        localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
     }
 
@@ -1340,10 +1388,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (!this.currentWorkflowType.includes('Receiving & Reserving')) {
       if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
       else if (this.currentWorkflowType.includes('Packing')) effectiveTag = 'Pack & Ship';
+      else if (this.currentWorkflowType.includes('Un-Reserve')) effectiveTag = 'Un-Reserve';
       else effectiveTag = 'Inventory';
     }
 
-    // ✨ NEW: Use the cTag variable we mapped through the dictionary earlier
     let finalCustomerTag = cTag;
     let finalOrderNum = itemOrder;
 
@@ -1358,7 +1406,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
-
     let bypassOverpackWarning = ignoreOverpack || !this.isManifestEnabled;
 
     try {
@@ -1405,8 +1452,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       qty: qty,
       rawScanLines: rawBarcodesGathered,
       isNew: isNewItem, 
-      customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? cTagCombined : ''),
-      orderNum: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' ? finalOrderNum : ''),
+      customerTag: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' || effectiveTag === 'Un-Reserve' ? cTagCombined : ''),
+      orderNum: (effectiveTag === 'Reserved' || effectiveTag === 'Pack & Ship' || effectiveTag === 'Un-Reserve' ? finalOrderNum : ''),
       sessionId: this.sessionId,
       itemNote: iNote
     });
@@ -1456,6 +1503,31 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     return `https://www.google.com/search?q=${encodeURIComponent(mfr + ' ' + ref)}`;
   },
 
+  // ✨ NEW: Ask Apps Script to scrape the Ethicon Website
+  async autoFetchEthicon(ref, index) {
+    let btn = document.getElementById(`btnEthiconFetch_${index}`);
+    if (btn) { btn.textContent = "⏳ Fetching..."; btn.disabled = true; }
+    
+    try {
+      let res = await fetch(`${this.getActiveArchiveUrl()}?action=FETCH_ETHICON&ref=${encodeURIComponent(ref)}`);
+      let data = await res.json();
+      
+      if (data.status === "success" && data.desc) {
+         let input = document.getElementById(`advDesc_${index}`);
+         if (input) {
+             input.value = data.desc;
+             input.setAttribute('data-autofetched', 'true'); // ✨ THE FIX: Mark this as a successful AI fetch
+         }
+         if (btn) { btn.textContent = "✅ Success"; btn.style.backgroundColor = "#2e7d32"; }
+      } else {
+         throw new Error(data.message || "Parse failed.");
+      }
+    } catch(err) {
+       alert("Ethicon Auto-Fetch failed: " + err.message);
+       if (btn) { btn.textContent = "⚡ Auto-Fetch"; btn.disabled = false; }
+    }
+  },
+
   renderAdvancedReview() {
     const card = document.getElementById('advancedReviewCard');
     const list = document.getElementById('advancedItemsList');
@@ -1477,6 +1549,16 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     unresolved.forEach((item, index) => {
       let searchUrl = this.getVendorSearchUrl(item.mfr, item.ref);
+      let isEthicon = (item.mfr || '').toUpperCase().includes('ETHICON');
+      
+      // ✨ FIX: Added the Suture Checkbox right next to the Auto-Fetch Button
+      let ethiconBtnHtml = isEthicon ? `
+        <label style="font-size:0.85rem; font-weight:bold; color:#c62828; display:flex; align-items:center; gap:4px; margin-right:8px;">
+          <input type="checkbox" id="chkSuture_${index}"> Suture?
+        </label>
+        <button id="btnEthiconFetch_${index}" class="btn-small" style="background-color:#f57f17; color:#ffffff; padding: 4px 10px;" onclick="SessionManager.autoFetchEthicon('${item.ref}', ${index})">⚡ Auto-Fetch</button>
+      ` : '';
+
       let div = document.createElement('div');
       div.style.marginBottom = '10px';
       div.style.padding = '10px';
@@ -1487,7 +1569,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <div><strong style="color: #0277bd;">${item.ref}</strong> <span style="font-size:0.8rem; color:#555; margin-left: 6px;">${item.mfr}</span></div>
-          <button class="btn-small" style="background-color:#1976d2; color:#ffffff; padding: 4px 10px;" onclick="window.open('${searchUrl}', '_blank')">🔍 Search</button>
+          <div style="display:flex; gap:6px;">
+            ${ethiconBtnHtml}
+            <button class="btn-small" style="background-color:#1976d2; color:#ffffff; padding: 4px 10px;" onclick="window.open('${searchUrl}', '_blank')">🔍 Manual Search</button>
+          </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px; background:#f5f5f5; padding:6px; border-radius:4px; border:1px solid #ccc;">
           <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.mfr}</span>
@@ -1503,23 +1588,55 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const inputs = document.querySelectorAll('.adv-desc-input');
     let updatedCount = 0;
 
-    inputs.forEach(input => {
+    inputs.forEach((input, index) => {
       let rawDesc = input.value.trim();
       let ref = input.getAttribute('data-ref');
       let mfr = input.getAttribute('data-mfr');
       
       if (rawDesc && rawDesc !== "Navigate to vendor website for item description.") {
-        let newDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
         
+        let finalDesc = "";
+        let finalCategory = "General";
+        
+        // Grab the Suture checkbox state dynamically
+        let sutureChk = document.getElementById(`chkSuture_${index}`);
+        let isSuture = sutureChk && sutureChk.checked;
+        let isAutoFetched = input.getAttribute('data-autofetched') === 'true'; // ✨ Check the flag
+        
+        if (isSuture && isAutoFetched) {
+            // ONLY append the Box math if the AI Auto-Fetch actually worked
+            finalCategory = "Suture";
+            let lastChar = ref.slice(-1).toUpperCase();
+            let boxQtyStr = "";
+            let refBase = ref; 
+            
+            if (lastChar === 'G') { boxQtyStr = "(BX/12)"; refBase = ref.slice(0, -1); }
+            else if (lastChar === 'T') { boxQtyStr = "(BX/24)"; refBase = ref.slice(0, -1); }
+            else if (lastChar === 'H') { boxQtyStr = "(BX/36)"; refBase = ref.slice(0, -1); }
+            
+            finalDesc = `${mfr} ${rawDesc} ${boxQtyStr} ${refBase}`.replace(/\s+/g, ' ').trim();
+        } else {
+            // If they typed it manually, just save what they typed
+            if (isSuture) finalCategory = "Suture"; 
+            finalDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
+        }
+        
+        // Apply the new Desc and Category to the local cache memory
         let pendingItem = this.pendingNewItems.find(i => i.ref === ref);
-        if (pendingItem) pendingItem.desc = newDesc;
+        if (pendingItem) {
+            pendingItem.desc = finalDesc;
+            if (isSuture) pendingItem.category = finalCategory;
+        }
 
         let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
-        if (dbItem) dbItem.desc = newDesc;
+        if (dbItem) {
+            dbItem.desc = finalDesc;
+            if (isSuture) dbItem.category = finalCategory;
+        }
 
         this.scannedObjects.forEach(scanned => {
           if (scanned.ref === ref && scanned.isNew) {
-            scanned.desc = newDesc;
+            scanned.desc = finalDesc;
           }
         });
         updatedCount++;
@@ -1662,8 +1779,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         updateStep(1, "Ledger Math Applied", 33);
         await new Promise(r => requestAnimationFrame(() => setTimeout(r, 100))); 
 
-        // --- CONCURRENT UPLOAD FOR LIGHTNING SPEED ---
-        updateStep(2, "Transmitting to Google...", 66);
+       // --- CONCURRENT UPLOAD FOR LIGHTNING SPEED ---
+        updateStep(2, "Transmitting to Google & Shopify...", 66);
         let networkTasks = [];
         
         networkTasks.push(this.syncAllocationsToCloud());
@@ -1675,6 +1792,17 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         if (completedSessionObj) {
             networkTasks.push(this.pushToCloudArchive(completedSessionObj));
             networkTasks.push(this.pushQboWriteBack(completedSessionObj));
+        }
+
+        // ✨ NEW: Call the centralized Shopify Payload Builder
+        let refsToSync = this.scannedObjects.map(scan => scan.ref);
+        let shopifyUpdatePayload = DatabaseManager.buildShopifyPayload(refsToSync);
+        
+        if (shopifyUpdatePayload.length > 0 && archiveUrl) {
+            networkTasks.push(fetch(archiveUrl, { 
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify({ action: "SYNC_SHOPIFY_SANDBOX", payload: shopifyUpdatePayload }) 
+            }).catch(e => console.warn("Shopify background sync failed")));
         }
 
         await Promise.all(networkTasks);
@@ -2372,7 +2500,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     };
 
     try {
-      await fetch(this.getActiveFeederUrl(), { 
+      // ✨ THE FIX: Target the Archive URL (Database Script) where QBO_Engine actually lives!
+      await fetch(this.getActiveArchiveUrl(), { 
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2418,5 +2547,182 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         }
       });
     }
+  },
+
+  // ✨ NEW: Un-Reserve Logic Engine
+  openUnreserveModal(custName) {
+      if (!custName) return;
+      
+      let binModal = document.getElementById('binViewerModal');
+      if (binModal) binModal.style.display = 'none'; // ✨ FIX: Hide it instead of destroying the HTML!
+
+      // 🚨 THE FIX: Use the exact uppercase key, bypassing the alias resolver
+      let targetKey = custName.toUpperCase();
+      let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+      let custAllocs = allocations[targetKey];
+
+      if (!custAllocs || Object.keys(custAllocs).length === 0) {
+          UIManager.showCustomAlert("Notice", `There are no items currently reserved for ${targetKey}.`);
+          return;
+      }
+
+      document.getElementById('unreserveCustomerName').innerText = targetKey;
+      let container = document.getElementById('unreserveChecklistContainer');
+      let html = '';
+
+      for (let ref in custAllocs) {
+          let itemData = custAllocs[ref];
+          let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) || { desc: "Unknown Item" };
+          
+          if (itemData && itemData.details && itemData.details.length > 0) {
+              itemData.details.forEach((det) => {
+                  if (det.qty > 0) {
+                      html += `<label style="display:block; padding:8px; border-bottom:1px solid #eee; cursor:pointer;"><input type="checkbox" class="unreserve-chk" data-ref="${ref}" data-lot="${det.lot || ''}" data-exp="${det.exp || ''}" data-qty="${det.qty}" data-session="${det.sessionId || ''}"> <strong>${ref}</strong> (Qty: ${det.qty})<br><span style="font-size:0.8rem; color: var(--text-main);">Lot: ${det.lot || 'N/A'} | Exp: ${det.exp || 'N/A'}</span><br><span style="font-size:0.8rem; color: var(--text-main);">${dbItem.desc}</span></label>`;
+                  }
+              });
+          }
+      }
+      
+      container.innerHTML = html;
+      document.getElementById('modalUnreserve').style.display = 'flex';
+  },
+
+  async processUnreserve(event) {
+      let btn = event ? event.target : document.activeElement;
+      let origText = btn.textContent;
+      btn.textContent = "⏳ Un-Reserving..."; btn.disabled = true;
+      
+      try {
+          let custName = document.getElementById('unreserveCustomerName').innerText.toUpperCase();
+          let checkboxes = document.querySelectorAll('.unreserve-chk:checked');
+          
+          if (checkboxes.length === 0) {
+              UIManager.showCustomAlert("Notice", "No items selected to un-reserve.");
+              return;
+          }
+
+          // 1. Render the dynamic processing overlay
+          let overlay = document.createElement('div');
+          overlay.id = 'unreserveOverlay';
+          overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
+          overlay.innerHTML = `
+            <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+              <h3 style="margin:0 0 15px 0; color:#d32f2f;">🔄 Processing Un-Reserve</h3>
+              <div style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ Adjusting inventory and syncing to the cloud...</div>
+              <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
+                <div style="width:100%; height:100%; background:#d32f2f; animation: pulse 1.5s infinite;"></div>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+
+          let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+          let unreservedItems = [];
+          
+          // 2. Adjust local memory
+          checkboxes.forEach(chk => {
+              let ref = chk.getAttribute('data-ref');
+              let lot = chk.getAttribute('data-lot');
+              let exp = chk.getAttribute('data-exp');
+              let qty = parseInt(chk.getAttribute('data-qty'), 10) || 0;
+              let sessionId = chk.getAttribute('data-session');
+
+              if (allocations[custName] && allocations[custName][ref]) {
+                  let itemData = allocations[custName][ref];
+                  if (itemData.details) {
+                      let detIndex = itemData.details.findIndex(d => d.lot === lot && d.exp === exp && d.sessionId === sessionId);
+                      if (detIndex > -1) itemData.details.splice(detIndex, 1);
+                      itemData.qty -= qty;
+                      if (itemData.qty <= 0) delete allocations[custName][ref];
+                  } else if (itemData.qty !== undefined) {
+                      itemData.qty -= qty;
+                      if (itemData.qty <= 0) delete allocations[custName][ref];
+                  }
+                  if (Object.keys(allocations[custName]).length === 0) delete allocations[custName];
+              }
+
+              let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
+              if (dbItem) {
+                  dbItem.reservedQty = Math.max(0, (dbItem.reservedQty || 0) - qty);
+              }
+
+              unreservedItems.push({
+                  ref: ref, lot: lot || "N/A", exp: exp || "N/A", qty: qty,
+                  actionTag: "Un-Reserved", customerTag: custName, isNew: false, sessionId: Date.now().toString(),
+                  itemNote: "Un-Reserved from Bin"
+              });
+          });
+
+          localStorage.setItem('asp_allocations', JSON.stringify(allocations));
+          localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+          document.getElementById('modalUnreserve').style.display = 'none';
+
+          this.syncAllocationsToCloud();
+
+          let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+          let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
+          let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
+
+          let networkTasks = [];
+
+          networkTasks.push(
+              fetch(this.getActiveArchiveUrl(), {
+                  method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors } })
+              })
+          );
+
+          // 3. Robust Shopify Taxonomy Sync using Centralized Builder
+          let refsToSync = unreservedItems.map(scan => scan.ref);
+          let shopifySyncPayload = DatabaseManager.buildShopifyPayload(refsToSync);
+          
+          if (shopifySyncPayload.length > 0) {
+              networkTasks.push(fetch(this.getActiveArchiveUrl(), { 
+                  method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                  body: JSON.stringify({ action: "SYNC_SHOPIFY_SANDBOX", payload: shopifySyncPayload }) 
+              }).catch(e => console.warn("Shopify background sync failed")));
+          }
+
+          // 4. Submit Ghost Session to Audit Log
+          let uNameInput = document.getElementById('userNameInput');
+          let userName = uNameInput && uNameInput.value ? uNameInput.value.trim() : "Operator";
+
+          let auditPayload = {
+              id: Date.now().toString(), status: "Completed", userName: userName,
+              sessionName: `Un-Reserve: ${custName}`, orderNum: "", workflowType: "Un-Reserve",
+              dateStr: new Date().toLocaleDateString().replace(/\//g, '.'), startStr: new Date().toLocaleTimeString(),
+              manifestEnabled: false, expectedManifest: [], scannedObjects: unreservedItems,
+              pendingNewItems: [], pendingUpdates: [], lastUpdated: Date.now()
+          };
+
+          let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+          localArchive.unshift(auditPayload);
+          localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
+
+          networkTasks.push(
+              fetch(this.getActiveArchiveUrl(), {
+                  method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: auditPayload })
+              })
+          );
+
+          // 5. Await network and tear down overlay
+          await Promise.all(networkTasks);
+
+          let overlayEl = document.getElementById('unreserveOverlay');
+          if (overlayEl) document.body.removeChild(overlayEl);
+
+          UIManager.showCustomAlert("Success", `Successfully un-reserved ${unreservedItems.length} item(s) and synced inventory!`);
+      
+      } catch (err) {
+          let overlayEl = document.getElementById('unreserveOverlay');
+          if (overlayEl) document.body.removeChild(overlayEl);
+          UIManager.showCustomAlert("Error", "Failed to process un-reserve: " + err.message, true);
+      } finally {
+          if (btn) {
+              btn.textContent = origText; 
+              btn.disabled = false;
+          }
+      }
   }
 };

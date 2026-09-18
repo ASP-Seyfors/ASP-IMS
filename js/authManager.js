@@ -46,6 +46,7 @@ const AuthManager = {
   },
 
   showLoginScreen() {
+    document.body.style.borderTop = "none"; // ✨ Hide banner on login screen
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenLogin').style.display = 'flex';
     this.renderGoogleButton();
@@ -102,7 +103,7 @@ const AuthManager = {
     modal.id = 'workstationUserModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
-    let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users) ? DatabaseManager.users : ["Thomas", "Trey", "Jessica", "+ New User"];
+    let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users) ? DatabaseManager.users : ["Trey", "Thomas", "Jessica", "+ New User"];
     let optionsHtml = userList.map(u => `<option value="${u}">${u}</option>`).join('');
 
     modal.innerHTML = `
@@ -172,6 +173,7 @@ const AuthManager = {
   unlockApp() {
     document.getElementById('screenLogin').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
+    document.body.style.borderTop = "12px solid #e65100"; // ✨ Add orange banner after login
     
     let advLabel = document.getElementById('chkAdvancedMode') ? document.getElementById('chkAdvancedMode').parentElement : null;
     let archiveBtn = document.getElementById('btnSessionArchive');
@@ -239,7 +241,7 @@ const AuthManager = {
          if (userNameInput) userNameInput.style.display = 'none';
          if (userNameSelect) {
              userNameSelect.style.display = 'block';
-             let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users) ? DatabaseManager.users : ["Thomas", "Trey", "Jessica", "+ New User"];
+             let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users) ? DatabaseManager.users : ["Trey", "Thomas", "Jessica", "+ New User"];
              userNameSelect.innerHTML = userList.map(u => `<option value="${u}">${u}</option>`).join('');
              userNameSelect.value = localStorage.getItem('asp_user_name') || userList[0];
          }

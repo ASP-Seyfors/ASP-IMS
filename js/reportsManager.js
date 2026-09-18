@@ -21,51 +21,10 @@ const ReportsManager = {
 
   openInventoryReportOptions(type) {
     if (type !== 'in_stock') {
-      this.generateInventoryReport(type); // Route out-of-stock and pricing directly
+      this.generateInventoryReport(type); 
       return;
     }
-
-    let modal = document.createElement('div');
-    modal.id = 'inventoryReportOptionsModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
-    
-    modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2e7d32; padding-bottom:8px; margin-bottom:15px;">
-          <h3 style="margin:0; color:#2e7d32; display:flex; align-items:center; gap:8px;">
-            <i data-lucide="package" style="width:20px; height:20px;"></i> Full On-Hand Stock Options
-          </h3>
-          <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-        </div>
-        <div style="margin-bottom:15px; font-size:0.85rem; color:#555;">Select the columns you want to include in the PDF export:</div>
-        
-        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px; background:#f1f8e9; border:1px solid #c8e6c9; padding:12px; border-radius:4px;">
-          <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvMfr" checked> Manufacturer</label>
-          <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvDesc" checked> Description</label>
-          <label style="cursor:pointer; font-weight:bold; color:#0277bd;"><input type="checkbox" id="chkInvAvail" checked> Available Quantity (Sales)</label>
-          <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="chkInvPrice" checked> Selling Price</label>
-          
-          <div style="border-top:1px dashed #a5d6a7; margin:4px 0; padding-top:6px;"></div>
-          
-          <label style="cursor:pointer; font-size:0.85rem; color:#555;"><input type="checkbox" id="chkInvTotal"> Total Physical Qty (Internal)</label>
-          <label style="cursor:pointer; font-size:0.85rem; color:#555;"><input type="checkbox" id="chkInvRes"> Reserved Qty (Internal)</label>
-        </div>
-
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button onclick="document.getElementById('inventoryReportOptionsModal').remove()" style="background:#777; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer;">Cancel</button>
-          
-          <button onclick="ReportsManager.generateInventoryReport('in_stock')" style="background:#2e7d32; color:#fff; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px;">
-             <i data-lucide="printer" style="width:16px; height:16px;"></i> Generate Report
-          </button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  
-    // Render the SVGs immediately after the modal is added to the screen
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-    }
+    document.getElementById('inventoryReportOptionsModal').style.display = 'flex';
   },
 
   generateInventoryReport(type) {
@@ -91,7 +50,7 @@ const ReportsManager = {
         let avail = total - res;
         let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
         let numPrice = parseFloat(priceStr) || 0;
-        return avail > 0 && numPrice > 0;
+        return avail > 0;
       });
     } else if (type === 'out_of_stock') {
       filtered = db.filter(i => !i.onHand || i.onHand === 0);
@@ -128,7 +87,7 @@ const ReportsManager = {
 
     <div class="header-container">
       <div class="brand-section">
-        <img src="https://raw.githubusercontent.com/ASP-Seyfors/ASP-IMS/main/ASP_Icon_192.png" class="logo-img" alt="ASP Logo">
+        <img src="${ENV_CONFIG.LOGO_URL}" class="logo-img" alt="ASP Logo">
         <div>
           <div class="company-name">Allied Surgical Products</div>
           <h2>${title}</h2>
@@ -157,7 +116,7 @@ const ReportsManager = {
     filtered.forEach(item => {
       let priceRaw = String(item.price || '');
       let cleanNum = parseFloat(priceRaw.replace(/[^0-9.-]+/g, '')) || 0;
-      let formattedPrice = cleanNum > 0 ? '$' + cleanNum.toFixed(2) : '$0.00';
+      let formattedPrice = cleanNum > 0 ? '$' + cleanNum.toFixed(2) : 'CONTACT US';
       
       let total = parseInt(item.onHand, 10) || 0;
       let res = parseInt(item.reservedQty, 10) || 0;
@@ -753,5 +712,74 @@ const ReportsManager = {
       win.document.title = `ASP_${fileSuffix}_Report_(${dateStr})`.replace(/\./g, '\u2024'); 
       win.focus(); setTimeout(() => win.print(), 1600);
     }
+  },
+
+  // ✨ FIX: Switched to a GET request so the browser can read the response!
+  async loadSubscribers() {
+      const container = document.getElementById('subListContainer');
+      container.innerHTML = '<p style="text-align:center; color:#0277bd;">Loading...</p>';
+      try {
+          // Use GET with URL parameters to bypass CORS restrictions
+          let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`);
+          let data = await res.json();
+          
+          if (data.status === "success" && data.subs && data.subs.length > 0) {
+              let html = '<table style="width:100%; border-collapse:collapse; text-align:left;">';
+              html += '<tr style="background:#f0f0f0; border-bottom:1px solid #ccc;"><th style="padding:4px;">Name</th><th style="padding:4px;">Email</th><th style="padding:4px;">Freq</th><th style="padding:4px;">Status</th><th style="padding:4px;"></th></tr>';
+              
+              data.subs.forEach(sub => {
+                  html += `<tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:4px;">${sub.name}</td>
+                    <td style="padding:4px; color:#0277bd;">${sub.email}</td>
+                    <td style="padding:4px;">${sub.freq}</td>
+                    <td style="padding:4px; color:${sub.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
+                    <td style="padding:4px; text-align:right;">
+                       <button class="btn-small" style="padding:2px 6px; font-size:0.7rem;" onclick="document.getElementById('subName').value='${sub.name}'; document.getElementById('subEmail').value='${sub.email}'; document.getElementById('subFreq').value='${sub.freq === 'Daily' ? 'Daily' : 'Weekly'}'; document.getElementById('subStatus').value='${sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}';">Edit</button>
+                    </td>
+                  </tr>`;
+              });
+              html += '</table>';
+              container.innerHTML = html;
+          } else {
+              container.innerHTML = '<p style="text-align:center; color:#777; margin:0;">No active subscribers found.</p>';
+          }
+      } catch (err) {
+          container.innerHTML = '<p style="text-align:center; color:#c62828;">Failed to load subscribers.</p>';
+      }
+  },
+
+  saveSubscriber(event) {
+      // Grab the button and save its original text
+      let btn = event ? event.target : document.activeElement;
+      let origText = btn.textContent;
+      btn.textContent = "⏳ Saving..."; btn.disabled = true;
+
+      let name = document.getElementById('subName').value.trim();
+      let email = document.getElementById('subEmail').value.trim();
+      let freq = document.getElementById('subFreq').value;
+      let status = document.getElementById('subStatus').value;
+
+      if (!name || !email) {
+          UIManager.showCustomAlert("Error", "Please provide a name and email address.");
+          btn.textContent = origText; btn.disabled = false; // Reset button
+          return;
+      }
+
+      let payload = { name: name, email: email, freq: freq, status: status };
+      
+      fetch(SessionManager.getActiveArchiveUrl(), {
+          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: "UPDATE_SUBSCRIBER", payload: payload })
+      }).then(() => {
+          UIManager.showCustomAlert("Success", `${name} has been updated in the cloud!`);
+          document.getElementById('subName').value = "";
+          document.getElementById('subEmail').value = "";
+      }).catch(err => {
+          UIManager.showCustomAlert("Error", "Failed to save subscriber.");
+      }).finally(() => {
+          // This always runs at the very end to restore the button!
+          btn.textContent = origText; 
+          btn.disabled = false;
+      });
   }
 };
