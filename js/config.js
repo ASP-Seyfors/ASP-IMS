@@ -37,7 +37,7 @@ else {
     ENV_CONFIG = {
         CLOUD_ARCHIVE_URL: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",
         GOOGLE_FEEDER_URL: "https://script.google.com/macros/s/AKfycbxccIizG_pkX6ARslZCv4ElewSCRz_HUtsn0R8CKpCAFgVKPj972RLrL5eUsTNArq6IeA/exec",
-        APP_VERSION: "5.6.2",
+        APP_VERSION: "5.7.0",
         ENVIRONMENT_NAME: "Allied Surgical Products",
         THEME_COLOR: "#0277bd", 
 
