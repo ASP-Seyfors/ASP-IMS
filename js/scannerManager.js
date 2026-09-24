@@ -158,6 +158,10 @@ const ScannerManager = {
     let qtyInp = document.getElementById('qtyInput');
     if (qtyInp) qtyInp.value = '1';
     
+    // ✨ FIX: Force the Vendor dropdown back to the default prompt
+    let vendorSel = document.getElementById('vendorSelect');
+    if (vendorSel) vendorSel.selectedIndex = 0;
+    
     let custSel = document.getElementById('itemCustomerSelect');
     if (custSel) custSel.selectedIndex = 0;
 

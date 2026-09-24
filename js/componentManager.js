@@ -34,7 +34,9 @@ const ComponentManager = {
       'inventoryReportOptionsModal.html',
       'internalReportOptionsModal.html',
       'stockReportEditorModal.html',
-      'systemRestoreModal.html'
+      'systemRestoreModal.html',
+      'shipmentManagerModal.html' ,
+      'traceability.html' // ✨ NEW
     ];
 
     const appRoot = document.getElementById('app-root');

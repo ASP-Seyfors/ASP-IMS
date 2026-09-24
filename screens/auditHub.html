@@ -32,16 +32,18 @@
   <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="search" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Active Recall & Lot Traceability</h4>
     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-      <!-- 15a: Applied flex:1 to both elements and added btn-auto to the button -->
-      <input type="text" id="lotSearchInput" placeholder="Scan or type Lot Number..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="this.value = this.value.toUpperCase();">
+      <input type="text" id="lotSearchInput" placeholder="Scan or type Lot Number..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="this.value = this.value.toUpperCase();" onkeypress="if(event.key==='Enter') { AuditManager.traceLotNumber(); }">
       <button class="btn-action btn-auto" style="flex: 1; background-color: #0277bd; color: #fff; margin: 0; padding: 8px 16px;" onclick="AuditManager.traceLotNumber()">Trace</button>
     </div>
     <div id="lotTraceResults"></div>
   </div>
 
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
       <button id="btnItemLookup" class="btn-action btn-auto" style="background-color: #ffffff; color: #000000; border: 1px solid #000000; padding: 10px; margin: 0; font-weight: bold;" onclick="UIManager.openQuickLookupModal()"><i data-lucide="search" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Item Lookup</button>
       <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 10px;" onclick="UIManager.openBinViewerModal()"><i data-lucide="archive" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Customer Bins</button>
+      
+      <!-- ✨ NEW: Active Shipments Tracking Hub Button -->
+      <button class="btn-action btn-auto" style="background-color: #2e7d32; color: #ffffff; margin: 0; padding: 10px;" onclick="openActiveShipmentsHub()"><i data-lucide="truck" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Active Shipments</button>
   </div>
 
   <div id="auditResultsContainer" style="display:none; margin-top:16px;">

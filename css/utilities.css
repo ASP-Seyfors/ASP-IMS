@@ -44,6 +44,25 @@ body.font-large input, body.font-large select, body.font-large button { font-siz
     color: var(--text-main) !important;
 }
 
+#workstationUserModal > div,
+#bugReportModal > div,
+#qboModal > div,
+#systemRestoreModal > div,
+#modalUnreserve > div,
+#modalSubCategories > div {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
+}
+
+#workstationUserModal h3,
+#bugReportModal h3,
+#qboModal h3,
+#systemRestoreModal h3,
+#modalUnreserve h3,
+#modalSubCategories h3 {
+    color: var(--heading-color) !important;
+}
+
 .gtin-diff-banner {
   font-size: 0.85rem;
   font-weight: bold;
@@ -103,9 +122,16 @@ body.theme-sage #damagedBinViewerModal > div,
 body.theme-slate #quickLookupModal > div,
 body.theme-sage #quickLookupModal > div,
 body.theme-slate #modalUnreserve > div,
-body.theme-sage #modalUnreserve > div {
+body.theme-sage #modalUnreserve > div, 
+body.theme-slate #shipmentManagerModal > div,
+body.theme-sage #shipmentManagerModal > div {
     background-color: var(--card-bg) !important;
     color: var(--text-main) !important;
+}
+
+body.theme-slate #shipmentManagerModal h2,
+body.theme-sage #shipmentManagerModal h2 {
+    color: var(--heading-color) !important;
 }
 
 body.theme-slate #reportOptionsModal h3,
@@ -155,4 +181,8 @@ body.theme-sage .flyer-item-row input[type="text"][readonly] {
     background-color: var(--input-bg) !important;
     color: var(--text-main) !important;
     border-color: var(--border-color) !important;
+}
+
+#modalUnreserve {
+    z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
 }

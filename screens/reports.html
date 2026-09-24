@@ -72,7 +72,10 @@
           <option value="Inactive">Inactive</option>
         </select>
       </div>
-      <button class="btn-small" style="background-color: #0277bd; color: #fff; width: 100%;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+      <!-- ✨ NEW: Category Selector Input -->
+      <input type="text" id="subCategories" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="padding:4px; font-size:0.85rem; cursor:pointer; background-color:#f9f9f9; color: #333 !important;" title="Click to select specific categories" />
+      
+      <button class="btn-small" style="background-color: #0277bd; color: #fff; width: 100%; margin-top:4px;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
     </div>
     <div id="subListContainer" style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; font-size: 0.8rem;">
       <p style="text-align:center; color:#777; margin:0;">Click 'Refresh' to view Active Subscribers.</p>
@@ -103,6 +106,21 @@
           <option value="csv">CSV Report</option>
         </select>
         <button class="btn-small btn-auto" style="flex: 2; background-color: #3f51b5; color: #fff;" onclick="ReportsManager.exportArchivedSession()">Generate Export</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✨ NEW: Category Selection Modal -->
+  <div id="modalSubCategories" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:8px; width:90%; max-width:400px; max-height:80vh; display:flex; flex-direction:column;">
+      <h3 style="margin:0 0 10px 0; color:#01579b;">Select Categories</h3>
+      <p style="font-size:0.8rem; color:var(--text-main); margin-top:0;">Leave all unchecked to send the full inventory list.</p>
+      <div id="subCategoryChecklist" style="overflow-y:auto; flex:1; border:1px solid #ccc; padding:10px; border-radius:4px; margin-bottom:15px; display:flex; flex-direction:column; gap:8px;">
+        <!-- Checkboxes injected here -->
+      </div>
+      <div style="display:flex; justify-content:space-between; gap:10px;">
+        <button class="btn-small" style="background:#777; color:#fff; flex:1;" onclick="document.getElementById('modalSubCategories').style.display='none'">Cancel</button>
+        <button class="btn-small" style="background:#0277bd; color:#fff; flex:1;" onclick="ReportsManager.confirmCategorySelection()">Apply Filters</button>
       </div>
     </div>
   </div>

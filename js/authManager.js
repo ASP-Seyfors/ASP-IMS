@@ -30,15 +30,12 @@ const AuthManager = {
   // NOTE: This is the actual Google Cloud Client ID to allow secure Google Sign-in.
   clientId: "578227168676-721gv6n3bt5qqcd67v1vhi6111c35fcc.apps.googleusercontent.com",
 
-  // Add your authorized admin emails here
-  ADMIN_EMAILS: ['jessica@alliedsurgicalproducts.com', 'thomas@alliedsurgicalproducts.com', 'asp.techops.workstation@gmail.com'],
-
   init() {
     let savedSession = sessionStorage.getItem('asp_auth_session');
     if (savedSession) {
       this.currentUser = JSON.parse(savedSession);
       this.isGuest = false;
-      this.isWorkstation = this.currentUser.email.toLowerCase() === 'asp.techops.workstation@gmail.com';
+      this.isWorkstation = (this.currentUser.role === 'WORKSTATION');
       this.unlockApp();
     } else {
       this.showLoginScreen();
@@ -69,31 +66,62 @@ const AuthManager = {
     }
   },
 
-  handleCredentialResponse(response) {
+  async handleCredentialResponse(response) {
     const payload = this.parseJwt(response.credential);
+    let rawEmail = payload.email.toLowerCase().trim();
     
-    // Domain Verification Lockdown + Workstation Override
-    let isWorkstationEmail = payload.email.toLowerCase() === 'asp.techops.workstation@gmail.com';
-    
-    if (payload.email && (payload.email.endsWith('@alliedsurgicalproducts.com') || isWorkstationEmail)) {
-      
-      // RBAC Check for Price/Cost Editing
-      let isAdmin = this.ADMIN_EMAILS.includes(payload.email.toLowerCase());
-      
-      this.currentUser = { name: payload.name, email: payload.email, verified: true, isAdmin: isAdmin };
-      this.isGuest = false;
-      this.isWorkstation = isWorkstationEmail;
-      
-      if (this.isWorkstation) {
-        // ✨ NEW: Intercept the login and force the user name prompt
-        this.promptWorkstationUser();
-      } else {
-        // Standard user flow
-        sessionStorage.setItem('asp_auth_session', JSON.stringify(this.currentUser));
-        this.unlockApp();
-      }
-    } else {
-      alert("Access Denied: You must be an authorized Allied Surgical Products employee.");
+    // 1. Domain Lockdown
+    if (!rawEmail.endsWith('@alliedsurgicalproducts.com') && rawEmail !== 'asp.techops.workstation@gmail.com') {
+        alert("Access Denied: You must be an authorized Allied Surgical Products employee.");
+        return;
+    }
+
+    let overlay = document.createElement('div');
+    overlay.id = 'authOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; color:#fff; flex-direction:column;';
+    overlay.innerHTML = `<div style="font-size:1.5rem; font-weight:bold;">🔐 Authenticating Profile...</div>`;
+    document.body.appendChild(overlay);
+
+    try {
+        let res = await fetch(`${ENV_CONFIG.CLOUD_ARCHIVE_URL}?action=VERIFY_USER&email=${encodeURIComponent(rawEmail)}`);
+        let data = await res.json();
+        if(document.getElementById('authOverlay')) document.body.removeChild(document.getElementById('authOverlay'));
+
+        if (data.status === 'success') {
+            if (data.profile.disabled) {
+                alert("Access Denied: Your account has been disabled. Contact IT Operations.");
+                return;
+            }
+            
+            let role = data.profile.role;
+            if (role === "GUEST") {
+                this.continueAsGuest();
+                return;
+            }
+            
+            this.currentUser = { 
+                name: data.profile.name || payload.name, 
+                email: rawEmail, 
+                role: role, 
+                verified: true,
+                isAdmin: (role === 'ADMIN' || role === 'SYS_ADMIN') 
+            };
+            
+            this.isGuest = false;
+            this.isWorkstation = (role === 'WORKSTATION');
+            
+            if (this.isWorkstation) {
+                this.promptWorkstationUser();
+            } else {
+                sessionStorage.setItem('asp_auth_session', JSON.stringify(this.currentUser));
+                this.unlockApp();
+            }
+        } else {
+            alert("Auth Error: " + data.message);
+        }
+    } catch (err) {
+        if(document.getElementById('authOverlay')) document.body.removeChild(document.getElementById('authOverlay'));
+        alert("Network Error during authentication: " + err.message);
     }
   },
 
@@ -103,7 +131,7 @@ const AuthManager = {
     modal.id = 'workstationUserModal';
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
-    let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users) ? DatabaseManager.users : ["Trey", "Thomas", "Jessica", "+ New User"];
+    let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users && DatabaseManager.users.length > 0) ? DatabaseManager.users : ["Trey", "Thomas", "Jessica", "+ New User"];
     let optionsHtml = userList.map(u => `<option value="${u}">${u}</option>`).join('');
 
     modal.innerHTML = `
@@ -123,7 +151,6 @@ const AuthManager = {
     `;
     document.body.appendChild(modal);
     
-    // Dynamic "+ New User" logic
     document.getElementById('workstationUserSelect').addEventListener('change', (e) => {
         if (e.target.value === "+ New User") {
             let newName = prompt("Enter new User Name:");
@@ -166,7 +193,7 @@ const AuthManager = {
 
   continueAsGuest() {
     this.isGuest = true;
-    this.currentUser = { name: "Guest Scanner", email: "", verified: false };
+    this.currentUser = { name: "Guest Scanner", email: "", role: "GUEST", verified: false };
     this.unlockApp();
   },
 
@@ -176,132 +203,137 @@ const AuthManager = {
     document.body.style.borderTop = "12px solid " + (typeof ENV_CONFIG !== 'undefined' && ENV_CONFIG.THEME_COLOR ? ENV_CONFIG.THEME_COLOR : "#0277bd");
     
     let advLabel = document.getElementById('chkAdvancedMode') ? document.getElementById('chkAdvancedMode').parentElement : null;
+    let advChk = document.getElementById('chkAdvancedMode');
     let archiveBtn = document.getElementById('btnSessionArchive');
     let lookupBtn = document.getElementById('btnItemLookup');
     let userNameInput = document.getElementById('userNameInput');
+    let userNameSelect = document.getElementById('userNameSelect');
     
     let stagedFeed = document.getElementById('panelStagedFeed');
     let preloadToggle = document.getElementById('rowPreloadToggle');
-    let enterpriseHub = document.getElementById('panelEnterpriseHub');
     let btnStock = document.getElementById('btnStocktake');
     let btnTrace = document.getElementById('btnTraceability');
     let roleBadge = document.getElementById('userRoleBadge');
+    
+    let reportsInv = document.getElementById('panelInventoryReports');
+    let reportsRevMed = document.getElementById('panelRevMedReports');
+    let reportsCust = document.getElementById('panelCustomerReports');
+    let panelArchiveExport = document.getElementById('panelArchiveExport');
+    let panelSubscribers = document.getElementById('panelSubscribers');
+    
+    let devToolsContainer = document.getElementById('devToolsContainer');
     let rowQboSync = document.getElementById('rowQboSync');
+    let rowQboSettings = document.getElementById('rowQboSettings');
+    let btnStart = document.querySelector('.btn-start');
 
     if (this.isGuest) {
-      // LOCKDOWN MODE
       if (advLabel) advLabel.style.display = 'none';
       if (archiveBtn) archiveBtn.style.display = 'none';
       if (lookupBtn) lookupBtn.style.display = 'none';
       if (userNameInput) userNameInput.value = "";
-      
       if (stagedFeed) stagedFeed.style.display = 'none';
       if (preloadToggle) preloadToggle.style.display = 'none';
-      if (enterpriseHub) enterpriseHub.style.display = 'none';
       if (btnStock) btnStock.style.display = 'none';
       if (btnTrace) btnTrace.style.display = 'none';
-
-      let rowQboSettings = document.getElementById('rowQboSettings');
       if (rowQboSettings) rowQboSettings.style.display = 'none';
+      if (devToolsContainer) devToolsContainer.style.display = 'none';
+      if (rowQboSync) rowQboSync.style.display = 'none';
       
-      if (roleBadge) {
-        roleBadge.textContent = "Guest Mode";
-        roleBadge.style.backgroundColor = "#c62828";
+      if (roleBadge) { roleBadge.textContent = "Guest Mode"; roleBadge.style.backgroundColor = "#c62828"; }
+      
+      if (advChk) advChk.checked = false;
+      if (typeof UIManager !== 'undefined' && UIManager.toggleAdvancedMode) UIManager.toggleAdvancedMode(false); 
+      
+      if (typeof DatabaseManager !== 'undefined') {
+          DatabaseManager.suppliers = ["+ Add Supplier"]; DatabaseManager.customers = ["+ Add Customer"];
+          DatabaseManager.populatePartners(); DatabaseManager.populateItemCustomerSelect();
       }
-      
-      // Force checkbox to uncheck, then trigger UI lockdown
-      let chk = document.getElementById('chkAdvancedMode');
-      if (chk) chk.checked = false;
-      UIManager.toggleAdvancedMode(false); 
-      
-      // Purge business intelligence from dropdowns
-      DatabaseManager.suppliers = ["+ Add Supplier"];
-      DatabaseManager.customers = ["+ Add Customer"];
-      DatabaseManager.populatePartners();
-      DatabaseManager.populateItemCustomerSelect();
-      
-    } else {
-      // VERIFIED MODE
-      if (advLabel) advLabel.style.display = 'flex';
-      if (archiveBtn) archiveBtn.style.display = 'inline-block';
-      if (lookupBtn) lookupBtn.style.display = 'inline-block';
-      
-      let userNameSelect = document.getElementById('userNameSelect');
-      
-      // UI Element Targeting
-      let btnStock = document.getElementById('btnStocktake');
-      let btnDbEditor = document.querySelector('button[onclick="UIManager.openDbEditor()"]'); // Select by action since it lacks an ID
-      let preloadToggle = document.getElementById('rowPreloadToggle');
-      let feedPanel = document.getElementById('panelStagedFeed');
-      let reportsInv = document.getElementById('panelInventoryReports');
-      let reportsRevMed = document.getElementById('panelRevMedReports');
-      let reportsCust = document.getElementById('panelCustomerReports');
+      return;
+    } 
 
-      if (this.isWorkstation) {
-         if (userNameInput) userNameInput.style.display = 'none';
-         if (userNameSelect) {
-             userNameSelect.style.display = 'block';
-             let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users) ? DatabaseManager.users : ["Trey", "Thomas", "Jessica", "+ New User"];
-             userNameSelect.innerHTML = userList.map(u => `<option value="${u}">${u}</option>`).join('');
-             userNameSelect.value = localStorage.getItem('asp_user_name') || userList[0];
-         }
-         
-         // ✨ NEW: Hide Danger Zones from Workstation
-         if (btnStock) btnStock.style.display = 'none';
-         if (btnDbEditor) btnDbEditor.style.display = 'none';
-         if (preloadToggle) preloadToggle.style.display = 'none';
-         if (feedPanel) feedPanel.style.display = 'none';
-         if (reportsInv) reportsInv.style.display = 'none';
-         if (reportsRevMed) reportsRevMed.style.display = 'none';
-         if (reportsCust) reportsCust.style.display = 'none';
-
-      } else {
-         if (userNameInput) {
-             userNameInput.style.display = 'block';
-             userNameInput.value = this.currentUser.name.split(' ')[0];
-         }
-         if (userNameSelect) userNameSelect.style.display = 'none';
-      }
-
-      let rowQboSettings = document.getElementById('rowQboSettings');
-      if (rowQboSettings) rowQboSettings.style.display = (this.currentUser.isAdmin && !this.isWorkstation) ? 'flex' : 'none';
-
-      let devToolsContainer = document.getElementById('devToolsContainer');
-      if (devToolsContainer) {
-        let isDeveloper = this.currentUser.email.toLowerCase() === 'thomas@alliedsurgicalproducts.com';
-        devToolsContainer.style.display = isDeveloper ? 'flex' : 'none';
-      }
-
-      // Strict Admin Check for QBO Sync
-      if (rowQboSync) {
-        rowQboSync.style.display = (this.currentUser.isAdmin && !this.isWorkstation) ? 'flex' : 'none';
-      }
-
-      if (roleBadge) {
-        roleBadge.textContent = this.isWorkstation ? "Warehouse Workstation" : "Verified Workspace";
-        roleBadge.style.backgroundColor = this.isWorkstation ? "#0277bd" : "#2e7d32";
-      }
-      
-      // Restore standard lists
-      DatabaseManager.suppliers = JSON.parse(localStorage.getItem('asp_wh_suppliers')) || ["+ Add Supplier"];
-      DatabaseManager.customers = JSON.parse(localStorage.getItem('asp_wh_customers')) || ["+ Add Customer"];
-      DatabaseManager.populatePartners();
-      DatabaseManager.populateItemCustomerSelect();
-      if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();    
-
-      // === AUTO-SYNC LOGIC (First Login Only) ===
-      if (!sessionStorage.getItem('asp_has_auto_synced')) {
-         sessionStorage.setItem('asp_has_auto_synced', 'true');
-         setTimeout(() => {
-            if (typeof window.masterSystemSync === 'function') {
-                window.masterSystemSync(null);
-            }
-         }, 500);
-      }
-      // ----------------------------------------
+    let r = this.currentUser.role;
+    
+    // Show standard authorized buttons first
+    if (advLabel) advLabel.style.display = 'flex';
+    if (archiveBtn) archiveBtn.style.display = 'inline-block';
+    if (lookupBtn) lookupBtn.style.display = 'inline-block';
+    
+    // 1. Force the UI to a clean baseline matching the current form inputs
+    if (typeof UIManager !== 'undefined') {
+        UIManager.toggleSessionType();
+        UIManager.toggleAdvancedMode(); 
     }
 
-    // Start tracking inactivity on successful authentication
+    // 1. SALES LOCKDOWN
+    if (r === 'SALES') {
+        // Force Advanced Mode open FIRST so it builds the UI, then we hide what we don't want
+        if (advChk) { advChk.checked = true; if(typeof UIManager !== 'undefined') UIManager.toggleAdvancedMode(true); }
+        if (advLabel) advLabel.style.display = 'none';
+
+        // STRICT SCOPE: Only hide form rows on the Setup Screen so we don't break the Settings page
+        document.querySelectorAll('#screenSetup .form-row').forEach(row => row.style.display = 'none');
+        
+        if (btnStart) btnStart.parentElement.style.display = 'none';
+        if (archiveBtn) archiveBtn.style.display = 'none';
+        if (btnStock) btnStock.style.display = 'none';
+        if (preloadToggle) preloadToggle.style.display = 'none';
+        if (stagedFeed) stagedFeed.style.display = 'none';
+        if (panelArchiveExport) panelArchiveExport.style.display = 'none'; 
+    }
+
+    // 2. WORKSTATION / ADMIN / STANDARD LOGIC
+    if (this.isWorkstation) {
+        if (reportsCust) reportsCust.style.display = 'none';
+        if (panelSubscribers) panelSubscribers.style.display = 'none'; 
+        if (btnStock) btnStock.style.display = 'none'; 
+        
+        if (userNameInput) userNameInput.style.display = 'none';
+        if (userNameSelect) {
+            userNameSelect.style.display = 'block';
+            let userList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.users && DatabaseManager.users.length > 0) ? DatabaseManager.users : ["Trey", "Thomas", "Jessica", "+ New User"];
+            userNameSelect.innerHTML = userList.map(u => `<option value="${u}">${u}</option>`).join('');
+            userNameSelect.value = localStorage.getItem('asp_user_name') || userList[0];
+        }
+    } else {
+        if (userNameInput) { userNameInput.style.display = 'block'; userNameInput.value = this.currentUser.name.split(' ')[0]; }
+        if (userNameSelect) userNameSelect.style.display = 'none';
+    }
+
+    // 3. ADMIN VISIBILITY
+    if (devToolsContainer) devToolsContainer.style.display = (r === 'SYS_ADMIN') ? 'flex' : 'none';
+    if (rowQboSettings) rowQboSettings.style.display = (r === 'SYS_ADMIN' || r === 'ADMIN') ? 'flex' : 'none';
+    if (rowQboSync) rowQboSync.style.display = (r === 'SYS_ADMIN' || r === 'ADMIN') ? 'flex' : 'none';
+
+    // 4. BADGE COLORS
+    if (roleBadge) {
+        let badgeMap = { 
+            'SYS_ADMIN': {t: 'Sys Admin', c: '#7b1fa2'}, 
+            'ADMIN': {t: 'Admin', c: '#d32f2f'}, 
+            'SALES': {t: 'Sales', c: '#f57f17'}, 
+            'WORKSTATION': {t: 'Workstation', c: '#0277bd'}, 
+            'STANDARD': {t: 'Standard', c: '#2e7d32'} 
+        };
+        let b = badgeMap[r] || {t: 'Guest', c: '#c62828'};
+        roleBadge.textContent = b.t;
+        roleBadge.style.backgroundColor = b.c;
+    }
+    
+    if (typeof DatabaseManager !== 'undefined') {
+        DatabaseManager.suppliers = JSON.parse(localStorage.getItem('asp_wh_suppliers')) || ["+ Add Supplier"];
+        DatabaseManager.customers = JSON.parse(localStorage.getItem('asp_wh_customers')) || ["+ Add Customer"];
+        DatabaseManager.populatePartners(); 
+        DatabaseManager.populateItemCustomerSelect();
+    }
+    
+    if (typeof UIManager !== 'undefined' && typeof UIManager.populateCustomerDropdown === 'function') {
+        UIManager.populateCustomerDropdown();    
+    }
+
+    if (!sessionStorage.getItem('asp_has_auto_synced')) {
+        sessionStorage.setItem('asp_has_auto_synced', 'true');
+        setTimeout(() => { if (typeof window.masterSystemSync === 'function') window.masterSystemSync(null); }, 500);
+    }
+    
     this.startIdleTimer();
   },
 

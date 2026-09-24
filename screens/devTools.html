@@ -79,7 +79,9 @@
     <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Admin Utilities</h4>
     <div style="display: flex; flex-direction: column; gap: 8px;">
       <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>QuickBooks Online Sync</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
+      
+      <!-- NEW BACKUP BUTTON -->
+      <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #fff; margin:0; padding: 10px;" onclick="exportAppsScriptFiles(event)"><i data-lucide="download" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Backup Apps Script Files</button><button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
       <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Offload & Purge Local History</button>
       <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()"><i data-lucide="trash-2" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Force Update / Clear Cache</button>
       <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; margin:0; padding: 10px;" onclick="AuditManager.fetchBugReports(event)"><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>View Bug Reports</button>
@@ -87,6 +89,55 @@
   </div>
 
   <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px;">Restricted administrative and debugging utilities. Do not run without supervision.</p>
+
+  <!-- Deployment Communication Panel -->
+  <div style="background: var(--surface-color, #2a2d32); border: 1px solid var(--border-color, #444); border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+    
+    <!-- Post-Deployment Live Update -->
+    <h4 style="margin: 0 0 15px 0; color: #ba68c8; border-bottom: 1px dashed #555; padding-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+      <i data-lucide="send" style="width:16px; height:16px;"></i> Send Post-Deployment Update
+    </h4>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <div style="flex: 1;">
+        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Previous Version</label>
+        <input type="text" id="blastOldVer" class="form-input" placeholder="e.g. v5.5.0">
+      </div>
+      <div style="flex: 1;">
+        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">New Version</label>
+        <input type="text" id="blastNewVer" class="form-input" placeholder="e.g. v5.5.1">
+      </div>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Release Notes</label>
+      <textarea id="blastNotes" class="form-input" style="width: 100%; box-sizing: border-box; height: 80px; resize: vertical;" placeholder="Bullet points of what changed..."></textarea>
+    </div>
+
+    <button id="btnSendBlast" onclick="sendDeploymentBlast()" style="background: #7b1fa2; color: #fff; width: 100%; font-size: 1rem; font-weight: bold; padding: 10px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 30px;">
+      <i data-lucide="mail" style="width:18px; height:18px;"></i> Broadcast Update to Team
+    </button>
+
+    <!-- Pre-Deployment Warning -->
+    <h4 style="margin: 0 0 15px 0; color: #e65100; border-bottom: 1px dashed #555; padding-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+      <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i> Send Pre-Deployment Warning
+    </h4>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <div style="flex: 1;">
+        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Target Date</label>
+        <input type="date" id="preDeployDate" class="form-input">
+      </div>
+      <div style="flex: 1;">
+        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Target Time</label>
+        <input type="time" id="preDeployTime" class="form-input">
+      </div>
+    </div>
+
+    <button id="btnSendPreDeploy" onclick="sendPreDeploymentBlast()" style="background: #e65100; color: #fff; width: 100%; font-size: 1rem; font-weight: bold; padding: 10px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <i data-lucide="clock" style="width:18px; height:18px;"></i> Broadcast Warning to Team
+    </button>
+  </div>
 
   <!-- Sandbox Toggle -->
    <!-- 

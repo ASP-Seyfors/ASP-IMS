@@ -19,6 +19,58 @@
  * ======================================================================= */
 const ReportsManager = {
 
+  openCategoryModal() {
+    let container = document.getElementById('subCategoryChecklist');
+    container.innerHTML = '';
+
+    // 1. Extract, split, and clean all categories from local memory
+    let categorySet = new Set();
+    
+    DatabaseManager.db.forEach(item => {
+      let catString = item.category || 'Uncategorized';
+      
+      // Split by comma to handle items with multiple categories
+      let parts = catString.split(',');
+      parts.forEach(part => {
+        let cleanCat = part.trim();
+        if (cleanCat !== '') {
+          categorySet.add(cleanCat);
+        }
+      });
+    });
+
+    // 2. Convert Set to Array and alphabetize
+    let categories = Array.from(categorySet).sort();
+
+    // 3. Check which ones the user already has saved in the input field
+    let currentSelections = (document.getElementById('subCategories').value || '')
+                            .split(',')
+                            .map(s => s.trim());
+
+    // 4. Build the HTML checkboxes dynamically
+    categories.forEach(cat => {
+      let isChecked = currentSelections.includes(cat) ? 'checked' : '';
+      container.innerHTML += `
+        <label style="font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" class="sub-cat-chk" value="${cat}" ${isChecked}> ${cat}
+        </label>
+      `;
+    });
+
+    // 5. Reveal the modal
+    document.getElementById('modalSubCategories').style.display = 'flex';
+  },
+
+  confirmCategorySelection() {
+    let checkboxes = document.querySelectorAll('.sub-cat-chk:checked');
+    let selected = Array.from(checkboxes).map(chk => chk.value);
+    
+    let input = document.getElementById('subCategories');
+    input.value = selected.join(', ');
+    
+    document.getElementById('modalSubCategories').style.display = 'none';
+  },
+
   openInventoryReportOptions(type) {
     if (type !== 'in_stock') {
       this.generateInventoryReport(type); 
@@ -150,7 +202,7 @@ const ReportsManager = {
     }
     
     let modal = document.getElementById('inventoryReportOptionsModal');
-    if (modal) modal.remove();
+    if (modal) modal.style.display = 'none'; // Changed from modal.remove()
   },
 
   generateVarianceReportPDF(varianceData, mode, netFinancialImpact) {
@@ -734,7 +786,7 @@ const ReportsManager = {
                     <td style="padding:4px;">${sub.freq}</td>
                     <td style="padding:4px; color:${sub.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
                     <td style="padding:4px; text-align:right;">
-                       <button class="btn-small" style="padding:2px 6px; font-size:0.7rem;" onclick="document.getElementById('subName').value='${sub.name}'; document.getElementById('subEmail').value='${sub.email}'; document.getElementById('subFreq').value='${sub.freq === 'Daily' ? 'Daily' : 'Weekly'}'; document.getElementById('subStatus').value='${sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}';">Edit</button>
+                       <button class="btn-small" style="padding:2px 6px; font-size:0.7rem;" onclick="document.getElementById('subName').value='${sub.name}'; document.getElementById('subEmail').value='${sub.email}'; document.getElementById('subFreq').value='${sub.freq === 'Daily' ? 'Daily' : 'Weekly'}'; document.getElementById('subStatus').value='${sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}'; document.getElementById('subCategories').value='${sub.categories || ''}';">Edit</button>
                     </td>
                   </tr>`;
               });
@@ -765,8 +817,10 @@ const ReportsManager = {
           return;
       }
 
-      let payload = { name: name, email: email, freq: freq, status: status };
-      
+      let categoryPref = document.getElementById('subCategories').value.trim();
+       
+      let payload = { name: name, email: email, freq: freq, status: status, categories: categoryPref };
+
       fetch(SessionManager.getActiveArchiveUrl(), {
           method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: "UPDATE_SUBSCRIBER", payload: payload })
@@ -781,5 +835,60 @@ const ReportsManager = {
           btn.textContent = origText; 
           btn.disabled = false;
       });
-  }
+  },
+
+  filterFlyerItems() {
+    let input = document.getElementById('flyerSearchBox');
+    if (!input) return;
+    
+    let filter = input.value.toUpperCase().trim();
+    let container = document.getElementById('reportItemRowsContainer');
+    if (!container) return;
+    
+    let rows = container.getElementsByClassName('flyer-item-row');
+    let showSelectedOnly = document.getElementById('chkShowSelectedFlyer') && document.getElementById('chkShowSelectedFlyer').checked;
+    let visibleCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        let refInput = rows[i].querySelector('.rep-ref');
+        let descInput = rows[i].querySelector('.rep-desc');
+        let chk = rows[i].querySelector('.flyer-chk');
+        
+        let refText = refInput ? refInput.value.toUpperCase() : "";
+        let descText = descInput ? descInput.value.toUpperCase() : "";
+        
+        let matchesSearch = refText.includes(filter) || descText.includes(filter);
+        let matchesSelected = !showSelectedOnly || (chk && chk.checked);
+        
+        if (matchesSearch && matchesSelected) {
+            rows[i].style.display = "flex"; 
+            visibleCount++;
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+
+    container.style.minHeight = visibleCount === 0 ? "50px" : "auto";
+  },
+
+  /*
+  addBlankRowToReportEditor() {
+    let container = document.getElementById('reportItemRowsContainer');
+    let uniqueId = 'custom_row_' + Date.now();
+    
+    // Generates a blank, editable row matching the UI of your generated items
+    let html = `
+      <div id="${uniqueId}" class="custom-flyer-row" style="display:flex; gap:10px; align-items:center; margin-bottom:8px; padding:8px; background:#e1f5fe; border:1px dashed #0277bd; border-radius:4px;">
+        <input type="checkbox" class="flyer-chk" checked style="width:18px; height:18px; cursor:pointer;">
+        <input type="text" class="flyer-ref" placeholder="REF / SKU" style="flex:1; padding:4px; border:1px solid #ccc; border-radius:3px; font-weight:bold; font-size:0.85rem;">
+        <input type="text" class="flyer-desc" placeholder="Description" style="flex:2; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
+        <input type="number" class="flyer-qty" placeholder="Qty" style="width:60px; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
+        <input type="text" class="flyer-price" placeholder="Price" style="width:70px; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
+        <button onclick="document.getElementById('${uniqueId}').remove()" style="background:#c62828; color:#fff; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;" title="Remove Row">X</button>
+      </div>
+    `;
+    
+    // afterbegin injects the custom row at the very top of the list so they don't have to scroll down to find it
+    container.insertAdjacentHTML('afterbegin', html); 
+  }*/
 };

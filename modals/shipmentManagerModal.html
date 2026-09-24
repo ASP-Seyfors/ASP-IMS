@@ -1,0 +1,163 @@
+<!-- =======================================================================
+  * Allied Surgical Products - Inventory Management System
+  * File: modals/shipmentManagerModal.html
+  ======================================================================= -->
+<div id="shipmentManagerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:var(--card-bg, #ffffff); border-radius:8px; width:100%; max-width:900px; max-height:95vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+    
+    <!-- Modal Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #7b1fa2; padding:15px 20px; flex-shrink:0;">
+      <h2 style="margin:0; color:#7b1fa2; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="package-check" style="width:24px; height:24px;"></i> Shipment Manager
+      </h2>
+      <button onclick="ShippingManager.skipAndComplete()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main, #333);">&times;</button>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div style="overflow-y:auto; padding:20px; flex-grow:1;">
+      
+      <!-- ✨ FIXED: Converted to CSS Grid to prevent overlapping -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+        
+        <!-- LEFT COLUMN: Rules & Address -->
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          
+          <div style="background: var(--surface-color, #2a2d32); border: 1px solid var(--border-color, #444); border-radius: 6px; padding: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #ce93d8; border-bottom: 1px dashed #555; padding-bottom: 5px;">
+              <i data-lucide="clipboard-list" style="width:14px; height:14px;"></i> Customer Shipping Rules
+            </h4>
+            <!-- Address Book Controls -->
+            <div style="background: rgba(2, 119, 189, 0.1); padding: 10px; border: 1px solid #0277bd; border-radius: 4px; margin-bottom: 15px;">
+              <label style="font-size: 0.8rem; font-weight: bold; color: #0277bd; display: block; margin-bottom: 4px;">Search Address Book:</label>
+              <select id="shipAddressBookSelect" class="form-input" style="border-color: #0277bd; margin-bottom: 10px; max-width: 100%; text-overflow: ellipsis;" onchange="ShippingManager.loadFromAddressBook(this.value)">
+                <option value="">-- Load Saved Address --</option>
+              </select>
+              
+              <div style="display: flex; gap: 8px; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label style="font-size:0.8rem; font-weight:bold; color: var(--text-main); display:block; margin-bottom: 2px;">Customer / Company ID</label>
+                    <input type="text" id="shipCustName" class="form-input" placeholder="Company Name for Database">
+                </div>
+                <button id="btnSaveAddress" class="btn-small" style="background: #0277bd; color: #fff; padding: 8px 12px; height: 36px; white-space: nowrap; border: none; border-radius: 4px; cursor: pointer;" onclick="ShippingManager.saveAddressBookEntry()">
+                    <i data-lucide="save" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Save Info
+                </button>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <div style="flex: 1; min-width:0;">
+                <label style="font-size:0.8rem; font-weight:bold; color: var(--text-main);">Carrier</label>
+                <select id="shipCarrier" class="form-input" style="width:100%; box-sizing:border-box;" onchange="ShippingManager.updateCarrierUI()">
+                  <option value="FEDEX">FedEx</option>
+                  <option value="UPS">UPS</option>
+                </select>
+              </div>
+              <div style="flex: 1; min-width:0;">
+                <label style="font-size:0.8rem; font-weight:bold; color: var(--text-main);">Service Level</label>
+                <select id="shipServiceType" class="form-input" style="width:100%; box-sizing:border-box;">
+                  <option value="FEDEX_GROUND">Ground</option>
+                  <option value="FEDEX_EXPRESS_SAVER">Express Saver (3 Day)</option>
+                  <option value="FEDEX_2_DAY">2Day Air</option>
+                  <option value="STANDARD_OVERNIGHT">Standard Overnight</option>
+                  <option value="PRIORITY_OVERNIGHT">Priority Overnight</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <label style="font-size:0.8rem; font-weight:bold; color: var(--text-main);">Account Number</label>
+              <input type="text" id="shipAccountNum" class="form-input" placeholder="e.g. 208469018">
+            </div>
+            <div>
+              <label style="font-size:0.8rem; font-weight:bold; color: var(--text-main);">Special Instructions</label>
+              <textarea id="shipInstructions" class="form-input" style="height: 50px; resize: none; background: transparent; color: var(--text-main);"></textarea>
+            </div>
+          </div>
+
+          <div style="background: var(--surface-color, #2a2d32); border: 1px solid var(--border-color, #444); border-radius: 6px; padding: 15px;">
+            <h4 style="margin: 0 0 10px 0; color: #f48fb1; border-bottom: 1px dashed #555; padding-bottom: 5px;">
+              <i data-lucide="map-pin" style="width:14px; height:14px;"></i> Destination Address
+            </h4>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <input type="text" id="shipAddressContact" class="form-input" placeholder="Contact Name">
+              <input type="text" id="shipAddressCompany" class="form-input" placeholder="Company Name" style="font-weight:bold;">
+              <input type="text" id="shipAddress1" class="form-input" placeholder="Address Line 1">
+              <input type="text" id="shipAddress2" class="form-input" placeholder="Address Line 2 (Suite, Floor, etc.)">
+              
+              <div style="display:flex; gap:8px; width:100%;">
+                <input type="text" id="shipAddressCity" class="form-input" placeholder="City" style="flex:5; min-width:0; box-sizing:border-box; margin:0;">
+                <input type="text" id="shipAddressState" class="form-input" placeholder="ST" maxlength="2" style="flex:2; min-width:0; box-sizing:border-box; margin:0; text-align:center; text-transform:uppercase;">
+                <input type="text" id="shipAddressZip" class="form-input" placeholder="Zip" style="flex:3; min-width:0; box-sizing:border-box; margin:0;">
+              </div>
+
+              <div style="display:flex; gap:15px; margin-top:5px;">
+                <label style="color: var(--text-main); font-weight:bold; cursor:pointer;"><input type="radio" name="shipAddressType" value="commercial" checked> Commercial</label>
+                <label style="color: var(--text-main); font-weight:bold; cursor:pointer;"><input type="radio" name="shipAddressType" value="residential"> Residential</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Package Math & Action -->
+        <div style="display:flex; flex-direction:column; gap:15px;">
+          
+          <div style="background:#e3f2fd; border:1px solid #90caf9; border-radius:6px; padding:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #90caf9; padding-bottom:5px; margin-bottom:10px;">
+              <h4 style="margin:0; color:#0277bd;">📦 Package Configuration</h4>
+              <button class="btn-small" style="background:#0277bd; color:#fff; padding:2px 8px; font-size:0.7rem;" onclick="ShippingManager.recalculateBoxMath()">Auto-Recalculate</button>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#0277bd;">Calculated Box Size</label>
+                <select id="shipBoxSize" class="form-input" style="font-weight:bold; font-size:1rem; color:#0277bd; border:2px solid #0277bd;" onchange="ShippingManager.handleBoxSizeChange()">
+                  <option value="XS">Extra Small (8 x 8 x 8)</option>
+                  <option value="S">Small (12 x 6 x 6)</option>
+                  <option value="M">Medium (22 x 13 x 15)</option>
+                  <option value="L">Large (27 x 15 x 17)</option>
+                  <option value="CUSTOM">Custom Dimensions...</option>
+                </select>
+              </div>
+
+              <div style="display:flex; gap:8px; width:100%;">
+                <div style="flex:1; min-width:0;">
+                  <label style="font-size:0.8rem; font-weight:bold; color:#555;">Length (in)</label>
+                  <input type="number" id="shipDimL" class="form-input" value="12" style="text-align:center; width:100%; box-sizing:border-box;">
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <label style="font-size:0.8rem; font-weight:bold; color:#555;">Width (in)</label>
+                  <input type="number" id="shipDimW" class="form-input" value="6" style="text-align:center; width:100%; box-sizing:border-box;">
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <label style="font-size:0.8rem; font-weight:bold; color:#555;">Height (in)</label>
+                  <input type="number" id="shipDimH" class="form-input" value="6" style="text-align:center; width:100%; box-sizing:border-box;">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#2e7d32; display:flex; justify-content:space-between;">
+                  Estimated Weight (lbs)
+                  <span id="shipWeightWarning" style="color:#d32f2f; font-size:0.7rem; display:none;">⚠️ Contains Non-Sutures</span>
+                </label>
+                <input type="number" id="shipWeight" class="form-input" step="0.1" value="0.0" style="font-size:1.2rem; font-weight:bold; color:#2e7d32; text-align:center; border:2px solid #2e7d32;">
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#e8f5e9; border:1px solid #81c784; border-radius:6px; padding:15px; display:flex; flex-direction:column; gap:10px; flex-grow:1; justify-content:center;">
+            <button id="btnGenerateLabel" onclick="ShippingManager.generateFedExLabel()" style="background:#2e7d32; color:#fff; width:100%; font-size:1.1rem; font-weight:bold; padding:12px; border-radius:6px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <i data-lucide="printer" style="width:20px; height:20px;"></i> Purchase FedEx Label
+            </button>
+            <div style="display:flex; gap:10px;">
+              <button id="btnLogTrackingOnly" onclick="ShippingManager.logManualTracking()" style="background:#0277bd; color:#fff; flex:1; font-size:0.9rem; padding:10px; border-radius:6px; border:none; cursor:pointer;">
+                Log Tracking Only
+              </button>
+              <button onclick="ShippingManager.skipAndComplete()" style="background:#757575; color:#fff; flex:1; font-size:0.9rem; padding:10px; border-radius:6px; border:none; cursor:pointer;">
+                Skip
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

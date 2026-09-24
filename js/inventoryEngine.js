@@ -62,8 +62,8 @@ const InventoryEngine = {
    * AVAILABILITY VALIDATION
    */
   validateAvailability(trueRef, requestedQty, action, currentDb, customerTag, currentAllocations, ignoreOverpack = false, workflowType = '') {
-    // If we are RECEIVING, we are bringing items into the building. Skip availability checks.
-    if (workflowType.toUpperCase().includes('RECEIVING')) {
+    // ✨ THE FIX: Whitelist STOCKTAKE alongside RECEIVING to allow new items to bypass strict shelf checks
+    if (workflowType.toUpperCase().includes('RECEIVING') || workflowType.toUpperCase().includes('STOCKTAKE')) {
         return true;
     }
 
@@ -256,9 +256,25 @@ const InventoryEngine = {
             currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
         }
       }
+      // ✨ FIX: Process "Reserved" items during a Stocktake to rebuild the Allocations Ledger
+      else if (wType.includes('STOCKTAKE')) {
+          // Note: onHand math is intentionally skipped here because commitStocktake() explicitly overwrote it earlier
+          if (actionTag === 'RESERVED' && tag) {
+             reservedChanges[ref] += item.qty;
+             currentAllocations[tag][ref].qty += item.qty;
+             
+             let cleanLot = (item.lot === 'N/A' || item.lot === 'NA' || item.lot === 'NO_LOT') ? '' : item.lot;
+             let cleanExp = (item.exp === 'N/A' || item.exp === 'NA' || item.exp === 'NO_EXP') ? '' : item.exp;
+             let cleanOrder = (orderNum === 'N/A' || orderNum === 'NA') ? '' : orderNum;
+
+             currentAllocations[tag][ref].details.push({
+                 lot: cleanLot, exp: cleanExp, orderNum: cleanOrder, sessionId: item.sessionId || '', qty: item.qty
+             });
+          }
+      }
     });
 
-    Object.keys(currentAllocations).forEach(t => { 
+    Object.keys(currentAllocations).forEach(t => {
       Object.keys(currentAllocations[t]).forEach(ref => {
           if (currentAllocations[t][ref].qty <= 0) delete currentAllocations[t][ref];
       });

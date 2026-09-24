@@ -177,8 +177,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                     <summary style="cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center; outline:none;">
                         <span style="color:#0277bd; display:flex; align-items:center; gap:6px;"><i data-lucide="folder" style="width:16px; height:16px;"></i> ${cust}</span>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge-info" style="background:#f57f17; color:#fff;">${totalItems} Units</span>
-                            <button class="btn-small" style="background-color:#d32f2f; color:#fff; padding:2px 8px;" onclick="SessionManager.openUnreserveModal('${cust}')">Un-Reserve</button>
+                            <span class="badge-info" style="background:#f57f17; color:#fff;">${totalItems} Units</span>${(AuthManager.currentUser && AuthManager.currentUser.role === 'SALES_USERS') ? '' : `<button class="btn-small" style="background-color:#d32f2f; color:#fff; padding:2px 8px;" onclick="SessionManager.openUnreserveModal('${cust}')">Un-Reserve</button>`}
                         </div>
                       </summary>
                     <div style="padding-top:8px; margin-top:6px; border-top:2px solid #0277bd;">
@@ -211,17 +210,21 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                 if (det.qty > 0) {
                     totalItems += det.qty;
                     rowsHtml += `
-                        <div style="padding:8px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                                <span style="font-weight:bold; color:#c62828;">${ref}</span>
-                                <span style="font-weight:bold; color:#333;">Qty: ${det.qty}</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#555;">
-                                <span>Lot: ${det.lot} | Exp: ${det.exp}</span>
-                                <span style="font-style:italic;">Note: ${det.orderNum || 'None'}</span>
-                            </div>
-                        </div>`;
-                }
+                      <div style="padding:8px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                          <span style="font-weight:bold; color:#c62828;">${ref}</span>
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:bold; color:#333;">Qty: ${det.qty}</span>${(AuthManager.currentUser && AuthManager.currentUser.role !== 'SALES' && AuthManager.currentUser.role !== 'GUEST') 
+                                ? `<button class="btn-small" style="background-color:#d32f2f; color:#fff; padding:2px 8px; font-size:0.7rem;" onclick="SessionManager.openUnreserveModal('ASP DAMAGED INVENTORY')">Un-Reserve</button>` 
+                                : ''}
+                          </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#555;">
+                          <span>Lot: ${det.lot} | Exp: ${det.exp}</span>
+                          <span style="font-style:italic;">Note: ${det.orderNum || 'None'}</span>
+                        </div>
+                      </div>`;
+                  }
             });
         }
     });
@@ -232,7 +235,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
     modal = document.createElement('div');
     modal.id = 'damagedBinViewerModal';
-    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+    modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99990; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     
     modal.innerHTML = `
       <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; max-height:85vh; display:flex; flex-direction:column; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
@@ -427,17 +430,39 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   changeAppTheme(themeName) {
-    document.body.classList.remove('theme-sage', 'theme-gold', 'theme-slate');
+    document.body.classList.remove('theme-sage', 'theme-gold', 'theme-slate', 'theme-twilight');
     document.body.classList.add(`theme-${themeName}`);
     localStorage.setItem('asp_app_theme', themeName);
     let sel = document.getElementById('themeSelect');
     if (sel) sel.value = themeName;
+    this.transmitUserPrefsToCloud(); // ✨ NEW
   },
 
   changeFontSize(sizeVal) {
     document.body.classList.remove('font-small', 'font-medium', 'font-large');
     document.body.classList.add(`font-${sizeVal}`);
     localStorage.setItem('asp_font_size', sizeVal);
+    let sel = document.getElementById('fontSizeSelect');
+    if (sel) sel.value = sizeVal;
+    this.transmitUserPrefsToCloud(); // ✨ NEW
+  },
+
+  // ✨ NEW: Silently syncs preferences to the DB without interrupting the user
+  transmitUserPrefsToCloud() {
+    let email = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.email : null;
+    if (!email) return;
+
+    let theme = localStorage.getItem('asp_app_theme') || 'twilight';
+    let font = localStorage.getItem('asp_font_size') || 'large';
+
+    let payload = { action: "SAVE_USER_PREFS", payload: { email: email, theme: theme, font: font } };
+    
+    if (typeof SessionManager !== 'undefined' && SessionManager.getActiveArchiveUrl()) {
+        fetch(SessionManager.getActiveArchiveUrl(), { 
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload) 
+        }).catch(e => console.warn("Background pref sync failed."));
+    }
   },
 
   loadFontPreference() {
@@ -543,7 +568,12 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     if (document.getElementById('actBtnInv')) document.getElementById('actBtnInv').className = 'action-btn' + (act === 'Inventory' ? ' selected-inv' : '');
     if (document.getElementById('actBtnRes')) document.getElementById('actBtnRes').className = 'action-btn' + (act === 'Reserved' ? ' selected-res' : '');
     let tagRow = document.getElementById('rowCustomerTag');
-    if (tagRow && SessionManager.currentWorkflowType.includes('Receiving & Reserving')) tagRow.style.display = (act === 'Reserved') ? 'flex' : 'none';
+    
+    // ✨ FIX: Allow the tag row to appear during Stocktakes so reservations can be logged
+    let wType = SessionManager.currentWorkflowType.toUpperCase();
+    if (tagRow && (wType.includes('RECEIVING') || wType.includes('STOCKTAKE'))) {
+        tagRow.style.display = (act === 'Reserved') ? 'flex' : 'none';
+    }
   },
 
   hideAllConfirmButtons() {
@@ -558,6 +588,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   closeAuditHub() {
+    let trackModal = document.getElementById('shipmentTrackingModal');
+    if (trackModal) trackModal.style.display = 'none'; // ✨ Force tracking modal closed
+
     document.getElementById('screenAuditHub').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
   },
