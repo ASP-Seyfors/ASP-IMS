@@ -16,7 +16,11 @@
       "category": "Hemostat",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1963",
@@ -34,7 +38,11 @@
       "category": "Hemostat",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1972",
@@ -52,7 +60,11 @@
       "category": "Absorbable Sponge",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1973",
@@ -61,16 +73,20 @@
       "gtin": "15712123000172",
       "price": "$29.99",
       "cost": "$0.00",
-      "onHand": 10,
+      "onHand": 0,
       "reservedQty": 0,
-      "availableQty": 10,
+      "availableQty": 0,
       "onRevMed": "TRUE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
       "category": "Hemostat, Gelatin, Sponge",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1974",
@@ -88,7 +104,11 @@
       "category": "Gelatin, Sponge",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "2030",
@@ -106,7 +126,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "4406",
@@ -124,7 +148,11 @@
       "category": "Clipping Blade",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "50011",
@@ -142,7 +170,11 @@
       "category": "Intersect ENT",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "60011",
@@ -160,7 +192,11 @@
       "category": "Intersect ENT",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "70011",
@@ -178,7 +214,11 @@
       "category": "Intersect ENT",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "134051",
@@ -196,7 +236,11 @@
       "category": "Suture Clip Applier",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "202050",
@@ -214,7 +258,11 @@
       "category": "Sealant",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "206520",
@@ -232,15 +280,19 @@
       "category": "Sealant",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "309647",
       "mfr": "BD",
       "desc": "BD 5 mL Luer Slip Tip Syringe Only 309647",
-      "gtin": "30382903096474",
-      "price": "$40.00",
-      "cost": "$20.00",
+      "gtin": "00382903096473",
+      "price": "$0.00",
+      "cost": "$0.00",
       "onHand": 1750,
       "reservedQty": 0,
       "availableQty": 1750,
@@ -250,7 +302,11 @@
       "category": "Syringe",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "383512",
@@ -268,7 +324,11 @@
       "category": "Catheter",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "470007",
@@ -286,7 +346,11 @@
       "category": "Scissors",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "470179",
@@ -304,7 +368,11 @@
       "category": "Scissors",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "470194",
@@ -322,7 +390,11 @@
       "category": "Needle Driver",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "470230",
@@ -340,7 +412,11 @@
       "category": "Instrument Introducer",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "471344",
@@ -358,7 +434,11 @@
       "category": "Dissector",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "480422",
@@ -376,7 +456,11 @@
       "category": "Sealer",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "480455",
@@ -394,7 +478,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1200710",
@@ -412,7 +500,11 @@
       "category": "Mesh",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7510100",
@@ -430,7 +522,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7510200",
@@ -448,7 +544,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7510400",
@@ -466,7 +566,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7510600",
@@ -484,7 +588,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7510800",
@@ -502,7 +610,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "71111579",
@@ -520,7 +632,11 @@
       "category": "Suture Retriever",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "84000611",
@@ -538,7 +654,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "0375-628-000",
@@ -556,7 +676,11 @@
       "category": "Blade Cutter",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1611G",
@@ -574,7 +698,11 @@
       "category": "Suture, 1611",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1629H",
@@ -592,7 +720,11 @@
       "category": "Suture, 1629",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1647G",
@@ -610,7 +742,11 @@
       "category": "Suture, 1647",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1661G",
@@ -628,7 +764,11 @@
       "category": "1661, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1665G",
@@ -646,7 +786,11 @@
       "category": "Suture, 1665",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1666G",
@@ -664,7 +808,11 @@
       "category": "Suture, 1666",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1667G",
@@ -682,7 +830,11 @@
       "category": "1667, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1669H",
@@ -700,7 +852,11 @@
       "category": "Suture, 1669",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1698G",
@@ -718,7 +874,11 @@
       "category": "Suture, 1698",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1740G",
@@ -736,7 +896,11 @@
       "category": "Suture, 1740",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1761G",
@@ -754,7 +918,11 @@
       "category": "Suture, 1761",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1780G",
@@ -772,7 +940,11 @@
       "category": "1780, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1791G",
@@ -790,7 +962,11 @@
       "category": "Suture, 1791",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1797G",
@@ -808,7 +984,11 @@
       "category": "Suture, 1797",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1856G",
@@ -826,7 +1006,11 @@
       "category": "Suture, 1856",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1893G",
@@ -844,7 +1028,11 @@
       "category": "1893, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1915G",
@@ -862,7 +1050,11 @@
       "category": "Suture, 1915",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1951S",
@@ -880,7 +1072,11 @@
       "category": "Hemostat",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1952S",
@@ -898,7 +1094,11 @@
       "category": "Hemostat",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "1953S",
@@ -916,7 +1116,11 @@
       "category": "Hemostat",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "22438-19",
@@ -934,7 +1138,11 @@
       "category": "Embolic Protection System",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "279-351-100",
@@ -952,7 +1160,11 @@
       "category": "Ablation Suction Probe",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "2808G",
@@ -970,7 +1182,11 @@
       "category": "Suture, 2808",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "2815G",
@@ -988,7 +1204,11 @@
       "category": "Suture, 2815",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "33-31",
@@ -1006,7 +1226,11 @@
       "category": "Biopsy",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "3311-8G",
@@ -1024,7 +1248,11 @@
       "category": "Elastic Stays",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "3350-8G",
@@ -1042,7 +1270,11 @@
       "category": "Elastic Stays",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "3846T",
@@ -1060,7 +1292,11 @@
       "category": "Suture, 3846",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "424H",
@@ -1078,7 +1314,11 @@
       "category": "Suture, 424",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "4301-02",
@@ -1087,16 +1327,20 @@
       "gtin": "35413765589615",
       "price": "$1,300.00",
       "cost": "$0.00",
-      "onHand": 4,
+      "onHand": 2,
       "reservedQty": 0,
-      "availableQty": 4,
+      "availableQty": 2,
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
       "category": "Barrier",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "4350",
@@ -1105,16 +1349,20 @@
       "gtin": "10705031005396",
       "price": "$0.00",
       "cost": "$0.00",
-      "onHand": 23,
+      "onHand": 3,
       "reservedQty": 0,
-      "availableQty": 23,
+      "availableQty": 3,
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
       "category": "Adhesion Barrier",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "4350XL",
@@ -1132,7 +1380,11 @@
       "category": "Adhesion, Barrier, 4350",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "460T",
@@ -1150,7 +1402,11 @@
       "category": "Suture, 460",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "471006",
@@ -1168,7 +1424,11 @@
       "category": "Needle Driver",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "471093",
@@ -1186,7 +1446,11 @@
       "category": "Forceps",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "471205",
@@ -1204,7 +1468,11 @@
       "category": "Forceps",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48230B",
@@ -1222,7 +1490,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48230W",
@@ -1240,7 +1512,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345B",
@@ -1258,7 +1534,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345G",
@@ -1276,7 +1556,11 @@
       "category": "Surgical Stapling, 48345",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345M",
@@ -1294,7 +1578,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345T",
@@ -1312,7 +1600,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345W",
@@ -1330,7 +1622,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360B",
@@ -1348,7 +1644,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360G",
@@ -1366,7 +1666,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360M",
@@ -1384,7 +1688,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360T",
@@ -1402,7 +1710,11 @@
       "category": "Surgical Stapling, 48360",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360W",
@@ -1420,7 +1732,11 @@
       "category": "Surgical Stapling, 48360",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "5086-02",
@@ -1438,7 +1754,11 @@
       "category": "Barrier",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "523335",
@@ -1456,7 +1776,11 @@
       "category": "Hemoclip",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "585H",
@@ -1474,7 +1798,11 @@
       "category": "Suture, 585",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "5950007",
@@ -1492,7 +1820,11 @@
       "category": "Hernia Patch",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "5950008",
@@ -1510,7 +1842,11 @@
       "category": "Hernia Patch",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "5950009",
@@ -1528,7 +1864,11 @@
       "category": "Hernia Patch",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "627H",
@@ -1546,7 +1886,11 @@
       "category": "Suture, 627",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "628H",
@@ -1564,7 +1908,11 @@
       "category": "Suture, 628",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "632G",
@@ -1582,7 +1930,11 @@
       "category": "Suture, 632",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "635H",
@@ -1600,7 +1952,11 @@
       "category": "Suture, 635",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "640G",
@@ -1618,7 +1974,11 @@
       "category": "Suture, 640",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "662G",
@@ -1636,7 +1996,11 @@
       "category": "Suture, 662",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "662H",
@@ -1654,7 +2018,11 @@
       "category": "Suture, 662",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "663G",
@@ -1672,7 +2040,11 @@
       "category": "Suture, 663",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "663H",
@@ -1690,7 +2062,11 @@
       "category": "Suture, 663",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "664H",
@@ -1708,7 +2084,11 @@
       "category": "Suture, 664",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "669H",
@@ -1726,7 +2106,11 @@
       "category": "Suture, 669",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "678G",
@@ -1744,7 +2128,11 @@
       "category": "Suture, 678",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "680H",
@@ -1762,7 +2150,11 @@
       "category": "Suture, 680",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "682G",
@@ -1780,7 +2172,11 @@
       "category": "Suture, 682",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "685G",
@@ -1798,7 +2194,11 @@
       "category": "Suture, 685",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "686G",
@@ -1816,7 +2216,11 @@
       "category": "Suture, 686",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "687G",
@@ -1834,7 +2238,11 @@
       "category": "Suture, 687",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "689G",
@@ -1852,7 +2260,11 @@
       "category": "Suture, 689",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "697G",
@@ -1870,7 +2282,11 @@
       "category": "Suture, 697",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "698G",
@@ -1888,7 +2304,11 @@
       "category": "Suture, 698",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "698H",
@@ -1906,7 +2326,11 @@
       "category": "Suture, 698",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "699G",
@@ -1924,7 +2348,11 @@
       "category": "Suture, 699",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "699H",
@@ -1942,7 +2370,11 @@
       "category": "Suture, 699",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "736G",
@@ -1960,7 +2392,11 @@
       "category": "Suture, 736",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7510050",
@@ -1978,7 +2414,11 @@
       "category": "Graft",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "770G",
@@ -1996,7 +2436,11 @@
       "category": "Suture, 770",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "7731G",
@@ -2014,7 +2458,11 @@
       "category": "Suture, 7731",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "774G",
@@ -2032,7 +2480,11 @@
       "category": "Suture, 774",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "783G",
@@ -2050,7 +2502,11 @@
       "category": "Suture, 783",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "790G",
@@ -2068,7 +2524,11 @@
       "category": "Suture, 790",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "792G",
@@ -2086,7 +2546,11 @@
       "category": "Suture, 792",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "794G",
@@ -2104,7 +2568,11 @@
       "category": "Suture, 794",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "796G",
@@ -2122,7 +2590,11 @@
       "category": "Suture, 796",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "810H",
@@ -2140,7 +2612,11 @@
       "category": "Suture, 810",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "811H",
@@ -2158,7 +2634,11 @@
       "category": "Suture, 811",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "825G",
@@ -2176,7 +2656,11 @@
       "category": "Suture, 825",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8424H",
@@ -2194,7 +2678,11 @@
       "category": "Suture, 8424",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8434H",
@@ -2212,7 +2700,11 @@
       "category": "Suture, 8434",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "843H",
@@ -2230,7 +2722,11 @@
       "category": "843, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8521H",
@@ -2248,7 +2744,11 @@
       "category": "Suture, 8521",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8526H",
@@ -2266,7 +2766,11 @@
       "category": "Suture, 8526",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8556H",
@@ -2284,7 +2788,11 @@
       "category": "Suture, 8556",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8557H",
@@ -2302,7 +2810,11 @@
       "category": "Suture, 8557",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8581H",
@@ -2320,7 +2832,11 @@
       "category": "8581, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8623H",
@@ -2338,7 +2854,11 @@
       "category": "Suture, 8623",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8661G",
@@ -2356,7 +2876,11 @@
       "category": "Suture, 8661",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8661H",
@@ -2374,7 +2898,11 @@
       "category": "Suture, 8661",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8665G",
@@ -2392,7 +2920,11 @@
       "category": "Suture, 8665",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8681G",
@@ -2410,7 +2942,11 @@
       "category": "Suture, 8681",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8682G",
@@ -2428,7 +2964,11 @@
       "category": "Suture, 8682",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8683G",
@@ -2446,7 +2986,11 @@
       "category": "Suture, 8683",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8684G",
@@ -2464,7 +3008,11 @@
       "category": "Suture, 8684",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8689H",
@@ -2482,7 +3030,11 @@
       "category": "Suture, 8689",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8690H",
@@ -2500,7 +3052,11 @@
       "category": "Suture, 8690",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8695G",
@@ -2518,7 +3074,11 @@
       "category": "Suture, 8695",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8696G",
@@ -2536,7 +3096,11 @@
       "category": "Suture, 8696",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8697G",
@@ -2554,7 +3118,11 @@
       "category": "Suture, 8697",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8698G",
@@ -2572,7 +3140,11 @@
       "category": "Suture, 8698",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8699G",
@@ -2590,7 +3162,11 @@
       "category": "Suture, 8699",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8706H",
@@ -2608,7 +3184,11 @@
       "category": "Suture, 8706",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8726G",
@@ -2626,7 +3206,11 @@
       "category": "Suture, 8726",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8776H",
@@ -2644,7 +3228,11 @@
       "category": "Suture, 8776",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "882H",
@@ -2662,7 +3250,11 @@
       "category": "Suture, 882",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8832H",
@@ -2680,7 +3272,11 @@
       "category": "Suture, 8832",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8833H",
@@ -2698,7 +3294,11 @@
       "category": "Suture, 8833",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "883H",
@@ -2716,7 +3316,11 @@
       "category": "Suture, 883",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "8871H",
@@ -2734,7 +3338,11 @@
       "category": "Suture, 8871",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "9038G",
@@ -2752,7 +3360,11 @@
       "category": "Suture, 9038",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "A1667N",
@@ -2770,7 +3382,11 @@
       "category": "Suture, A1667",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "A306H",
@@ -2788,7 +3404,11 @@
       "category": "Suture, A306",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "AA00",
@@ -2806,7 +3426,11 @@
       "category": "Cautery",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "AR-7200",
@@ -2824,7 +3448,11 @@
       "category": "Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "AR-7202",
@@ -2842,7 +3470,11 @@
       "category": "Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "AR-7211",
@@ -2860,7 +3492,11 @@
       "category": "Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "AR-9811",
@@ -2878,7 +3514,11 @@
       "category": "Ablator",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "AR-9821",
@@ -2896,7 +3536,11 @@
       "category": "Ablator",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "B1915N",
@@ -2914,7 +3558,11 @@
       "category": "Suture, B1915",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "C521D",
@@ -2932,7 +3580,11 @@
       "category": "Suture, C521",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "CB5LT",
@@ -2950,7 +3602,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "DHVM12",
@@ -2968,12 +3624,16 @@
       "category": "Sealant",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "DNX12",
       "mfr": "ETHICON",
-      "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive DNX12",
+      "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive (BX/12) DNX12",
       "gtin": "20705031203539",
       "price": "$210.00",
       "cost": "$150.00",
@@ -2986,7 +3646,11 @@
       "category": "Sealant",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "DNX12 (EACH)",
@@ -3004,7 +3668,11 @@
       "category": "Adhesive",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "E1035",
@@ -3022,7 +3690,11 @@
       "category": "Microdissection Needle",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "E1036",
@@ -3040,7 +3712,11 @@
       "category": "Microdissection Needle",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "ECR45M",
@@ -3058,7 +3734,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "ECR60M",
@@ -3076,7 +3756,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "EGIA45AMT",
@@ -3094,7 +3778,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "EGIA45AV",
@@ -3112,7 +3800,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "EGIA45AVM",
@@ -3130,7 +3822,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "EGIA60AMT",
@@ -3148,7 +3844,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "EGIA60AVM",
@@ -3166,7 +3866,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "EL-23-LN",
@@ -3184,7 +3888,11 @@
       "category": "Ligating Loop",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G121H",
@@ -3202,7 +3910,11 @@
       "category": "Suture, G121",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G122H",
@@ -3220,7 +3932,11 @@
       "category": "Suture, G122",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G123H",
@@ -3238,7 +3954,11 @@
       "category": "Suture, G123",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G181H",
@@ -3256,7 +3976,11 @@
       "category": "Suture, G181",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G316N",
@@ -3274,7 +3998,11 @@
       "category": "Suture, G316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G346N",
@@ -3292,7 +4020,11 @@
       "category": "Suture, G346",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "G697G",
@@ -3310,7 +4042,11 @@
       "category": "Suture, G697",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "GST45B",
@@ -3328,7 +4064,11 @@
       "category": "GST, Reload, Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "GST45D",
@@ -3346,7 +4086,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "GST45G",
@@ -3364,7 +4108,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "GST45T",
@@ -3382,15 +4130,19 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "GST60B",
       "mfr": "ETHICON",
       "desc": "ETHICON 60mm Blue Reload with Gripping Surface Technology GST60B",
-      "gtin": "20705036014703",
-      "price": "$750.00",
-      "cost": "$612.00",
+      "gtin": "",
+      "price": "$0.00",
+      "cost": "$0.00",
       "onHand": 24,
       "reservedQty": 0,
       "availableQty": 24,
@@ -3400,15 +4152,19 @@
       "category": "Surgical Stapling",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "GST60W",
       "mfr": "ETHICON",
-      "desc": "ETHICON 60 mm White Reload With Gripping Surface Technology (BX/12) GST60W",
-      "gtin": "20705036014680",
-      "price": "$750.00",
-      "cost": "$612.00",
+      "desc": "ETHICON 60 mm White Reload With Gripping Surface Technology GST60W",
+      "gtin": "",
+      "price": "$0.00",
+      "cost": "$0.00",
       "onHand": 12,
       "reservedQty": 0,
       "availableQty": 12,
@@ -3418,7 +4174,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "HAR9F",
@@ -3436,7 +4196,11 @@
       "category": "Shears",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J195H",
@@ -3454,7 +4218,11 @@
       "category": "Suture, J195",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J206G",
@@ -3472,7 +4240,11 @@
       "category": "Suture, J206",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J212H",
@@ -3490,7 +4262,11 @@
       "category": "J212, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J214H",
@@ -3508,7 +4284,11 @@
       "category": "Suture, J214",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J219H",
@@ -3526,7 +4306,11 @@
       "category": "J219, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J258H",
@@ -3544,7 +4328,11 @@
       "category": "Suture, J258",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J259H",
@@ -3562,7 +4350,11 @@
       "category": "J259, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J269H",
@@ -3580,7 +4372,11 @@
       "category": "J269, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J304H",
@@ -3598,7 +4394,11 @@
       "category": "Suture, J304",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J315H",
@@ -3616,7 +4416,11 @@
       "category": "Suture, J315",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J316H",
@@ -3634,7 +4438,11 @@
       "category": "Suture, J316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J328H",
@@ -3652,7 +4460,11 @@
       "category": "J328, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J333H",
@@ -3670,7 +4482,11 @@
       "category": "Suture, J333",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J338H",
@@ -3688,7 +4504,11 @@
       "category": "Suture, J338",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J339H",
@@ -3706,7 +4526,11 @@
       "category": "Suture, J339",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J340H",
@@ -3724,7 +4548,11 @@
       "category": "Suture, J340",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J344H",
@@ -3742,7 +4570,11 @@
       "category": "Suture, J344",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J345H",
@@ -3760,7 +4592,11 @@
       "category": "Suture, J345",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J346H",
@@ -3778,7 +4614,11 @@
       "category": "Suture, J346",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J347H",
@@ -3796,7 +4636,11 @@
       "category": "Suture, J347",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J385H",
@@ -3814,7 +4658,11 @@
       "category": "Suture, J385",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J415H",
@@ -3832,7 +4680,11 @@
       "category": "Suture, J415",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J417H",
@@ -3850,7 +4702,11 @@
       "category": "Suture, J417",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J418H",
@@ -3868,7 +4724,11 @@
       "category": "Suture, J418",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J463G",
@@ -3886,7 +4746,11 @@
       "category": "Suture, J463",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J464G",
@@ -3904,7 +4768,11 @@
       "category": "Suture, J464",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J471H",
@@ -3922,7 +4790,11 @@
       "category": "Suture, J471",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J488G",
@@ -3940,7 +4812,11 @@
       "category": "Suture, J488",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J489G",
@@ -3958,7 +4834,11 @@
       "category": "Suture, J489",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J490G",
@@ -3976,7 +4856,11 @@
       "category": "Suture, J490",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J492G",
@@ -3994,7 +4878,11 @@
       "category": "Suture, J492",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J492H",
@@ -4012,7 +4900,11 @@
       "category": "Suture, J492",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J493G",
@@ -4030,7 +4922,11 @@
       "category": "Suture, J493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J493H",
@@ -4048,7 +4944,11 @@
       "category": "Suture, J493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J494G",
@@ -4066,7 +4966,11 @@
       "category": "Suture, J494",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J495G",
@@ -4084,7 +4988,11 @@
       "category": "Suture, J495",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J496G",
@@ -4102,7 +5010,11 @@
       "category": "Suture, J496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J496H",
@@ -4120,7 +5032,11 @@
       "category": "Suture, J496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J497G",
@@ -4138,7 +5054,11 @@
       "category": "Suture, J497",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J497H",
@@ -4156,7 +5076,11 @@
       "category": "Suture, J497",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J506G",
@@ -4174,7 +5098,11 @@
       "category": "Suture, J506",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J510G",
@@ -4192,7 +5120,11 @@
       "category": "Suture, J510",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J544G",
@@ -4210,7 +5142,11 @@
       "category": "Suture, J544",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J546G",
@@ -4228,7 +5164,11 @@
       "category": "Suture, J546",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J548G",
@@ -4246,7 +5186,11 @@
       "category": "Suture, J548",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J562G",
@@ -4264,7 +5208,11 @@
       "category": "Suture, J562",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J566G",
@@ -4282,7 +5230,11 @@
       "category": "Suture, J566",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J570G",
@@ -4300,7 +5252,11 @@
       "category": "Suture, J570",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J571G",
@@ -4318,7 +5274,11 @@
       "category": "Suture, J571",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J574G",
@@ -4336,7 +5296,11 @@
       "category": "Suture, J574",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J576G",
@@ -4354,7 +5318,11 @@
       "category": "J576, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J578G",
@@ -4372,7 +5340,11 @@
       "category": "J578, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J599G",
@@ -4390,7 +5362,11 @@
       "category": "Suture, J599",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J833G",
@@ -4408,7 +5384,11 @@
       "category": "Suture, J833",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J839D",
@@ -4426,7 +5406,11 @@
       "category": "J839, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J844G",
@@ -4444,7 +5428,11 @@
       "category": "Suture, J844",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J868H",
@@ -4462,7 +5450,11 @@
       "category": "Suture, J868",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J906G",
@@ -4480,7 +5472,11 @@
       "category": "Suture, J906",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J944H",
@@ -4498,7 +5494,11 @@
       "category": "Suture, J944",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J945H",
@@ -4516,7 +5516,11 @@
       "category": "Suture, J945",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J946G",
@@ -4534,7 +5538,11 @@
       "category": "Suture, J946",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J946H",
@@ -4552,7 +5560,11 @@
       "category": "Suture, J946",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J947H",
@@ -4570,7 +5582,11 @@
       "category": "Suture, J947",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J975G",
@@ -4588,7 +5604,11 @@
       "category": "Suture, J975",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "K802H",
@@ -4606,7 +5626,11 @@
       "category": "K802, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "K832H",
@@ -4624,7 +5648,11 @@
       "category": "Suture, K832",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "K833H",
@@ -4642,7 +5670,11 @@
       "category": "Suture, K833",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "K834H",
@@ -4660,7 +5692,11 @@
       "category": "Suture, K834",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "K891H",
@@ -4678,7 +5714,11 @@
       "category": "Suture, K891",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "L880G",
@@ -4696,7 +5736,11 @@
       "category": "Suture, L880",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1212A",
@@ -4714,7 +5758,11 @@
       "category": "Sealer-Divider",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1837",
@@ -4732,7 +5780,11 @@
       "category": "Sealer-Divider",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1923",
@@ -4750,7 +5802,11 @@
       "category": "Sealer",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1937",
@@ -4768,7 +5824,11 @@
       "category": "Instrument",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF2019",
@@ -4786,7 +5846,11 @@
       "category": "Dissector",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF4418",
@@ -4804,7 +5868,11 @@
       "category": "Sealer",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF5637",
@@ -4822,7 +5890,11 @@
       "category": "Sealer-Divider",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LS1020",
@@ -4840,7 +5912,11 @@
       "category": "Ligasure",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "M8702",
@@ -4858,7 +5934,11 @@
       "category": "Suture, M8702",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MB66G",
@@ -4876,7 +5956,11 @@
       "category": "Suture, MB66",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCM20",
@@ -4894,7 +5978,11 @@
       "category": "Clip Applier",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP213H",
@@ -4912,7 +6000,11 @@
       "category": "Suture, MCP213",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP316H",
@@ -4930,7 +6022,11 @@
       "category": "Suture, MCP316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP317H",
@@ -4948,7 +6044,11 @@
       "category": "Suture, MCP317",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP427H",
@@ -4966,7 +6066,11 @@
       "category": "Suture, MCP427",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP493G",
@@ -4984,7 +6088,11 @@
       "category": "Suture, MCP493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP493H",
@@ -5002,7 +6110,11 @@
       "category": "Suture, MCP493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP494G",
@@ -5020,7 +6132,11 @@
       "category": "Suture, MCP494",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP494H",
@@ -5038,7 +6154,11 @@
       "category": "Suture, MCP494",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP496G",
@@ -5056,7 +6176,11 @@
       "category": "Suture, MCP496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP496H",
@@ -5074,7 +6198,11 @@
       "category": "Suture, MCP496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP523H",
@@ -5092,7 +6220,11 @@
       "category": "Suture, MCP523",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCP936H",
@@ -5110,7 +6242,11 @@
       "category": "Suture, MCP936",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCS20",
@@ -5128,7 +6264,11 @@
       "category": "Clip Applier",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MR8-10MH17",
@@ -5146,7 +6286,11 @@
       "category": "Surgical Tool, MR8",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MR8-10MH30",
@@ -5164,7 +6308,11 @@
       "category": "Surgical Tool, MR8",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MR8-14MH30",
@@ -5182,7 +6330,11 @@
       "category": "Surgical Tool, MR8",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MX140",
@@ -5200,7 +6352,11 @@
       "category": "Pipet",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "N110A",
@@ -5218,7 +6374,11 @@
       "category": "Microdissection Needle",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP311H",
@@ -5236,7 +6396,11 @@
       "category": "Suture, PDP311",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP316H",
@@ -5254,7 +6418,11 @@
       "category": "Suture, PDP316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP317H",
@@ -5272,7 +6440,11 @@
       "category": "Suture, PDP317",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP334H",
@@ -5290,7 +6462,11 @@
       "category": "Suture, PDP334",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP338H",
@@ -5308,7 +6484,11 @@
       "category": "Suture, PDP338",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP340H",
@@ -5326,7 +6506,11 @@
       "category": "Suture, PDP340",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDP467H",
@@ -5344,7 +6528,11 @@
       "category": "Suture, PDP467",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PDPB991G",
@@ -5362,7 +6550,11 @@
       "category": "Suture, PDPB9916",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PHSE",
@@ -5380,7 +6572,11 @@
       "category": "Hernia System",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PMW35",
@@ -5398,7 +6594,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PXW35",
@@ -5416,7 +6616,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PXX22N",
@@ -5434,7 +6638,11 @@
       "category": "Suture, PXX22",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PXX82N",
@@ -5452,7 +6660,11 @@
       "category": "Suture, PXX82",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "R340N",
@@ -5470,7 +6682,11 @@
       "category": "Suture, R340",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "R647H",
@@ -5488,7 +6704,11 @@
       "category": "Suture, R647",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "RR750",
@@ -5506,7 +6726,11 @@
       "category": "Nasal Packing",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SA6H",
@@ -5524,7 +6748,11 @@
       "category": "SA6, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG45AMT",
@@ -5542,7 +6770,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG45AVM",
@@ -5560,7 +6792,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG45AXT",
@@ -5578,7 +6814,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG45CTAMT",
@@ -5596,7 +6836,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG45CTAVM",
@@ -5614,7 +6858,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG60AMT",
@@ -5632,7 +6880,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG60AVM",
@@ -5650,7 +6902,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG60AXT",
@@ -5668,7 +6924,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG60CTAMT",
@@ -5686,7 +6946,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "SIG60CTAVM",
@@ -5704,7 +6968,11 @@
       "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "TA30V3L",
@@ -5722,7 +6990,11 @@
       "category": "Stapler Reload",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "TA9048L",
@@ -5740,7 +7012,11 @@
       "category": "Stapler Reload",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "TLC75",
@@ -5758,7 +7034,11 @@
       "category": "Linear Cutters",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "V549G",
@@ -5776,7 +7056,11 @@
       "category": "Suture, V549",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP213H",
@@ -5794,7 +7078,11 @@
       "category": "Suture, VCP213",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP214H",
@@ -5812,7 +7100,11 @@
       "category": "VCP214, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP267H",
@@ -5830,7 +7122,11 @@
       "category": "Suture, VCP267",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP304H",
@@ -5848,7 +7144,11 @@
       "category": "Suture, VCP304",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP305H",
@@ -5866,7 +7166,11 @@
       "category": "Suture, VCP305",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP311H",
@@ -5884,7 +7188,11 @@
       "category": "Suture, VCP311",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP316H",
@@ -5902,7 +7210,11 @@
       "category": "Suture, VCP316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP317H",
@@ -5920,7 +7232,11 @@
       "category": "Suture, VCP317",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP327H",
@@ -5938,7 +7254,11 @@
       "category": "Suture, VCP327",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP329H",
@@ -5956,7 +7276,11 @@
       "category": "Suture, VCP329",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP332H",
@@ -5974,7 +7298,11 @@
       "category": "Suture, VCP332",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP334H",
@@ -5992,7 +7320,11 @@
       "category": "Suture, VCP334",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP340H",
@@ -6010,7 +7342,11 @@
       "category": "Suture, VCP340",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP341H",
@@ -6028,7 +7364,11 @@
       "category": "Suture, VCP341",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP347H",
@@ -6046,7 +7386,11 @@
       "category": "Suture, VCP347",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP351H",
@@ -6064,7 +7408,11 @@
       "category": "Suture, VCP351",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP356H",
@@ -6082,7 +7430,11 @@
       "category": "VCP356, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP357H",
@@ -6100,7 +7452,11 @@
       "category": "Suture, VCP357",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP415H",
@@ -6118,7 +7474,11 @@
       "category": "Suture, VCP415",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP417H",
@@ -6136,7 +7496,11 @@
       "category": "Suture, VCP417",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP421H",
@@ -6154,7 +7518,11 @@
       "category": "Suture, VCP421",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP422H",
@@ -6172,7 +7540,11 @@
       "category": "Suture, VCP422",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP423H",
@@ -6190,7 +7562,11 @@
       "category": "Suture, VCP423",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP433H",
@@ -6208,7 +7584,11 @@
       "category": "VCP433, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP441H",
@@ -6226,7 +7606,11 @@
       "category": "Suture, VCP441",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP442H",
@@ -6244,7 +7628,11 @@
       "category": "Suture, VCP442",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP443H",
@@ -6262,7 +7650,11 @@
       "category": "Suture, VCP443",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP493G",
@@ -6280,7 +7672,11 @@
       "category": "Suture, VCP493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP494G",
@@ -6298,7 +7694,11 @@
       "category": "Suture, VCP494",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP504G",
@@ -6316,7 +7716,11 @@
       "category": "Suture, VCP504",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP596H",
@@ -6334,7 +7738,11 @@
       "category": "Suture, VCP596",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP603H",
@@ -6352,7 +7760,11 @@
       "category": "Suture, VCP603",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP880T",
@@ -6370,7 +7782,11 @@
       "category": "Suture, VCP880",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VLOCL0306",
@@ -6388,7 +7804,11 @@
       "category": "Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR416",
@@ -6406,7 +7826,11 @@
       "category": "Suture, VR416",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR490",
@@ -6424,7 +7848,11 @@
       "category": "Suture, VR490",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR493",
@@ -6442,7 +7870,11 @@
       "category": "Suture, VR493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR494",
@@ -6460,7 +7892,11 @@
       "category": "Suture, VR494",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR834",
@@ -6478,7 +7914,11 @@
       "category": "Suture, VR834",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR845",
@@ -6496,7 +7936,11 @@
       "category": "Suture, VR845",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VR945",
@@ -6514,7 +7958,11 @@
       "category": "Suture, VR945",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "W31G",
@@ -6532,7 +7980,11 @@
       "category": "Bone Wax, W31",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "X692G",
@@ -6550,7 +8002,11 @@
       "category": "Suture, X692",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "X916H",
@@ -6568,7 +8024,11 @@
       "category": "Suture, X916",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y213H",
@@ -6586,7 +8046,11 @@
       "category": "Suture, Y213",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y215H",
@@ -6604,7 +8068,11 @@
       "category": "Suture, Y215",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y266H",
@@ -6622,7 +8090,11 @@
       "category": "Suture, Y266",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y303D",
@@ -6640,7 +8112,11 @@
       "category": "Suture, Y303",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y303H",
@@ -6658,7 +8134,11 @@
       "category": "Suture, Y303",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y304H",
@@ -6676,7 +8156,11 @@
       "category": "Suture, Y304",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y305H",
@@ -6694,7 +8178,11 @@
       "category": "Suture, Y305",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y315H",
@@ -6712,7 +8200,11 @@
       "category": "Suture, Y315",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y316H",
@@ -6730,7 +8222,11 @@
       "category": "Suture, Y316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y317H",
@@ -6748,7 +8244,11 @@
       "category": "Suture, Y317",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y318H",
@@ -6766,7 +8266,11 @@
       "category": "Suture, Y318",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y333H",
@@ -6784,7 +8288,11 @@
       "category": "Suture, Y333",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y334H",
@@ -6802,7 +8310,11 @@
       "category": "Suture, Y334",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y335H",
@@ -6820,7 +8332,11 @@
       "category": "Suture, Y335",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y344H",
@@ -6838,7 +8354,11 @@
       "category": "Suture, Y344",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y345H",
@@ -6856,7 +8376,11 @@
       "category": "Suture, Y345",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y346H",
@@ -6874,7 +8398,11 @@
       "category": "Y346, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y359H",
@@ -6892,7 +8420,11 @@
       "category": "Suture, Y359",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y415H",
@@ -6910,7 +8442,11 @@
       "category": "Suture, Y415",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y415N",
@@ -6928,7 +8464,11 @@
       "category": "Suture, Y415",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y416H",
@@ -6946,7 +8486,11 @@
       "category": "Suture, Y416",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y417H",
@@ -6964,7 +8508,11 @@
       "category": "Suture, Y417",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y427H",
@@ -6982,7 +8530,11 @@
       "category": "Suture, Y427",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y463G",
@@ -7000,7 +8552,11 @@
       "category": "Suture, Y463",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y464G",
@@ -7018,7 +8574,11 @@
       "category": "Suture, Y464",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y489G",
@@ -7036,7 +8596,11 @@
       "category": "Suture, Y489",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y489H",
@@ -7054,7 +8618,11 @@
       "category": "Suture, Y489",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y490H",
@@ -7072,7 +8640,11 @@
       "category": "Suture, Y490",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y492G",
@@ -7090,7 +8662,11 @@
       "category": "Suture, Y492",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y492H",
@@ -7108,7 +8684,11 @@
       "category": "Suture, Y492",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y493G",
@@ -7126,7 +8706,11 @@
       "category": "Y493, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y493N",
@@ -7144,7 +8728,11 @@
       "category": "Suture, Y493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y494G",
@@ -7162,7 +8750,11 @@
       "category": "Suture, Y494",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y496G",
@@ -7180,7 +8772,11 @@
       "category": "Suture, Y496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y496H",
@@ -7198,7 +8794,11 @@
       "category": "Suture, Y496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y497G",
@@ -7216,7 +8816,11 @@
       "category": "Suture, Y497",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y497H",
@@ -7234,7 +8838,11 @@
       "category": "Suture, Y497",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y513G",
@@ -7252,7 +8860,11 @@
       "category": "Suture, Y513",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y527H",
@@ -7270,7 +8882,11 @@
       "category": "Suture, Y527",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y682H",
@@ -7288,7 +8904,11 @@
       "category": "Suture, Y682",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y732H",
@@ -7306,7 +8926,11 @@
       "category": "Suture, Y732",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y833G",
@@ -7324,7 +8948,11 @@
       "category": "Suture, Y833",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y834G",
@@ -7342,7 +8970,11 @@
       "category": "Suture, Y834",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Y936H",
@@ -7360,7 +8992,11 @@
       "category": "Suture, Y936",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "YY31G",
@@ -7378,7 +9014,11 @@
       "category": "Suture, YY31",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z195T",
@@ -7396,7 +9036,11 @@
       "category": "Z195, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z304H",
@@ -7414,7 +9058,11 @@
       "category": "Suture, Z304",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z305H",
@@ -7432,7 +9080,11 @@
       "category": "Suture, Z305",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z311H",
@@ -7450,7 +9102,11 @@
       "category": "Suture, Z311",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z316H",
@@ -7468,7 +9124,11 @@
       "category": "Suture, Z316",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z317H",
@@ -7486,7 +9146,11 @@
       "category": "Suture, Z317",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z332H",
@@ -7504,7 +9168,11 @@
       "category": "Suture, Z332",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z333H",
@@ -7522,7 +9190,11 @@
       "category": "Suture, Z333",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z334H",
@@ -7540,7 +9212,11 @@
       "category": "Z334, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z338H",
@@ -7558,7 +9234,11 @@
       "category": "Z338, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z339H",
@@ -7567,16 +9247,20 @@
       "gtin": "30705031060603",
       "price": "$185.00",
       "cost": "$90.00",
-      "onHand": 9,
+      "onHand": 4,
       "reservedQty": 0,
-      "availableQty": 9,
+      "availableQty": 4,
       "onRevMed": "FALSE",
       "revMedPrice": "$205.00",
       "syncedShopify": "TRUE",
       "category": "Suture, Z339",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z340H",
@@ -7594,7 +9278,11 @@
       "category": "Suture, Z340",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z341H",
@@ -7612,7 +9300,11 @@
       "category": "Suture, Z341",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z346H",
@@ -7630,7 +9322,11 @@
       "category": "Suture, Z346",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z357H",
@@ -7648,7 +9344,11 @@
       "category": "Suture, Z357",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z358T",
@@ -7666,7 +9366,11 @@
       "category": "Z358, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z371T",
@@ -7684,7 +9388,11 @@
       "category": "Suture, Z371",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z423H",
@@ -7702,7 +9410,11 @@
       "category": "Z423, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z432H",
@@ -7720,7 +9432,11 @@
       "category": "Suture, Z432",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z443H",
@@ -7738,7 +9454,11 @@
       "category": "Suture, Z443",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z463G",
@@ -7756,7 +9476,11 @@
       "category": "Suture, Z463",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z466H",
@@ -7774,7 +9498,11 @@
       "category": "Suture, Z466",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z487G",
@@ -7792,7 +9520,11 @@
       "category": "Suture, Z487",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z493G",
@@ -7810,7 +9542,11 @@
       "category": "Suture, Z493",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z494G",
@@ -7828,7 +9564,11 @@
       "category": "Z494, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z496G",
@@ -7846,7 +9586,11 @@
       "category": "Suture, Z496",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z497G",
@@ -7864,7 +9608,11 @@
       "category": "Suture, Z497",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z513G",
@@ -7882,7 +9630,11 @@
       "category": "Suture, Z513",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z968H",
@@ -7900,7 +9652,11 @@
       "category": "Suture, Z968",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "Z970H",
@@ -7918,7 +9674,11 @@
       "category": "Z970, Suture",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP957H",
@@ -7936,7 +9696,11 @@
       "category": "Suture, VCP957",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "VCP310H",
@@ -7954,7 +9718,11 @@
       "category": "Suture, VCP310",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "J808T",
@@ -7972,7 +9740,11 @@
       "category": "Suture, J808",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "A185H",
@@ -7990,7 +9762,33 @@
       "category": "Suture, A185",
       "status": "ACTIVE",
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
+    },
+    {
+      "ref": "Z339H (PLUS)",
+      "mfr": "ETHICON",
+      "desc": "ETHICON 2-0 PDS II VIOLET 1X27\" CT-1 Plus (BX/36) Z339H (PLUS)",
+      "gtin": "30705031113927",
+      "price": "$185.00",
+      "cost": "$90.00",
+      "onHand": 5,
+      "reservedQty": 0,
+      "availableQty": 5,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "TRUE",
+      "category": "Suture, Z339",
+      "status": "ACTIVE",
+      "shelf": "",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "4350 (BX/10)",
@@ -8010,7 +9808,11 @@
       "parentRef": "4350",
       "uomMult": 10,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "480422-03",
@@ -8023,14 +9825,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$0.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Sealer",
       "status": "ACTIVE",
       "parentRef": "480422",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345B-03",
@@ -8043,14 +9849,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$0.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Stapler",
       "status": "ACTIVE",
       "parentRef": "48345B",
       "uomMult": 12,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345G-03",
@@ -8063,14 +9873,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$1,500.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Surgical Stapling, 48345",
       "status": "ACTIVE",
       "parentRef": "48345G",
       "uomMult": 12,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48345W-03",
@@ -8083,14 +9897,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$0.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Surgical Stapling, 48345",
       "status": "ACTIVE",
       "parentRef": "48345W",
       "uomMult": 12,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360B-10",
@@ -8103,14 +9921,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$0.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Surgical Stapling, 48360",
       "status": "ACTIVE",
       "parentRef": "48360B",
       "uomMult": 12,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360T-10",
@@ -8123,14 +9945,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$1,625.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Surgical Stapling, 48360",
       "status": "ACTIVE",
       "parentRef": "48360T",
       "uomMult": 12,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "48360W-10",
@@ -8143,14 +9969,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$0.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Surgical Stapling, 48360",
       "status": "ACTIVE",
       "parentRef": "48360W",
       "uomMult": 12,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "523335 (BX/24)",
@@ -8170,7 +10000,11 @@
       "parentRef": "523335",
       "uomMult": 24,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCM20-53",
@@ -8190,7 +10024,11 @@
       "parentRef": "MCM20",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "MCS20 (BX)",
@@ -8210,7 +10048,11 @@
       "parentRef": "MCS20",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PHSE (BX/3)",
@@ -8230,7 +10072,11 @@
       "parentRef": "PHSE",
       "uomMult": 3,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "PXW35-43",
@@ -8243,14 +10089,18 @@
       "reservedQty": 0,
       "availableQty": 0,
       "onRevMed": "FALSE",
-      "revMedPrice": "$0.00",
+      "revMedPrice": "",
       "syncedShopify": "FALSE",
       "category": "Stapler",
       "status": "ACTIVE",
       "parentRef": "PXW35",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "TA30V3L (BX/6)",
@@ -8270,7 +10120,11 @@
       "parentRef": "TA30V3L",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "TA9048L (BX/6)",
@@ -8290,7 +10144,11 @@
       "parentRef": "TA9048L",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1212A (BX/6)",
@@ -8310,7 +10168,11 @@
       "parentRef": "LF1212A",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1937 (BX/6)",
@@ -8330,7 +10192,11 @@
       "parentRef": "LF1937",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     },
     {
       "ref": "LF1837 (BX/6)",
@@ -8350,7 +10216,83 @@
       "parentRef": "LF1837",
       "uomMult": 6,
       "shelf": "",
-      "shopifyCategory": "Medical Supplies"
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
+    },
+    {
+      "ref": "309647 (BX)",
+      "mfr": "BD",
+      "desc": "BD 5 mL Luer Slip Tip Syringe Only (BX/125) 309647 (BX)",
+      "gtin": "30382903096474",
+      "price": "$40.00",
+      "cost": "$20.00",
+      "onHand": 0,
+      "reservedQty": 0,
+      "availableQty": 0,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "FALSE",
+      "category": "Syringe",
+      "status": "ACTIVE",
+      "parentRef": "309647",
+      "uomMult": 125,
+      "shelf": "",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
+    },
+    {
+      "ref": "GST60W-22",
+      "mfr": "ETHICON",
+      "desc": "ETHICON 60 mm White Reload With Gripping Surface Technology (BX/12) GST60W-22",
+      "gtin": "20705036014680",
+      "price": "$750.00",
+      "cost": "$612.00",
+      "onHand": 0,
+      "reservedQty": 0,
+      "availableQty": 0,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "FALSE",
+      "category": "Stapler",
+      "status": "ACTIVE",
+      "parentRef": "GST60W",
+      "uomMult": 12,
+      "shelf": "",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
+    },
+    {
+      "ref": "GST60B-25",
+      "mfr": "ETHICON",
+      "desc": "ETHICON 60mm Blue Reload with Gripping Surface Technology (BX/12) GST60B-25",
+      "gtin": "20705036014703",
+      "price": "$750.00",
+      "cost": "$612.00",
+      "onHand": 0,
+      "reservedQty": 0,
+      "availableQty": 0,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "FALSE",
+      "category": "Surgical Stapling",
+      "status": "ACTIVE",
+      "parentRef": "GST60B",
+      "uomMult": 12,
+      "shelf": "",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0"
     }
   ],
   "customers": [
@@ -8391,7 +10333,8 @@
     "SurgiShop",
     "Synergy",
     "XS Supply",
-    "Omnichannel Health"
+    "Omnichannel Health",
+    "ASP System Admin"
   ],
   "suppliers": [
     "AHS",
@@ -8415,7 +10358,6 @@
     "Synergy Surgical",
     "TotalCX Inc",
     "US Materials",
-    "Vanitas",
     "Pambil LLC",
     "Class 1 Inventory LLC"
   ],
