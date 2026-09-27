@@ -621,14 +621,30 @@ const DatabaseManager = {
         if (data.status === "success" && data.db) {
           let matrix = data.db.matrix || [];
           let mappedItems = matrix.map(row => ({
-            ref: row[0], mfr: row[1], desc: row[2], gtin: row[3], price: row[4],
-            cost: row[5], onHand: row[6], reservedQty: row[7], availableQty: row[8],
-            onRevMed: row[9], revMedPrice: row[10], 
-            onDotMed: row[11], dotMedPrice: row[12], 
-            syncedShopify: row[13], category: row[14], status: row[15], 
-            parentRef: row[16], uomMult: row[17], shelf: row[18],
-            shopifyCategory: row[19] || "Medical Supplies",
-            weight: row[20], dimL: row[21], dimW: row[22], dimH: row[23] // ✨ NEW MAPPINGS
+            mfr: row[0], 
+            ref: row[1], 
+            desc: row[2], 
+            cost: row[3],
+            price: row[4], 
+            revMedPrice: row[5], 
+            dotMedPrice: row[6],
+            availableQty: row[7], 
+            reservedQty: row[8], 
+            onHand: row[9], 
+            gtin: row[10], 
+            category: row[11],
+            status: row[12], 
+            uomMult: row[13], 
+            parentRef: row[14], 
+            shelf: row[15],
+            weight: row[16], 
+            dimL: row[17], 
+            dimW: row[18], 
+            dimH: row[19],
+            syncedShopify: row[20], 
+            onRevMed: row[21], 
+            onDotMed: row[22], 
+            shopifyCategory: row[23] || "Medical Supplies"
           }));
           
           fullDb.items = fullDb.items.concat(mappedItems);
