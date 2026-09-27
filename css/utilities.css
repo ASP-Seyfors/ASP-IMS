@@ -279,6 +279,76 @@ body.theme-slate #stockReportEditorModal label, body.theme-sage #stockReportEdit
     color: var(--text-main) !important;
 }
 
+/* =========================================================
+   ✨ FIX: HYBRID/DARK MODE CONTRAST FOR BINS & QUICK LOOKUP
+========================================================= */
+
+/* 1. Customer Bin Viewer - Fix dark blue REFs and dark gray Qty text */
+body.theme-slate #binViewerModal [style*="color: #0277bd"],
+body.theme-sage #binViewerModal [style*="color: #0277bd"],
+body.theme-slate #binViewerModal [style*="color:#0277bd"],
+body.theme-sage #binViewerModal [style*="color:#0277bd"] {
+    color: var(--heading-color) !important;
+}
+body.theme-slate #binViewerModal [style*="color: #555"],
+body.theme-sage #binViewerModal [style*="color: #555"],
+body.theme-slate #binViewerModal [style*="color:#555"],
+body.theme-sage #binViewerModal [style*="color:#555"],
+body.theme-slate #binViewerModal [style*="color: #666"],
+body.theme-sage #binViewerModal [style*="color: #666"],
+body.theme-slate #binViewerModal [style*="color:#666"],
+body.theme-sage #binViewerModal [style*="color:#666"] {
+    color: var(--text-main) !important;
+}
+
+/* 2. Damaged Inventory - Fix dark gray Lot/Exp and Note text */
+body.theme-slate #damagedBinViewerModal [style*="color: #555"],
+body.theme-sage #damagedBinViewerModal [style*="color: #555"],
+body.theme-slate #damagedBinViewerModal [style*="color:#555"],
+body.theme-sage #damagedBinViewerModal [style*="color:#555"],
+body.theme-slate #damagedBinViewerModal [style*="color: #666"],
+body.theme-sage #damagedBinViewerModal [style*="color: #666"],
+body.theme-slate #damagedBinViewerModal [style*="color:#666"],
+body.theme-sage #damagedBinViewerModal [style*="color:#666"],
+body.theme-slate #damagedBinViewerModal [style*="color: #777"],
+body.theme-sage #damagedBinViewerModal [style*="color: #777"],
+body.theme-slate #damagedBinViewerModal [style*="color:#777"],
+body.theme-sage #damagedBinViewerModal [style*="color:#777"] {
+    color: var(--text-main) !important;
+}
+
+/* 3. Quick Lookup - Strip white backgrounds & fix text colors */
+body.theme-slate #quickLookupModal div[style*="background"],
+body.theme-sage #quickLookupModal div[style*="background"],
+body.theme-slate #quickLookupModal table,
+body.theme-sage #quickLookupModal table,
+body.theme-slate #quickLookupModal th,
+body.theme-sage #quickLookupModal th,
+body.theme-slate #quickLookupModal td,
+body.theme-sage #quickLookupModal td,
+body.theme-slate #quickLookupModal tr,
+body.theme-sage #quickLookupModal tr {
+    background-color: var(--raw-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Brighten the green "Available to Sell" text for dark mode readability */
+body.theme-slate #quickLookupModal [style*="color: #2e7d32"],
+body.theme-sage #quickLookupModal [style*="color: #2e7d32"],
+body.theme-slate #quickLookupModal [style*="color:#2e7d32"],
+body.theme-sage #quickLookupModal [style*="color:#2e7d32"] {
+    color: #4caf50 !important; 
+}
+
+/* Map hardcoded ASP Blue to the dynamic Twilight Yellow heading color */
+body.theme-slate #quickLookupModal [style*="color: #0277bd"],
+body.theme-sage #quickLookupModal [style*="color: #0277bd"],
+body.theme-slate #quickLookupModal [style*="color:#0277bd"],
+body.theme-sage #quickLookupModal [style*="color:#0277bd"] {
+    color: var(--heading-color) !important; 
+}
+
 #modalUnreserve {
     z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
 }
