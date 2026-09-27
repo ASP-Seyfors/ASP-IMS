@@ -349,6 +349,39 @@ body.theme-sage #quickLookupModal [style*="color:#0277bd"] {
     color: var(--heading-color) !important; 
 }
 
+/* ✨ FIX: Final Readability Polish for Customer Bin Viewer & Quick Lookup */
+
+/* 1. Customer Bin Viewer - Force all unstyled text and quantities to light text */
+body.theme-slate #binViewerModal div:not([style*="background"]),
+body.theme-sage #binViewerModal div:not([style*="background"]),
+body.theme-slate #binViewerModal span,
+body.theme-sage #binViewerModal span {
+    color: var(--text-main) !important;
+}
+
+/* 2. Quick Lookup Modal - Fix dark manufacturer, description, and unit cost text */
+body.theme-slate #quickLookupModal div,
+body.theme-sage #quickLookupModal div,
+body.theme-slate #quickLookupModal span,
+body.theme-sage #quickLookupModal span,
+body.theme-slate #quickLookupModal p,
+body.theme-sage #quickLookupModal p {
+    color: var(--text-main) !important;
+}
+
+/* Preserve specific highlight and heading colors inside Quick Lookup */
+body.theme-slate #quickLookupModal [style*="color: #2e7d32"],
+body.theme-sage #quickLookupModal [style*="color: #2e7d32"],
+body.theme-slate #quickLookupModal [style*="color:#2e7d32"],
+body.theme-sage #quickLookupModal [style*="color:#2e7d32"] {
+    color: #4caf50 !important;
+}
+
+body.theme-slate #quickLookupModal h3,
+body.theme-sage #quickLookupModal h3 {
+    color: var(--heading-color) !important;
+}
+
 #modalUnreserve {
     z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
 }
