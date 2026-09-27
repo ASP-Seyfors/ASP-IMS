@@ -823,7 +823,6 @@ const DatabaseManager = {
         let pTotal = parseInt(parentItem.onHand || 0, 10);
         let pRes = parseInt(parentItem.reservedQty || 0, 10);
         let pCleanPrice = parseFloat(String(parentItem.price || '').replace(/[^0-9.-]+/g, '')) || 0;
-        let pCleanCost = parseFloat(String(parentItem.cost || '').replace(/[^0-9.-]+/g, '')) || 0; // ✨ NEW
 
         // ✨ SANITIZER: Ensure shopifyCategory is always a valid GID, not plain text
         let rawShopCat = String(parentItem.shopifyCategory || '').trim();
@@ -846,7 +845,6 @@ const DatabaseManager = {
             gtin: String(parentItem.gtin || ''),
             availableQty: String(Math.max(0, pTotal - pRes)),
             price: pCleanPrice.toFixed(2),
-            cost: pCleanCost.toFixed(2),
             "status": (String(parentItem.status || "ACTIVE").toUpperCase() === "INACTIVE") ? "draft" : "active",
             isBundle: false,
             uomMult: 1,
@@ -857,7 +855,6 @@ const DatabaseManager = {
         let childBundles = this.db.filter(i => String(i.parentRef || '').toUpperCase() === String(parentRef).toUpperCase() && parseInt(i.uomMult, 10) > 1);
         childBundles.forEach(bundle => {
             let bCleanPrice = parseFloat(String(bundle.price || '').replace(/[^0-9.-]+/g, '')) || 0;
-            let bCleanCost = parseFloat(String(bundle.cost || '').replace(/[^0-9.-]+/g, '')) || 0; // ✨ NEW
             
             let rawBundleCat = String(bundle.shopifyCategory || parentItem.shopifyCategory || '').trim();
             let bundleCategoryGid = rawBundleCat.startsWith('gid://') ? rawBundleCat : "gid://shopify/TaxonomyCategory/bi-19-7";
@@ -878,7 +875,6 @@ const DatabaseManager = {
                 gtin: String(bundle.gtin || ''),
                 availableQty: String(Math.max(0, Math.floor((pTotal - pRes) / parseInt(bundle.uomMult, 10)))),
                 price: bCleanPrice.toFixed(2),
-                cost: bCleanCost.toFixed(2),
                 "status": (String(bundle.status || parentItem.status || "ACTIVE").toUpperCase() === "INACTIVE") ? "draft" : "active",
                 isBundle: true,
                 uomMult: bundle.uomMult,

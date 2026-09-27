@@ -183,6 +183,42 @@ body.theme-sage .flyer-item-row input[type="text"][readonly] {
     border-color: var(--border-color) !important;
 }
 
+/* ✨ FIX: Force dark text inside light-colored Active Shipment columns in Dark Mode */
+body.theme-slate #shipmentManagerModal div[style*="background"],
+body.theme-sage #shipmentManagerModal div[style*="background"],
+body.theme-slate #shipmentManagerModal div[style*="background"] div,
+body.theme-sage #shipmentManagerModal div[style*="background"] div,
+body.theme-slate #shipmentManagerModal div[style*="background"] span,
+body.theme-sage #shipmentManagerModal div[style*="background"] span {
+    color: #333333 !important;
+}
+
+/* Ensure the carrier tracking links remain blue */
+body.theme-slate #shipmentManagerModal div[style*="background"] a,
+body.theme-sage #shipmentManagerModal div[style*="background"] a {
+    color: #0277bd !important;
+}
+
+/* ✨ FIX: Force dark text inside light-colored Active Shipment columns in Dark Mode */
+body.theme-slate #shipmentTrackingModal div[style*="background"],
+body.theme-sage #shipmentTrackingModal div[style*="background"],
+body.theme-slate #shipmentTrackingModal div[style*="background"] div,
+body.theme-sage #shipmentTrackingModal div[style*="background"] div,
+body.theme-slate #shipmentTrackingModal div[style*="background"] span,
+body.theme-sage #shipmentTrackingModal div[style*="background"] span,
+body.theme-slate #shipmentTrackingModal div[style*="background"] strong,
+body.theme-sage #shipmentTrackingModal div[style*="background"] strong,
+body.theme-slate #shipmentTrackingModal div[style*="background"] b,
+body.theme-sage #shipmentTrackingModal div[style*="background"] b {
+    color: #333333 !important;
+}
+
+/* Ensure the carrier tracking links remain blue */
+body.theme-slate #shipmentTrackingModal div[style*="background"] a,
+body.theme-sage #shipmentTrackingModal div[style*="background"] a {
+    color: #0277bd !important;
+}
+
 #modalUnreserve {
     z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
 }

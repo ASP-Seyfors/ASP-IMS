@@ -2481,7 +2481,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let html = `<div style="margin-top:10px; padding:10px; background:#e8f5e9; border:1px solid #4caf50; border-radius:4px;">
                     <h4 style="margin:0 0 8px 0; color:#2e7d32;">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
       foundEvents.forEach(ev => {
-        html += `<div style="background:#fff; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #0277bd; font-size:0.85rem;">
+        // ✨ FIX: Injected color:#333; to force dark text on the white background
+        html += `<div style="background:#fff; color:#333; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #0277bd; font-size:0.85rem;">
                   <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
                   <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
                   <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
@@ -2526,7 +2527,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let html = `<div style="margin-top:10px; padding:10px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px;">
                     <h4 style="margin:0 0 8px 0; color:#7b1fa2;">🗄️ Deep Archive Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
       foundEvents.forEach(ev => {
-        html += `<div style="background:#fff; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #7b1fa2; font-size:0.85rem;">
+        // ✨ FIX: Injected color:#333; to force dark text on the white background
+        html += `<div style="background:#fff; color:#333; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #7b1fa2; font-size:0.85rem;">
                   <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
                   <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
                   <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
