@@ -219,6 +219,66 @@ body.theme-sage #shipmentTrackingModal div[style*="background"] a {
     color: #0277bd !important;
 }
 
+/* =========================================================
+   ✨ FIX: HYBRID/DARK MODE CONTRAST OVERRIDES FOR ALL MODALS
+========================================================= */
+
+/* 1. Edit Item Details Modal (Screenshot 37 - Missing from Dark Mode list) */
+body.theme-slate #itemEditModal > div,
+body.theme-sage #itemEditModal > div {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
+}
+body.theme-slate #itemEditModal h2, body.theme-sage #itemEditModal h2,
+body.theme-slate #itemEditModal h3, body.theme-sage #itemEditModal h3 {
+    color: var(--heading-color) !important;
+}
+body.theme-slate #itemEditModal div, body.theme-sage #itemEditModal div,
+body.theme-slate #itemEditModal label, body.theme-sage #itemEditModal label {
+    color: var(--text-main) !important;
+}
+
+/* 2. Customer Bin & Damaged Bin Viewers (Screenshots 34 & 35 - Override hardcoded dark greys) */
+body.theme-slate #binViewerModal span[style*="color: #555"], body.theme-sage #binViewerModal span[style*="color: #555"],
+body.theme-slate #binViewerModal span[style*="color:#555"], body.theme-sage #binViewerModal span[style*="color:#555"],
+body.theme-slate #binViewerModal span[style*="color: #666"], body.theme-sage #binViewerModal span[style*="color: #666"],
+body.theme-slate #binViewerModal span[style*="color:#666"], body.theme-sage #binViewerModal span[style*="color:#666"],
+body.theme-slate #damagedBinViewerModal span[style*="color: #555"], body.theme-sage #damagedBinViewerModal span[style*="color: #555"],
+body.theme-slate #damagedBinViewerModal span[style*="color:#555"], body.theme-sage #damagedBinViewerModal span[style*="color:#555"],
+body.theme-slate #damagedBinViewerModal span[style*="color: #666"], body.theme-sage #damagedBinViewerModal span[style*="color: #666"],
+body.theme-slate #damagedBinViewerModal span[style*="color:#666"], body.theme-sage #damagedBinViewerModal span[style*="color:#666"] {
+    color: var(--text-main) !important;
+}
+
+/* 3. Quick Lookup Modal (Screenshot 36 - Override hardcoded white backgrounds) */
+body.theme-slate #quickLookupModal div[style*="background: #fff"], body.theme-sage #quickLookupModal div[style*="background: #fff"],
+body.theme-slate #quickLookupModal div[style*="background:#fff"], body.theme-sage #quickLookupModal div[style*="background:#fff"],
+body.theme-slate #quickLookupModal div[style*="background: #ffffff"], body.theme-sage #quickLookupModal div[style*="background: #ffffff"],
+body.theme-slate #quickLookupModal div[style*="background:#ffffff"], body.theme-sage #quickLookupModal div[style*="background:#ffffff"] {
+    background-color: var(--raw-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+body.theme-slate #quickLookupModal table, body.theme-sage #quickLookupModal table,
+body.theme-slate #quickLookupModal th, body.theme-sage #quickLookupModal th,
+body.theme-slate #quickLookupModal td, body.theme-sage #quickLookupModal td {
+    background-color: var(--raw-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+/* Brighten the dark green "Available to Sell" text for better dark mode visibility */
+body.theme-slate #quickLookupModal [style*="color: #2e7d32"], body.theme-sage #quickLookupModal [style*="color: #2e7d32"],
+body.theme-slate #quickLookupModal [style*="color:#2e7d32"], body.theme-sage #quickLookupModal [style*="color:#2e7d32"] {
+    color: #4caf50 !important; 
+}
+
+/* 4. Custom Promotional Flyer & Stock Report Builder (Screenshots 38 & 39 - Fix dark grey text) */
+body.theme-slate #stockReportHeaderBox, body.theme-sage #stockReportHeaderBox,
+body.theme-slate #stockReportItemCount, body.theme-sage #stockReportItemCount,
+body.theme-slate #stockReportEditorModal label, body.theme-sage #stockReportEditorModal label {
+    color: var(--text-main) !important;
+}
+
 #modalUnreserve {
     z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
 }
