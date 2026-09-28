@@ -1,6 +1,6 @@
 # ASP Inventory Management System – Operations Guide
 
-Welcome to the ASP Inventory Management System! This application is designed to help you quickly scan, track, and manage warehouse inventory.
+Welcome to the ASP Inventory Management System! This application is designed to help you quickly scan, track, and manage warehouse inventory, as well as generate shipping labels and enterprise reports.
 
 ## Table of Contents
 * [1. Login & Security](#1-login-security)
@@ -9,7 +9,7 @@ Welcome to the ASP Inventory Management System! This application is designed to 
 * [4. Pre-Loading Orders](#4-pre-loading-orders)
 * [5. Scanning Items](#5-scanning-items)
 * [6. Reviewing & Completing Sessions](#6-reviewing-completing-sessions)
-* [7. Traceability & Damaged Goods](#7-traceability-damaged-goods)
+* [7. Traceability & Active Shipments](#7-traceability-active-shipments)
 * [8. Session Archive](#8-session-archive)
 * [9. Developer & Admin Tools](#9-developer-admin-tools)
 
@@ -29,18 +29,18 @@ This is your main dashboard where you start every task.
 * **Session Type:** 
   * *Shipment (Incoming):* Use this when items are arriving at the warehouse. It will ask you to select a Supplier.
   * *Order (Outgoing):* Use this when items are leaving the warehouse or being set aside. It will ask you to select a Customer.
-* **🔍 Item Lookup:** A quick way to scan a barcode or type a REF to instantly see its description, price, and how many are currently sitting on the warehouse shelves.
 
 ## 3. Enterprise Tools & Database
 *(Requires the "Advanced" checkbox to be ticked)*
+* **📋 Stocktake:** Run physical inventory audits. Choose **Full Stocktake** to completely wipe and replace all warehouse quantities, or **Selection Stocktake** to only update the specific items you scan.
 * **🗄️ Database Editor:** Allows you to view the master catalog. Click the "Edit" button next to any item to update its description, shelf location, or active status.  
-* **📊 Reports & Analytics:** Used to generate reports of On-Hand Stock, Unified Expiration Warnings (FEFO), RevMed Catalog data, or create Custom Promotional Flyers to email to customers.
+* **📊 Reports & Analytics:** Used to generate reports of On-Hand Stock, Unified Expiration Warnings (FEFO), build Custom Promotional Flyers, and manage automated Subscriber emails.
 * **🗃️ Customer Bins:** A quick-view tool that lists every item currently sitting in a physical reserve bin for a specific customer. 
 
 ## 4. Pre-Loading Orders
 *(Requires the "Advanced" checkbox to be ticked)*
 Instead of scanning items blindly, you can tell the app what items you *expect* to scan.
-* **Pre-Load Order Information:** Check this box to type in a manual list of expected items (or paste a spreadsheet from an email). The app will track your progress as you scan them.
+* **Pre-Load Order Information:** Check this box to type in a manual list of expected items or paste a spreadsheet. The app will track your progress as you scan them.
 * **☁️ Fetch Orders (QBO):** Pulls open invoices directly from QuickBooks Online. You can select an invoice from the dropdown, and the app will automatically pre-load the expected items for you.
 
 ## 5. Scanning Items
@@ -55,14 +55,17 @@ The core screen where you capture barcodes using the tablet's camera.
 ## 6. Reviewing & Completing Sessions
 * **Verify Screen:** Before saving an item, the app shows you exactly what it captured. If the scanner grabbed the wrong date, hit "Return to Edit" to fix it.
 * **Discrepancies:** If you used a Pre-Load manifest, the Summary screen will highlight any shortages (missing items) or overages (extra items) in bright orange so you can fix them before finishing.
+* **Shipping & Receiving Intercepts:**
+  * *Outgoing Orders:* Clicking Complete will launch the **Shipment Manager**. Here you can generate FedEx/UPS shipping labels, calculate box sizes, or "Skip" to log the tracking number manually later.
+  * *Incoming Shipments:* Clicking Complete will launch the **Incoming Delivery Verification** screen, allowing you to instantly check off expected inbound tracking numbers as "Delivered".
 * **Session Actions:** 
-  * *Complete Session:* Saves the math to the database and uploads it to the cloud.
   * *Suspend / Save as Pending:* Pauses the session so you can come back and finish scanning later. 
   * *Cancel:* Throws away everything you just scanned.
 
-## 7. Traceability & Damaged Goods
+## 7. Traceability & Active Shipments
 Located inside the **Traceability** button on the Home Screen.
-* **Lot Traceability:** Type in a specific Lot Number to see exactly when it arrived, who scanned it, and what customer it was shipped to.
+* **Active Shipments Hub:** View all inbound and outbound packages currently in transit. Click the live tracking links to check carrier status, or click the edit icon to update a shipment's ETA.
+* **Lot Traceability:** Type in a specific Lot Number to see exactly when it arrived, who scanned it, and what customer it was shipped to. If a lot isn't found in recent history, click **Search Deep Cold Storage** to query the master archives.
 * **⚠️ Damaged Inventory Hub:** If items are flagged as damaged during scanning, they are quarantined here. You can view the list of damaged goods or export it to a spreadsheet to send back to a vendor.
 
 ## 8. Session Archive
@@ -71,14 +74,12 @@ Located inside the **Traceability** button on the Home Screen.
 * **Search Bar:** Use the search bar at the top of the archive to quickly find a specific session by Customer name, PO number, or Date.
 
 ## 9. Developer & Admin Tools
-*(Accessible via Settings. Restricted to System Administrators.)*
-* 📊 End of Week Rollup: Automatically pulls the live Cloud Ledger to generate a master KPI summary for the last 7 days.
-* **🛠️ Developer Tools:** A highly restricted page for maintaining the app.
-* ⏪ Reverse Session: Used to reverse a recent Receiving or Reserving session from the last 24 hours.
-* ⚠️ System Restore: Rebuilds from the selected Stocktake. Downloads a historical "Full Stocktake" baseline and mathematically replays every subsequent session.
-* **🧹 Offload & Purge Local History:** Cleans up the tablet's memory by deleting old completed sessions while keeping pending sessions safe.
-* **🗑️ Force Update / Clear Cache:** The "Nuclear Option." Wipes the app completely and forces it to download the newest version of the code from the internet. Use this if the app is glitching. 
-* **🐞 Live Debug Console:** Opens a floating window that tracks background code execution to help track down bugs while using the app.
+*(Restricted to System Administrators.)*
+* **Accessing Dev Tools:** The Developer Tools button is hidden. To reveal it, click into the empty space directly beneath the Settings button on the Home Screen, type the master override code, and the panel will unlock.
+* **E-Commerce Sync:** Push database updates directly to Shopify and Thrive Sandbox environments.
+* **System Restore:** Rebuilds the database from a historical baseline and mathematically replays every subsequent session to recover lost inventory data.
+* **Offload & Purge Local History:** Cleans up the tablet's memory by deleting old completed sessions while keeping pending sessions safe.
+* **Force Update / Clear Cache:** Wipes the app completely and forces it to download the newest version of the code from the internet.
 
 ## 10. Licensing & Intellectual Property
 **Proprietary Software:** The ASP Inventory Management System (ASP IMS) architectural codebase, routing algorithms, and workflow structures are the proprietary intellectual property of Thomas Seyfors. 
