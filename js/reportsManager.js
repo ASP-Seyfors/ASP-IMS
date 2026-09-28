@@ -71,6 +71,160 @@ const ReportsManager = {
     document.getElementById('modalSubCategories').style.display = 'none';
   },
 
+  openAddressBookEditor() {
+    this.renderAddressBookGrid();
+    document.getElementById('addressBookModal').style.display = 'flex';
+  },
+
+  clearAddressBookForm() {
+    ['abContactId', 'abCompany', 'abContactName', 'abEmail', 'abPhone', 'abAccount', 'abAddress1', 'abAddress2', 'abCity', 'abState', 'abZip', 'abNotes'].forEach(id => {
+        let el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    document.getElementById('abCountry').value = 'US';
+    document.getElementById('abMethod').selectedIndex = 0;
+  },
+
+  renderAddressBookGrid() {
+    let container = document.getElementById('addressBookGrid');
+    if (!container) return;
+
+    let rules = DatabaseManager.shippingRules || {};
+    let keys = Object.keys(rules).sort();
+    
+    // ✨ NEW: Inject the calculated count into the HTML span
+    let countEl = document.getElementById('abContactCount');
+    if (countEl) countEl.innerText = keys.length;
+
+    if (keys.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#777; background:#fff; border-radius:4px; border:1px solid #ccc;">No contacts found in Address Book.</div>';
+        return;
+    }
+
+    let html = '';
+    keys.forEach(k => {
+        let data = rules[k];
+        // Encode data safely so we can pass it into the edit function
+        let safeData = encodeURIComponent(JSON.stringify(data));
+
+        html += `
+        <div style="background:#fff; border:1px solid #ccc; border-radius:6px; padding:12px; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <strong style="color:#8e24aa; font-size:1.1rem;">${data.contactId}</strong>
+                <div style="font-size:0.85rem; color:#333; margin-top:4px;"><strong>Company:</strong> ${data.formalCompany || '--'} | <strong>Contact:</strong> ${data.contactName || '--'}</div>
+                <div style="font-size:0.8rem; color:#555;">${data.address1} ${data.address2 ? data.address2 : ''}, ${data.city}, ${data.state} ${data.zip} ${data.country}</div>
+                <div style="font-size:0.8rem; color:#0277bd; margin-top:4px;">Carrier: <strong>${data.method || 'FEDEX'}</strong> | Acct: <strong>${data.account || '--'}</strong></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+                <button class="btn-small" style="background:#0277bd; color:#fff; border:none; padding:4px 10px; cursor:pointer; border-radius:3px;" onclick="ReportsManager.editAddressBookEntry('${safeData}')">✏️ Edit</button>
+                <button class="btn-small" style="background:#d32f2f; color:#fff; border:none; padding:4px 10px; cursor:pointer; border-radius:3px;" onclick="ReportsManager.deleteAddressBookEntry('${data.contactId}')">🗑️ Delete</button>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+  },
+
+  editAddressBookEntry(safeData) {
+      let data = JSON.parse(decodeURIComponent(safeData));
+      
+      document.getElementById('abContactId').value = data.contactId || '';
+      document.getElementById('abCompany').value = data.formalCompany || '';
+      document.getElementById('abContactName').value = data.contactName || '';
+      document.getElementById('abEmail').value = data.email || '';
+      document.getElementById('abPhone').value = data.phone || '';
+      document.getElementById('abAccount').value = data.account || '';
+      document.getElementById('abAddress1').value = data.address1 || '';
+      document.getElementById('abAddress2').value = data.address2 || '';
+      document.getElementById('abCity').value = data.city || '';
+      document.getElementById('abState').value = data.state || '';
+      document.getElementById('abZip').value = data.zip || '';
+      document.getElementById('abCountry').value = data.country || 'US';
+      document.getElementById('abNotes').value = data.notes || '';
+      
+      let methodSel = document.getElementById('abMethod');
+      if (data.method) {
+          let opt = Array.from(methodSel.options).find(o => o.value.toUpperCase() === data.method.toUpperCase());
+          if (opt) methodSel.value = opt.value;
+      }
+      
+      // Scroll to top of modal to see the form
+      document.querySelector('#addressBookModal > div > div:nth-child(2)').scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  async saveAddressBookEntry() {
+      let btn = document.getElementById('btnSaveAbEntry');
+      let origText = btn.innerHTML;
+      btn.innerHTML = "⏳ Saving..."; btn.disabled = true;
+
+      let contactId = document.getElementById('abContactId').value.trim();
+      if (!contactId) {
+          alert("Contact ID is required.");
+          btn.innerHTML = origText; btn.disabled = false;
+          return;
+      }
+
+      let payloadData = {
+          formalCompany: document.getElementById('abCompany').value.trim(),
+          contactName: document.getElementById('abContactName').value.trim(),
+          contactId: contactId,
+          email: document.getElementById('abEmail').value.trim(),
+          phone: document.getElementById('abPhone').value.trim(),
+          method: document.getElementById('abMethod').value,
+          account: document.getElementById('abAccount').value.trim(),
+          address1: document.getElementById('abAddress1').value.trim(),
+          address2: document.getElementById('abAddress2').value.trim(),
+          city: document.getElementById('abCity').value.trim(),
+          state: document.getElementById('abState').value.trim(),
+          zip: document.getElementById('abZip').value.trim(),
+          country: document.getElementById('abCountry').value.trim() || "US",
+          notes: document.getElementById('abNotes').value.trim()
+      };
+
+      try {
+          let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+              method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "SAVE_SHIPPING_INFO", payload: payloadData })
+          });
+          let result = await res.json();
+          
+          if (result.status === "success") {
+              // Update local memory so it's instantly available without a full refresh
+              DatabaseManager.shippingRules[contactId.toUpperCase()] = payloadData;
+              this.clearAddressBookForm();
+              this.renderAddressBookGrid();
+              alert("Address book updated successfully!");
+          } else {
+              alert("Database Error: " + result.message);
+          }
+      } catch(err) {
+          alert("Network Error: " + err.message);
+      } finally {
+          btn.innerHTML = origText; btn.disabled = false;
+      }
+  },
+
+  async deleteAddressBookEntry(contactId) {
+      if (!confirm(`Are you sure you want to permanently delete ${contactId} from the Address Book?`)) return;
+
+      try {
+          let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+              method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "DELETE_SHIPPING_INFO", payload: { contactId: contactId } })
+          });
+          let result = await res.json();
+          
+          if (result.status === "success") {
+              delete DatabaseManager.shippingRules[contactId.toUpperCase()];
+              this.renderAddressBookGrid();
+          } else {
+              alert("Database Error: " + result.message);
+          }
+      } catch(err) {
+          alert("Network Error: " + err.message);
+      }
+  },
+
   openInventoryReportOptions(type) {
     if (type !== 'in_stock') {
       this.generateInventoryReport(type); 

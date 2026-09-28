@@ -820,7 +820,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     document.getElementById('internalReportCustomerName').textContent = cust;
     document.getElementById('btnExportInternalReport').onclick = () => {
-      ReportsManager.generateInternalSalesReport(cust, limit);
+      // ✨ FIX: Changed from ReportsManager to AuditManager
+      AuditManager.generateInternalSalesReport(cust, limit);
       document.getElementById('internalReportOptionsModal').style.display = 'none';
     };
 

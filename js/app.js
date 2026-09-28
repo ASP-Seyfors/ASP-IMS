@@ -440,4 +440,7 @@ window.sendDeploymentBlast = sendDeploymentBlast;
 window.sendPreDeploymentBlast = sendPreDeploymentBlast;
 window.exportAppsScriptFiles = exportAppsScriptFiles; 
 
+// Address Book Editor
+window.openAddressBookEditor = () => ReportsManager.openAddressBookEditor();
+
 window.forceAppUpdate = forceAppUpdate;

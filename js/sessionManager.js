@@ -1730,13 +1730,21 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     });
   },
 
-  completeSession(skipConfirm = false, skipShipping = false) {
+  completeSession(skipConfirm = false, skipShipping = false, skipIncoming = false) {
     
     // ✨ THE INTERCEPT: Trigger Shipment Manager for Pick & Pack
     if (this.currentWorkflowType === 'Picking & Packing' && !skipShipping) {
       if (typeof ShippingManager !== 'undefined') {
         ShippingManager.openModal();
         return; // Halt normal completion until shipping is resolved
+      }
+    }
+
+    // ✨ THE INTERCEPT: Trigger Incoming Shipment Modal for Receiving
+    if (this.currentWorkflowType.includes('Receiving') && !skipIncoming) {
+      if (typeof ShippingManager !== 'undefined' && typeof ShippingManager.openIncomingModal === 'function') {
+        ShippingManager.openIncomingModal();
+        return; 
       }
     }
 

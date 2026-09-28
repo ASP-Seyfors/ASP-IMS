@@ -9,7 +9,7 @@ if (currentUrl.includes("ASP-IMS-DEMO")) {
     ENV_CONFIG = {
         CLOUD_ARCHIVE_URL: "https://script.google.com/macros/s/AKfycbyODX9mhA1QL83lRcpWEuRQ6JGjFSYCYu_dnUbTrfXzVb59Q2jflnyxX4-DvbOBazj2yg/exec",
         GOOGLE_FEEDER_URL: "https://script.google.com/macros/s/AKfycbx2IMSdGKmIVsiXms5FjH-ZRXYeMzwmCd2n6wiaff5F4ORO8Kdjilp65mFmp4WcqaZL6w/exec",
-        APP_VERSION: "5.7.3 (DEMO)",
+        APP_VERSION: "5.8.5 (DEMO)",
         ENVIRONMENT_NAME: "ASP DEMO",
         THEME_COLOR: "#f1d84a",
         
@@ -23,7 +23,7 @@ else if (currentUrl.includes("ASP-IMS-DEV")) {
     ENV_CONFIG = {
         CLOUD_ARCHIVE_URL: "https://script.google.com/macros/s/AKfycby-jGbxOlkmMDQwDN5x1FHae6OTNlVD4ZsBDWiLzotdp2ALs0JGYe_RYvSoXMDD7EqQeg/exec",
         GOOGLE_FEEDER_URL: "https://script.google.com/macros/s/AKfycbzm9u8lHnJEgDyG8rJk5YaXs8VY_jzyganveRP8UwkgLlMtZxhLjWIZ4iu545H07ogFRw/exec",
-        APP_VERSION: "5.7.3 (DEV)",
+        APP_VERSION: "5.8.4 (DEV)",
         ENVIRONMENT_NAME: "ASP DEV",
         THEME_COLOR: "#e95b96", 
 

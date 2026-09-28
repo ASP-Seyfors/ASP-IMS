@@ -1,0 +1,73 @@
+<div id="shipmentEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #0277bd; padding:15px 20px;">
+      <h2 id="shipEditTitle" style="margin:0; color:#0277bd; font-size:1.2rem;">Edit Shipment</h2>
+      <button onclick="document.getElementById('shipmentEditModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#333;">&times;</button>
+    </div>
+
+    <div style="padding:20px; display:flex; flex-direction:column; gap:12px; max-height:80vh; overflow-y:auto;">
+      <input type="hidden" id="shipEditType">
+      <input type="hidden" id="shipEditRowIdx">
+      
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Date</label>
+          <input type="text" id="shipEditDate" class="form-input" style="width:100%; box-sizing:border-box;">
+      </div>
+      
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Status</label>
+          <select id="shipEditStatus" class="form-input" style="width:100%; box-sizing:border-box;">
+              <option value="Pending">Pending</option>
+              <option value="In Transit">In Transit</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+          </select>
+      </div>
+      
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Name</label>
+          <input type="text" id="shipEditPartner" class="form-input" style="font-weight:bold; width:100%; box-sizing:border-box;">
+      </div>
+
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">PO / Invoice</label>
+          <input type="text" id="shipEditPo" class="form-input" style="width:100%; box-sizing:border-box;">
+      </div>
+      
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Carrier</label>
+          <input type="text" id="shipEditCarrier" class="form-input" style="width:100%; box-sizing:border-box;">
+      </div>
+
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Tracking Number</label>
+          <input type="text" id="shipEditTracking" class="form-input" style="font-family:monospace; width:100%; box-sizing:border-box;">
+      </div>
+
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">ETA</label>
+          <input type="text" id="shipEditEta" class="form-input" style="width:100%; box-sizing:border-box;">
+      </div>
+
+      <div>
+          <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Notes</label>
+          <input type="text" id="shipEditNotes" class="form-input" style="width:100%; box-sizing:border-box;">
+      </div>
+
+      <div id="shipEditOutboundExtra" style="display:none; flex-direction:column; gap:12px;">
+          <div>
+              <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Weight (lbs)</label>
+              <input type="text" id="shipEditWeight" class="form-input" style="width:100%; box-sizing:border-box;">
+          </div>
+          <div>
+              <label style="font-size:0.8rem; font-weight:bold; color:#555; display:block; margin-bottom:4px;">Dims (LxWxH)</label>
+              <input type="text" id="shipEditDims" class="form-input" style="width:100%; box-sizing:border-box;">
+          </div>
+      </div>
+
+      <button id="btnSaveShipmentEdit" class="btn-action" style="background:#0277bd; color:#fff; padding:12px; width:100%; border:none; font-weight:bold; border-radius:4px; margin-top:10px; cursor:pointer;" onclick="saveShipmentEdit()">💾 Save Changes</button>
+
+    </div>
+  </div>
+</div>
