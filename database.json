@@ -10300,6 +10300,7 @@
     "Animal Eye Care",
     "Apex Surgical",
     "ASP Damaged Inventory",
+    "ASP System Admin",
     "ASP Tester",
     "Associated Surgical Center",
     "Bulk Legends",
@@ -10320,6 +10321,7 @@
     "MAP Medical",
     "Medex Supply",
     "Medical Missions",
+    "Omnichannel Health",
     "PMCY Medical",
     "POSS Medical",
     "Redhead",
@@ -10332,9 +10334,7 @@
     "Surgical Direct",
     "SurgiShop",
     "Synergy",
-    "XS Supply",
-    "Omnichannel Health",
-    "ASP System Admin"
+    "XS Supply"
   ],
   "suppliers": [
     "AHS",
@@ -10343,6 +10343,7 @@
     "ASP Reconcile",
     "ASP Test Supplier",
     "Bulk Legends",
+    "Class 1 Inventory LLC",
     "DJ Medical",
     "Excim Trading Corp",
     "Expired Surgical Devices",
@@ -10352,14 +10353,14 @@
     "Med Choice Inc.",
     "Medline",
     "Orthomed Medical Supplies",
+    "Pambil LLC",
     "RevMed",
     "SH Medical",
     "SPS",
     "Synergy Surgical",
     "TotalCX Inc",
     "US Materials",
-    "Pambil LLC",
-    "Class 1 Inventory LLC"
+    "Vanitas"
   ],
   "vendors": [
     "ABBOTT",
