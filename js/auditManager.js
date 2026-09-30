@@ -2696,8 +2696,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           return;
       }
 
-      // Filter out empty rows and bundles that don't need independent Shopify listings
-      let itemsToSync = DatabaseManager.db.filter(i => (i.ref || i.sku) && String(i.ref || i.sku).trim() !== "" && !i.parentRef);
+      /// ✨ THE FIX 1: Only push items that are NOT already synced to Shopify
+      let itemsToSync = DatabaseManager.db.filter(i => (i.ref || i.sku) && String(i.ref || i.sku).trim() !== "" && !i.parentRef && String(i.syncedShopify).toUpperCase() !== "TRUE");
       
       if (!confirm(`Are you sure you want to push all ${itemsToSync.length} master items to Shopify?\n\nThis will take several minutes to run in background batches.`)) return;
 
@@ -2734,7 +2734,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
               let response = await fetch(SessionManager.getActiveArchiveUrl(), {
                   method: 'POST',
                   headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({ action: 'SYNC_SHOPIFY_SANDBOX', payload: payloadBatch })
+                  body: JSON.stringify({ action: 'SYNC_SHOPIFY', payload: payloadBatch })
               });
               let result = await response.json();
               if (result.status === 'success') successCount += payloadBatch.length;
