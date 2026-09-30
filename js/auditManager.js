@@ -1998,6 +1998,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
       filtered.sort((a, b) => (a.ref || a.sku || '').localeCompare(b.ref || b.sku || ''));
 
+      // ✨ NEW: Dynamically construct the Shopify Image URL based on the current environment
+      let repoName = "ASP-IMS";
+      if (window.location.href.toUpperCase().includes("ASP-IMS-DEV")) repoName = "ASP-IMS-DEV";
+      else if (window.location.href.toUpperCase().includes("ASP-IMS-DEMO")) repoName = "ASP-IMS-DEMO";
+      let shopifyImgUrl = `https://asp-seyfors.github.io/${repoName}/${ENV_CONFIG.LOGO_URL}`;
+
       filtered.forEach(item => {
         let ref = String(item.ref || item.sku || '').replace(/"/g, '""');
         let desc = String(item.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
@@ -2065,7 +2071,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         let row = [
           `"${handle}"`, `"${title}"`, `"${desc}"`, `"${vendor}"`, `"${cat}"`, `"${cat}"`, `"${published}"`, 
           `"${optName}"`, `"${optValue}"`, `"${ref}"`, `"shopify"`, `${avail}`, `"deny"`, `"manual"`, 
-          `"${cleanPrice.toFixed(2)}"`, `"${gtin}"`, `"https://asp-seyfors.github.io/ASP-IMS-DEV/ASP_Box_Web_RGB_DEV.png"`, `"${status}"`
+          `"${cleanPrice.toFixed(2)}"`, `"${gtin}"`, `"${shopifyImgUrl}"`, `"${status}"`
         ];
         csvContent += row.join(',') + '\n';
       });
@@ -2292,6 +2298,28 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         
         logMsg(`[MATH] Processing ${sess.workflowType}: ${sess.sessionName} (${sess.dateStr})`, '#ffb74d');
 
+        // ✨ THE FIX 1: Inject any New Items or Bundles created during this historical session BEFORE running the math!
+        if (sess.pendingNewItems && sess.pendingNewItems.length > 0) {
+            sess.pendingNewItems.forEach(newItem => {
+                let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase());
+                if (!exists) {
+                    DatabaseManager.db.push(newItem);
+                    logMsg(`    + Injected newly created item/bundle: ${newItem.ref}`);
+                }
+            });
+        }
+        
+        // ✨ THE FIX 2: Apply any field updates (GTINs, Mfrs) made during this session
+        if (sess.pendingUpdates && sess.pendingUpdates.length > 0) {
+            sess.pendingUpdates.forEach(upd => {
+                let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (upd.ref || '').toUpperCase());
+                if (dbItem && upd.field) {
+                    dbItem[upd.field] = upd.newValue;
+                    logMsg(`    + Applied field update to: ${upd.ref}`);
+                }
+            });
+        }
+
         // ==========================================
         // LEGACY DATA TRANSFORMER
         // ==========================================
@@ -2388,6 +2416,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
               logMsg(`    = REF: ${ref} explicitly set to ${dbItem.onHand}`);
             }
           });
+          
+          // ✨ THE FIX: We must hand the payload to the engine so it can rebuild the Stocktake allocations!
+          logMsg(`  - Rebuilding Stocktake allocations via Ledger Engine...`, '#fff');
+          let result = InventoryEngine.commitLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
+          DatabaseManager.db = result.updatedDb;
+          activeAllocations = result.updatedAllocations;
+          
         } else {
           logMsg(`  - Committing standard ledger adjustments (${transformedScans.length} lines)...`, '#fff');
           let result = InventoryEngine.commitLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
@@ -2409,7 +2444,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         await fetch(SessionManager.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) });
         
         logMsg(`Pushing customer allocations to Google Sheets...`, '#64b5f6');
-        SessionManager.syncAllocationsToCloud();
+        
+        // ✨ THE FIX 3: Force the circuit breaker open since we are authoritatively rebuilding memory from scratch
+        sessionStorage.setItem('asp_allocations_verified', 'true');
+        await SessionManager.syncAllocationsToCloud(); // ✨ Added 'await'
       }
 
       updateProgress(`Restore Complete!`, 100);

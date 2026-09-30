@@ -531,7 +531,8 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     this.updateCameraOverlayStatus();
   },
 
-    openReportsHub() {
+  openReportsHub() {
+    this.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenReports').style.display = 'block';
     if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
@@ -544,6 +545,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   openDbEditor() {
+    this.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenDbEditor').style.display = 'block';
     DatabaseManager.renderDbGridEditor();
@@ -583,6 +585,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   openAuditHub() {
+    this.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenAuditHub').style.display = 'block';
   },
@@ -703,6 +706,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   async openHelpScreen() {
+    this.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSettings').style.display = 'none';
     document.getElementById('screenHelp').style.display = 'block';
 
@@ -729,7 +733,34 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     document.getElementById('screenSettings').style.display = 'block';
   },
 
+  // ==========================================
+  // CHEAT CODE ENGINE
+  // ==========================================
+  processCheatCode(inputEl) {
+    let code = inputEl.value.toUpperCase().trim();
+    
+    // ✨ FIX: Check against the global variable from config.js
+    if (typeof devToolsCheatCode !== 'undefined' && code === devToolsCheatCode.toUpperCase()) {
+        inputEl.style.display = 'none';
+        document.getElementById('btnDevTools').style.display = 'block';
+        inputEl.value = ''; // Clear it out instantly
+    } 
+  },
+
+  lockCheatCodes() {
+    let cheatInput = document.getElementById('cheatCodeInput');
+    let devBtn = document.getElementById('btnDevTools');
+    
+    // Silently reset back to the invisible locked state
+    if (cheatInput && devBtn) {
+        cheatInput.style.display = 'block';
+        cheatInput.value = '';
+        devBtn.style.display = 'none';
+    }
+  },
+
   openDevTools() {
+    this.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenDevTools').style.display = 'block';
     
@@ -785,7 +816,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     };
 
     try {
-      let activeUrl = (typeof SessionManager !== 'undefined') ? SessionManager.cloudArchiveUrl : "https://script.google.com/macros/s/AKfycby-jGbxOlkmMDQwDN5x1FHae6OTNlVD4ZsBDWiLzotdp2ALs0JGYe_RYvSoXMDD7EqQeg/exec";
+      let activeUrl = (typeof SessionManager !== 'undefined') ? SessionManager.cloudArchiveUrl : ENV_CONFIG.CLOUD_ARCHIVE_URL;
       
       await fetch(activeUrl, {
         method: 'POST',

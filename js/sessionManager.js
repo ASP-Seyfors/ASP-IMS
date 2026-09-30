@@ -573,6 +573,7 @@ const SessionManager = {
     this.updateManifestProgressUI();
     
     if (typeof UIManager !== 'undefined' && UIManager.closeStocktakeModal) UIManager.closeStocktakeModal();
+    if (typeof UIManager !== 'undefined') UIManager.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
 
@@ -706,6 +707,7 @@ const SessionManager = {
 
       this.updateHeaderBanners();
 
+      if (typeof UIManager !== 'undefined') UIManager.lockCheatCodes(); // ✨ Added
       document.getElementById('screenSetup').style.display = 'none';
 
       if (this.isManifestEnabled) {
@@ -1943,7 +1945,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         if (shopifyUpdatePayload.length > 0 && archiveUrl) {
             networkTasks.push(fetch(archiveUrl, { 
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                body: JSON.stringify({ action: "SYNC_SHOPIFY_SANDBOX", payload: shopifyUpdatePayload }) 
+                body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifyUpdatePayload }) 
             }).catch(e => console.warn("Shopify background sync failed")));
         }
 
@@ -2907,7 +2909,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           if (shopifySyncPayload.length > 0) {
               networkTasks.push(fetch(this.getActiveArchiveUrl(), { 
                   method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                  body: JSON.stringify({ action: "SYNC_SHOPIFY_SANDBOX", payload: shopifySyncPayload }) 
+                  body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifySyncPayload }) 
               }).catch(e => console.warn("Shopify background sync failed")));
           }
 

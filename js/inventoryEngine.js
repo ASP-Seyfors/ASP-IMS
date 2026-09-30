@@ -202,7 +202,14 @@ const InventoryEngine = {
                 currentAllocations[tag][ref].details.sort((a, b) => {
                     if (!a.exp || a.exp === 'NO_EXP') return 1;
                     if (!b.exp || b.exp === 'NO_EXP') return -1;
-                    return new Date(a.exp) - new Date(b.exp);
+                    
+                    let dateA = new Date(a.exp);
+                    let dateB = new Date(b.exp);
+                    
+                    if (isNaN(dateA)) return 1;
+                    if (isNaN(dateB)) return -1;
+                    
+                    return dateA - dateB;
                 });
 
                 for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {
@@ -240,7 +247,14 @@ const InventoryEngine = {
                 currentAllocations[tag][ref].details.sort((a, b) => {
                     if (!a.exp || a.exp === 'NO_EXP') return 1;
                     if (!b.exp || b.exp === 'NO_EXP') return -1;
-                    return new Date(a.exp) - new Date(b.exp);
+                    
+                    let dateA = new Date(a.exp);
+                    let dateB = new Date(b.exp);
+                    
+                    if (isNaN(dateA)) return 1;
+                    if (isNaN(dateB)) return -1;
+                    
+                    return dateA - dateB;
                 });
 
                 for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {

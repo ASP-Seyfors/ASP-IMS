@@ -459,7 +459,7 @@ const DatabaseManager = {
         if (shopifyUpdatePayload.length > 0) {
             fetch(SessionManager.getActiveArchiveUrl(), {
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: "SYNC_SHOPIFY_SANDBOX", payload: shopifyUpdatePayload })
+                body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifyUpdatePayload })
             }).catch(e => console.warn("Shopify Database Editor update failed."));
         }
 

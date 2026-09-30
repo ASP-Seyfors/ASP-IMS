@@ -40,6 +40,17 @@ const AuthManager = {
     } else {
       this.showLoginScreen();
     }
+
+    // Monitor when the app is minimized, closed, or brought back to the front
+    document.addEventListener('visibilitychange', () => {
+        if (this.currentUser && !this.isGuest) {
+            if (document.visibilityState === 'hidden') {
+                this.transmitUserStatus('Inactive');
+            } else if (document.visibilityState === 'visible') {
+                this.transmitUserStatus('Active');
+            }
+        }
+    });
   },
 
   showLoginScreen() {
@@ -335,6 +346,7 @@ const AuthManager = {
     }
     
     this.startIdleTimer();
+    this.transmitUserStatus('Active'); // ✨ INJECTED HERE
   },
 
   /**
@@ -397,28 +409,48 @@ const AuthManager = {
     this.logout(true); 
   },
 
-  logout(force = false) {
-    // Only ask for confirmation if this is a manual logout
+  // ✨ FIX: Made function async, awaited the transmission, and moved it BEFORE the memory wipe
+  async logout(force = false) {
     if (!force && !confirm("Are you sure you want to log out?")) return;
     
-    // Stop the timer and remove listeners only after we know we are logging out
     this.stopIdleTimer();
     
+    // 1. Send the Inactive ping to Google while we still know who the user is
+    await this.transmitUserStatus('Inactive');
+    
+    // ✨ NEW: 300ms buffer guarantees the network handoff finishes before the thread is killed
+    await new Promise(r => setTimeout(r, 300));
+    
+    // 2. NOW wipe the memory safely
     this.currentUser = null;
     this.isGuest = false;
     
-    // Clear Authentication Tokens
     localStorage.removeItem('asp_auth_session');
     sessionStorage.removeItem('asp_auth_session');
-    
-    // ✨ FIX: Wipe ALL temporary session flags so the next login forces a massive hard-sync
     sessionStorage.removeItem('asp_allocations_verified');
     sessionStorage.removeItem('asp_has_auto_synced');
-    
     localStorage.removeItem('asp_allocations');
     localStorage.removeItem('asp_remote_analytics');
     
     window.location.reload();
+  },
+
+  async transmitUserStatus(status) {
+    let email = this.currentUser ? this.currentUser.email : null;
+    if (!email) return Promise.resolve();
+
+    let payload = { action: "UPDATE_USER_STATUS", payload: { email: email, status: status } };
+    
+    if (typeof SessionManager !== 'undefined' && SessionManager.getActiveArchiveUrl()) {
+        // ✨ NEW: Cache-buster (?t=...) forces a fresh network request every time
+        let targetUrl = `${SessionManager.getActiveArchiveUrl()}?t=${Date.now()}`;
+        
+        return fetch(targetUrl, { 
+            method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload) 
+        }).catch(e => console.warn("Background status sync failed."));
+    }
+    return Promise.resolve();
   },
 
   parseJwt(token) {

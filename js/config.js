@@ -1,10 +1,14 @@
-// ==========================================
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // ASP IMS - GLOBAL ENVIRONMENT CONFIGURATION
-// ==========================================
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 let ENV_CONFIG = {};
 const currentUrl = window.location.href.toUpperCase();
+const devToolsCheatCode = "OPENSAYSME";
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// 1. DEMO ENVIRONMENT
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// 1.                                                                       DEMO ENVIRONMENT
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 if (currentUrl.includes("ASP-IMS-DEMO")) {
     ENV_CONFIG = {
         CLOUD_ARCHIVE_URL: "https://script.google.com/macros/s/AKfycbyODX9mhA1QL83lRcpWEuRQ6JGjFSYCYu_dnUbTrfXzVb59Q2jflnyxX4-DvbOBazj2yg/exec",
@@ -18,21 +22,25 @@ if (currentUrl.includes("ASP-IMS-DEMO")) {
         LARGE_ICON_URL: "ASP_Icon_512_DEMO.png"
     };
 } 
-// 2. DEV ENVIRONMENT
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// 2.                                                                       DEV ENVIRONMENT
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 else if (currentUrl.includes("ASP-IMS-DEV")) {
     ENV_CONFIG = {
         CLOUD_ARCHIVE_URL: "https://script.google.com/macros/s/AKfycby-jGbxOlkmMDQwDN5x1FHae6OTNlVD4ZsBDWiLzotdp2ALs0JGYe_RYvSoXMDD7EqQeg/exec",
         GOOGLE_FEEDER_URL: "https://script.google.com/macros/s/AKfycbzm9u8lHnJEgDyG8rJk5YaXs8VY_jzyganveRP8UwkgLlMtZxhLjWIZ4iu545H07ogFRw/exec",
-        APP_VERSION: "5.8.7 (DEV)",
+        APP_VERSION: "6.0.9 (DEV)",
         ENVIRONMENT_NAME: "ASP DEV",
-        THEME_COLOR: "#e95b96", 
+        THEME_COLOR: "#cf0452", 
 
         LOGO_URL: "ASP_Box_Web_RGB_DEV.png",
         SMALL_ICON_URL: "ASP_Icon_192_DEV.png",
         LARGE_ICON_URL: "ASP_Icon_512_DEV.png"
     };
 } 
-// 3. PRODUCTION ENVIRONMENT (Fallback / Default)
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// 3.                                                           PRODUCTION ENVIRONMENT (Fallback / Default)
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 else {
     ENV_CONFIG = {
         CLOUD_ARCHIVE_URL: "https://script.google.com/macros/s/AKfycbzJw6P78vbvpYVOAqBqkAJezLpk1SXxwF1ndSs3my6ZeF3pJh1tBHvyGwWcuYsB63uG/exec",

@@ -5,12 +5,118 @@
  *              manages the final FedEx/UPS shipping intercept.
  * ======================================================================= */
 const ShippingManager = {
+    currentLoadedAddressState: "", 
+
     openModal() {
         this.populateCustomerLogistics();
         this.recalculateBoxMath();
         this.populateAddressDropdown();
-        this.updateCarrierUI(); // ✨ Set correct button state on load
+        this.updateCarrierUI(); 
         document.getElementById('shipmentManagerModal').style.display = 'flex';
+    },
+    
+    // ✨ PASTE THESE 4 NEW FUNCTIONS HERE:
+    captureAddressState() {
+        let state = [
+            document.getElementById('shipAddressCompany').value.trim(),
+            document.getElementById('shipAddressContact').value.trim(),
+            document.getElementById('shipAddressEmail') ? document.getElementById('shipAddressEmail').value.trim() : "",
+            document.getElementById('shipAddressPhone') ? document.getElementById('shipAddressPhone').value.trim() : "",
+            document.getElementById('shipAddress1').value.trim(),
+            document.getElementById('shipAddress2').value.trim(),
+            document.getElementById('shipAddressCity').value.trim(),
+            document.getElementById('shipAddressState').value.trim(),
+            document.getElementById('shipAddressZip').value.trim(),
+            document.getElementById('shipAddressCountry') ? document.getElementById('shipAddressCountry').value.trim() : "US",
+            document.getElementById('shipCarrier').value,
+            document.getElementById('shipAccountNum').value.trim(),
+            document.getElementById('shipInstructions').value.trim()
+        ].join('|');
+        this.currentLoadedAddressState = state;
+    },
+
+    hasAddressChanged() {
+        let currentState = [
+            document.getElementById('shipAddressCompany').value.trim(),
+            document.getElementById('shipAddressContact').value.trim(),
+            document.getElementById('shipAddressEmail') ? document.getElementById('shipAddressEmail').value.trim() : "",
+            document.getElementById('shipAddressPhone') ? document.getElementById('shipAddressPhone').value.trim() : "",
+            document.getElementById('shipAddress1').value.trim(),
+            document.getElementById('shipAddress2').value.trim(),
+            document.getElementById('shipAddressCity').value.trim(),
+            document.getElementById('shipAddressState').value.trim(),
+            document.getElementById('shipAddressZip').value.trim(),
+            document.getElementById('shipAddressCountry') ? document.getElementById('shipAddressCountry').value.trim() : "US",
+            document.getElementById('shipCarrier').value,
+            document.getElementById('shipAccountNum').value.trim(),
+            document.getElementById('shipInstructions').value.trim()
+        ].join('|');
+        return this.currentLoadedAddressState !== currentState;
+    },
+
+    async checkUnsavedChanges(continueCallback) {
+        if (!this.hasAddressChanged()) {
+            continueCallback();
+            return;
+        }
+
+        let overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+        overlay.innerHTML = `
+          <div style="background:#fff; border-radius:8px; width:100%; max-width:420px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+            <h3 style="color:#0277bd; margin-top:0;">💾 Unsaved Address Changes</h3>
+            <p style="color:#555; font-size:0.95rem; margin-bottom:20px;">You modified the shipping or account details for this customer. Do you want to save these changes to the Address Book?</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <button id="btnSaveAndCont" style="background:#2e7d32; color:#fff; border:none; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;">Save to Address Book & Continue</button>
+              <button id="btnSkipAndCont" style="background:#f57f17; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">Skip Saving (Just Continue)</button>
+              <button id="btnCancelCont" style="background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+
+        document.getElementById('btnSaveAndCont').onclick = async () => {
+            document.body.removeChild(overlay);
+            await this.saveAddressBookEntry(true); 
+            this.captureAddressState(); 
+            continueCallback();
+        };
+        document.getElementById('btnSkipAndCont').onclick = () => {
+            document.body.removeChild(overlay);
+            this.captureAddressState(); 
+            continueCallback();
+        };
+        document.getElementById('btnCancelCont').onclick = () => {
+            document.body.removeChild(overlay);
+        };
+    },
+
+    handleCompanyAccountToggle() {
+        let chk = document.getElementById('chkUseCompanyAccount');
+        let acctInput = document.getElementById('shipAccountNum');
+        let currentVal = acctInput.value.trim().toUpperCase();
+
+        if (chk.checked) {
+            if (currentVal && currentVal !== "N/A" && currentVal !== "NA" && currentVal !== "ASP_ACCNT") {
+                if (!confirm(`An account number (${currentVal}) is already entered.\n\nAre you sure you want to override this and use the ASP Company Account to purchase the label?`)) {
+                    chk.checked = false;
+                    return;
+                }
+            }
+            acctInput.value = "ASP_ACCNT";
+            acctInput.readOnly = true;
+            acctInput.style.backgroundColor = "#e3f2fd"; 
+            acctInput.style.color = "#0277bd";
+            acctInput.style.fontWeight = "bold";
+        } else {
+            if (currentVal === "ASP_ACCNT") {
+                acctInput.value = "";
+            }
+            acctInput.readOnly = false;
+            acctInput.style.backgroundColor = "";
+            acctInput.style.color = "";
+            acctInput.style.fontWeight = "";
+        }
+        this.resetQuoteUI();
     },
 
     async populateCustomerLogistics() {
@@ -22,7 +128,27 @@ const ShippingManager = {
         // Strict mapping with fallback to blank '' strings
         safeSet('shipCustName', rules.contactId || baseName);
         safeSet('shipAddressCompany', rules.formalCompany || baseName); 
-        safeSet('shipAccountNum', rules.account || '');
+        
+        let acctVal = rules.account || '';
+        safeSet('shipAccountNum', acctVal);
+        let chkCo = document.getElementById('chkUseCompanyAccount');
+        let acctInput = document.getElementById('shipAccountNum');
+        if (chkCo && acctInput) {
+            if (acctVal.toUpperCase() === 'ASP_ACCNT') {
+                chkCo.checked = true;
+                acctInput.readOnly = true;
+                acctInput.style.backgroundColor = "#e3f2fd";
+                acctInput.style.color = "#0277bd";
+                acctInput.style.fontWeight = "bold";
+            } else {
+                chkCo.checked = false;
+                acctInput.readOnly = false;
+                acctInput.style.backgroundColor = "";
+                acctInput.style.color = "";
+                acctInput.style.fontWeight = "";
+            }
+        }
+
         safeSet('shipInstructions', rules.notes || '');
         safeSet('shipAddressContact', rules.contactName || '');
         safeSet('shipAddressEmail', rules.email || '');
@@ -44,28 +170,170 @@ const ShippingManager = {
         safeSet('shipAddressCity', rules.city || '');
         safeSet('shipAddressState', rules.state || '');
         safeSet('shipAddressZip', rules.zip || '');
-        safeSet('shipAddressCountry', rules.country || 'US'); // ✨ NEW
+        safeSet('shipAddressCountry', rules.country || 'US'); 
+
+        this.captureAddressState();
     },
 
     updateCarrierUI() {
+        this.resetQuoteUI(); // ✨ Swapped the ghost function for the correct UI reset
         let carrier = document.getElementById('shipCarrier').value.toUpperCase();
         let btn = document.getElementById('btnGenerateLabel');
         if (!btn) return;
 
         if (carrier.includes('UPS')) {
             btn.innerHTML = `<i data-lucide="printer"></i> Purchase UPS Label`;
-            btn.onclick = () => ShippingManager.generateUPSLabel();
-            btn.style.backgroundColor = "#ffb300"; // UPS Yellow/Gold
+            btn.onclick = () => ShippingManager.checkUnsavedChanges(() => ShippingManager.generateUPSLabel());
+            btn.style.backgroundColor = "#ffb300"; 
             btn.style.color = "#000";
         } else {
             btn.innerHTML = `<i data-lucide="printer"></i> Purchase FedEx Label`;
-            btn.onclick = () => ShippingManager.generateFedExLabel();
-            btn.style.backgroundColor = "#2e7d32"; // FedEx Green
+            btn.onclick = () => ShippingManager.checkUnsavedChanges(() => ShippingManager.generateFedExLabel());
+            btn.style.backgroundColor = "#2e7d32"; 
             btn.style.color = "#fff";
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     },
 
+    // ✨ NEW: Resets the UI so the user is forced to click "Calculate" again if they change a setting
+    resetQuoteUI() {
+        let calcBtn = document.getElementById('btnCalculateRate');
+        let priceBox = document.getElementById('shipPriceDisplay');
+        let buyBtn = document.getElementById('btnGenerateLabel');
+        let accountInput = document.getElementById('shipAccountNum');
+        
+        let isNA = false;
+        if (accountInput) {
+            let acctVal = accountInput.value.trim().toUpperCase();
+            if (acctVal === "N/A" || acctVal === "NA" || acctVal === "") isNA = true;
+        }
+
+        if (calcBtn && priceBox) {
+            calcBtn.style.display = 'flex';
+            calcBtn.disabled = isNA;
+            
+            // ✨ THE FIX: Dynamically lock the button if Account is N/A
+            if (isNA) {
+                calcBtn.innerHTML = `<i data-lucide="lock" style="width:20px; height:20px;"></i> Account N/A - Quoting Disabled`;
+                calcBtn.style.backgroundColor = "#757575";
+                calcBtn.style.cursor = "not-allowed";
+            } else {
+                calcBtn.innerHTML = `<i data-lucide="calculator" style="width:20px; height:20px;"></i> Recalculate Rate`;
+                calcBtn.style.backgroundColor = "#0277bd";
+                calcBtn.style.cursor = "pointer";
+            }
+            priceBox.style.display = 'none';
+        }
+        
+        if (buyBtn) {
+            buyBtn.style.display = 'flex'; 
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    },
+
+    // ✨ NEW: The Master Rate Calculator Function
+    async calculateShippingRate() {
+        let btn = document.getElementById('btnCalculateRate');
+        let priceBox = document.getElementById('shipPriceDisplay');
+        let costText = document.getElementById('shipEstimatedCost');
+        let valBadge = document.getElementById('shipValidationBadge');
+        
+        let origHtml = btn.innerHTML;
+        btn.innerHTML = "⏳ Validating & Quoting...";
+        btn.disabled = true;
+
+        try {
+            let isResidential = document.querySelector('input[name="shipAddressType"]:checked').value === 'residential';
+            let serviceType = document.getElementById('shipServiceType').value;
+
+            // STEP 1: Validate Address
+            let valPayload = {
+                action: "VALIDATE_ADDRESS",
+                payload: {
+                    street: document.getElementById('shipAddress1').value.trim(),
+                    street2: document.getElementById('shipAddress2').value.trim(),
+                    city: document.getElementById('shipAddressCity').value.trim(),
+                    state: document.getElementById('shipAddressState').value.trim(),
+                    zip: document.getElementById('shipAddressZip').value.trim(),
+                    country: document.getElementById('shipAddressCountry').value.trim() || "US"
+                }
+            };
+
+            let valRes = await fetch(SessionManager.getActiveArchiveUrl(), {
+                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(valPayload)
+            });
+            
+            // ✨ THE FIX: Safely parse text to prevent HTML Google errors from crashing the app
+            let valText = await valRes.text();
+            let valData;
+            try {
+                valData = JSON.parse(valText);
+            } catch(e) {
+                throw new Error("Google Apps Script returned an invalid HTML response. The server may be busy.");
+            }
+
+            if (valData.status !== "success" || !valData.isValid) {
+                UIManager.showCustomAlert("Address Validation Failed", "FedEx rejected this address. Please double-check the Street, City, State, and Zip.<br><br><b>FedEx Note:</b> " + (valData.cleansedAddress || "No match found."), true);
+                return; 
+            }
+
+            if (valData.isResidential !== isResidential) {
+                let resRadio = document.querySelector(`input[name="shipAddressType"][value="${valData.isResidential ? 'residential' : 'commercial'}"]`);
+                if (resRadio) resRadio.checked = true;
+                isResidential = valData.isResidential;
+            }
+
+            // STEP 2: Fetch Live Rate Quote
+            let quotePayload = {
+                action: "GET_FEDEX_RATE",
+                payload: {
+                    zip: document.getElementById('shipAddressZip').value.trim(),
+                    country: document.getElementById('shipAddressCountry').value.trim() || "US",
+                    serviceType: serviceType,
+                    isResidential: isResidential,
+                    account: document.getElementById('shipAccountNum').value.trim(),
+                    totalWeight: document.getElementById('shipWeight').value,
+                    dimL: document.getElementById('shipDimL').value || 12,
+                    dimW: document.getElementById('shipDimW').value || 6,
+                    dimH: document.getElementById('shipDimH').value || 6
+                }
+            };
+
+            let rateRes = await fetch(SessionManager.getActiveArchiveUrl(), {
+                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(quotePayload)
+            });
+            
+            // ✨ THE FIX: Safe parsing for the Rate request as well
+            let rateText = await rateRes.text();
+            let rateData;
+            try {
+                rateData = JSON.parse(rateText);
+            } catch(e) {
+                throw new Error("Google Apps Script returned an invalid HTML response. The server may be busy.");
+            }
+
+            if (rateData.status === "success") {
+                btn.style.display = 'none';
+                priceBox.style.display = 'flex';
+                costText.innerText = "$" + parseFloat(rateData.netCharge).toFixed(2);
+                valBadge.innerHTML = `<i data-lucide="check-circle" style="width:14px; height:14px; vertical-align:text-bottom;"></i> Validated ${isResidential ? "Residential" : "Commercial"} Address`;
+            } else {
+                UIManager.showCustomAlert("Rate Quote Failed", rateData.message, true);
+            }
+
+        } catch (err) {
+            UIManager.showCustomAlert("Connection Error", err.message, true);
+        } finally {
+            if (btn) {
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    },
+    
     async generateFedExLabel() {
         let btn = document.getElementById('btnGenerateLabel');
         let origText = btn.innerHTML;
@@ -230,9 +498,22 @@ const ShippingManager = {
             safeSet('shipInstructions', ''); safeSet('shipAddressContact', ''); safeSet('shipAddressEmail', '');
             safeSet('shipAddressPhone', ''); safeSet('shipAddress1', ''); safeSet('shipAddress2', '');
             safeSet('shipAddressCity', ''); safeSet('shipAddressState', ''); safeSet('shipAddressZip', '');
-        safeSet('shipAddressCountry', '');
+            safeSet('shipAddressCountry', '');
+            
+            let chkCo = document.getElementById('chkUseCompanyAccount');
+            let acctInput = document.getElementById('shipAccountNum');
+            if (chkCo) chkCo.checked = false;
+            if (acctInput) {
+                acctInput.readOnly = false;
+                acctInput.style.backgroundColor = "";
+                acctInput.style.color = "";
+                acctInput.style.fontWeight = "";
+            }
+
             let carrierSel = document.getElementById('shipCarrier');
             if (carrierSel) { carrierSel.selectedIndex = 0; this.updateCarrierUI(); }
+            
+            this.captureAddressState();
             return;
         }
 
@@ -240,7 +521,27 @@ const ShippingManager = {
         
         safeSet('shipCustName', rules.contactId || customerName);
         safeSet('shipAddressCompany', rules.formalCompany || customerName);
-        safeSet('shipAccountNum', rules.account || '');
+        
+        let acctVal = rules.account || '';
+        safeSet('shipAccountNum', acctVal);
+        let chkCo = document.getElementById('chkUseCompanyAccount');
+        let acctInput = document.getElementById('shipAccountNum');
+        if (chkCo && acctInput) {
+            if (acctVal.toUpperCase() === 'ASP_ACCNT') {
+                chkCo.checked = true;
+                acctInput.readOnly = true;
+                acctInput.style.backgroundColor = "#e3f2fd";
+                acctInput.style.color = "#0277bd";
+                acctInput.style.fontWeight = "bold";
+            } else {
+                chkCo.checked = false;
+                acctInput.readOnly = false;
+                acctInput.style.backgroundColor = "";
+                acctInput.style.color = "";
+                acctInput.style.fontWeight = "";
+            }
+        }
+
         safeSet('shipInstructions', rules.notes || '');
         safeSet('shipAddressContact', rules.contactName || '');
         safeSet('shipAddressEmail', rules.email || '');
@@ -262,20 +563,20 @@ const ShippingManager = {
         safeSet('shipAddressCity', rules.city || '');
         safeSet('shipAddressState', rules.state || '');
         safeSet('shipAddressZip', rules.zip || '');
-        safeSet('shipAddressCountry', rules.country || 'US'); // ✨ NEW
+        safeSet('shipAddressCountry', rules.country || 'US'); 
+
+        this.captureAddressState();
     },
 
-    async saveAddressBookEntry() {
+    async saveAddressBookEntry(silent = false) {
         let custName = document.getElementById('shipCustName').value.trim() || document.getElementById('shipAddressCompany').value.trim();
         if (!custName) {
-            UIManager.showCustomAlert("Error", "Please provide a Customer ID/Name.");
+            if (!silent) UIManager.showCustomAlert("Error", "Please provide a Customer ID/Name.");
             return;
         }
 
-        // Check if we already have this customer on file
         let existingRule = DatabaseManager.shippingRules[custName.toUpperCase()];
 
-        // Wrap the actual save logic in an executable callback
         const executeSave = async () => {
             let btn = document.getElementById('btnSaveAddress');
             let origText = btn.innerHTML;
@@ -285,7 +586,7 @@ const ShippingManager = {
             let newRules = {
                 formalCompany: document.getElementById('shipAddressCompany').value.trim(), 
                 contactName: document.getElementById('shipAddressContact').value.trim(),
-                contactId: custName, // The short ID
+                contactId: custName, 
                 email: document.getElementById('shipAddressEmail') ? document.getElementById('shipAddressEmail').value.trim() : "", 
                 phone: document.getElementById('shipAddressPhone') ? document.getElementById('shipAddressPhone').value.trim() : "", 
                 address1: document.getElementById('shipAddress1').value.trim(),
@@ -293,7 +594,7 @@ const ShippingManager = {
                 city: document.getElementById('shipAddressCity').value.trim(),
                 state: document.getElementById('shipAddressState').value.trim(),
                 zip: document.getElementById('shipAddressZip').value.trim(),
-                country: "US", // Default
+                country: document.getElementById('shipAddressCountry').value.trim() || "US",
                 method: document.getElementById('shipCarrier').value,
                 account: document.getElementById('shipAccountNum').value.trim(),
                 notes: document.getElementById('shipInstructions').value.trim()
@@ -318,20 +619,20 @@ const ShippingManager = {
                 if (data.status === "success") {
                     DatabaseManager.shippingRules[custName.toUpperCase()] = newRules;
                     this.populateAddressDropdown();
-                    UIManager.showCustomAlert("Success", "✅ Address book updated successfully!");
+                    this.captureAddressState(); // ✨ INJECTED: Update baseline after saving
+                    if (!silent) UIManager.showCustomAlert("Success", "✅ Address book updated successfully!");
                 } else {
-                    alert("Database Error: " + data.message);
+                    if (!silent) alert("Database Error: " + data.message);
                 }
             } catch (err) {
-                alert("Network Error: " + err.message);
+                if (!silent) alert("Network Error: " + err.message);
             } finally {
                 btn.innerHTML = origText;
                 btn.disabled = false;
             }
         };
 
-        // Trigger the guard if data already exists
-        if (existingRule) {
+        if (existingRule && !silent) {
             UIManager.showCustomConfirm(
                 "Overwrite Shipping Info?", 
                 `You already have shipping information saved for <b>${custName}</b>.<br><br>Are you sure you want to overwrite it with the current data?`, 
@@ -394,6 +695,7 @@ const ShippingManager = {
     },
 
     handleBoxSizeChange() {
+        this.resetQuoteUI(); // ✨ Swapped the ghost function for the correct UI reset
         let val = document.getElementById('shipBoxSize').value;
         if (val === 'XS') { document.getElementById('shipDimL').value = 8; document.getElementById('shipDimW').value = 8; document.getElementById('shipDimH').value = 8; }
         else if (val === 'S') { document.getElementById('shipDimL').value = 12; document.getElementById('shipDimW').value = 6; document.getElementById('shipDimH').value = 6; }
@@ -461,7 +763,9 @@ const ShippingManager = {
 
     async logManualTracking() {
         let trackingNum = prompt("Please paste the pre-provided tracking number:");
-        if (!trackingNum || trackingNum.trim() === "") return;
+        
+        // ✨ THE FIX: Explicitly catch the Cancel button (null) and Empty strings
+        if (trackingNum === null || trackingNum.trim() === "") return;
 
         let btn = document.getElementById('btnLogTrackingOnly');
         let origText = btn.innerText;
@@ -488,7 +792,6 @@ const ShippingManager = {
                 body: JSON.stringify(payload)
             });
             
-            // ✨ FIX: Parse as text first to prevent HTML errors from crashing the app
             let text = await res.text();
             let data;
             try { 
@@ -500,10 +803,10 @@ const ShippingManager = {
             if (data.status === "success") {
                 this.skipAndComplete(true); 
             } else {
-                alert("Database Error: " + data.message);
+                UIManager.showCustomAlert("Database Error", data.message, true);
             }
         } catch (err) {
-            alert("Network Error: " + err.message);
+            UIManager.showCustomAlert("Network Error", err.message, true);
         } finally {
             if (btn) { btn.innerText = origText; btn.disabled = false; }
         }
@@ -515,18 +818,20 @@ const ShippingManager = {
             modal = document.createElement('div');
             modal.id = 'incomingShipmentModal';
             modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+            
+            // ✨ FIX: Swapped hardcoded hex colors for dynamic CSS variables
             modal.innerHTML = `
-              <div style="background:#fff; border-radius:8px; width:100%; max-width:550px; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6); max-height:85vh;">
+              <div style="background:var(--card-bg, #ffffff); border-radius:8px; width:100%; max-width:550px; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6); max-height:85vh;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #f57f17; padding:15px 20px; flex-shrink:0;">
                   <h2 style="margin:0; color:#f57f17; font-size:1.3rem;">📥 Verify Incoming Shipments</h2>
-                  <button onclick="ShippingManager.skipIncomingShipments()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#333;">&times;</button>
+                  <button onclick="ShippingManager.skipIncomingShipments()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main, #333);">&times;</button>
                 </div>
-                <div style="padding:15px 20px; font-size:0.95rem; color:#555; background:#fff3e0; border-bottom:1px solid #ffcc80;">
+                <div style="padding:15px 20px; font-size:0.95rem; color:var(--text-main, #555); background:rgba(245, 127, 23, 0.1); border-bottom:1px solid var(--border-color, #ffcc80);">
                     Check any shipments below that arrived in this delivery. This will automatically mark them as "Delivered" and "Quality Checked" in your Google Sheet.
                 </div>
                 <div id="incomingShipmentList" style="padding:15px 20px; overflow-y:auto; flex-grow:1; display:flex; flex-direction:column; gap:8px;">
                 </div>
-                <div style="padding:15px 20px; border-top:1px solid #eee; display:flex; gap:10px; flex-shrink:0;">
+                <div style="padding:15px 20px; border-top:1px solid var(--border-color, #eee); display:flex; gap:10px; flex-shrink:0;">
                   <button onclick="ShippingManager.skipIncomingShipments()" style="background:#757575; color:#fff; flex:1; padding:12px; border-radius:4px; border:none; cursor:pointer; font-weight:bold;">Skip</button>
                   <button id="btnConfirmIncoming" onclick="ShippingManager.confirmIncomingShipments()" style="background:#f57f17; color:#fff; flex:2; padding:12px; border-radius:4px; border:none; cursor:pointer; font-weight:bold;">Verify Checked Items</button>
                 </div>
@@ -536,7 +841,7 @@ const ShippingManager = {
         }
         
         let list = document.getElementById('incomingShipmentList');
-        list.innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd;">⏳ Loading pending incoming shipments...</div>';
+        list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-main, #0277bd);">⏳ Loading pending incoming shipments...</div>';
         modal.style.display = 'flex';
         
         try {
@@ -553,13 +858,15 @@ const ShippingManager = {
             let html = '';
             data.incoming.forEach(s => {
                 let dStr = s.date ? new Date(s.date).toLocaleDateString() : 'Unknown Date';
+                
+                // ✨ FIX: Used a transparent background tint so the cards naturally adapt to Light/Dark mode backgrounds
                 html += `
-                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px; border:1px solid #ddd; border-radius:6px; cursor:pointer; background:#f9f9f9; transition: background 0.2s;">
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px; border:1px solid var(--border-color, #ccc); border-radius:6px; cursor:pointer; background:rgba(128, 128, 128, 0.08); transition: background 0.2s;">
                     <input type="checkbox" class="incoming-chk" value="${s.rowIdx}" style="margin-top:2px; width:20px; height:20px; cursor:pointer;">
                     <div style="flex:1;">
-                       <strong style="color:#0277bd; font-size:1.05rem;">${s.partner}</strong> <span style="color:#777; font-size:0.8rem; float:right;">${dStr}</span><br>
-                       <span style="color:#333; font-size:0.9rem; font-weight:bold;">PO/Invoice: ${s.po || 'N/A'}</span><br>
-                       <span style="color:#555; font-size:0.85rem;">Carrier: ${s.carrier || 'N/A'} | Tracking: ${s.tracking || 'N/A'}</span>
+                       <strong style="color:var(--primary-color, #0277bd); font-size:1.05rem;">${s.partner}</strong> <span style="color:var(--text-muted, #777); font-size:0.8rem; float:right;">${dStr}</span><br>
+                       <span style="color:var(--text-main, #333); font-size:0.9rem; font-weight:bold;">PO/Invoice: ${s.po || 'N/A'}</span><br>
+                       <span style="color:var(--text-muted, #777); font-size:0.85rem;">Carrier: ${s.carrier || 'N/A'} | Tracking: ${s.tracking || 'N/A'}</span>
                     </div>
                 </label>
                 `;

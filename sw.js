@@ -17,16 +17,16 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= */
-const CACHE_NAME = 'asp-ims-v5.8.6';
+const CACHE_NAME = 'asp-ims-dev-v6.0.9';
 
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './database.json',
-  './ASP_Box_Web_RGB.png',
-  './ASP_Icon_192.png',
-  './ASP_Icon_512.png',
+  './ASP_Box_Web_RGB_DEV.png',
+  './ASP_Icon_192_DEV.png',
+  './ASP_Icon_512_DEV.png',
   
   // CSS
   './css/layout.css',
@@ -89,7 +89,7 @@ self.addEventListener('install', event => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
-  self.skipWaiting();
+  // ✨ FIX: self.skipWaiting() REMOVED so the app freezes and waits for the user's click
 });
 
 // Activate Event: Clean up old caches

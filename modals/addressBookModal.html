@@ -1,18 +1,19 @@
 <div id="addressBookModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:8px; width:100%; max-width:800px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+  <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:800px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
     
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #8e24aa; padding:15px 20px; flex-shrink:0;">
-      <h2 style="margin:0; color:#8e24aa; display:flex; align-items:center; gap:8px;">
+      <h2 style="margin:0; color:var(--heading-color, #8e24aa); display:flex; align-items:center; gap:8px;">
         <i data-lucide="book-open" style="width:24px; height:24px;"></i> Address Book Manager
       </h2>
-      <button onclick="document.getElementById('addressBookModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#333;">&times;</button>
+      <button onclick="document.getElementById('addressBookModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#fff;">&times;</button>
     </div>
 
-    <div style="overflow-y:auto; padding:20px; flex-grow:1; background:#f5f5f5;">
+    <!-- The Scrollable Container -->
+    <div style="overflow-y:auto; padding:20px; flex-grow:1; background:var(--raw-bg, #f5f5f5);">
       
       <!-- Entry Form -->
-      <div style="background:#fff; padding:15px; border-radius:6px; border:1px solid #ccc; margin-bottom:20px;">
-        <h4 style="margin:0 0 10px 0; color:#0277bd;">Add / Edit Contact</h4>
+      <div style="background:var(--card-bg, #fff); padding:15px; border-radius:6px; border:1px solid var(--border-color, #ccc); margin-bottom:20px;">
+        <h4 style="margin:0 0 10px 0; color:var(--heading-color, #0277bd);">Add / Edit Contact</h4>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <input type="text" id="abContactId" class="form-input" placeholder="Contact ID (System Key)*" style="font-weight:bold; border-color:#0277bd;">
             <input type="text" id="abCompany" class="form-input" placeholder="Formal Company Name">
@@ -47,11 +48,17 @@
       </div>
 
       <!-- Live Roster Grid -->
-      <h4 style="margin:0 0 10px 0; color:#333;">Saved Contacts (<span id="abContactCount">0</span>)</h4>
+      <h4 style="margin:0 0 10px 0; color:var(--heading-color, #333);">Saved Contacts (<span id="abContactCount">0</span>)</h4>
       <div id="addressBookGrid" style="display:flex; flex-direction:column; gap:8px;">
           <!-- JS will inject cards here -->
       </div>
       
+    </div> <!-- END SCROLLABLE CONTAINER -->
+
+    <!-- PINNED FOOTER -->
+    <div style="border-top: 1px solid var(--border-color, #ccc); padding: 15px 20px; text-align: right; flex-shrink:0;">
+        <button class="btn-action btn-cancel btn-auto" style="margin:0;" onclick="document.getElementById('addressBookModal').style.display='none'">Close Address Book</button>
     </div>
+
   </div>
 </div>

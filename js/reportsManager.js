@@ -1025,24 +1025,22 @@ const ReportsManager = {
     container.style.minHeight = visibleCount === 0 ? "50px" : "auto";
   },
 
-  /*
   addBlankRowToReportEditor() {
     let container = document.getElementById('reportItemRowsContainer');
     let uniqueId = 'custom_row_' + Date.now();
     
-    // Generates a blank, editable row matching the UI of your generated items
+    // ✨ FIX: Switched class names to flyer-item-row, rep-ref, rep-desc, rep-qty, and rep-price so the exporter sees them!
     let html = `
-      <div id="${uniqueId}" class="custom-flyer-row" style="display:flex; gap:10px; align-items:center; margin-bottom:8px; padding:8px; background:#e1f5fe; border:1px dashed #0277bd; border-radius:4px;">
+      <div id="${uniqueId}" class="flyer-item-row custom-flyer-row" style="display:flex; gap:10px; align-items:center; margin-bottom:8px; padding:8px; background:#e1f5fe; border:1px dashed #0277bd; border-radius:4px;">
         <input type="checkbox" class="flyer-chk" checked style="width:18px; height:18px; cursor:pointer;">
-        <input type="text" class="flyer-ref" placeholder="REF / SKU" style="flex:1; padding:4px; border:1px solid #ccc; border-radius:3px; font-weight:bold; font-size:0.85rem;">
-        <input type="text" class="flyer-desc" placeholder="Description" style="flex:2; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
-        <input type="number" class="flyer-qty" placeholder="Qty" style="width:60px; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
-        <input type="text" class="flyer-price" placeholder="Price" style="width:70px; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
+        <input type="text" class="rep-ref" placeholder="REF / SKU" style="flex:1; padding:4px; border:1px solid #ccc; border-radius:3px; font-weight:bold; font-size:0.85rem;">
+        <input type="text" class="rep-desc" placeholder="Description" style="flex:2; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
+        <input type="number" class="rep-qty" placeholder="Qty" style="width:60px; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
+        <input type="text" class="rep-price" placeholder="Price" style="width:70px; padding:4px; border:1px solid #ccc; border-radius:3px; font-size:0.85rem;">
         <button onclick="document.getElementById('${uniqueId}').remove()" style="background:#c62828; color:#fff; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;" title="Remove Row">X</button>
       </div>
     `;
     
-    // afterbegin injects the custom row at the very top of the list so they don't have to scroll down to find it
     container.insertAdjacentHTML('afterbegin', html); 
-  }*/
+  }
 };

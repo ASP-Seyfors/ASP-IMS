@@ -22,7 +22,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASP DEMO</title>
+  <title>ASP DEV</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +31,9 @@
   <link rel="stylesheet" href="css/component.css">
   <link rel="stylesheet" href="css/utilities.css">
   <link rel="manifest" href="manifest.json">
+  
+  <!-- ✨ NEW: Placeholder meta tag for the dynamic theme color -->
+  <meta name="theme-color" id="dynamicThemeColor" content="#ffffff">
   
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -55,7 +58,15 @@
   <div id="app-root"></div>
 
   <!-- Scripts -->
-   <script src="js/config.js"></script>
+  <script src="js/config.js"></script>
+  
+  <!-- ✨ NEW: Instantly push the environment color to the browser header -->
+  <script>
+    if (typeof ENV_CONFIG !== 'undefined' && ENV_CONFIG.THEME_COLOR) {
+      document.getElementById('dynamicThemeColor').content = ENV_CONFIG.THEME_COLOR;
+    }
+  </script>
+
   <script src="js/componentManager.js"></script>
   <script src="js/databaseManager.js"></script>
   <script src="js/uiManager.js"></script>
@@ -69,26 +80,12 @@
   <script src="js/traceability.js"></script>
   <script src="js/app.js"></script>
   <script>
+    // Native Service Worker Registration (Relies on Chrome's built-in update UI)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-          console.log('Service Worker registered.');
-          
-          // Force the browser to aggressively check the server for a new sw.js
-          //reg.update();
-          
-        }).catch(err => console.warn('Service Worker registration skipped or delayed:', err));
-        
-        // Listen for the aggressive takeover from sw.js
-        /*
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!refreshing) {
-            refreshing = true;
-            alert("✨ A new version of the ASP Scanner is available! The app will now reload to apply the update.");
-            window.location.reload(true);
-          }
-        });*/
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered natively.'))
+          .catch(err => console.warn('Service Worker registration failed:', err));
       });
     }
   </script>

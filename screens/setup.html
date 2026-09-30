@@ -139,9 +139,15 @@
     </div>
   </div>
   
-  <!-- Developer Tools Button (Hidden by default) -->
+<!-- Developer Tools / Cheat Code Block -->
   <div id="devToolsContainer" style="display: none; justify-content: center; margin-top: 15px;">
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; padding: 8px 16px; font-size: 0.85rem;" onclick="UIManager.openDevTools()" title="Access restricted administrative and debugging utilities."><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</button>
+    <!-- 
+      This input is completely invisible by default but remains focusable. 
+      The user must know exactly where to click (right below the footer buttons) to type the code.
+    -->
+    <input type="text" id="cheatCodeInput" style="width: 100%; max-width: 400px; padding: 10px; background: transparent; border: none; color: transparent; outline: none; caret-color: transparent; text-align: center; text-transform: uppercase;" oninput="UIManager.processCheatCode(this)" autocomplete="off">
+    
+    <button id="btnDevTools" class="btn-action btn-auto" style="display: none; background-color: #c62828; color: #ffffff; width: 100%; max-width: 400px; padding: 10px; font-size: 0.85rem;" onclick="UIManager.openDevTools()" title="Access restricted administrative and debugging utilities."><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</button>
   </div>
   
 </div>

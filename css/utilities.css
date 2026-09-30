@@ -124,7 +124,11 @@ body.theme-sage #quickLookupModal > div,
 body.theme-slate #modalUnreserve > div,
 body.theme-sage #modalUnreserve > div, 
 body.theme-slate #shipmentManagerModal > div,
-body.theme-sage #shipmentManagerModal > div {
+body.theme-sage #shipmentManagerModal > div,
+body.theme-slate #addressBookModal > div,
+body.theme-sage #addressBookModal > div,
+body.theme-slate #shipmentEditModal > div,
+body.theme-sage #shipmentEditModal > div {
     background-color: var(--card-bg) !important;
     color: var(--text-main) !important;
 }
@@ -147,7 +151,13 @@ body.theme-sage #damagedBinViewerModal h3,
 body.theme-slate #quickLookupModal h3,
 body.theme-sage #quickLookupModal h3,
 body.theme-slate #modalUnreserve h3,
-body.theme-sage #modalUnreserve h3 {
+body.theme-sage #modalUnreserve h3,
+body.theme-slate #addressBookModal h2,
+body.theme-sage #addressBookModal h2,
+body.theme-slate #addressBookModal h4,
+body.theme-sage #addressBookModal h4,
+body.theme-slate #shipmentEditModal h2,
+body.theme-sage #shipmentEditModal h2 {
     color: var(--heading-color) !important;
 }
 
