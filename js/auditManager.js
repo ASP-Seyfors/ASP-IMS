@@ -2409,19 +2409,19 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             });
           }
 
-          Object.keys(scannedTotals).forEach(ref => {
-            let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-            if (dbItem) {
-              dbItem.onHand = (dbItem.onHand || 0) + scannedTotals[ref];
-              logMsg(`    = REF: ${ref} explicitly set to ${dbItem.onHand}`);
-            }
-          });
-          
-          // ✨ THE FIX: We must hand the payload to the engine so it can rebuild the Stocktake allocations!
           logMsg(`  - Rebuilding Stocktake allocations via Ledger Engine...`, '#fff');
           let result = InventoryEngine.commitLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
           DatabaseManager.db = result.updatedDb;
           activeAllocations = result.updatedAllocations;
+
+          // ✨ THE FIX: We must enforce the absolute physical count AFTER the engine does its delta math!
+          Object.keys(scannedTotals).forEach(ref => {
+            let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+            if (dbItem) {
+              dbItem.onHand = scannedTotals[ref]; 
+              logMsg(`    = REF: ${ref} explicitly set to ${dbItem.onHand}`);
+            }
+          });
           
         } else {
           logMsg(`  - Committing standard ledger adjustments (${transformedScans.length} lines)...`, '#fff');
