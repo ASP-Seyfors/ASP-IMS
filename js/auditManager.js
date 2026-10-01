@@ -2393,7 +2393,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         if (sess.workflowType && sess.workflowType.includes('Stocktake')) {
           let scannedTotals = {};
           transformedScans.forEach(item => {
-            let ref = item.ref;
+            let ref = String(item.ref || item.sku || '').toUpperCase().trim();
             if (!scannedTotals[ref]) scannedTotals[ref] = 0;
             scannedTotals[ref] += item.qty;
           });
@@ -2404,7 +2404,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           } else {
              logMsg(`  - Executing Targeted Selection Stocktake overwrite...`, '#fff');
             Object.keys(scannedTotals).forEach(ref => {
-              let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+              let dbItem = DatabaseManager.db.find(i => String(i.sku || i.ref || '').toUpperCase().trim() === ref);
               if (dbItem) dbItem.onHand = 0;
             });
           }
@@ -2414,9 +2414,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           DatabaseManager.db = result.updatedDb;
           activeAllocations = result.updatedAllocations;
 
-          // ✨ THE FIX: We must enforce the absolute physical count AFTER the engine does its delta math!
+          // ✨ THE FIX: Enforce absolute counts with strictly matched uppercase REFs
           Object.keys(scannedTotals).forEach(ref => {
-            let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+            let dbItem = DatabaseManager.db.find(i => String(i.sku || i.ref || '').toUpperCase().trim() === ref);
             if (dbItem) {
               dbItem.onHand = scannedTotals[ref]; 
               logMsg(`    = REF: ${ref} explicitly set to ${dbItem.onHand}`);
