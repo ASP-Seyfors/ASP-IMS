@@ -750,9 +750,11 @@ const SessionManager = {
           this.addManifestRow();
         }
         
-        // ✨ NEW: If data was preloaded, skip the entry screen and jump straight to Review
+        // ✨ NEW: If data was preloaded, skip Review entirely and jump straight to Scanning
         if (isPreloaded) {
-            this.goToManifestReview();
+            localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
+            document.getElementById('screenScanning').style.display = 'block';
+            this.updateManifestProgressUI();
         } else {
             document.getElementById('screenManifestEntry').style.display = 'block';
         }

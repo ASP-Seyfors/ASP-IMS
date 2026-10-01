@@ -36,21 +36,24 @@
     </div>
   </div>
 
-  <!-- Pre-Load Checkbox -->
-  <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 10px; display: none;">
-    <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;" title="Automatically pull expected items from a QuickBooks order.">
-      <input type="checkbox" id="chkPreloadManifest" onchange="UIManager.togglePreloadFeed()"> Pre-Load Order Information
-    </label>
-  </div>
-
-  <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 15px; text-align: center; display: none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-      <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shipments & Orders Feed</span>
-      <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="SessionManager.triggerQboSync(event)" title="Pull the latest open invoices from QuickBooks Online."><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Fetch Orders</button>
+  <div id="devFeedWrapper" style="display:none;">
+    <!-- Pre-Load Checkbox -->
+    <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 10px; display: none;">
+      <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;" title="Automatically pull expected items from a QuickBooks order.">
+        <input type="checkbox" id="chkPreloadManifest" onchange="UIManager.togglePreloadFeed()"> Pre-Load Order Information
+      </label>
     </div>
-    <select id="stagedOrdersSelect" style="width: 100%; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)" title="Select an order to pre-load its items into a manifest.">
-      <option value="">-- Select Staged Order --</option>
-    </select>
+
+    <!-- Staged Feed Panel -->
+    <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 15px; text-align: center; display: none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shipments & Orders Feed</span>
+      <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="SessionManager.triggerQboSync(event)" title="Pull the latest open invoices from QuickBooks Online."><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Fetch Orders</button>
+      </div>
+      <select id="stagedOrdersSelect" style="width: 100%; font-size: 0.85rem;" onchange="SessionManager.loadSelectedStagedOrder(this.value)" title="Select an order to pre-load its items into a manifest.">
+        <option value="">-- Select Staged Order --</option>
+      </select>
+    </div>
   </div>
   
   <div class="form-row">

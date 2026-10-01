@@ -806,6 +806,12 @@ const DatabaseManager = {
     let payload = [];
     let processedHandles = new Set(); // Prevents duplicating the same parent family
 
+    // ✨ THE FIX: Construct the full absolute URL for the Shopify API
+    let repoName = "ASP-IMS";
+    if (window.location.href.toUpperCase().includes("ASP-IMS-DEV")) repoName = "ASP-IMS-DEV";
+    else if (window.location.href.toUpperCase().includes("ASP-IMS-DEMO")) repoName = "ASP-IMS-DEMO";
+    let fullImageUrl = typeof ENV_CONFIG !== 'undefined' ? `https://asp-seyfors.github.io/${repoName}/${ENV_CONFIG.LOGO_URL}` : '';
+
     itemRefsArray.forEach(ref => {
         let dbItem = this.db.find(i => String(i.sku || i.ref || '').toUpperCase() === String(ref).toUpperCase());
         if (!dbItem) return;
@@ -837,9 +843,9 @@ const DatabaseManager = {
             mfr: String(parentItem.mfr || 'Unknown'),
             
             // ✨ EXPLICIT MAPPINGS: Product Type and Tags mapped to DB Category
-            product_type: String(parentItem.category || 'Surgical Supply'),
-            tags: String(parentItem.category || 'Surgical Supply'),
-            category: String(parentItem.category || 'Surgical Supply'), 
+            product_type: String(parentItem.category || 'Medical Supplies'),
+            tags: String(parentItem.category || 'Medical Supplies'),
+            category: String(parentItem.category || 'Medical Supplies'), 
             
             shopifyCategory: shopCategoryGid, 
             gtin: String(parentItem.gtin || ''),
@@ -848,7 +854,8 @@ const DatabaseManager = {
             "status": (String(parentItem.status || "ACTIVE").toUpperCase() === "INACTIVE") ? "draft" : "active",
             isBundle: false,
             uomMult: 1,
-            weight: parseFloat(parentItem.weight) || 0.5 // ✨ NEW: Default to 0.5 if blank
+            weight: parseFloat(parentItem.weight) || 0.5,
+            images: [{ src: fullImageUrl }] // ✨ THE FIX
         });
 
         // 2. Push all associated Child Bundles
@@ -867,9 +874,9 @@ const DatabaseManager = {
                 mfr: String(parentItem.mfr || 'Unknown'),
                 
                 // ✨ EXPLICIT MAPPINGS FOR BUNDLES
-                product_type: String(bundle.category || parentItem.category || 'Surgical Supply'),
-                tags: String(bundle.category || parentItem.category || 'Surgical Supply'),
-                category: String(bundle.category || parentItem.category || 'Surgical Supply'),
+                product_type: String(bundle.category || parentItem.category || 'Medical Supplies'),
+                tags: String(bundle.category || parentItem.category || 'Medical Supplies'),
+                category: String(bundle.category || parentItem.category || 'Medical Supplies'),
                 
                 shopifyCategory: bundleCategoryGid,
                 gtin: String(bundle.gtin || ''),
@@ -878,7 +885,9 @@ const DatabaseManager = {
                 "status": (String(bundle.status || parentItem.status || "ACTIVE").toUpperCase() === "INACTIVE") ? "draft" : "active",
                 isBundle: true,
                 uomMult: bundle.uomMult,
-                weight: parseFloat(bundle.weight) || (parseFloat(parentItem.weight || 0.5) * parseInt(bundle.uomMult, 10)) // ✨ NEW: Auto-multiply by box size!
+                uomMult: bundle.uomMult,
+                weight: parseFloat(bundle.weight) || (parseFloat(parentItem.weight || 0.5) * parseInt(bundle.uomMult, 10)),
+                images: [{ src: fullImageUrl }] // ✨ THE FIX
             });
         });
     });

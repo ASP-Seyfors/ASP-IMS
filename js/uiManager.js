@@ -739,23 +739,24 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   processCheatCode(inputEl) {
     let code = inputEl.value.toUpperCase().trim();
     
-    // ✨ FIX: Check against the global variable from config.js
     if (typeof devToolsCheatCode !== 'undefined' && code === devToolsCheatCode.toUpperCase()) {
         inputEl.style.display = 'none';
         document.getElementById('btnDevTools').style.display = 'block';
-        inputEl.value = ''; // Clear it out instantly
+        document.getElementById('devFeedWrapper').style.display = 'block'; // ✨ NEW
+        inputEl.value = ''; 
     } 
   },
 
   lockCheatCodes() {
     let cheatInput = document.getElementById('cheatCodeInput');
     let devBtn = document.getElementById('btnDevTools');
+    let feedWrap = document.getElementById('devFeedWrapper'); // ✨ NEW
     
-    // Silently reset back to the invisible locked state
     if (cheatInput && devBtn) {
         cheatInput.style.display = 'block';
         cheatInput.value = '';
         devBtn.style.display = 'none';
+        if (feedWrap) feedWrap.style.display = 'none'; // ✨ NEW
     }
   },
 
