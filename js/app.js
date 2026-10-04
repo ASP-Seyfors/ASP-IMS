@@ -360,6 +360,7 @@ window.masterSystemSync = async (event) => {
       </div>`;
   }
 };
+
 window.changeAppTheme = (val) => UIManager.changeAppTheme(val);
 window.toggleSessionType = () => UIManager.toggleSessionType();
 window.togglePreloadFeed = () => UIManager.togglePreloadFeed();
@@ -385,6 +386,10 @@ window.openDevTools = () => UIManager.openDevTools();
 window.closeDevTools = () => UIManager.closeDevTools();
 window.toggleDebugConsole = () => UIManager.toggleDebugConsole();
 window.openDamagedBinViewerModal = () => UIManager.openDamagedBinViewerModal();
+
+window.openEthiconMonitorModal = openEthiconMonitorModal;
+window.subscribeToEthiconMonitor = subscribeToEthiconMonitor;
+window.runEthiconUiScan = runEthiconUiScan;
 
 window.handlePartnerSelect = (val, type) => DatabaseManager.handlePartnerSelect(val, type);
 window.runMasterLookup = () => DatabaseManager.runMasterLookup();
@@ -444,3 +449,26 @@ window.exportAppsScriptFiles = exportAppsScriptFiles;
 window.openAddressBookEditor = () => ReportsManager.openAddressBookEditor();
 
 window.forceAppUpdate = forceAppUpdate;
+
+// --- AUTO-LOGOUT ON WINDOW CLOSE (BULLETPROOF BEACON) ---
+window.addEventListener('visibilitychange', () => {
+    // Triggers when the tab is closed, refreshed, or the app goes into the background
+    if (document.visibilityState === 'hidden') {
+        if (typeof AuthManager !== 'undefined' && AuthManager.currentUser && AuthManager.currentUser.email) {
+            let payload = {
+                action: "UPDATE_USER_STATUS",
+                payload: {
+                    email: AuthManager.currentUser.email,
+                    status: "Offline"
+                }
+            };
+            
+            let activeUrl = (typeof SessionManager !== 'undefined') ? SessionManager.getActiveArchiveUrl() : ENV_CONFIG.CLOUD_ARCHIVE_URL;
+            
+            if (activeUrl) {
+                // sendBeacon guarantees the payload is transmitted even if the browser tab is instantly destroyed
+                navigator.sendBeacon(activeUrl, JSON.stringify(payload));
+            }
+        }
+    }
+});

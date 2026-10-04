@@ -137,10 +137,31 @@ const ReportsManager = {
       document.getElementById('abAddress1').value = data.address1 || '';
       document.getElementById('abAddress2').value = data.address2 || '';
       document.getElementById('abCity').value = data.city || '';
-      document.getElementById('abState').value = data.state || '';
       document.getElementById('abZip').value = data.zip || '';
       document.getElementById('abCountry').value = data.country || 'US';
       document.getElementById('abNotes').value = data.notes || '';
+      
+      // ✨ FIX: Auto-abbreviate the state when editing an old Address Book entry
+      let rawState = data.state || '';
+      let cleanState = rawState;
+      if (rawState.trim().length > 2) {
+          const stateMap = {
+            "ALABAMA":"AL", "ALASKA":"AK", "ARIZONA":"AZ", "ARKANSAS":"AR", "CALIFORNIA":"CA",
+            "COLORADO":"CO", "CONNECTICUT":"CT", "DELAWARE":"DE", "FLORIDA":"FL", "GEORGIA":"GA",
+            "HAWAII":"HI", "IDAHO":"ID", "ILLINOIS":"IL", "INDIANA":"IN", "IOWA":"IA",
+            "KANSAS":"KS", "KENTUCKY":"KY", "LOUISIANA":"LA", "MAINE":"ME", "MARYLAND":"MD",
+            "MASSACHUSETTS":"MA", "MICHIGAN":"MI", "MINNESOTA":"MN", "MISSISSIPPI":"MS", "MISSOURI":"MO",
+            "MONTANA":"MT", "NEBRASKA":"NE", "NEVADA":"NV", "NEW HAMPSHIRE":"NH", "NEW JERSEY":"NJ",
+            "NEW MEXICO":"NM", "NEW YORK":"NY", "NORTH CAROLINA":"NC", "NORTH DAKOTA":"ND", "OHIO":"OH",
+            "OKLAHOMA":"OK", "OREGON":"OR", "PENNSYLVANIA":"PA", "RHODE ISLAND":"RI", "SOUTH CAROLINA":"SC",
+            "SOUTH DAKOTA":"SD", "TENNESSEE":"TN", "TEXAS":"TX", "UTAH":"UT", "VERMONT":"VT",
+            "VIRGINIA":"VA", "WASHINGTON":"WA", "WEST VIRGINIA":"WV", "WISCONSIN":"WI", "WYOMING":"WY",
+            "DISTRICT OF COLUMBIA":"DC", "PUERTO RICO":"PR"
+          };
+          let upperState = rawState.trim().toUpperCase();
+          if (stateMap[upperState]) cleanState = stateMap[upperState];
+      }
+      document.getElementById('abState').value = cleanState;
       
       let methodSel = document.getElementById('abMethod');
       if (data.method) {
@@ -473,7 +494,7 @@ const ReportsManager = {
       let newlyAddedRefs = new Set();
       let totalRevenue = 0;
       
-      let testKeywords = ["TEST SUPPLIER", "ASP_INTERNAL", "ASP_TESTER", "ASP_TESTER2", "TESTER"];
+      var testKeywords = ["ASP TEST SUPPLIER", "ASP RECONCILE", "ASP SYSTEM ADMIN", "ASP TESTER", "ASP_INTERNAL"];
 
       filteredLogs.forEach(row => {
         let sessionName = row['Session / Reason'] || 'Unknown Session';
@@ -1044,3 +1065,161 @@ const ReportsManager = {
     container.insertAdjacentHTML('afterbegin', html); 
   }
 };
+
+async function runEthiconUiScan(mode) {
+    let resultsBox = document.getElementById('ethiconUiResults');
+    let searchInput = document.getElementById('ethiconSearchInput').value.trim().toUpperCase();
+    
+    if (mode === 'SEARCH' && !searchInput) {
+        alert("Please enter a REF to search.");
+        return;
+    }
+    
+    let queryParam = mode === 'SEARCH' ? `&ref=${encodeURIComponent(searchInput)}` : '';
+    resultsBox.innerHTML = `<div style="text-align:center; padding:20px; color:#0277bd;"><strong>⏳ Querying J&J MedTech Servers...</strong><br>This may take a moment depending on the number of items.</div>`;
+    
+    try {
+        let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=RUN_ETHICON_UI_SCAN${queryParam}`);
+        let data = await res.json();
+        
+        if (data.status !== "success") throw new Error(data.message || "API Error");
+        
+        if (data.data.length === 0) {
+            let msg = mode === 'SEARCH' ? `REF ${searchInput} is either Active or not found in the J&J catalog.` : "Great news! None of your on-hand Ethicon items are flagged as discontinued.";
+            resultsBox.innerHTML = `<div style="text-align:center; padding:15px; color:#2e7d32; font-weight:bold;">✅ ${msg}</div>`;
+            return;
+        }
+        
+        let tableHtml = `<table style="width:100%; border-collapse:collapse; text-align:left;">
+            <tr style="background:#ffebee; border-bottom:2px solid #d32f2f;">
+                <th style="padding:6px; color:#d32f2f;">Discontinued REF</th>
+                <th style="padding:6px; color:#d32f2f;">Ethicon Replacement</th>
+            </tr>`;
+            
+        data.data.forEach(hit => {
+            let alts = hit.replacements.length > 0 ? hit.replacements.join(", ") : "<i style='color:#c62828;'>No Replacement</i>";
+            
+            // ✨ FIX: Clean the date string for Live Search
+            let cleanDate = hit.date || '';
+            if (cleanDate && cleanDate !== "Unknown Date") {
+                let d = new Date(cleanDate);
+                if (!isNaN(d.getTime())) cleanDate = d.toISOString().split('T')[0];
+            }
+            
+            tableHtml += `<tr style="border-bottom:1px solid #ccc;">
+                <td style="padding:6px; font-weight:bold; color:#d32f2f;">${hit.ref}</td>
+                <td style="padding:6px; font-weight:bold; color:#2e7d32;">${alts}</td>
+                <td style="padding:6px; font-size:0.8rem; color:#555;">${cleanDate}</td>
+            </tr>`;
+        });
+        tableHtml += `</table>`;
+        
+        resultsBox.innerHTML = tableHtml;
+        
+    } catch(err) {
+        resultsBox.innerHTML = `<div style="text-align:center; padding:15px; color:#c62828;">Error connecting to J&J servers: ${err.message}</div>`;
+    }
+}
+
+function openEthiconMonitorModal() {
+    let modal = document.getElementById('ethiconMonitorModal');
+    let subList = document.getElementById('ethiconSubList');
+    let resultsBox = document.getElementById('ethiconUiResults');
+    
+    let userProfile = JSON.parse(localStorage.getItem('asp_user_profile')) || {};
+    let emailInput = document.getElementById('ethiconMonitorEmail');
+    if (emailInput && !emailInput.value && userProfile.email) {
+        emailInput.value = userProfile.email;
+    }
+
+    subList.innerHTML = "<i>Loading subscribers...</i>";
+    resultsBox.innerHTML = `<div style="text-align:center; padding:20px; color:#0277bd;">⏳ Loading archive from database...</div>`;
+    modal.style.display = "flex";
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // 1. Fetch active subscribers
+    fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`)
+      .then(r => r.json())
+      .then(data => {
+          if (data.status === "success") {
+              let ethiconSubs = data.subs.filter(s => s.ethicon === "TRUE");
+              if (ethiconSubs.length === 0) {
+                  subList.innerHTML = "<i>No active subscribers.</i>";
+              } else {
+                  subList.innerHTML = ethiconSubs.map(s => `<div>• ${s.email}</div>`).join('');
+              }
+          }
+      }).catch(e => subList.innerHTML = "<i>Error loading list.</i>");
+
+    // 2. Fetch the Cached Discontinued Archive
+    fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_ETHICON_ARCHIVE`)
+      .then(r => r.json())
+      .then(data => {
+          if (data.status !== "success" || data.data.length === 0) {
+              resultsBox.innerHTML = `<div style="text-align:center; padding:15px; color:#2e7d32; font-weight:bold;">✅ No discontinued items currently logged in the archive.</div>`;
+              return;
+          }
+          
+          let tableHtml = `<table style="width:100%; border-collapse:collapse; text-align:left;">
+              <tr style="background:#ffebee; border-bottom:2px solid #d32f2f;">
+                  <th style="padding:6px; color:#d32f2f;">Discontinued REF</th>
+                  <th style="padding:6px; color:#d32f2f;">Ethicon Replacement</th>
+                  <th style="padding:6px; color:#d32f2f;">Date Flagged</th>
+              </tr>`;
+              
+          data.data.forEach(hit => {
+              // ✨ FIX: Clean the date string for the UI Modal
+              let cleanDate = hit.date || '';
+              if (cleanDate && cleanDate !== "Unknown Date") {
+                  let d = new Date(cleanDate);
+                  if (!isNaN(d.getTime())) cleanDate = d.toISOString().split('T')[0];
+              }
+              
+              tableHtml += `<tr style="border-bottom:1px solid #ccc;">
+                  <td style="padding:6px; font-weight:bold; color:#d32f2f;">${hit.ref}</td>
+                  <td style="padding:6px; font-weight:bold; color:#2e7d32;">${hit.alts}</td>
+                  <td style="padding:6px; font-size:0.8rem; color:#555;">${cleanDate}</td>
+              </tr>`;
+          });
+          tableHtml += `</table>`;
+          
+          resultsBox.innerHTML = tableHtml;
+      }).catch(e => resultsBox.innerHTML = `<div style="text-align:center; padding:15px; color:#c62828;">Error loading archive data.</div>`);
+}
+
+async function subscribeToEthiconMonitor() {
+    let email = document.getElementById('ethiconMonitorEmail').value.trim();
+    if (!email || !email.includes('@')) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+    
+    let btn = document.getElementById('btnSubscribeEthicon');
+    let orig = btn.innerText;
+    btn.innerText = "⏳ Saving..."; btn.disabled = true;
+
+    let userProfile = JSON.parse(localStorage.getItem('asp_user_profile')) || {};
+    let name = userProfile.name || email.split('@')[0];
+
+    try {
+        let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                action: "UPDATE_SUBSCRIBER",
+                payload: { name: name, email: email, freq: "Monthly", status: "ACTIVE", categories: "ETHICON_MONITOR" }
+            })
+        });
+        
+        let data = await res.json();
+        if (data.status === "success") {
+            alert("Successfully subscribed to the Ethicon Monitor!");
+            openEthiconMonitorModal(); // Refresh the list
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch(err) {
+        alert("Network Error: " + err.message);
+    } finally {
+        btn.innerText = orig; btn.disabled = false;
+    }
+}

@@ -2179,7 +2179,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     if (!confirm(`Are you absolutely sure you want to rebuild the database starting from the cloud baseline on ${baselineLite.dateStr}?`)) return;
 
-    document.getElementById('systemRestoreModal').remove();
+    // ✨ FIX: Hide the modal instead of destroying it
+    document.getElementById('systemRestoreModal').style.display = 'none';
     
     // Show detailed downloading overlay with scrolling console
     let overlay = document.createElement('div');
@@ -2638,11 +2639,24 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let ref = String(item.ref || item.sku || '').trim();
       if (!ref) return;
 
-      let handle = ref.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''); 
+      // ✨ THE FIX: Calculate the handle using the Parent REF so Shopify knows which product family it belongs to
+      let isBundle = (item.parentRef && parseInt(item.uomMult, 10) > 1);
+      let handleRef = isBundle ? item.parentRef : ref;
+      let handle = String(handleRef).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''); 
       
-      let total = parseInt(item.onHand || item.TotalQty, 10) || 0;
-      let res = parseInt(item.reservedQty, 10) || 0;
-      let available = total - res;
+      // ✨ THE FIX: Perform the same Bundle Division Math you used in the Products export
+      let available = 0;
+      if (isBundle) {
+          let parentItem = db.find(i => (i.sku || i.ref || '').toUpperCase() === String(item.parentRef).toUpperCase());
+          if (parentItem) {
+              let parentAvail = (parseInt(parentItem.onHand || 0, 10)) - (parseInt(parentItem.reservedQty || 0, 10));
+              available = Math.floor(parentAvail / parseInt(item.uomMult, 10));
+          }
+      } else {
+          let total = parseInt(item.onHand || item.TotalQty, 10) || 0;
+          let res = parseInt(item.reservedQty, 10) || 0;
+          available = total - res;
+      }
 
       let row = [
         `"${handle}"`,           

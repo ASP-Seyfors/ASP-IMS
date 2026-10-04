@@ -885,7 +885,6 @@ const DatabaseManager = {
                 "status": (String(bundle.status || parentItem.status || "ACTIVE").toUpperCase() === "INACTIVE") ? "draft" : "active",
                 isBundle: true,
                 uomMult: bundle.uomMult,
-                uomMult: bundle.uomMult,
                 weight: parseFloat(bundle.weight) || (parseFloat(parentItem.weight || 0.5) * parseInt(bundle.uomMult, 10)),
                 images: [{ src: fullImageUrl }] // ✨ THE FIX
             });

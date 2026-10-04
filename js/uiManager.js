@@ -826,7 +826,8 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         body: JSON.stringify(payload)
       });
       
-      document.getElementById('bugReportModal').remove();
+      // ✨ FIX: Hide the modal instead of destroying it
+      document.getElementById('bugReportModal').style.display = 'none';
       this.showCustomAlert("Report Sent", "✅ Thank you! Your bug report and diagnostic data have been sent to IT Operations.");
     } catch (err) {
       alert("Failed to send bug report. Please check your internet connection.");

@@ -172,6 +172,9 @@ const ShippingManager = {
         safeSet('shipAddressZip', rules.zip || '');
         safeSet('shipAddressCountry', rules.country || 'US'); 
 
+        // ✨ FIX: Force the UI to instantly abbreviate the state it just loaded
+        this.formatStateUI('shipAddressState');
+
         this.captureAddressState();
     },
 
@@ -231,7 +234,7 @@ const ShippingManager = {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     },
 
-    // ✨ NEW: The Master Rate Calculator Function
+    // ✨ NEW: The Master Rate Calculator Function (With Soft Validation Warnings)
     async calculateShippingRate() {
         let btn = document.getElementById('btnCalculateRate');
         let priceBox = document.getElementById('shipPriceDisplay');
@@ -239,14 +242,14 @@ const ShippingManager = {
         let valBadge = document.getElementById('shipValidationBadge');
         
         let origHtml = btn.innerHTML;
-        btn.innerHTML = "⏳ Validating & Quoting...";
+        btn.innerHTML = "⏳ Quoting...";
         btn.disabled = true;
 
         try {
             let isResidential = document.querySelector('input[name="shipAddressType"]:checked').value === 'residential';
             let serviceType = document.getElementById('shipServiceType').value;
 
-            // STEP 1: Validate Address
+            // STEP 1: Validate Address (Soft Check)
             let valPayload = {
                 action: "VALIDATE_ADDRESS",
                 payload: {
@@ -259,32 +262,28 @@ const ShippingManager = {
                 }
             };
 
-            let valRes = await fetch(SessionManager.getActiveArchiveUrl(), {
-                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(valPayload)
-            });
-            
-            // ✨ THE FIX: Safely parse text to prevent HTML Google errors from crashing the app
-            let valText = await valRes.text();
-            let valData;
+            let valData = { status: "error", isValid: false };
             try {
+                let valRes = await fetch(SessionManager.getActiveArchiveUrl(), {
+                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(valPayload)
+                });
+                let valText = await valRes.text();
                 valData = JSON.parse(valText);
             } catch(e) {
-                throw new Error("Google Apps Script returned an invalid HTML response. The server may be busy.");
+                console.warn("Address Validation bypassed due to network/server delay.");
             }
 
-            if (valData.status !== "success" || !valData.isValid) {
-                UIManager.showCustomAlert("Address Validation Failed", "FedEx rejected this address. Please double-check the Street, City, State, and Zip.<br><br><b>FedEx Note:</b> " + (valData.cleansedAddress || "No match found."), true);
-                return; 
-            }
+            let isValidAddress = (valData.status === "success" && valData.isValid);
 
-            if (valData.isResidential !== isResidential) {
+            // If FedEx corrects the residential status, update our UI to match
+            if (valData.status === "success" && valData.isResidential !== isResidential) {
                 let resRadio = document.querySelector(`input[name="shipAddressType"][value="${valData.isResidential ? 'residential' : 'commercial'}"]`);
                 if (resRadio) resRadio.checked = true;
                 isResidential = valData.isResidential;
             }
 
-            // STEP 2: Fetch Live Rate Quote
+            // STEP 2: Fetch Live Rate Quote (Using only Zip & Country)
             let quotePayload = {
                 action: "GET_FEDEX_RATE",
                 payload: {
@@ -305,7 +304,6 @@ const ShippingManager = {
                 body: JSON.stringify(quotePayload)
             });
             
-            // ✨ THE FIX: Safe parsing for the Rate request as well
             let rateText = await rateRes.text();
             let rateData;
             try {
@@ -314,11 +312,20 @@ const ShippingManager = {
                 throw new Error("Google Apps Script returned an invalid HTML response. The server may be busy.");
             }
 
+            // STEP 3: Render the Price and Badges
             if (rateData.status === "success") {
                 btn.style.display = 'none';
                 priceBox.style.display = 'flex';
                 costText.innerText = "$" + parseFloat(rateData.netCharge).toFixed(2);
-                valBadge.innerHTML = `<i data-lucide="check-circle" style="width:14px; height:14px; vertical-align:text-bottom;"></i> Validated ${isResidential ? "Residential" : "Commercial"} Address`;
+                
+                if (isValidAddress) {
+                    valBadge.innerHTML = `<i data-lucide="check-circle" style="width:14px; height:14px; vertical-align:text-bottom;"></i> Validated ${isResidential ? "Residential" : "Commercial"} Address`;
+                    valBadge.style.color = "#2e7d32";
+                } else {
+                    // Show the warning, but don't block the rate quote!
+                    valBadge.innerHTML = `<i data-lucide="alert-triangle" style="width:14px; height:14px; vertical-align:text-bottom;"></i> Unverified ${isResidential ? "Residential" : "Commercial"} Address`;
+                    valBadge.style.color = "#f57f17"; 
+                }
             } else {
                 UIManager.showCustomAlert("Rate Quote Failed", rateData.message, true);
             }
@@ -564,6 +571,9 @@ const ShippingManager = {
         safeSet('shipAddressState', rules.state || '');
         safeSet('shipAddressZip', rules.zip || '');
         safeSet('shipAddressCountry', rules.country || 'US'); 
+
+        // ✨ FIX: Force the UI to instantly abbreviate the state it just loaded
+        this.formatStateUI('shipAddressState');
 
         this.captureAddressState();
     },
@@ -918,5 +928,36 @@ const ShippingManager = {
         btn.innerText = orig; btn.disabled = false;
         
         SessionManager.completeSession(true, true, true);
+    },
+
+    // (Add this right before the final closing brace } of the ShippingManager object)
+    
+    formatStateUI(inputId) {
+        let el = document.getElementById(inputId);
+        if (!el || !el.value) return;
+        
+        let s = String(el.value).trim().toUpperCase();
+        if (s.length === 2) {
+            el.value = s;
+            return;
+        }
+        
+        const stateMap = {
+          "ALABAMA":"AL", "ALASKA":"AK", "ARIZONA":"AZ", "ARKANSAS":"AR", "CALIFORNIA":"CA",
+          "COLORADO":"CO", "CONNECTICUT":"CT", "DELAWARE":"DE", "FLORIDA":"FL", "GEORGIA":"GA",
+          "HAWAII":"HI", "IDAHO":"ID", "ILLINOIS":"IL", "INDIANA":"IN", "IOWA":"IA",
+          "KANSAS":"KS", "KENTUCKY":"KY", "LOUISIANA":"LA", "MAINE":"ME", "MARYLAND":"MD",
+          "MASSACHUSETTS":"MA", "MICHIGAN":"MI", "MINNESOTA":"MN", "MISSISSIPPI":"MS", "MISSOURI":"MO",
+          "MONTANA":"MT", "NEBRASKA":"NE", "NEVADA":"NV", "NEW HAMPSHIRE":"NH", "NEW JERSEY":"NJ",
+          "NEW MEXICO":"NM", "NEW YORK":"NY", "NORTH CAROLINA":"NC", "NORTH DAKOTA":"ND", "OHIO":"OH",
+          "OKLAHOMA":"OK", "OREGON":"OR", "PENNSYLVANIA":"PA", "RHODE ISLAND":"RI", "SOUTH CAROLINA":"SC",
+          "SOUTH DAKOTA":"SD", "TENNESSEE":"TN", "TEXAS":"TX", "UTAH":"UT", "VERMONT":"VT",
+          "VIRGINIA":"VA", "WASHINGTON":"WA", "WEST VIRGINIA":"WV", "WISCONSIN":"WI", "WYOMING":"WY",
+          "DISTRICT OF COLUMBIA":"DC", "PUERTO RICO":"PR"
+        };
+        
+        if (stateMap[s]) {
+            el.value = stateMap[s];
+        }
     }
 };

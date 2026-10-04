@@ -55,11 +55,12 @@
                 <label style="font-size:0.8rem; font-weight:bold; color: var(--text-main);">Service Level</label>
                 <!-- ✨ FIX: Added resetQuoteUI to Service Level -->
                 <select id="shipServiceType" class="form-input" style="width:100%; box-sizing:border-box;" onchange="ShippingManager.resetQuoteUI()">
-                  <option value="FEDEX_GROUND">Ground</option>
-                  <option value="FEDEX_EXPRESS_SAVER">Express Saver (3 Day)</option>
-                  <option value="FEDEX_2_DAY">2Day Air</option>
-                  <option value="STANDARD_OVERNIGHT">Standard Overnight</option>
-                  <option value="PRIORITY_OVERNIGHT">Priority Overnight</option>
+                  <option value="FEDEX_GROUND">FedEx Ground</option>
+                  <option value="PRIORITY_OVERNIGHT">Priority Overnight (by 10:30 AM)</option>
+                  <option value="STANDARD_OVERNIGHT">Standard Overnight (by 8:00 PM)</option>
+                  <option value="FIRST_OVERNIGHT">First Overnight (by 8:00 AM)</option>
+                  <option value="FEDEX_2_DAY">FedEx 2Day</option>
+                  <option value="FEDEX_EXPRESS_SAVER">Express Saver (3 Days)</option>
                 </select>
               </div>
             </div>
@@ -91,7 +92,7 @@
               
               <div style="display:flex; gap:8px; width:100%;">
                 <input type="text" id="shipAddressCity" class="form-input" placeholder="City" style="flex:4; min-width:0; box-sizing:border-box; margin:0;" oninput="ShippingManager.resetQuoteUI()">
-                <input type="text" id="shipAddressState" class="form-input" placeholder="ST" maxlength="2" style="flex:2; min-width:0; box-sizing:border-box; margin:0; text-align:center; text-transform:uppercase;" oninput="ShippingManager.resetQuoteUI()">
+                <input type="text" id="shipAddressState" class="form-input" placeholder="ST" maxlength="20" style="flex:2; min-width:0; box-sizing:border-box; margin:0; text-align:center; text-transform:uppercase;" oninput="ShippingManager.resetQuoteUI()" onblur="ShippingManager.formatStateUI('shipAddressState')">
                 <input type="text" id="shipAddressZip" class="form-input" placeholder="Zip" style="flex:3; min-width:0; box-sizing:border-box; margin:0;" oninput="ShippingManager.resetQuoteUI()">
                 <input type="text" id="shipAddressCountry" class="form-input" placeholder="Country" value="US" style="flex:2; min-width:0; box-sizing:border-box; margin:0; text-align:center; text-transform:uppercase;" oninput="ShippingManager.resetQuoteUI()">
               </div>

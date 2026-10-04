@@ -1623,13 +1623,48 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
             <button class="btn-small" style="background-color:#1976d2; color:#ffffff; padding: 4px 10px;" onclick="window.open('${searchUrl}', '_blank')">🔍 Manual Search</button>
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap:6px; background:#f5f5f5; padding:6px; border-radius:4px; border:1px solid #ccc;">
-          <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.mfr}</span>
-          <input type="text" id="advDesc_${index}" class="adv-desc-input" data-ref="${item.ref}" data-mfr="${item.mfr}" placeholder="Paste website description here..." style="flex:1; padding:6px; border: 1px solid #ccc; border-radius: 4px;">
-          <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.ref}</span>
+        <div style="display:flex; flex-direction:column; gap:6px; background:#f5f5f5; padding:6px; border-radius:4px; border:1px solid #ccc;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.mfr}</span>
+            <input type="text" id="advDesc_${index}" class="adv-desc-input" data-ref="${item.ref}" data-mfr="${item.mfr}" placeholder="Paste website description here..." style="flex:1; padding:6px; border: 1px solid #ccc; border-radius: 4px;">
+            <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.ref}</span>
+          </div>
+          <!-- ✨ NEW CATEGORY DROPDOWN -->
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label style="font-size:0.8rem; font-weight:bold; color:#0277bd; min-width:70px;">Category:</label>
+            <select id="advCat_${index}" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:4px;">
+                <option value="Medical Supplies">Medical Supplies (General)</option>
+                <option value="Suture">Suture</option>
+                <option value="Endomechanical">Endomechanical</option>
+                <option value="Energy">Energy</option>
+                <option value="Mesh">Mesh</option>
+                <option value="Orthopedic">Orthopedic</option>
+                <option value="Wound Care">Wound Care</option>
+                <option value="Custom">+ Add Custom Category...</option>
+            </select>
+          </div>
         </div>
       `;
       list.appendChild(div);
+
+      // ✨ NEW: Add an event listener to handle the "Custom" option
+      let catSelect = document.getElementById(`advCat_${index}`);
+      if (catSelect) {
+          catSelect.addEventListener('change', function() {
+              if (this.value === 'Custom') {
+                  let customCat = prompt("Enter a custom category name:");
+                  if (customCat && customCat.trim() !== "") {
+                      let opt = document.createElement('option');
+                      opt.value = customCat.trim();
+                      opt.textContent = customCat.trim();
+                      this.insertBefore(opt, this.lastElementChild);
+                      this.value = customCat.trim();
+                  } else {
+                      this.selectedIndex = 0; // Reset to default if cancelled
+                  }
+              }
+          });
+      }
     });
   },
 
@@ -1644,43 +1679,54 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       
       if (rawDesc && rawDesc !== "Navigate to vendor website for item description.") {
         
-        let finalDesc = "";
-        let finalCategory = "General";
-        
-        // Grab the Suture checkbox state dynamically
         let sutureChk = document.getElementById(`chkSuture_${index}`);
         let isSuture = sutureChk && sutureChk.checked;
-        let isAutoFetched = input.getAttribute('data-autofetched') === 'true'; // ✨ Check the flag
+        let isAutoFetched = input.getAttribute('data-autofetched') === 'true';
         
-        if (isSuture && isAutoFetched) {
-            // ONLY append the Box math if the AI Auto-Fetch actually worked
-            finalCategory = "Suture";
-            let lastChar = ref.slice(-1).toUpperCase();
-            let boxQtyStr = "";
-            let refBase = ref; 
+        // ✨ NEW: Grab the category selected by the user
+        let catSelect = document.getElementById(`advCat_${index}`);
+        let selectedCat = catSelect ? catSelect.value : "Medical Supplies";
+        
+        let finalDesc = "";
+        let finalCategory = selectedCat;
+        let pendingMatch = this.pendingNewItems.find(i => i.ref === ref);
+        if (pendingMatch) finalCategory = pendingMatch.category || "Medical Supplies";
+
+        if (isSuture) {
+            // ✨ BUG 3 FIX: Category becomes "Suture, [Truncated REF]"
+            let refBase = ref.slice(0, -1); 
+            finalCategory = `Suture, ${refBase}`;
             
-            if (lastChar === 'G') { boxQtyStr = "(BX/12)"; refBase = ref.slice(0, -1); }
-            else if (lastChar === 'T') { boxQtyStr = "(BX/24)"; refBase = ref.slice(0, -1); }
-            else if (lastChar === 'H') { boxQtyStr = "(BX/36)"; refBase = ref.slice(0, -1); }
-            
-            finalDesc = `${mfr} ${rawDesc} ${boxQtyStr} ${refBase}`.replace(/\s+/g, ' ').trim();
+            if (isAutoFetched) {
+                // ✨ BUG 2 FIX: Keep the box math, but append the FULL REF to the description
+                let boxQtyStr = "";
+                let lastChar = ref.slice(-1).toUpperCase();
+                if (mfr.toUpperCase().includes('ETHICON')) {
+                    if (lastChar === 'G') boxQtyStr = "(BX/12)";
+                    else if (lastChar === 'T') boxQtyStr = "(BX/24)";
+                    else if (lastChar === 'H') boxQtyStr = "(BX/36)";
+                }
+                
+                finalDesc = `${mfr} ${rawDesc} ${boxQtyStr} ${ref}`.replace(/\s+/g, ' ').trim();
+            } else {
+                // Manual Entry Suture
+                finalDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
+            }
         } else {
-            // If they typed it manually, just save what they typed
-            if (isSuture) finalCategory = "Suture"; 
+            // Standard Non-Suture Item
             finalDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
         }
         
         // Apply the new Desc and Category to the local cache memory
-        let pendingItem = this.pendingNewItems.find(i => i.ref === ref);
-        if (pendingItem) {
-            pendingItem.desc = finalDesc;
-            if (isSuture) pendingItem.category = finalCategory;
+        if (pendingMatch) {
+            pendingMatch.desc = finalDesc;
+            pendingMatch.category = finalCategory;
         }
 
         let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
         if (dbItem) {
             dbItem.desc = finalDesc;
-            if (isSuture) dbItem.category = finalCategory;
+            dbItem.category = finalCategory;
         }
 
         this.scannedObjects.forEach(scanned => {
@@ -1712,6 +1758,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       this.scannedObjects = []; this.expectedManifest = [];
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify([])); localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
+      // ✨ THE FIX: Destroy all pending metadata so it doesn't haunt the next session!
+      this.pendingNewItems = []; 
+      this.pendingFieldUpdates = [];
+      localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
+      localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+
       let recList = document.getElementById('manifestReconcileList');
       let recCard = document.getElementById('manifestReconcileCard');
       if (recList) recList.innerHTML = '';
@@ -1730,7 +1782,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       document.getElementById('screenSummary').style.display = 'none';
       document.getElementById('screenSetup').style.display = 'block';
 
-      this.currentItemAction = 'Inventory'; // FIX
+      this.currentItemAction = 'Inventory'; 
     });
   },
 
@@ -1974,6 +2026,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         this.pendingNewItems = []; this.pendingFieldUpdates = [];
         localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
         localStorage.setItem('asp_pending_updates', JSON.stringify([]));
+        
+        // ✨ WAREHOUSE BUG FIX: Wipe the active manifest so it doesn't accumulate on the next order!
+        this.expectedManifest = [];
+        localStorage.setItem('asp_active_manifest', JSON.stringify([]));
         
         let recList = document.getElementById('manifestReconcileList');
         let recCard = document.getElementById('manifestReconcileCard');
@@ -2424,6 +2480,17 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (!confirm(`Delete scanned item run for REF: ${item.ref} (Lot: ${item.lot}, Qty: ${item.qty})?`)) return;
 
     this.scannedObjects.splice(index, 1);
+    
+    // ✨ THE FIX: If it was a new item, check if there are any other scans of it left. 
+    // If not, completely purge its metadata from the waiting room!
+    if (item.isNew) {
+        let stillExists = this.scannedObjects.some(i => i.ref === item.ref && i.isNew);
+        if (!stillExists) {
+            this.pendingNewItems = this.pendingNewItems.filter(i => i.ref !== item.ref);
+            localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
+        }
+    }
+
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
     this.updateManifestProgressUI();
     this.saveToArchive('Pending');
@@ -2787,7 +2854,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
               itemData.details.forEach((det) => {
                   if (det.qty > 0) {
                       html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee;">
+                        <div class="unreserve-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee;">
                           <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
                             <input type="checkbox" class="unreserve-chk" data-ref="${ref}" data-lot="${det.lot || ''}" data-exp="${det.exp || ''}" data-session="${det.sessionId || ''}" data-max="${det.qty}"> 
                             <div>
@@ -2849,9 +2916,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
               let sessionId = chk.getAttribute('data-session');
               let maxQty = parseInt(chk.getAttribute('data-max'), 10) || 0;
               
-              // Safely grab the desired quantity from the input box
-              let qtyInput = document.getElementById(`unresQty_${ref}_${sessionId}`);
+              // ✨ WAREHOUSE BUG FIX: Traverse the DOM relative to the checkbox to safely grab the exact number typed
+              let rowWrapper = chk.closest('.unreserve-item-row');
+              let qtyInput = rowWrapper ? rowWrapper.querySelector('input[type="number"]') : null;
               let unresQty = qtyInput ? parseInt(qtyInput.value, 10) : maxQty;
+              
+              // Prevent them from un-reserving more than what actually exists
+              if (isNaN(unresQty) || unresQty <= 0) return;
+              if (unresQty > maxQty) unresQty = maxQty;
               
               // Prevent them from un-reserving more than what actually exists
               if (isNaN(unresQty) || unresQty <= 0) return;

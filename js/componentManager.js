@@ -36,7 +36,7 @@ const ComponentManager = {
       'stockReportEditorModal.html',
       'systemRestoreModal.html',
       'shipmentManagerModal.html',
-      'traceability.html',
+      'shipmentTracker.html',
       'addressBookModal.html',
       'shipmentEditModal.html'
     ];
