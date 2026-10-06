@@ -1701,9 +1701,9 @@
       "gtin": "30705031468119",
       "price": "$300.00",
       "cost": "$160.00",
-      "onHand": 6,
+      "onHand": 5,
       "reservedQty": 0,
-      "availableQty": 6,
+      "availableQty": 5,
       "onRevMed": "TRUE",
       "revMedPrice": "$320.00",
       "syncedShopify": "TRUE",
@@ -6189,9 +6189,9 @@
       "gtin": "10705036002673",
       "price": "$22.00",
       "cost": "$48.34",
-      "onHand": 12,
+      "onHand": 0,
       "reservedQty": 0,
-      "availableQty": 12,
+      "availableQty": 0,
       "onRevMed": "FALSE",
       "revMedPrice": "$130.00",
       "syncedShopify": "TRUE",
@@ -11423,10 +11423,10 @@
       "account": "",
       "notes": ""
     },
-    "EMMANUEL CA": {
-      "formalCompany": "Emmanuel CA",
+    "EMMANUEL SR. (ALT CA)": {
+      "formalCompany": "Emmanuel Sr. (ALT CA)",
       "contactName": "Emmanuel P. Javier",
-      "contactId": "Emmanuel CA",
+      "contactId": "Emmanuel Sr. (ALT CA)",
       "email": "",
       "phone": "5622614266",
       "address1": "3009 E. Penny Lane",
@@ -11439,10 +11439,10 @@
       "account": "ASP_ACCNT",
       "notes": "Emmanuel is charged shipping on his invoice; let Jessica know the total for any shipping costs.\n\nShip to Whittier CA address unless otherwise told"
     },
-    "EMMANUEL RESIDENTIAL": {
-      "formalCompany": "Emmanuel Residential",
-      "contactName": "Emmanuel Javier",
-      "contactId": "Emmanuel Residential",
+    "EMMANUEL SR.": {
+      "formalCompany": "Emmanuel Sr.",
+      "contactName": "Emmanuel P. Javier",
+      "contactId": "Emmanuel Sr.",
       "email": "",
       "phone": "5622164266",
       "address1": "13927 Dittmar Dr",
