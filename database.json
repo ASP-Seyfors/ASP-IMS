@@ -8521,9 +8521,9 @@
       "gtin": "30705031060566",
       "price": "$201.00",
       "cost": "$78.00",
-      "onHand": 1,
+      "onHand": 0,
       "reservedQty": 0,
-      "availableQty": 1,
+      "availableQty": 0,
       "onRevMed": "FALSE",
       "revMedPrice": "$225.00",
       "syncedShopify": "TRUE",
@@ -10937,7 +10937,8 @@
     "SurgiShop",
     "Synergy",
     "XS Supply",
-    "DR GALLERANI"
+    "DR GALLERANI",
+    "DOTMED"
   ],
   "suppliers": [
     "AHS",
@@ -12534,6 +12535,22 @@
       "country": "US",
       "method": "",
       "account": "",
+      "notes": ""
+    },
+    "PENINSULA VET SURGERY": {
+      "formalCompany": "Peninsula Vet Surgery",
+      "contactName": "Marco Cervi",
+      "contactId": "Peninsula Vet Surgery",
+      "email": "",
+      "phone": "",
+      "address1": "1300 Sage LN",
+      "address2": "",
+      "city": "Fenton",
+      "state": "MI",
+      "zip": "48430",
+      "country": "US",
+      "method": "FEDEX",
+      "account": "ASP_ACCNT",
       "notes": ""
     }
   }
