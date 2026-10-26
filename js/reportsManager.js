@@ -203,7 +203,7 @@ const ReportsManager = {
       };
 
       try {
-          let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+          let res = await fetch(ApiManager.getActiveArchiveUrl(), {
               method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify({ action: "SAVE_SHIPPING_INFO", payload: payloadData })
           });
@@ -229,7 +229,7 @@ const ReportsManager = {
       if (!confirm(`Are you sure you want to permanently delete ${contactId} from the Address Book?`)) return;
 
       try {
-          let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+          let res = await fetch(ApiManager.getActiveArchiveUrl(), {
               method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify({ action: "DELETE_SHIPPING_INFO", payload: { contactId: contactId } })
           });
@@ -382,7 +382,7 @@ const ReportsManager = {
 
   generateVarianceReportPDF(varianceData, mode, netFinancialImpact) {
     // Keep your standard YYYY.MM.DD formatting
-    let filename = `Stocktake_Variance_Report_${SessionManager.sessionDateStr}.pdf`;
+    let filename = `Stocktake_Variance_Report_${SessionManager.sessionDateStr}`;
     let financialColor = netFinancialImpact >= 0 ? '#2e7d32' : '#c62828';
     let impactStr = netFinancialImpact >= 0 ? `+$${netFinancialImpact.toFixed(2)}` : `-$${Math.abs(netFinancialImpact).toFixed(2)}`;
 
@@ -459,7 +459,7 @@ const ReportsManager = {
 
     try {
       // Fetch live ledger
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
       let text = await res.text();
       let responseData = JSON.parse(text);
 
@@ -687,11 +687,11 @@ const ReportsManager = {
   async generateUnifiedExpirationReport() {
     let btn = document.querySelector('button[onclick="ReportsManager.generateUnifiedExpirationReport()"]');
     let origText = btn ? btn.innerHTML : "⚠️ Run Expiration Report";
-    if (btn) { btn.innerHTML = "⏳ Compiling Cloud Ledger..."; btn.disabled = true; }
+    if (btn) { btn.innerHTML = "⏳ Downloading Live Ledger..."; btn.disabled = true; }
 
     try {
-      // ✨ FIX: Revert to Cloud Ledger for full traceability but skip Google Apps Script parsing overhead
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      // ✨ FIX: Target the new blazing-fast EXP_TRACK endpoint!
+      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=GET_EXP_TRACK&t=${Date.now()}`);
       let text = await res.text();
       let responseData;
       
@@ -701,50 +701,11 @@ const ReportsManager = {
         throw new Error("Connection blocked by Google. Try running again in a few moments."); 
       }
 
-      if (responseData.status !== "success" || !responseData.data) {
-        throw new Error(responseData.message || "Failed to load audit log from cloud.");
+      if (responseData.status !== "success") {
+        throw new Error(responseData.message || "Failed to load expiration ledger from cloud.");
       }
 
-      let auditLog = responseData.data;
-      let lotMap = {};
-
-      // Crunch the ledger math to find active lots
-      auditLog.forEach(row => {
-        let ref = row['REF / SKU'];
-        let lot = row['Lot'];
-        let exp = row['Exp Date'];
-        let qty = parseInt(row['Qty Moved'], 10) || 0;
-        let workflow = row['Workflow'] || '';
-        
-        // Skip invalid rows or items without expiration tracking
-        if (!ref || !lot || lot === 'N/A' || !exp || exp === 'N/A' || exp === 'NO_EXP') return;
-
-        let key = `${ref}_${lot}_${exp}`;
-        if (!lotMap[key]) {
-          let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
-            ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) 
-            : null;
-          let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
-          let shelf = dbMatch ? (dbMatch.shelf || 'Standard') : 'Unknown';
-          lotMap[key] = { ref, lot, exp, mfr, shelf, qty: 0 };
-        }
-
-        // FEFO Math: Add inbound receiving, subtract outbound packing
-        if (workflow.includes('Receiving') || workflow.includes('Stocktake')) {
-          lotMap[key].qty += qty;
-        } else if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) {
-          lotMap[key].qty -= qty;
-        }
-      });
-
-      // Filter to only active physical stock
-      let activeLots = Object.values(lotMap).filter(l => l.qty > 0);
-
-      // Define Time Brackets
-      let today = new Date();
-      let sixMonths = new Date(); sixMonths.setMonth(today.getMonth() + 6);
-      let twelveMonths = new Date(); twelveMonths.setMonth(today.getMonth() + 12);
-      let twentyFourMonths = new Date(); twentyFourMonths.setMonth(today.getMonth() + 24);
+      let activeLots = responseData.data || [];
 
       let groups = {
         expired: [],
@@ -753,17 +714,34 @@ const ReportsManager = {
         twentyFour: []
       };
 
-      activeLots.forEach(item => {
-        let expDate = new Date(item.exp);
-        if (expDate < today) groups.expired.push(item);
-        else if (expDate <= sixMonths) groups.six.push(item);
-        else if (expDate <= twelveMonths) groups.twelve.push(item);
-        else if (expDate <= twentyFourMonths) groups.twentyFour.push(item);
+      // ✨ FIX: Map to the exact ALL-CAPS headers provided by the Google Sheets JSON
+      activeLots.forEach(row => {
+          let ref = row['REF / SKU'];
+          let lot = row['LOT']; 
+          let exp = row['EXP DATE']; 
+          let qty = parseInt(row['QTY'], 10) || 0; 
+          let status = row['EXP STATUS']; 
+          
+          if (!ref || qty <= 0) return;
+          
+          let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
+            ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) 
+            : null;
+          let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
+          let shelf = dbMatch ? (dbMatch.shelf || 'Standard') : 'Unknown';
+          
+          let itemObj = { ref, lot, exp, mfr, shelf, qty };
+
+          if (status === "EXPIRED") groups.expired.push(itemObj);
+          else if (status === "SHORT6") groups.six.push(itemObj);
+          else if (status === "SHORT12") groups.twelve.push(itemObj);
+          else if (status === "SHORT24") groups.twentyFour.push(itemObj);
       });
 
       // Helper function to build table sections
       const buildSection = (title, color, icon, items) => {
         if (items.length === 0) return '';
+        // Sort chronologically by expiration date
         items.sort((a, b) => new Date(a.exp) - new Date(b.exp));
         
         let sectionHtml = `
@@ -796,7 +774,7 @@ const ReportsManager = {
           <div>Generated: ${new Date().toLocaleDateString()}</div>
         </div>
       </div>
-      <p style="font-style:italic; color:#777; margin-bottom:20px;">This report flags all active inventory that has either expired or is at risk of expiring within the next 24 months, calculated directly from the live Cloud Ledger.</p>
+      <p style="font-style:italic; color:#777; margin-bottom:20px;">This report flags all active inventory that has either expired or is at risk of expiring within the next 24 months, calculated directly from the live Expiration Ledger.</p>
       `;
 
       let hasData = false;
@@ -947,7 +925,7 @@ const ReportsManager = {
       container.innerHTML = '<p style="text-align:center; color:#0277bd;">Loading...</p>';
       try {
           // Use GET with URL parameters to bypass CORS restrictions
-          let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`);
+          let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`);
           let data = await res.json();
           
           if (data.status === "success" && data.subs && data.subs.length > 0) {
@@ -996,7 +974,7 @@ const ReportsManager = {
        
       let payload = { name: name, email: email, freq: freq, status: status, categories: categoryPref };
 
-      fetch(SessionManager.getActiveArchiveUrl(), {
+      fetch(ApiManager.getActiveArchiveUrl(), {
           method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: "UPDATE_SUBSCRIBER", payload: payload })
       }).then(() => {
@@ -1079,7 +1057,7 @@ async function runEthiconUiScan(mode) {
     resultsBox.innerHTML = `<div style="text-align:center; padding:20px; color:#0277bd;"><strong>⏳ Querying J&J MedTech Servers...</strong><br>This may take a moment depending on the number of items.</div>`;
     
     try {
-        let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=RUN_ETHICON_UI_SCAN${queryParam}`);
+        let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=RUN_ETHICON_UI_SCAN${queryParam}`);
         let data = await res.json();
         
         if (data.status !== "success") throw new Error(data.message || "API Error");
@@ -1138,7 +1116,7 @@ function openEthiconMonitorModal() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // 1. Fetch active subscribers
-    fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`)
+    fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`)
       .then(r => r.json())
       .then(data => {
           if (data.status === "success") {
@@ -1152,7 +1130,7 @@ function openEthiconMonitorModal() {
       }).catch(e => subList.innerHTML = "<i>Error loading list.</i>");
 
     // 2. Fetch the Cached Discontinued Archive
-    fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_ETHICON_ARCHIVE`)
+    fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_ETHICON_ARCHIVE`)
       .then(r => r.json())
       .then(data => {
           if (data.status !== "success" || data.data.length === 0) {
@@ -1202,7 +1180,7 @@ async function subscribeToEthiconMonitor() {
     let name = userProfile.name || email.split('@')[0];
 
     try {
-        let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+        let res = await fetch(ApiManager.getActiveArchiveUrl(), {
             method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 action: "UPDATE_SUBSCRIBER",

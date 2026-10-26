@@ -60,7 +60,7 @@ const AuditManager = {
 
     try {
       // ✨ FIX: encodeURIComponent safely packages special characters (like # or spaces) for web travel
-      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${encodeURIComponent(sessionId)}`);
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${encodeURIComponent(sessionId)}`);
       let rawText = await res.text();
       
       // ✨ FIX: Intercept HTML error pages before JSON.parse crashes
@@ -202,7 +202,7 @@ const AuditManager = {
     document.getElementById('auditPreviewContent').innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd; font-weight:bold;">⏳ Processing live ledger from the cloud... Please wait.</div>';
     
     try {
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
       let text = await res.text();
       let responseData = JSON.parse(text);
       if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
@@ -334,7 +334,7 @@ const AuditManager = {
     btn.disabled = true;
 
     try {
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=GET_BUG_REPORTS&t=${Date.now()}`);
+      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=GET_BUG_REPORTS&t=${Date.now()}`);
       let data = await res.json();
       
       if (data.status !== "success") throw new Error("Failed to fetch reports.");
@@ -1083,10 +1083,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let qty = r.querySelector('.rep-qty').value.trim(); 
       let price = r.querySelector('.rep-price').value.trim();
       
-      let formattedPrice = 'Call for Price';
+      let formattedPrice = '<span style="color:#d32f2f; font-weight:bold;">Contact Us</span>';
       if (price) {
           let numPrice = parseFloat(price.replace(/[^0-9.-]+/g, ""));
-          if (price.startsWith('$')) {
+          if (numPrice === 0) {
+              formattedPrice = '<span style="color:#d32f2f; font-weight:bold;">Contact Us</span>';
+          } else if (price.startsWith('$')) {
               formattedPrice = price;
           } else if (isNaN(numPrice)) {
               formattedPrice = price;
@@ -1175,7 +1177,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let desc = r.querySelector('.rep-desc').value.trim();
       let qty = r.querySelector('.rep-qty').value.trim(); 
       let price = r.querySelector('.rep-price').value.trim();
-      let formattedPrice = price ? (price.startsWith('$') || isNaN(parseFloat(price.replace(/[^0-9.-]+/g,""))) ? price : '$' + price) : 'Inquire';
+      let numPrice = parseFloat(String(price).replace(/[^0-9.-]+/g, ""));
+      let formattedPrice = (numPrice === 0 || !price) ? '<span style="color:#d32f2f; font-weight:bold;">Contact Us</span>' : (price.startsWith('$') ? price : '$' + price);
 
       if (ref) {
         html += `<tr><td class="ref-col">${ref}</td>${includeDesc ? `<td class="desc-col">${desc || 'Surgical Products Item'}</td>` : ''}${includeQty ? `<td style="text-align:center;"><span class="qty-badge">${qty}</span></td>` : ''}${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}</tr>`;
@@ -1230,11 +1233,20 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     
     sortedSkus.forEach(ref => {
       let dbItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === ref);
+      
+      // ✨ FIX: Calculate True Available Qty instead of Raw Total Qty
+      let trueAvailable = 0;
+      if (dbItem) {
+          let total = parseInt(dbItem.onHand, 10) || 0;
+          let reserved = parseInt(dbItem.reservedQty, 10) || 0;
+          trueAvailable = total - reserved;
+      }
+
       resultList.push({
         ref: ref,
         desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
         histQty: skuVolumeMap[ref] || 0,
-        onHand: dbItem ? (dbItem.onHand || 0) : 0, 
+        onHand: trueAvailable > 0 ? trueAvailable : 0, // Prevents negative numbers from showing on the flyer
         price: dbItem ? dbItem.price : '$0.00',
         cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'
       });
@@ -1413,7 +1425,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                 archive.push(sessionObj);
                 
                 // Push to ASP_SCANNER_DATABASE backend
-                await fetch(SessionManager.cloudArchiveUrl, {
+                await fetch(ApiManager.cloudArchiveUrl, {
                   method: 'POST',
                   mode: 'no-cors',
                   headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2107,7 +2119,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
         let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
 
-        fetch(SessionManager.getActiveArchiveUrl(), {
+        fetch(ApiManager.getActiveArchiveUrl(), {
           method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors }})
         }).catch(e => console.warn("Failed to push DB flags."));
@@ -2231,6 +2243,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       logMsg(`Found ${sessionsToFetch.length} chronological sessions to replay.`, '#64b5f6');
       
       let fullSessions = [];
+      let allAuditRows = []; // ✨ ADD THIS LINE
       
       // Batch download payloads with Google Rate-Limit Throttling & Exponential Backoff
       for (let i = 0; i < sessionsToFetch.length; i++) {
@@ -2246,7 +2259,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
         while (!success && attempts < maxAttempts) {
           try {
-            let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sLite.id}`);
+            let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${sLite.id}`);
             let rawText = (await res.text()).trim();
             
             // ✨ BULLETPROOF CHECK: If it doesn't start with { or [, it is an HTML error page
@@ -2310,13 +2323,21 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             });
         }
         
-        // ✨ THE FIX 2: Apply any field updates (GTINs, Mfrs) made during this session
+        // ✨ THE FIX 2: Apply any field updates (GTINs, Mfrs, Shelves) made during this session
         if (sess.pendingUpdates && sess.pendingUpdates.length > 0) {
             sess.pendingUpdates.forEach(upd => {
                 let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (upd.ref || '').toUpperCase());
                 if (dbItem && upd.field) {
-                    dbItem[upd.field] = upd.newValue;
-                    logMsg(`    + Applied field update to: ${upd.ref}`);
+                    
+                    // ✨ TRANSLATION DICTIONARY: Map the UI display name back to the actual database object key!
+                    let objKey = "";
+                    if (upd.field === 'GTIN') objKey = 'gtin';
+                    else if (upd.field === 'Manufacturer') objKey = 'mfr';
+                    else if (upd.field === 'Shelf Location') objKey = 'shelf';
+                    else objKey = upd.field; // Fallback
+
+                    dbItem[objKey] = upd.newValue;
+                    logMsg(`    + Applied field update to: ${upd.ref} (${objKey})`);
                 }
             });
         }
@@ -2390,6 +2411,21 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
            };
         });
 
+        // ✨ NEW: Rebuild the chronological Audit Log row for each item!
+        let d = new Date(sess.lastUpdated);
+        let pad = (n) => n.toString().padStart(2, '0');
+        let timeStr = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+        transformedScans.forEach(tItem => {
+           let cLot = (tItem.lot === 'N/A' || tItem.lot === 'NA' || tItem.lot === 'NO_LOT') ? '' : tItem.lot;
+           let cExp = (tItem.exp === 'N/A' || tItem.exp === 'NA' || tItem.exp === 'NO_EXP') ? '' : tItem.exp;
+           let dest = tItem.actionTag || "Inventory";
+           if ((dest === "Reserved" || dest === "Pack & Ship" || dest === "Un-Reserved") && tItem.customerTag) {
+               dest = dest + " - " + tItem.customerTag;
+           }
+           allAuditRows.push([timeStr, sess.userName || "User", sess.sessionName, sess.workflowType || "General", tItem.ref || "UNKNOWN", cLot, cExp, tItem.qty || 0, dest]);
+        });
+        
         // USE THE TRANSFORMED DATA FOR THE MATH
         if (sess.workflowType && sess.workflowType.includes('Stocktake')) {
           let scannedTotals = {};
@@ -2410,8 +2446,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             });
           }
 
-          logMsg(`  - Rebuilding Stocktake allocations via Ledger Engine...`, '#fff');
-          let result = InventoryEngine.commitLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
+          logMsg(`  - Rebuilding Stocktake allocations via internal Replay Engine...`, '#fff');
+          let result = this._replayLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
           DatabaseManager.db = result.updatedDb;
           activeAllocations = result.updatedAllocations;
 
@@ -2426,7 +2462,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           
         } else {
           logMsg(`  - Committing standard ledger adjustments (${transformedScans.length} lines)...`, '#fff');
-          let result = InventoryEngine.commitLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
+          let result = this._replayLedgerMath(transformedScans, DatabaseManager.db, activeAllocations, sess.workflowType);
           DatabaseManager.db = result.updatedDb;
           activeAllocations = result.updatedAllocations;
         }
@@ -2439,16 +2475,30 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       localStorage.setItem('asp_allocations', JSON.stringify(activeAllocations));
       
-      if (SessionManager.getActiveArchiveUrl()) {
+      if (ApiManager.getActiveArchiveUrl()) {
         logMsg(`Pushing database adjustments to Google Sheets...`, '#64b5f6');
         let dbPayload = { action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db } };
-        await fetch(SessionManager.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) });
+        await fetch(ApiManager.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) });
         
         logMsg(`Pushing customer allocations to Google Sheets...`, '#64b5f6');
         
         // ✨ THE FIX 3: Force the circuit breaker open since we are authoritatively rebuilding memory from scratch
         sessionStorage.setItem('asp_allocations_verified', 'true');
-        await SessionManager.syncAllocationsToCloud(); // ✨ Added 'await'
+        await SessionManager.syncAllocationsToCloud(); 
+      }
+
+      // ✨ NEW: Push the rebuilt Audit Log to Google Sheets in safe chunks
+      if (allAuditRows.length > 0 && ApiManager.getActiveArchiveUrl()) {
+        logMsg(`Pushing ${allAuditRows.length} rebuilt Audit Log rows to Google Sheets...`, '#64b5f6');
+        let batchSize = 2500;
+        for (let i = 0; i < allAuditRows.length; i += batchSize) {
+           let batch = allAuditRows.slice(i, i + batchSize);
+           await fetch(ApiManager.getActiveArchiveUrl(), { 
+              method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+              body: JSON.stringify({ action: "REBUILD_AUDIT_LOG", payload: batch, isFirstBatch: (i === 0) }) 
+           });
+           await new Promise(r => setTimeout(r, 1000));
+        }
       }
 
       updateProgress(`Restore Complete!`, 100);
@@ -2480,7 +2530,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     resultsContainer.innerHTML = '<div style="padding:15px; color:#0277bd; text-align:center;">⏳ Searching live cloud ledger...</div>';
 
     try {
-      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
       let text = await res.text();
       let responseData = JSON.parse(text);
       
@@ -2544,7 +2594,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     resultsContainer.innerHTML = '<div style="padding:15px; color:#7b1fa2; font-weight:bold; text-align:center;">⏳ Waking up Cold Storage... Searching deep archive ledgers...</div>';
 
     try {
-      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=SEARCH_DEEP_ARCHIVE&lot=${encodeURIComponent(targetLot)}`);
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=SEARCH_DEEP_ARCHIVE&lot=${encodeURIComponent(targetLot)}`);
       let responseData = await res.json();
       
       if (responseData.status !== "success" || !responseData.data) throw new Error(responseData.message || "Failed to parse deep archive.");
@@ -2745,7 +2795,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           if (statusText) statusText.innerText = `Pushing Batch ${i + 1} of ${totalBatches}...`;
           
           try {
-              let response = await fetch(SessionManager.getActiveArchiveUrl(), {
+              let response = await fetch(ApiManager.getActiveArchiveUrl(), {
                   method: 'POST',
                   headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                   body: JSON.stringify({ action: 'SYNC_SHOPIFY', payload: payloadBatch })
@@ -2792,7 +2842,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         payload: payloadData
       };
 
-      let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+      let res = await fetch(ApiManager.getActiveArchiveUrl(), {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2808,5 +2858,85 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       if (document.getElementById('shopifySyncOverlay')) document.body.removeChild(overlay);
       alert("Network Error: " + err.message);
     }
+  }, // Comma to separate from the previous function
+
+  // ✨ NEW: Dedicated math engine just for System Restores!
+  _replayLedgerMath(scannedObjects, currentDb, currentAllocations, workflowType) {
+    let onHandChanges = {}; 
+    let reservedChanges = {}; 
+    let wType = (workflowType || '').toUpperCase();
+
+    scannedObjects.forEach(item => {
+      let ref = (item.ref || item.sku || '').toUpperCase().trim(); 
+      let actionTag = (item.actionTag || '').toUpperCase().trim();
+      let rawTag = (item.customerTag || '').toUpperCase().trim(); 
+      let tag = rawTag.split('(')[0].split('-')[0].trim();
+
+      if (typeof onHandChanges[ref] === 'undefined') { onHandChanges[ref] = 0; reservedChanges[ref] = 0; }
+      if (tag) { 
+        if (!currentAllocations[tag]) currentAllocations[tag] = {}; 
+        if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] }; 
+      }
+
+      if (wType.includes('RECEIVING') || wType.includes('STOCKTAKE')) {
+        if (!wType.includes('STOCKTAKE')) onHandChanges[ref] += item.qty; 
+        if (actionTag === 'RESERVED' && tag) {
+           reservedChanges[ref] += item.qty;
+           currentAllocations[tag][ref].qty += item.qty;
+           currentAllocations[tag][ref].details.push({
+               lot: item.lot || '', exp: item.exp || '', orderNum: item.orderNum || '', sessionId: item.sessionId || '', qty: item.qty
+           });
+        }
+      } 
+      else if (wType.includes('RESERVING') || wType.includes('PICK & RESERVE') || wType === 'RESERVE') {
+         if (tag) {
+             reservedChanges[ref] += item.qty;
+             currentAllocations[tag][ref].qty += item.qty;
+             currentAllocations[tag][ref].details.push({
+                 lot: item.lot || '', exp: item.exp || '', orderNum: item.orderNum || '', sessionId: item.sessionId || '', qty: item.qty
+             });
+         }
+      }
+      else if (wType.includes('PACKING') || wType.includes('PACK & SHIP') || actionTag.includes('PACK') || wType.includes('UN-RESERVE') || actionTag === 'UN-RESERVE') {
+        if (!wType.includes('UN-RESERVE') && actionTag !== 'UN-RESERVE') onHandChanges[ref] -= item.qty; 
+        if (tag && currentAllocations[tag] && currentAllocations[tag][ref]) {
+            let deduct = item.qty;
+            reservedChanges[ref] -= deduct; 
+            currentAllocations[tag][ref].qty -= deduct;
+            
+            let exactMatches = currentAllocations[tag][ref].details.filter(d => d.lot === item.lot && d.exp === item.exp && d.qty > 0);
+            for (let i = 0; i < exactMatches.length; i++) {
+                if (deduct <= 0) break;
+                let take = Math.min(exactMatches[i].qty, deduct);
+                exactMatches[i].qty -= take; deduct -= take;
+            }
+            if (deduct > 0) {
+                for (let i = 0; i < currentAllocations[tag][ref].details.length; i++) {
+                    if (deduct <= 0) break;
+                    let det = currentAllocations[tag][ref].details[i];
+                    if (det.qty > 0) { let take = Math.min(det.qty, deduct); det.qty -= take; deduct -= take; }
+                }
+            }
+            currentAllocations[tag][ref].details = currentAllocations[tag][ref].details.filter(d => d.qty > 0);
+        }
+      }
+    });
+
+    Object.keys(currentAllocations).forEach(t => {
+      Object.keys(currentAllocations[t]).forEach(ref => { if (currentAllocations[t][ref].qty <= 0) delete currentAllocations[t][ref]; });
+      if (Object.keys(currentAllocations[t]).length === 0) delete currentAllocations[t]; 
+    });
+
+    currentDb.forEach(dbItem => {
+      let ref = (dbItem.sku || dbItem.ref || '').toUpperCase().trim();
+      if (typeof onHandChanges[ref] !== 'undefined') {
+        dbItem.onHand = (dbItem.onHand || 0) + (onHandChanges[ref] || 0); 
+        dbItem.reservedQty = (dbItem.reservedQty || 0) + (reservedChanges[ref] || 0);
+        if (dbItem.onHand < 0) dbItem.onHand = 0; 
+        if (dbItem.reservedQty < 0) dbItem.reservedQty = 0;
+      }
+    });
+
+    return { updatedDb: currentDb, updatedAllocations: currentAllocations };
   }
 };

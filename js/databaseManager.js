@@ -384,12 +384,23 @@ const DatabaseManager = {
     if (!dbItem) return;
 
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
+    
     let priceInputHtml = isAdmin 
       ? `<input type="text" id="modalPrice" value="${dbItem.price || '$0.00'}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">` 
       : `<input type="text" id="modalPrice" value="${dbItem.price || '$0.00'}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required to edit pricing.">`;
+    
     let costInputHtml = isAdmin 
       ? `<input type="text" id="modalCost" value="${dbItem.cost || '$0.00'}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">` 
       : `<input type="text" id="modalCost" value="***" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#999;" readonly title="Restricted Admin Data">`;
+
+    // ✨ NEW: RM Price and DM Price Inputs
+    let rmPriceInputHtml = isAdmin 
+      ? `<input type="text" id="modalRmPrice" value="${dbItem.revMedPrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="$0.00">` 
+      : `<input type="text" id="modalRmPrice" value="${dbItem.revMedPrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required.">`;
+
+    let dmPriceInputHtml = isAdmin 
+      ? `<input type="text" id="modalDmPrice" value="${dbItem.dotMedPrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="$0.00">` 
+      : `<input type="text" id="modalDmPrice" value="${dbItem.dotMedPrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required.">`;
 
     document.getElementById('modalRef').value = dbItem.ref || dbItem.sku;
     document.getElementById('modalMfr').value = dbItem.mfr || '';
@@ -401,9 +412,18 @@ const DatabaseManager = {
     statusEl.value = dbItem.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
     statusEl.style.color = dbItem.status === 'ACTIVE' ? '#2e7d32' : '#c62828';
 
-    document.getElementById('modalPricingBlock').innerHTML = `
-      <div style="flex:1;"><label style="font-weight:bold; font-size:0.85rem; color:#555;">Selling Price</label>${priceInputHtml}</div>
-      <div style="flex:1;"><label style="font-weight:bold; font-size:0.85rem; color:#555;">Unit Cost</label>${costInputHtml}</div>`;
+    // ✨ NEW: Override the container to display as a 2x2 Grid instead of a single row
+    let pricingBlock = document.getElementById('modalPricingBlock');
+    pricingBlock.style.display = 'grid';
+    pricingBlock.style.gridTemplateColumns = '1fr 1fr';
+    pricingBlock.style.gap = '10px';
+
+    pricingBlock.innerHTML = `
+      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">Selling Price</label>${priceInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">Unit Cost</label>${costInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">RM Price</label>${rmPriceInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">DM Price</label>${dmPriceInputHtml}</div>
+    `;
 
     document.getElementById('itemEditModal').style.display = 'flex';
   },
@@ -415,15 +435,26 @@ const DatabaseManager = {
     let cat = document.getElementById('modalCat').value.trim();
     let shelf = document.getElementById('modalShelf').value.trim().toUpperCase();
     let status = document.getElementById('modalStatus').value;
+    
     let price = document.getElementById('modalPrice').value.trim();
     let costEl = document.getElementById('modalCost');
+    let rmPriceEl = document.getElementById('modalRmPrice');
+    let dmPriceEl = document.getElementById('modalDmPrice');
     
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
     let cost = (isAdmin && costEl) ? costEl.value.trim() : null;
+    let rmPrice = (isAdmin && rmPriceEl) ? rmPriceEl.value.trim() : null;
+    let dmPrice = (isAdmin && dmPriceEl) ? dmPriceEl.value.trim() : null;
 
     let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
     if (dbItem) {
-      let changed = (dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || (isAdmin && dbItem.price !== price) || (isAdmin && cost !== null && dbItem.cost !== cost));
+      let changed = (
+        dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || 
+        (isAdmin && dbItem.price !== price) || 
+        (isAdmin && cost !== null && dbItem.cost !== cost) ||
+        (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) ||
+        (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice)
+      );
       
       if (changed || dbItem.shelf !== shelf) {
         let changeNotes = [];
@@ -434,6 +465,8 @@ const DatabaseManager = {
         if (dbItem.status !== status) changeNotes.push(`Status: ${dbItem.status} -> ${status}`);
         if (isAdmin && dbItem.price !== price) changeNotes.push(`Price: ${dbItem.price} -> ${price}`);
         if (isAdmin && cost !== null && dbItem.cost !== cost) changeNotes.push(`Cost Updated`);
+        if (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) changeNotes.push(`RM Price Updated`);
+        if (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice) changeNotes.push(`DM Price Updated`);
 
         dbItem.mfr = mfr;
         dbItem.desc = desc;
@@ -443,6 +476,8 @@ const DatabaseManager = {
         if (isAdmin) {
           dbItem.price = price;
           if (cost !== null) dbItem.cost = cost;
+          if (rmPrice !== null) dbItem.revMedPrice = rmPrice;
+          if (dmPrice !== null) dbItem.dotMedPrice = dmPrice;
         }
 
         let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
@@ -453,11 +488,10 @@ const DatabaseManager = {
 
         localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
         
-        // ✨ NEW: Call the centralized Shopify Payload Builder
         let shopifyUpdatePayload = this.buildShopifyPayload([ref]);
 
         if (shopifyUpdatePayload.length > 0) {
-            fetch(SessionManager.getActiveArchiveUrl(), {
+            fetch(ApiManager.getActiveArchiveUrl(), {
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifyUpdatePayload })
             }).catch(e => console.warn("Shopify Database Editor update failed."));
@@ -465,12 +499,18 @@ const DatabaseManager = {
 
         if (changeNotes.length > 0) {
             let editPayload = {
-              id: Date.now().toString(), status: "Completed", userName: AuthManager.currentUser ? AuthManager.currentUser.name : "System Admin",
-              sessionName: "Database Editor Update", orderNum: "", workflowType: "Admin Adjustment",
+              id: Date.now().toString(), 
+              status: "Completed", 
+              isSynced: true, // ✨ FIX: Prevents Master Sync from uploading this a second time!
+              userName: AuthManager.currentUser ? AuthManager.currentUser.name : "System Admin",
+              sessionName: "Database Editor Update", 
+              orderNum: "", 
+              workflowType: "DB Edit: " + changeNotes.join(", "), // ✨ FIX: Injects specific changes into Workflow
               dateStr: new Date().toLocaleDateString().replace(/\//g, '.'), startStr: new Date().toLocaleTimeString(),
               manifestEnabled: false, expectedManifest: [],
               scannedObjects: [{
-                 actionTag: "DB Edit", gtin: dbItem.gtin || "N/A", ref: ref, lot: "N/A", exp: "N/A", mfr: mfr, desc: "Database Update",
+                 actionTag: changeNotes.join(" | "), // ✨ FIX: Injects specific changes into Destination/Action
+                 gtin: dbItem.gtin || "N/A", ref: ref, lot: "N/A", exp: "N/A", mfr: mfr, desc: "Database Update",
                  price: price, qty: 0, rawScanLines: [], isNew: false, customerTag: "", orderNum: "", sessionId: Date.now().toString(), itemNote: changeNotes.join(" | ")
               }],
               pendingNewItems: [], pendingUpdates: [], lastUpdated: Date.now()
@@ -479,6 +519,8 @@ const DatabaseManager = {
             let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
             archive.unshift(editPayload);
             localStorage.setItem('asp_session_archive', JSON.stringify(archive));
+            
+            // Push instantly to the cloud so the rest of the team can see the audit record
             if (typeof SessionManager !== 'undefined') SessionManager.pushToCloudArchive(editPayload);
         }
 
@@ -552,9 +594,18 @@ const DatabaseManager = {
     let itemSku = this.getItemSku(item);
     let itemVendor = this.getItemVendor(item);
     if (itemSku && !document.getElementById('refInput').value.trim()) document.getElementById('refInput').value = itemSku;
-    if (item.gtin && !document.getElementById('gtinInput').value.trim() && !document.getElementById('chkNaGtin').checked) {
-      document.getElementById('gtinInput').value = item.gtin;
+    
+    let gtinInput = document.getElementById('gtinInput');
+    if (gtinInput && !document.getElementById('chkNaGtin').checked) {
+        gtinInput.value = item.gtin || "";
     }
+
+    // ✨ NEW: Auto-fill the Shelf Location
+    let shelfInput = document.getElementById('shelfInput');
+    if (shelfInput) {
+        shelfInput.value = item.shelf || "";
+    }
+    
     if (itemVendor) {
       let vendorSelect = document.getElementById('vendorSelect');
       let targetOption = Array.from(vendorSelect.options).find(opt => opt.value.trim().toLowerCase() === itemVendor.trim().toLowerCase());
@@ -612,7 +663,7 @@ const DatabaseManager = {
             document.getElementById('dlProgressBar').style.width = `${(page/totalPages)*90}%`;
         }
         
-        let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=SYNC_DATABASE_CHUNKED&page=${page}&t=${Date.now()}`);
+        let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=SYNC_DATABASE_CHUNKED&page=${page}&t=${Date.now()}`);
         let text = await res.text();
         let data;
         
@@ -761,7 +812,7 @@ const DatabaseManager = {
           await new Promise(r => requestAnimationFrame(() => setTimeout(r, 100)));
           
           updateStep(2, "Transmitting to Google...", 66);
-          await fetch(SessionManager.getActiveArchiveUrl(), {
+          await fetch(ApiManager.getActiveArchiveUrl(), {
             method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(pushPayload)
           });

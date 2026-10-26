@@ -10,7 +10,7 @@ async function openActiveShipmentsHub() {
     modal.style.display = "flex"; 
 
     try {
-        let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_PENDING_SHIPMENTS`);
+        let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_PENDING_SHIPMENTS`);
         let data = await res.json();
         
         const buildHtml = (arr) => {
@@ -136,7 +136,7 @@ async function saveShipmentEdit() {
     };
 
     try {
-        let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+        let res = await fetch(ApiManager.getActiveArchiveUrl(), {
             method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         });

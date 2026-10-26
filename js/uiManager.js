@@ -342,17 +342,28 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let dbOnHand = parseInt(item.onHand || item.TotalQty, 10) || 0;
     let dbReserved = parseInt(item.reservedQty, 10) || 0;
     let dbAvailable = dbOnHand - dbReserved;
+    let dbShelf = item.shelf || 'Unassigned'; // ✨ NEW
 
     // --- LIVE CLOUD LOT TRACING ---
     resContainer.innerHTML = `
       <div style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:12px;">
         <div style="font-size:1.1rem; font-weight:bold; color:#00796b;">REF: ${ref}</div>
-        <div style="font-size:0.85rem; color:#555; margin-bottom:8px;">Manufacturer: <strong>${mfr}</strong></div>
-        <div style="font-size:0.85rem; color:#333; margin-bottom:10px;">${desc}</div>
-        <div style="background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.85rem;">
-          <span>Selling Price: <strong style="color:#2e7d32;">${price}</strong></span>
-          <span>Unit Cost: <strong style="color:#555;">${cost}</strong></span>
+        <div style="font-size:0.85rem; color:#555; margin-bottom:8px;">
+            Manufacturer: <strong>${mfr}</strong> | Shelf: <strong style="color:#0277bd;">${dbShelf}</strong>
         </div>
+        <div style="font-size:0.85rem; color:#333; margin-bottom:10px;">${desc}</div>
+        
+        <div style="background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; margin-bottom:12px; font-size:0.85rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+            <span>Selling Price: <strong style="color:#2e7d32;">${price}</strong></span>
+            <span>Unit Cost: <strong style="color:#555;">${cost}</strong></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding-top: 6px; border-top: 1px dashed #eee;">
+            <span>RM Price: <strong>${item.revMedPrice || ''}</strong></span>
+            <span>DM Price: <strong>${item.dotMedPrice || ''}</strong></span>
+          </div>
+        </div>
+
         <div style="font-weight:bold; font-size:0.85rem; color:#0277bd; margin-bottom:6px; display:flex; justify-content:space-between;">
           <span>Total On-Hand: ${dbOnHand}</span>
           <span style="color:${dbAvailable > 0 ? '#2e7d32' : '#c62828'};">Available to Sell: ${dbAvailable}</span>
@@ -362,42 +373,41 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     `;
 
     if (dbOnHand > 0 || dbReserved > 0) {
-      // If we have inventory, fetch the cloud log to build the exact lots
-      fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`)
+      // If we have inventory, fetch the clean, pre-calculated EXP_TRACK ledger
+      fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_EXP_TRACK&t=${Date.now()}`)
         .then(res => res.text())
         .then(text => {
           let responseData = JSON.parse(text);
           if (responseData.status !== "success" || !responseData.data) throw new Error("Failed");
 
-          let lotMap = {};
-          responseData.data.forEach(row => {
-            let rowRef = row['REF / SKU'];
-            let lot = row['Lot'];
-            let exp = row['Exp Date'];
-            let qty = parseInt(row['Qty Moved'], 10) || 0;
-            let workflow = row['Workflow'] || '';
-            
-            if (rowRef === ref && lot && lot !== 'N/A') {
-              let key = `${lot}_${exp}`;
-              if (!lotMap[key]) lotMap[key] = { lot: lot, exp: exp, qty: 0 };
-              
-              if (workflow.includes('Receiving') || workflow.includes('Stocktake')) { lotMap[key].qty += qty; }
-              else if (workflow.includes('Packing') || workflow.includes('Pack & Ship')) { lotMap[key].qty -= qty; }
-            }
-          });
-
           let lotRows = '';
-          Object.values(lotMap).filter(l => l.qty > 0).sort((a,b) => new Date(a.exp) - new Date(b.exp)).forEach(l => {
-            let expDate = new Date(l.exp);
-            let monthsLeft = (expDate - new Date()) / (1000 * 60 * 60 * 24 * 30);
-            let alertBadge = monthsLeft <= 6 ? '<span style="color:#d32f2f; font-weight:bold;">🚨 Short (<6m)</span>' : (monthsLeft <= 12 ? '<span style="color:#f57f17; font-weight:bold;">⚠️ Short (<12m)</span>' : '');
-            lotRows += `<tr style="border-bottom:1px solid #eee;"><td style="padding:4px;"><strong>${l.lot}</strong></td><td style="padding:4px;">${l.exp}</td><td style="padding:4px; text-align:center; font-weight:bold;">${l.qty}</td><td style="padding:4px; text-align:right; font-size:0.75rem;">${alertBadge}</td></tr>`;
+          let shelf = item.shelf ? item.shelf : '--'; // ✨ Pulls shelf location from local DB
+
+          // ✨ THE FIX: Match the exact ALL-CAPS headers from Google Sheets!
+          let activeLots = responseData.data.filter(row => String(row['REF / SKU']).trim().toUpperCase() === String(ref).trim().toUpperCase() && parseInt(row['QTY'], 10) > 0);
+
+          activeLots.sort((a,b) => new Date(a['EXP DATE']) - new Date(b['EXP DATE'])).forEach(l => {
+            lotRows += `
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:4px;"><strong>${l['LOT']}</strong></td>
+                <td style="padding:4px;">${l['EXP DATE']}</td>
+                <td style="padding:4px; text-align:center; font-weight:bold; color:#0277bd;">${l['QTY']}</td>
+                <td style="padding:4px; text-align:right; font-size:0.75rem; color:#555; font-weight:bold;">${shelf}</td>
+              </tr>`;
           });
 
           let box = document.getElementById('quickLookupLotBox');
           if (box) {
             box.innerHTML = lotRows 
-              ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd; margin-top:8px;"><tr style="background:#eee; text-align:left;"><th style="padding:4px;">Lot</th><th style="padding:4px;">Exp</th><th style="padding:4px; text-align:center;">Qty</th><th style="padding:4px; text-align:right;">Status</th></tr>${lotRows}</table>`
+              ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd; margin-top:8px;">
+                   <tr style="background:#eee; text-align:left;">
+                     <th style="padding:4px;">Lot</th>
+                     <th style="padding:4px;">Exp</th>
+                     <th style="padding:4px; text-align:center;">Qty</th>
+                     <th style="padding:4px; text-align:right;">Shelf</th>
+                   </tr>
+                   ${lotRows}
+                 </table>`
               : `<div style="font-size:0.8rem; color:#777; font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
             box.style.textAlign = 'left';
             box.style.padding = '0';
@@ -678,7 +688,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
     try {
       let localLastSync = parseInt(localStorage.getItem('asp_last_cloud_sync') || '0', 10);
-      let res = await fetch(`${SessionManager.cloudArchiveUrl}?action=CHECK_VERSION`);
+      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=CHECK_VERSION`);
       let data = await res.json();
 
       if (data && data.lastUpdated && data.lastUpdated > localLastSync) {
@@ -817,7 +827,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     };
 
     try {
-      let activeUrl = (typeof SessionManager !== 'undefined') ? SessionManager.cloudArchiveUrl : ENV_CONFIG.CLOUD_ARCHIVE_URL;
+      let activeUrl = (typeof ApiManager !== 'undefined') ? ApiManager.cloudArchiveUrl : ENV_CONFIG.CLOUD_ARCHIVE_URL;
       
       await fetch(activeUrl, {
         method: 'POST',
@@ -900,6 +910,39 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     console.log = (...args) => { originalLog.apply(console, args); logToUI(args.join(' '), '#a5d6a7'); };
     console.warn = (...args) => { originalWarn.apply(console, args); logToUI(args.join(' '), '#ffcc80'); };
     console.error = (...args) => { originalError.apply(console, args); logToUI(args.join(' '), '#ef9a9a'); };
+  },
+
+  showShopifySyncingBadge(show, count = 0, currentBatch = 0, totalBatches = 0) {
+      let badge = document.getElementById('floatingShopifyBadge');
+      if (!badge && show) {
+          badge = document.createElement('div');
+          badge.id = 'floatingShopifyBadge';
+          badge.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#f57f17; color:#fff; padding:12px 20px; border-radius:8px; font-weight:bold; font-size:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:999999; display:flex; flex-direction:column; gap:8px; width: 300px; text-align:center;';
+          document.body.appendChild(badge);
+      }
+      if (show && badge) {
+          let pct = totalBatches > 0 ? Math.round((currentBatch / totalBatches) * 100) : 0;
+          badge.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                <div style="width:16px; height:16px; border:3px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div> 
+                <span>Syncing ${count} updates to Shopify...please wait to close or refresh the browser.</span>
+            </div>
+            <div style="font-size:0.75rem; color:#ffe082;">Batch ${currentBatch} of ${totalBatches}</div>
+            <div style="width:100%; background:rgba(255,255,255,0.3); border-radius:4px; height:6px; overflow:hidden; margin-top:2px;">
+                <div style="width:${pct}%; background:#fff; height:100%; transition: width 0.5s ease;"></div>
+            </div>
+          `;
+          badge.style.display = 'flex';
+          if (!document.getElementById('spinKeyframes')) {
+              let style = document.createElement('style'); style.id = 'spinKeyframes';
+              style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+              document.head.appendChild(style);
+          }
+      } else if (!show && badge) {
+          badge.innerHTML = `✅ Shopify Sync Complete`;
+          badge.style.backgroundColor = '#2e7d32';
+          setTimeout(() => badge.style.display = 'none', 3000);
+      }
   },
 
   toggleDebugConsole() {

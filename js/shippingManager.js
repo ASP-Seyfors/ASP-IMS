@@ -264,7 +264,7 @@ const ShippingManager = {
 
             let valData = { status: "error", isValid: false };
             try {
-                let valRes = await fetch(SessionManager.getActiveArchiveUrl(), {
+                let valRes = await fetch(ApiManager.getActiveArchiveUrl(), {
                     method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(valPayload)
                 });
@@ -299,7 +299,7 @@ const ShippingManager = {
                 }
             };
 
-            let rateRes = await fetch(SessionManager.getActiveArchiveUrl(), {
+            let rateRes = await fetch(ApiManager.getActiveArchiveUrl(), {
                 method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(quotePayload)
             });
@@ -372,7 +372,7 @@ const ShippingManager = {
                 }
             };
 
-            let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+            let res = await fetch(ApiManager.getActiveArchiveUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
@@ -443,7 +443,7 @@ const ShippingManager = {
                 }
             };
 
-            let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+            let res = await fetch(ApiManager.getActiveArchiveUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
@@ -619,7 +619,7 @@ const ShippingManager = {
             };
 
             try {
-                let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+                let res = await fetch(ApiManager.getActiveArchiveUrl(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
@@ -751,7 +751,7 @@ const ShippingManager = {
             };
             try {
                 // Fire without awaiting so it doesn't freeze or slow down the skip UI
-                fetch(SessionManager.getActiveArchiveUrl(), {
+                fetch(ApiManager.getActiveArchiveUrl(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
@@ -796,7 +796,7 @@ const ShippingManager = {
         };
 
         try {
-            let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+            let res = await fetch(ApiManager.getActiveArchiveUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
@@ -855,7 +855,7 @@ const ShippingManager = {
         modal.style.display = 'flex';
         
         try {
-            let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_PENDING_SHIPMENTS`);
+            let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_PENDING_SHIPMENTS`);
             let data = await res.json();
             
             if (!data.incoming || data.incoming.length === 0) {
@@ -909,7 +909,7 @@ const ShippingManager = {
         let sessionNotes = document.getElementById('sessionNoteInput') ? document.getElementById('sessionNoteInput').value.trim() : "";
         
         try {
-            await fetch(SessionManager.getActiveArchiveUrl(), {
+            await fetch(ApiManager.getActiveArchiveUrl(), {
                 method: 'POST',
                 headers: {'Content-Type': 'text/plain;charset=utf-8'},
                 body: JSON.stringify({

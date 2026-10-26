@@ -234,6 +234,20 @@ body.theme-sage #shipmentTrackingModal div[style*="background"] a {
 ========================================================= */
 
 /* 1. Edit Item Details Modal (Screenshot 37 - Missing from Dark Mode list) */
+body.theme-slate #itemEditModal input[type="text"], body.theme-sage #itemEditModal input[type="text"],
+body.theme-slate #itemEditModal input[type="number"], body.theme-sage #itemEditModal input[type="number"],
+body.theme-slate #itemEditModal select, body.theme-sage #itemEditModal select,
+body.theme-slate #itemEditModal textarea, body.theme-sage #itemEditModal textarea {
+    background-color: var(--input-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.theme-slate #itemEditModal input[type="text"][readonly], body.theme-sage #itemEditModal input[type="text"][readonly] {
+    background-color: var(--raw-bg) !important;
+    color: #888 !important;
+}
+
 body.theme-slate #itemEditModal > div,
 body.theme-sage #itemEditModal > div {
     background-color: var(--card-bg) !important;

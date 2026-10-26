@@ -441,9 +441,9 @@ const AuthManager = {
 
     let payload = { action: "UPDATE_USER_STATUS", payload: { email: email, status: status } };
     
-    if (typeof SessionManager !== 'undefined' && SessionManager.getActiveArchiveUrl()) {
-        // ✨ NEW: Cache-buster (?t=...) forces a fresh network request every time
-        let targetUrl = `${SessionManager.getActiveArchiveUrl()}?t=${Date.now()}`;
+    // ✨ FIX: Swapped SessionManager for ApiManager
+    if (typeof ApiManager !== 'undefined' && ApiManager.getActiveArchiveUrl()) {
+        let targetUrl = `${ApiManager.getActiveArchiveUrl()}?t=${Date.now()}`;
         
         return fetch(targetUrl, { 
             method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' },

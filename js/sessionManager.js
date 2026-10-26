@@ -1,23 +1,7 @@
 /* =======================================================================
  * Allied Surgical Products - Inventory Management System
  * File: js/sessionManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Session lifecycle orchestrator. Handles workflow state management, 
- *   real-time scanning memory storage, Pre-Load Manifest verification, 
- *   and API payloads to Google Apps Script.
- *
- * Affected Features:
- *   - Pre-Load Manifests & Discrepancy Trackers
- *   - QBO Feeder Integration
- *   - Cloud Archiving & Payload Auto-Splitting
- *   - Local Device History & Offloading
- *   - Sandbox / Production API Routing
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
+ * Description: Core session lifecycle orchestrator.
  * ======================================================================= */
 const SessionManager = {
   scannedObjects: JSON.parse(localStorage.getItem('asp_session_scanned_objects')) || [],
@@ -38,45 +22,20 @@ const SessionManager = {
   currentMatchedItem: null,
 
   sessionId: localStorage.getItem('asp_session_id') || "",
-
   currentArchiveTab: 'local',
 
-  fetchedStagedData: {},
-
-  // Cloud URLs
-  cloudArchiveUrl: ENV_CONFIG.CLOUD_ARCHIVE_URL,
-  googleFeederUrl: ENV_CONFIG.GOOGLE_FEEDER_URL,
-
-  // Sandbox URLs
-  /*
-  testArchiveUrl: "https://script.google.com/macros/s/AKfycbwHNk0QL0Cu1bInJxjDqGxvQ-RdPD8xJaPVV3OpTdAOVJZBhppqieVj7AKS_j2B5QpuBQ/exec", 
-  testFeederUrl: "https://script.google.com/macros/s/AKfycbyugIbNY6XYvume81EmEklb32uFxuesGE9et3XrImUjYtHjkbKR6Q6goIHABAZ0P0BQfg/exec", 
-
-  getActiveArchiveUrl() {
-    let chk = document.getElementById('chkSandboxMode');
-    return (chk && chk.checked) ? this.testArchiveUrl : this.cloudArchiveUrl;
-  },
-  
-  getActiveFeederUrl() {
-    let chk = document.getElementById('chkSandboxMode');
-    return (chk && chk.checked) ? (this.testFeederUrl || this.googleFeederUrl) : this.googleFeederUrl;
-  },
-  */
-
-  getActiveArchiveUrl() {
-    return this.cloudArchiveUrl;
-  },
-  
-  getActiveFeederUrl() {
-    return this.googleFeederUrl;
-  },
+  // PROXY ROUTERS to prevent breaking downstream files during refactor
+  getActiveArchiveUrl() { return ApiManager.getActiveArchiveUrl(); },
+  getActiveFeederUrl() { return ApiManager.getActiveFeederUrl(); },
+  get cloudArchiveUrl() { return ApiManager.cloudArchiveUrl; },
+  get googleFeederUrl() { return ApiManager.googleFeederUrl; },
 
   applyTestingModeVisuals(isTestActive) {
     if (isTestActive) {
-      document.body.style.backgroundColor = '#fff3e0'; // Warm orange
+      document.body.style.backgroundColor = '#fff3e0'; 
       document.querySelectorAll('.card').forEach(card => {
         card.style.borderColor = '#ff9800';
-        card.style.backgroundColor = '#e1f5fe'; // Light blue
+        card.style.backgroundColor = '#e1f5fe'; 
       });
     } else {
       document.body.style.backgroundColor = '';
@@ -89,36 +48,23 @@ const SessionManager = {
 
   async pushToCloudArchive(sessionObj) {
     if (!this.getActiveArchiveUrl()) return; 
-    
     let chunks = this.splitPayloadIfNeeded(sessionObj);
-    
     for (let chunk of chunks) {
-      let payload = {
-        action: "ARCHIVE_SESSION",
-        payload: chunk
-      };
-
+      let payload = { action: "ARCHIVE_SESSION", payload: chunk };
       try {
         await fetch(this.getActiveArchiveUrl(), {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
-      } catch(err) {
-        console.warn("Background Cloud Archive push failed for chunk:", err);
-      }
+      } catch(err) { console.warn("Cloud Archive push failed:", err); }
     }
   },
 
   splitPayloadIfNeeded(sessionObj) {
     const MAX_CHARS = 45000;
     let fullString = JSON.stringify(sessionObj);
-    if (fullString.length <= MAX_CHARS) {
-      return [sessionObj];
-    }
+    if (fullString.length <= MAX_CHARS) return [sessionObj];
 
-    // Group scans by REF to prevent mathematical zero-outs during Event Replay
     let scansByRef = {};
     sessionObj.scannedObjects.forEach(scan => {
       let ref = scan.ref || 'UNKNOWN';
@@ -126,15 +72,13 @@ const SessionManager = {
       scansByRef[ref].push(scan);
     });
 
-    let chunks = [];
-    let currentScans = [];
+    let chunks = []; let currentScans = [];
     let baseSession = { ...sessionObj, scannedObjects: [] };
     let currentSize = JSON.stringify(baseSession).length + 50;
 
     for (let ref in scansByRef) {
       let refScans = scansByRef[ref];
       let refStrLen = JSON.stringify(refScans).length;
-      
       if (currentSize + refStrLen > MAX_CHARS && currentScans.length > 0) {
         chunks.push(currentScans);
         currentScans = [];
@@ -154,15 +98,9 @@ const SessionManager = {
       newSess.scannedObjects = chunks[i];
       newSess.sessionName = `${sessionObj.sessionName} (Part ${i + 1} of ${chunks.length})`;
       newSess.id = String(baseId + i);
-      
-      // CRITICAL: Prevent subsequent parts from wiping the database during Event Replay
-      if (i > 0 && newSess.workflowType === 'Full Stocktake') {
-        newSess.workflowType = 'Selection Stocktake';
-      }
-      
+      if (i > 0 && newSess.workflowType === 'Full Stocktake') newSess.workflowType = 'Selection Stocktake';
       splitSessions.push(newSess);
     }
-    
     return splitSessions;
   },
 
@@ -172,12 +110,11 @@ const SessionManager = {
     let btnCloud = document.getElementById('tabCloudArchive');
     
     if (tabName === 'local') {
-      btnLocal.style.backgroundColor = '#0277bd'; btnLocal.style.color = '#fff'; btnLocal.style.border = '1px solid #0277bd';
-      btnCloud.style.backgroundColor = '#f5f5f5'; btnCloud.style.color = '#555'; btnCloud.style.border = '1px solid #ccc';
+      btnLocal.style.cssText = 'background-color:#0277bd; color:#fff; border:1px solid #0277bd;';
+      btnCloud.style.cssText = 'background-color:#f5f5f5; color:#555; border:1px solid #ccc;';
     } else {
-      btnCloud.style.backgroundColor = '#0277bd'; btnCloud.style.color = '#fff'; btnCloud.style.border = '1px solid #0277bd';
-      btnLocal.style.backgroundColor = '#f5f5f5'; btnLocal.style.color = '#555'; btnLocal.style.border = '1px solid #ccc';
-      
+      btnCloud.style.cssText = 'background-color:#0277bd; color:#fff; border:1px solid #0277bd;';
+      btnLocal.style.cssText = 'background-color:#f5f5f5; color:#555; border:1px solid #ccc;';
       let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
       if (dir.length === 0) this.syncCloudArchive();
     }
@@ -185,32 +122,12 @@ const SessionManager = {
   },
 
   async syncAllocationsToCloud() {
-    // ✨ CIRCUIT BREAKER ADDITION: Abort upload if we cannot verify we have the full picture
-    if (sessionStorage.getItem('asp_allocations_verified') !== 'true') {
-        console.warn("ABORTED: Cannot upload allocations because the local cache was not successfully verified with the cloud.");
-        return;
-    }
-
-    let rawAllocations = localStorage.getItem('asp_allocations') || '{}';
-    let allocationsObj = JSON.parse(rawAllocations);
-    
-    let payload = {
-      action: "SYNC_ALLOCATIONS",
-      allocations: allocationsObj,
-      // ✨ FIX: Transmit the alias dictionary so Apps Script can restore proper casing
-      aliases: DatabaseManager.customerAliases || {} 
-    };
-
+    if (sessionStorage.getItem('asp_allocations_verified') !== 'true') return;
+    let allocationsObj = JSON.parse(localStorage.getItem('asp_allocations') || '{}');
+    let payload = { action: "SYNC_ALLOCATIONS", allocations: allocationsObj, aliases: DatabaseManager.customerAliases || {} };
     try {
-      await fetch(this.getActiveArchiveUrl(), {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-    } catch (err) {
-      console.warn("Background allocation sync failed:", err);
-    }
+      await fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    } catch (err) { console.warn("Allocation sync failed:", err); }
   },
 
   async fetchAllocationsFromCloud() {
@@ -220,80 +137,37 @@ const SessionManager = {
       if (data.status === "success" && data.allocations) {
         let allocMap = {};
         data.allocations.forEach(a => {
-          // ✨ FIX: Run incoming cloud data through the Alias Resolver to auto-merge legacy/manual sheet entries!
-          let rawCustName = String(a.customerName).trim();
-          let resolvedName = (typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') 
-              ? DatabaseManager.resolveAlias(rawCustName, 'customer') 
-              : rawCustName;
-              
-          let cleanCustName = resolvedName.toUpperCase(); 
-          
+          let cleanCustName = DatabaseManager.resolveAlias(String(a.customerName).trim(), 'customer').toUpperCase(); 
           if (!allocMap[cleanCustName]) allocMap[cleanCustName] = {};
-          
-          if (!allocMap[cleanCustName][a.ref]) {
-              allocMap[cleanCustName][a.ref] = { qty: 0, details: [] };
-          }
-          
-          let cleanExp = a.exp || 'NO_EXP';
-          if (typeof cleanExp === 'string' && cleanExp.includes('T')) cleanExp = cleanExp.split('T')[0];
-          
+          if (!allocMap[cleanCustName][a.ref]) allocMap[cleanCustName][a.ref] = { qty: 0, details: [] };
+          let cleanExp = typeof a.exp === 'string' && a.exp.includes('T') ? a.exp.split('T')[0] : (a.exp || 'NO_EXP');
           let safeQty = parseInt(a.qty, 10) || 0;
-          
           allocMap[cleanCustName][a.ref].qty += safeQty;
-          allocMap[cleanCustName][a.ref].details.push({
-             lot: a.lot, exp: cleanExp, qty: safeQty, orderNum: a.orderNum, sessionId: a.sessionId
-          });
+          allocMap[cleanCustName][a.ref].details.push({ lot: a.lot, exp: cleanExp, qty: safeQty, orderNum: a.orderNum, sessionId: a.sessionId });
         });
         localStorage.setItem('asp_allocations', JSON.stringify(allocMap));
-        
-        // ✨ CIRCUIT BREAKER ADDITION: Mark successful download
         sessionStorage.setItem('asp_allocations_verified', 'true');
-      } else {
-        throw new Error("Invalid payload received from cloud.");
-      }
-    } catch (err) {
-      console.warn("Failed to fetch cloud allocations:", err);
-      // ✨ CIRCUIT BREAKER ADDITION: Revoke upload permission if download fails
-      sessionStorage.removeItem('asp_allocations_verified');
-    }
+      } else throw new Error("Invalid payload.");
+    } catch (err) { sessionStorage.removeItem('asp_allocations_verified'); }
   },
 
   async syncCloudArchive(event, silent = false) {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "☁️ Sync Directory";
     if (btn) { btn.textContent = "⏳ Syncing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
-
     try {
       let res = await fetch(`${this.getActiveArchiveUrl()}?action=SYNC_DIRECTORY&t=${Date.now()}`);
       let text = await res.text();
-      
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseErr) {
-        throw new Error("Cloud Vault returned an HTML error page. Check your Apps Script deployment permissions.");
-      }
-      
+      let data = JSON.parse(text);
       if (data.status === "success" && data.archive) {
         localStorage.setItem('asp_cloud_directory', JSON.stringify(data.archive));
-
-        if (data.db && typeof DatabaseManager !== 'undefined') {
-          DatabaseManager.importCloudDatabase(data.db);
-        }
-        
+        if (data.db && typeof DatabaseManager !== 'undefined') DatabaseManager.importCloudDatabase(data.db);
         await this.fetchAllocationsFromCloud();
-
         if (this.currentArchiveTab === 'cloud') this.renderArchiveList();
         if (!silent) alert(`Cloud Directory Synced! Found ${data.archive.length} total sessions in the vault.`);
-      } else {
-        alert("Sync failed: " + (data.message || "Unknown error"));
-      }
-    } catch (err) {
-      if (!silent) alert("Error connecting to Cloud Vault: " + err.message);
-      else console.warn("Cloud Vault sync warning:", err.message);
-    } finally {
-      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
-    }
+      } else alert("Sync failed.");
+    } catch (err) { if (!silent) alert("Error connecting: " + err.message);
+    } finally { if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; } }
   },
 
   async pushLegacySessionsToCloud(event, silent = false) {
@@ -303,40 +177,15 @@ const SessionManager = {
 
     let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
     let completedSessions = archive.filter(s => s.status === 'Completed' && !s.isSynced);
-
     if (completedSessions.length === 0) {
-      localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
-      localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-      if (!silent) alert("All completed sessions are already synchronized with the Cloud Archive.");
       if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
       return;
     }
-
-    let successCount = 0;
     for (let session of completedSessions) {
-      try {
-        let chunks = this.splitPayloadIfNeeded(session);
-        for (let chunk of chunks) {
-            let payload = { action: "ARCHIVE_SESSION", payload: chunk };
-            await fetch(this.getActiveArchiveUrl(), {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify(payload)
-            });
-        }
-        session.isSynced = true;
-        successCount++;
-      } catch (err) {
-        console.warn(`Failed to push session: ${session.sessionName}`, err);
-      }
+      await this.pushToCloudArchive(session);
+      session.isSynced = true;
     }
-
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
-    localStorage.setItem('asp_pending_new_items', JSON.stringify([]));
-    localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-
-    if (!silent) alert(`Successfully pushed ${successCount} session(s) to the Cloud Archive!`);
     if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
   },
 
@@ -344,166 +193,15 @@ const SessionManager = {
     const btn = event ? event.target : null;
     const originalText = btn ? btn.textContent : "🧹 Offload & Purge Local History";
     if (btn) { btn.textContent = "⏳ Processing..."; btn.disabled = true; btn.style.opacity = "0.7"; }
-
     try {
       await this.pushLegacySessionsToCloud(null, true);
       let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-      let initialCount = archive.length;
       let retainedArchive = archive.filter(s => s.status === 'Pending');
-      let purgedCount = initialCount - retainedArchive.length;
       localStorage.setItem('asp_session_archive', JSON.stringify(retainedArchive));
-
-      if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) {
-        UIManager.evaluateSyncIndicator();
-      }
-
-      alert(`✅ Offload Complete!\n\nSuccessfully pushed any missing data to the cloud and purged ${purgedCount} old sessions from local memory. Your device storage is now optimized.`);
-    } catch (err) {
-      alert("Error during offload and purge: " + err.message);
-    } finally {
-      if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
-    }
-  },
-
-  async fetchStagedSessions(silent = false) {
-    if (!this.getActiveFeederUrl() || this.getActiveFeederUrl().includes("YOUR_")) return;
-
-    this.fetchedStagedData = {};
-    let manualData = { stagedSessions: {} };
-    let qboData = { stagedSessions: {} };
-
-    // 1. Fetch Manual Orders from the Feeder URL (Safely)
-    try {
-      // ✨ ADDED: Cache-buster (?t=...) prevents Google from returning stale data
-      let feederUrl = this.getActiveFeederUrl();
-      let joiner = feederUrl.includes('?') ? '&' : '?';
-      let manualRes = await fetch(`${feederUrl}${joiner}t=${Date.now()}`);
-      let manualText = await manualRes.text();
-      if (manualText.trim().startsWith('{')) {
-          manualData = JSON.parse(manualText);
-      }
-    } catch (e) { console.warn("Manual Orders Feed failed:", e); }
-
-    // 2. Fetch QBO Invoices from the Database URL (Safely)
-    try {
-      // ✨ ADDED: Cache-buster (&t=...) guarantees we pull the newest QBO invoices
-      let qboRes = await fetch(`${this.getActiveArchiveUrl()}?action=GET_QBO_FEED&t=${Date.now()}`);
-      let qboText = await qboRes.text();
-      if (qboText.trim().startsWith('{')) {
-          qboData = JSON.parse(qboText);
-      }
-    } catch (e) { console.warn("QBO Feed failed:", e); }
-
-    // Merge the session data safely
-    this.fetchedStagedData = {
-        ...(manualData.stagedSessions || {}),
-        ...(qboData.stagedSessions || {})
-    };
-    
-    // Preserve the Customer Analytics from the Orders Script
-    if (manualData.customerAnalytics) {
-      localStorage.setItem('asp_remote_analytics', JSON.stringify(manualData.customerAnalytics));
-      localStorage.setItem('asp_remote_customers', JSON.stringify(manualData.customerList));
-    }
-    
-    let select = document.getElementById('stagedOrdersSelect');
-    if (select) {
-      select.innerHTML = '<option value="">-- Select Staged Order --</option>';
-      let count = 0;
-      for (let sessionName in this.fetchedStagedData) {
-        let sessionObj = this.fetchedStagedData[sessionName];
-        let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
-        if (sessionObj.isCompleted === true || sessionObj.status === 'COMPLETED') continue;
-
-        let opt = document.createElement('option');
-        opt.value = sessionName;
-        opt.textContent = `📦 ${sessionName} (${items.length} items)`;
-        select.appendChild(opt);
-        count++;
-      }
-
-      if (typeof UIManager !== 'undefined' && UIManager.populateCustomerDropdown) {
-        UIManager.populateCustomerDropdown();
-      }
-
-      if (!silent) {
-        if (count > 0) alert(`Successfully synced! Found ${count} staged orders and updated Customer Analytics.`);
-        else alert("Synced successfully, but no staged orders found in either feed.");
-      }
-    }
-  },
-
-  async triggerQboSync(event, silent = false) {
-    if (typeof AuthManager === 'undefined' || !AuthManager.currentUser || !AuthManager.currentUser.isAdmin) {
-      if (!silent) alert("Access Denied: You must be an Administrator to run QuickBooks automations.");
-      return;
-    }
-    
-    const btn = event ? event.target : null;
-    const originalText = btn ? btn.textContent : "Fetch QBO";
-    if (btn && !silent) { btn.textContent = "⏳ Fetching QBO..."; btn.disabled = true; btn.style.opacity = "0.7"; }
-
-    try {
-      // ✨ THE FIX: Removed 'no-cors' so the app actually waits for QBO to finish!
-      let res = await fetch(this.getActiveArchiveUrl(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-        body: JSON.stringify({ action: "FETCH_QBO" })
-      });
-      
-      let data = await res.json();
-      if (data.status === "error") throw new Error(data.message);
-
-      // Now that we know QBO is done, update the frontend dropdown
-      await this.fetchStagedSessions(true);
-
-      if (!silent) {
-          if (data.count === 0) alert("✅ Sync Complete! No pending open invoices currently staged.");
-          else alert(`✅ QuickBooks Sync Complete! You have ${data.count} open invoice(s) pending fulfillment.`);
-      }
-    } catch (err) {
-      if (!silent) alert("Error triggering QBO Sync: " + err.message);
-    } finally {
-      if (btn && !silent) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; }
-    }
-  },
-
-  loadSelectedStagedOrder(sessionName) {
-    if (!sessionName || !this.fetchedStagedData[sessionName]) return;
-    
-    let sessionObj = this.fetchedStagedData[sessionName];
-    let items = Array.isArray(sessionObj) ? sessionObj : (sessionObj.items || []);
-    let isDone = sessionObj.isCompleted === true;
-
-    if (isDone) {
-      let confirmRescan = confirm(`Notice: "${sessionName}" is already marked as COMPLETED in your logs.\n\nDo you want to re-load this order into the Pre-Load Manifest for a re-scan?`);
-      if (!confirmRescan) {
-        document.getElementById('stagedOrdersSelect').value = "";
-        return;
-      }
-    }
-
-    let chk = document.getElementById('chkPreloadManifest');
-    if (chk) chk.checked = true;
-    
-    let detailsInput = document.getElementById('orderDetailsInput');
-    if (detailsInput) detailsInput.value = sessionName;
-    
-    this.expectedManifest = [];
-    items.forEach(item => {
-      let isRes = item.customerTag && !item.customerTag.toUpperCase().includes('SHELF');
-      this.expectedManifest.push({
-        ref: item.sku,
-        expectedQty: item.qty,
-        isReserved: isRes,
-        customerTag: item.customerTag || '',
-        reservedQty: item.qty,
-        allocations: isRes ? [{ customerTag: item.customerTag, reservedQty: item.qty }] : []
-      });
-    });
-
-    localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
-    alert(`Loaded "${sessionName}" with ${items.length} items into Pre-Load Manifest!`);
+      if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) UIManager.evaluateSyncIndicator();
+      alert(`✅ Offload Complete! Devices storage is now optimized.`);
+    } catch (err) { alert("Error: " + err.message);
+    } finally { if (btn) { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = "1"; } }
   },
 
   init() {
@@ -520,17 +218,13 @@ const SessionManager = {
         sel.innerHTML = '';
         sel.add(first);
         opts.forEach(o => sel.add(o));
-        
-        // ✨ iOS SAFARI FIX: Invisible bumpers prevent the bottom option from clipping
         let spacer1 = document.createElement('option'); spacer1.disabled = true; spacer1.text = " ";
-        let spacer2 = document.createElement('option'); spacer2.disabled = true; spacer2.text = " ";
-        sel.add(spacer1); sel.add(spacer2);
+        sel.add(spacer1);
       }
     });
 
     if (typeof UIManager !== 'undefined' && UIManager.loadFontPreference) UIManager.loadFontPreference();
-
-    this.bindOrderInputListener(); 
+    QboManager.bindOrderInputListener(); 
   },
 
   startStocktakeSession(mode) {
@@ -538,7 +232,7 @@ const SessionManager = {
     if (typeof AuthManager !== 'undefined' && AuthManager.isWorkstation) {
         let sel = document.getElementById('userNameSelect');
         uName = sel ? sel.value : "";
-        if (!uName) { alert("Please select your User Name from the dropdown before starting a session."); return; }
+        if (!uName) { alert("Select User Name before starting a session."); return; }
     }
     
     this.currentUserName = uName || "Operator";
@@ -554,7 +248,6 @@ const SessionManager = {
 
     this.sessionId = Date.now().toString();
     localStorage.setItem('asp_session_id', this.sessionId);
-
     localStorage.setItem('asp_session_is_active', 'true');
     localStorage.setItem('asp_manifest_enabled', 'false');
     localStorage.setItem('asp_user_name', this.currentUserName);
@@ -570,53 +263,38 @@ const SessionManager = {
     localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
     this.updateHeaderBanners();
-    this.updateManifestProgressUI();
+    ManifestManager.updateManifestProgressUI();
     
-    if (typeof UIManager !== 'undefined' && UIManager.closeStocktakeModal) UIManager.closeStocktakeModal();
-    if (typeof UIManager !== 'undefined') UIManager.lockCheatCodes(); // ✨ Added
+    if (typeof UIManager !== 'undefined') {
+       if (UIManager.closeStocktakeModal) UIManager.closeStocktakeModal();
+       UIManager.lockCheatCodes(); 
+    }
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenScanning').style.display = 'block';
 
     let destRow = document.getElementById('rowItemDestination');
-    let tagRow = document.getElementById('rowCustomerTag');
-    
-    // ✨ FIX: Allow Destination toggle during Stocktake so users can tag Reserved bins
     if (destRow) destRow.style.display = 'flex';
-    if (tagRow) tagRow.style.display = 'none'; // Only shows if they click 'Reserved'
-    
     this.currentItemAction = 'Inventory';
     ScannerManager.resetScanLinesAndFields();
   },
 
   startSession() {
-    // ✨ FIX: Intercept the start button using the correct dropdown values
-    const typeRadio = document.querySelector('input[name="sessionType"]:checked');
-    const wType = typeRadio && typeRadio.value === 'Shipment' ? 'Receiving & Reserving' : document.getElementById('workflowTypeSelect').value;
-    
-    //if (typeRadio && typeRadio.value === 'Order' && wType.includes('Un-Reserve')) {
-    //    this.openUnreserveModal();
-    //    return; // Stops the normal blank session from starting
-    //}
-    
     try {
       let uName = document.getElementById('userNameInput').value.trim();
       if (typeof AuthManager !== 'undefined' && AuthManager.isWorkstation) {
           let sel = document.getElementById('userNameSelect');
           uName = sel ? sel.value : "";
-          if (!uName) { alert("Please select your User Name from the dropdown before starting a session."); return; }
+          if (!uName) { alert("Select User Name before starting a session."); return; }
       }
       
-      const type = document.querySelector('input[name="sessionType"]:checked').value;
+      const typeRadio = document.querySelector('input[name="sessionType"]:checked');
+      const type = typeRadio ? typeRadio.value : 'Shipment';
+      
       let supplier = document.getElementById('supplierSelect') ? document.getElementById('supplierSelect').value.trim() : '';
       let customer = document.getElementById('customerSelect') ? document.getElementById('customerSelect').value.trim() : '';
       
-      // ✨ NEW: Intercept aliases from the Setup Screen
-      if (supplier && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
-          supplier = DatabaseManager.resolveAlias(supplier, 'supplier');
-      }
-      if (customer && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
-          customer = DatabaseManager.resolveAlias(customer, 'customer');
-      }
+      if (supplier && typeof DatabaseManager !== 'undefined') supplier = DatabaseManager.resolveAlias(supplier, 'supplier');
+      if (customer && typeof DatabaseManager !== 'undefined') customer = DatabaseManager.resolveAlias(customer, 'customer');
 
       let partner = type === 'Shipment' ? supplier : customer;
       const oDetails = document.getElementById('orderDetailsInput').value.trim();
@@ -629,12 +307,9 @@ const SessionManager = {
       }
 
       let baseSessName = document.getElementById('sessionNameInput') ? document.getElementById('sessionNameInput').value.trim() : '';
-      
-      // ✨ NEW: If they typed an alias directly into the custom Session Name box, fix it
-      if (baseSessName && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
+      if (baseSessName && typeof DatabaseManager !== 'undefined') {
           let possibleCust = DatabaseManager.resolveAlias(baseSessName, 'customer');
           let possibleSup = DatabaseManager.resolveAlias(baseSessName, 'supplier');
-          
           if (possibleCust.toUpperCase() !== baseSessName.toUpperCase()) baseSessName = possibleCust;
           else if (possibleSup.toUpperCase() !== baseSessName.toUpperCase()) baseSessName = possibleSup;
       }
@@ -649,39 +324,21 @@ const SessionManager = {
 
           if (targetAllocation && Object.keys(targetAllocation).length > 0) {
               let itemCount = Object.keys(targetAllocation).length;
-              // FIX: Safely add quantities from the new object structure
               let totalUnits = Object.values(targetAllocation).reduce((a, b) => a + (typeof b === 'object' ? (b.qty || 0) : b), 0);
               
-              if (confirm(`Targeted Pick & Pack Available:\n\n${partner} has ${totalUnits} units across ${itemCount} items currently sitting in Reserve.\n\nDo you want to pre-load these items into your Pick List manifest?`)) {
+              if (confirm(`Targeted Pick & Pack Available:\n\n${partner} has ${totalUnits} units currently sitting in Reserve.\n\nDo you want to pre-load these items into your Pick List manifest?`)) {
                   chkManifest = true;
-                  
                   for (let ref in targetAllocation) {
-                      // FIX: Extract the integer quantity
                       let rawVal = targetAllocation[ref];
                       let qty = typeof rawVal === 'object' ? (rawVal.qty || 0) : rawVal;
-                      
-                      preloadedAllocations.push({
-                          ref: ref,
-                          expectedQty: qty,
-                          isReserved: true,
-                          customerTag: searchTag,
-                          reservedQty: qty,
-                          allocations: [{ customerTag: searchTag, reservedQty: qty }]
-                      });
+                      preloadedAllocations.push({ ref: ref, expectedQty: qty, isReserved: true, customerTag: searchTag, reservedQty: qty, allocations: [{ customerTag: searchTag, reservedQty: qty }] });
                   }
               }
           }
       }
 
       this.currentUserName = uName || "N/A";
-      
-      // Override the automatic session name if baseSessName was provided (and alias-corrected)
-      if (baseSessName) {
-        this.currentSessionName = baseSessName;
-      } else {
-        this.currentSessionName = partner + (oDetails ? ` (${oDetails})` : '');
-      }
-
+      this.currentSessionName = baseSessName ? baseSessName : partner + (oDetails ? ` (${oDetails})` : '');
       this.currentOrderNum = oDetails;
       this.currentWorkflowType = wType;
       this.isSessionActive = true;
@@ -706,37 +363,17 @@ const SessionManager = {
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
 
       this.updateHeaderBanners();
-
-      if (typeof UIManager !== 'undefined') UIManager.lockCheatCodes(); // ✨ Added
+      if (typeof UIManager !== 'undefined') UIManager.lockCheatCodes(); 
       document.getElementById('screenSetup').style.display = 'none';
 
       if (this.isManifestEnabled) {
         const container = document.getElementById('manifestRowsContainer');
         if (container) container.innerHTML = '';
         
-        let isPreloaded = false; // ✨ NEW: Tracking flag
-
+        let isPreloaded = false;
         if (preloadedAllocations.length > 0) {
-            if (this.expectedManifest && this.expectedManifest.length > 0) {
-                // Merge the Allocations INTO the QBO Manifest
-                preloadedAllocations.forEach(pa => {
-                    let existing = this.expectedManifest.find(e => e.ref === pa.ref);
-                    if (existing) {
-                        existing.isReserved = true;
-                        existing.customerTag = pa.customerTag;
-                        existing.reservedQty = pa.reservedQty;
-                        existing.allocations = pa.allocations;
-                        if (pa.expectedQty > existing.expectedQty) existing.expectedQty = pa.expectedQty;
-                    } else {
-                        this.expectedManifest.push(pa);
-                    }
-                });
-            } else {
-                this.expectedManifest = preloadedAllocations;
-            }
+            this.expectedManifest = preloadedAllocations;
             isPreloaded = true;
-        } else if (this.expectedManifest && this.expectedManifest.length > 0) {
-            isPreloaded = true; 
         }
 
         if (this.expectedManifest && this.expectedManifest.length > 0) {
@@ -744,17 +381,16 @@ const SessionManager = {
             let hasAlloc = item.allocations && item.allocations.length > 0;
             let tagVal = hasAlloc ? item.allocations[0].customerTag : (item.customerTag || '');
             let resQtyVal = hasAlloc ? item.allocations[0].reservedQty : (item.reservedQty || item.expectedQty || 1);
-            this.addManifestRow(item.ref || item.sku || '', item.expectedQty || item.qty || 1, hasAlloc, tagVal, resQtyVal);
+            ManifestManager.addManifestRow(item.ref || item.sku || '', item.expectedQty || item.qty || 1, hasAlloc, tagVal, resQtyVal);
           });
         } else {
-          this.addManifestRow();
+          ManifestManager.addManifestRow();
         }
         
-        // ✨ NEW: If data was preloaded, skip Review entirely and jump straight to Scanning
         if (isPreloaded) {
             localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
             document.getElementById('screenScanning').style.display = 'block';
-            this.updateManifestProgressUI();
+            ManifestManager.updateManifestProgressUI();
         } else {
             document.getElementById('screenManifestEntry').style.display = 'block';
         }
@@ -762,71 +398,41 @@ const SessionManager = {
         this.expectedManifest = [];
         localStorage.setItem('asp_active_manifest', JSON.stringify([]));
         document.getElementById('screenScanning').style.display = 'block';
-        this.updateManifestProgressUI();
+        ManifestManager.updateManifestProgressUI();
       }
 
       let destRow = document.getElementById('rowItemDestination');
       let tagRow = document.getElementById('rowCustomerTag');
-      
-      // ✨ FIX: Grab the bundle checkbox wrapper
       let chkBundle = document.getElementById('chkIsBundle'); 
       let bundleWrapper = chkBundle ? chkBundle.parentElement : null;
 
       if (this.currentWorkflowType.includes('Receiving & Reserving')) {
         if (destRow) destRow.style.display = 'flex';
         if (tagRow) tagRow.style.display = this.currentItemAction === 'Reserved' ? 'flex' : 'none';
-        if (bundleWrapper) bundleWrapper.style.display = 'block'; // Show during Receiving
+        if (bundleWrapper) bundleWrapper.style.display = 'block'; 
       } else if (this.currentWorkflowType.includes('Reserving')) {
         if (destRow) destRow.style.display = 'none';
         if (tagRow) tagRow.style.display = 'none';
-        if (bundleWrapper) bundleWrapper.style.display = 'none'; // Hide
+        if (bundleWrapper) bundleWrapper.style.display = 'none';
         this.currentItemAction = 'Reserved';
       } else if (this.currentWorkflowType.includes('Packing')) {
         if (destRow) destRow.style.display = 'none';
         if (tagRow) tagRow.style.display = 'none'; 
-        if (bundleWrapper) bundleWrapper.style.display = 'none'; // Hide
+        if (bundleWrapper) bundleWrapper.style.display = 'none'; 
         this.currentItemAction = 'Pack & Ship';
       } else {
         if (destRow) destRow.style.display = 'none';
         if (tagRow) tagRow.style.display = 'none';
-        if (bundleWrapper) bundleWrapper.style.display = 'none'; // Hide
+        if (bundleWrapper) bundleWrapper.style.display = 'none'; 
         this.currentItemAction = 'Inventory';
       }
 
       ScannerManager.resetScanLinesAndFields();
 
     } catch (err) {
-      console.error("Error during startSession:", err);
       alert("Encountered an issue starting session: " + err.message);
       document.getElementById('screenSetup').style.display = 'block';
-      if (document.getElementById('screenManifestEntry')) document.getElementById('screenManifestEntry').style.display = 'none';
-      if (document.getElementById('screenScanning')) document.getElementById('screenScanning').style.display = 'none';
     }
-  },
-
-  launchAIVisionBridge() {
-    const platform = document.getElementById('aiPlatformSelect') ? document.getElementById('aiPlatformSelect').value : 'gemini';
-    
-    const promptText = `Analyze these attached medical inventory box photos. Group the items by REF/SKU, Quantity, Lot Number, and Expiration Date. For any item where the Lot or Expiration is unreadable or not visible, put 'N/A'.
-
-Return ONLY a raw tab-separated table with NO extra introductory text, headers, or explanations, formatted in these exact columns:
-REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
-
-    let targetUrl = 'https://gemini.google.com/app';
-    let platformName = 'Gemini';
-
-    if (platform === 'chatgpt') {
-      targetUrl = 'https://chatgpt.com';
-      platformName = 'ChatGPT';
-    }
-
-    navigator.clipboard.writeText(promptText).then(() => {
-      alert(`AI Vision Prompt copied to your clipboard!\n\nOpening ${platformName}... Just paste (Ctrl+V) into the chat and attach your shipment photos.`);
-      window.open(targetUrl, '_blank');
-    }).catch(err => {
-      console.error('Failed to copy prompt: ', err);
-      window.open(targetUrl, '_blank');
-    });
   },
 
   editOrderNumber() {
@@ -863,331 +469,54 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.goToSummaryScreen();
   },
 
-  addManifestRow(refVal = '', qtyVal = 1, isRes = false, tagVal = '', resQtyVal = 1) {
-    const container = document.getElementById('manifestRowsContainer');
-    if (!container) return;
-    const rowIdx = container.children.length;
-    const div = document.createElement('div'); div.className = 'manifest-row'; div.id = `manifestRow_${rowIdx}`;
-    
-    let allocHtml = isRes ? `
-      <div class="manifest-subrow flex-between" style="display:flex; gap:6px; margin-top:4px;">
-        <input type="text" class="manifest-tag-input" placeholder="Customer Tag" value="${tagVal}" style="flex:2;">
-        <input type="number" class="manifest-resqty-input" placeholder="Res Qty" value="${resQtyVal}" min="1" style="flex:1;">
-        <button class="btn-small btn-cancel" onclick="this.parentElement.remove()" style="padding:4px 8px;">✕</button>
-      </div>` : '';
-
-    div.innerHTML = `
-      <div style="display:flex; gap:6px; align-items:center;">
-        <input type="text" class="manifest-ref-input" placeholder="REF / SKU" value="${refVal}" oninput="this.value = this.value.toUpperCase();" style="flex:2;">
-        <input type="number" class="manifest-qty-input" placeholder="Total Expected Qty" value="${qtyVal}" min="1" style="flex:1;">
-        <button class="btn-small btn-cancel" onclick="this.parentElement.parentElement.remove()" style="padding:4px 8px;">✕</button>
-      </div>
-      <div id="allocContainer_${rowIdx}">${allocHtml}</div>
-      <div style="margin-top:6px;">
-        <button class="btn-small btn-auto" style="font-size:0.75rem; padding:2px 8px; background-color:#0277bd;" onclick="SessionManager.addManifestAllocation(${rowIdx})">+ Add Customer Allocation</button>
-      </div>
-    `;
-    container.appendChild(div);
-  },
-
-  addManifestAllocation(rowIdx) {
-    const container = document.getElementById(`allocContainer_${rowIdx}`);
-    if (!container) return;
-    const div = document.createElement('div');
-    div.className = 'manifest-subrow flex-between';
-    div.style.display = 'flex'; div.style.gap = '6px'; div.style.marginTop = '4px';
-    div.innerHTML = `
-      <input type="text" class="manifest-tag-input" placeholder="Customer Tag" style="flex:2;">
-      <input type="number" class="manifest-resqty-input" placeholder="Res Qty" value="1" min="1" style="flex:1;">
-      <button class="btn-small btn-cancel" onclick="this.parentElement.remove()" style="padding:4px 8px;">✕</button>
-    `;
-    container.appendChild(div);
-  },
-
-  toggleManifestResRow(idx) {
-    const row = document.getElementById(`manifestRow_${idx}`);
-    if (!row) return;
-    const chk = row.querySelector('.manifest-res-chk');
-    const subrow = document.getElementById(`manifestResSubrow_${idx}`);
-    if (chk && subrow) subrow.style.display = chk.checked ? 'flex' : 'none';
-  },
-
-  clearManifestList() {
-    if (confirm("Are you sure you want to clear all currently loaded items?")) {
-      document.getElementById('manifestRowsContainer').innerHTML = '';
-    }
-  },
-
-  processPastedSpreadsheet() {
-    const text = document.getElementById('pasteManifestArea').value.trim();
-    if (!text) { alert("Please paste spreadsheet data first."); return; }
-    
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    if (lines.length === 0) return;
-    
-    let skuIdx = -1, qtyIdx = -1, custIdx = -1, poIdx = -1;
-    let dataStartIndex = 0;
-    
-    for (let i = 0; i < Math.min(lines.length, 3); i++) {
-      let cols = lines[i].toUpperCase().split('\t').map(c => c.trim());
-      if (cols.includes('SKU') || cols.includes('REF')) {
-        skuIdx = cols.indexOf('SKU') > -1 ? cols.indexOf('SKU') : cols.indexOf('REF');
-        qtyIdx = cols.indexOf('QTY') > -1 ? cols.indexOf('QTY') : cols.indexOf('QUANTITY');
-        custIdx = cols.indexOf('CUSTOMER') > -1 ? cols.indexOf('CUSTOMER') : cols.indexOf('CUST');
-        poIdx = cols.indexOf('PO') > -1 ? cols.indexOf('PO') : cols.indexOf('INVOICE');
-        dataStartIndex = i + 1;
-        break;
-      }
-    }
-    
-    if (skuIdx === -1 && qtyIdx === -1) {
-      let firstLineCols = lines[0].split('\t');
-      dataStartIndex = (firstLineCols.length === 1 && lines.length > 1) ? 1 : 0;
-      custIdx = 0; poIdx = 1; skuIdx = 2; qtyIdx = 3;
-    }
-    
-    let parsedCount = 0;
-    let lastCustomer = '', lastPO = '';
-    
-    for (let i = dataStartIndex; i < lines.length; i++) {
-      let cols = lines[i].split('\t');
-      if (cols.length < 2 && cols[0].trim() === '') continue;
-      
-      let rawCust = custIdx !== -1 && cols[custIdx] ? cols[custIdx].trim().toUpperCase() : '';
-      let rawPO = poIdx !== -1 && cols[poIdx] ? cols[poIdx].trim().toUpperCase() : '';
-      
-      if (rawCust) { lastCustomer = rawCust; lastPO = rawPO; }
-      
-      let activeCust = rawCust || lastCustomer;
-      let activePO = rawCust ? rawPO : (rawPO || lastPO);
-      let ref = skuIdx !== -1 && cols[skuIdx] ? cols[skuIdx].trim().toUpperCase() : '';
-      if (!ref) continue;
-      
-      let qtyRaw = qtyIdx !== -1 && cols[qtyIdx] ? cols[qtyIdx].replace(/\D/g, '') : '1';
-      let qty = parseInt(qtyRaw, 10);
-      if (isNaN(qty) || qty < 1) qty = 1;
-      
-      let poShelfMatch = activePO.match(/(.*?)\s*\((\d+)\)\s*SHELF\s*\((\d+)\)/i);
-      let isSplitCust = activeCust.includes('/SHELF') || activeCust.includes('SHELF/');
-
-      if (poShelfMatch || isSplitCust) {
-        let realCust = activeCust.split('/')[0].trim();
-        if (realCust === 'SHELF') realCust = activeCust.split('/')[1].trim() || 'UNKNOWN';
-        let realPO = poShelfMatch ? poShelfMatch[1].trim() : activePO;
-        
-        let custQty = poShelfMatch ? parseInt(poShelfMatch[2], 10) : Math.ceil(qty / 2);
-        let shelfQty = poShelfMatch ? parseInt(poShelfMatch[3], 10) : Math.floor(qty / 2);
-        
-        if (custQty > 0) {
-          this.addManifestRow(ref, custQty, true, realCust + ((realPO && realPO !== 'NA') ? ' - ' + realPO : ''), custQty);
-          parsedCount++;
-        }
-        if (shelfQty > 0) {
-          this.addManifestRow(ref, shelfQty, false, '', 0);
-          parsedCount++;
-        }
-        continue;
-      }
-      
-      let isRes = false, tagVal = '', resQty = 0;
-      if (activeCust && activeCust !== 'SHELF' && activeCust !== 'NA' && activeCust !== 'N/A') {
-        isRes = true;
-        tagVal = activeCust + ((activePO && activePO !== 'NA' && activePO !== 'N/A') ? ' - ' + activePO : '');
-        resQty = qty;
-      }
-      
-      this.addManifestRow(ref, qty, isRes, tagVal, resQty);
-      parsedCount++;
-    }
-    if (parsedCount > 0) {
-      document.getElementById('pasteManifestArea').value = '';
-      alert(`Successfully parsed and added ${parsedCount} lines (including auto-splits)!`);
-    } else alert("Could not extract items.");
-  },
-
-  readManifestDataFromUI() {
-    const container = document.getElementById('manifestRowsContainer');
-    if (!container) return [];
-    let list = [];
-    container.querySelectorAll('.manifest-row').forEach(row => {
-      let ref = row.querySelector('.manifest-ref-input').value.trim().toUpperCase();
-      let expectedQty = parseInt(row.querySelector('.manifest-qty-input').value, 10) || 1;
-      let allocations = [];
-      row.querySelectorAll('.manifest-subrow').forEach(subrow => {
-        let tag = subrow.querySelector('.manifest-tag-input').value.trim();
-        let rQty = parseInt(subrow.querySelector('.manifest-resqty-input').value, 10) || 1;
-        if (tag) allocations.push({ customerTag: tag, reservedQty: rQty });
-      });
-      if (ref) list.push({ ref, expectedQty, allocations });
-    });
-    return list;
-  },
-
-  goToManifestReview() {
-    this.expectedManifest = this.readManifestDataFromUI();
-    if (this.expectedManifest.length === 0) { alert("Please enter at least one expected item row."); return; }
-    let totalExp = this.expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
-    
-    let html = `<div style="margin-bottom:15px; text-align:center;"><strong>Total Expected Pieces:</strong> ${totalExp} across ${this.expectedManifest.length} unique REFs</div>`;
-    this.expectedManifest.forEach(item => {
-      html += `<div style="border: 1px solid #0277bd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #ffffff; text-align: center;">
-        <div style="font-size: 1.2rem; color: #0277bd;"><strong>${item.ref}</strong></div>
-        <div style="margin: 6px 0; font-size: 1.05rem;"><strong>Total Expected:</strong> ${item.expectedQty}</div>`;
-      if (item.allocations.length > 0) {
-        html += `<div style="margin-top: 10px; font-size: 0.9rem; color: #555;"><strong>Allocations:</strong><br>`;
-        item.allocations.forEach(a => { html += `<span style="display:inline-block; background:#e3f2fd; color:#0277bd; padding:4px 8px; border:1px dashed #0277bd; border-radius:3px; margin:4px; font-weight:bold;">${a.customerTag} (Qty: ${a.reservedQty})</span><br>`; });
-        html += `</div>`;
-      } else {
-        html += `<div style="margin-top: 10px; font-size: 0.85rem; color: #757575;"><em>All routed to standard Inventory.</em></div>`;
-      }
-      html += `</div>`;
-    });
-    document.getElementById('manifestReviewSummaryContainer').innerHTML = html;
-    document.getElementById('screenManifestEntry').style.display = 'none';
-    document.getElementById('screenManifestReview').style.display = 'block';
-  },
-
-  returnToManifestEdit() {
-    document.getElementById('screenManifestReview').style.display = 'none';
-    document.getElementById('screenManifestEntry').style.display = 'block';
-  },
-
-  cancelManifestEntry() {
-    document.getElementById('screenManifestEntry').style.display = 'none';
-    document.getElementById('screenSetup').style.display = 'block';
-  },
-
-  confirmManifestAndStart() {
-    localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
-    document.getElementById('screenManifestReview').style.display = 'none';
-    document.getElementById('screenScanning').style.display = 'block';
-    this.updateManifestProgressUI();
-  },
-
-  updateManifestProgressUI() {
-    const banner = document.getElementById('manifestProgressBanner');
-    const tracker = document.getElementById('liveManifestTracker');
-    
-    if (!this.isManifestEnabled || this.expectedManifest.length === 0) { 
-      if (banner) banner.style.display = 'none'; 
-      if (tracker) tracker.style.display = 'none';
-      return; 
-    }
-    
-    if (banner) banner.style.display = 'block';
-    if (tracker) tracker.style.display = 'block';
-
-    // Aggregate Expected Manifest by REF
-    let expectedMap = {};
-    this.expectedManifest.forEach(exp => {
-        expectedMap[exp.ref] = (expectedMap[exp.ref] || 0) + exp.expectedQty;
-    });
-
-    let scannedMap = {};
-    this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
-
-    let expHtml = '';
-    let totalExpected = 0;
-    let totalScannedExp = 0;
-    let totalUnexpected = 0;
-
-    // Sort manifest items by Shelf Location first, then by REF
-    Object.keys(expectedMap).sort((a, b) => {
-        let dbItemA = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === a) || {};
-        let dbItemB = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === b) || {};
-        let shelfA = dbItemA.shelf || 'ZZZ-UNASSIGNED';
-        let shelfB = dbItemB.shelf || 'ZZZ-UNASSIGNED';
-        return shelfA.localeCompare(shelfB) || a.localeCompare(b);
-    }).forEach(ref => {
-        let eQty = expectedMap[ref];
-        let sQty = scannedMap[ref] || 0;
-        
-        let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref) || {};
-        let shelfStr = (dbMatch.shelf && dbMatch.shelf !== 'ZZZ-UNASSIGNED') ? 
-            `<span style="font-size:0.7rem; background:#e0e0e0; color:#333; padding:2px 6px; border-radius:4px; margin-left:8px;">📍 ${dbMatch.shelf}</span>` : '';
-
-        totalExpected += eQty;
-        totalScannedExp += Math.min(sQty, eQty);
-        
-        let color = sQty >= eQty ? '#2e7d32' : (sQty > 0 ? '#f57f17' : '#555');
-        let icon = sQty >= eQty 
-            ? '<i data-lucide="check-circle-2" style="width:16px; height:16px; vertical-align:text-bottom;"></i>' 
-            : '<i data-lucide="hourglass" style="width:16px; height:16px; vertical-align:text-bottom;"></i>';
-        
-        expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:8px 4px; align-items:center;">
-          <div><span style="font-weight:bold; color:${color};">${icon} ${ref}</span>${shelfStr}</div>
-          <span style="color:${color}; font-weight:bold; font-size:1.1rem;">${sQty} / ${eQty}</span>
-        </div>`;
-    });
-
-    Object.keys(scannedMap).sort().forEach(sRef => {
-        let sQty = scannedMap[sRef];
-        let eQty = expectedMap[sRef] || 0;
-        if (sQty > eQty) {
-            let diff = sQty - eQty;
-            totalUnexpected += diff;
-            if (eQty === 0) {
-                expHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #e0e0e0; padding:6px 4px; background-color: #fff3e0;">
-                  <span style="font-weight:bold; color:#e65100;">⚠️ ${sRef} (Unexpected)</span>
-                  <span style="color:#e65100; font-weight:bold;">${sQty}</span>
-                </div>`;
-            }
-        }
-    });
-
-    document.getElementById('manifestScannedQty').textContent = totalScannedExp;
-    document.getElementById('manifestTotalQty').textContent = totalExpected;
-    
-    let unexpHtml = totalUnexpected > 0 ? ` | <span style="color:#e65100;">${totalUnexpected} Unexpected</span>` : '';
-    document.getElementById('manifestUnexpectedStats').innerHTML = unexpHtml;
-
-    if (document.getElementById('liveManifestList')) {
-      document.getElementById('liveManifestList').innerHTML = expHtml;
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-  },
-
   confirmFieldUpdate(field) {
     if (!this.currentMatchedItem) return;
     if (field === 'gtin' && this.pendingUpdates['gtin']) {
       this.currentMatchedItem.gtin = this.pendingUpdates['gtin'];
-      alert(`Database updated: GTIN ${this.pendingUpdates['gtin']} linked to REF ${DatabaseManager.getItemSku(this.currentMatchedItem)}!`);
+      alert(`Database updated: GTIN linked to REF!`);
     } else if (field === 'mfr') {
       let selectedMfr = document.getElementById('vendorSelect').value;
       this.currentMatchedItem.mfr = selectedMfr;
-      this.currentMatchedItem.manufacturer = selectedMfr;
-      alert(`Database updated: Manufacturer updated for REF ${DatabaseManager.getItemSku(this.currentMatchedItem)}!`);
+      alert(`Database updated: Manufacturer updated for REF!`);
+    } else if (field === 'shelf' && this.pendingUpdates['shelf']) {
+      // ✨ NEW: Handle Shelf Updates
+      this.currentMatchedItem.shelf = this.pendingUpdates['shelf'];
+      alert(`Database updated: Shelf Location updated for REF!`);
     }
+    
+    // ✨ FIX: Determine the actual new value being saved
+    let updateValue = "";
+    if (field === 'gtin') updateValue = this.pendingUpdates['gtin'];
+    else if (field === 'mfr') updateValue = document.getElementById('vendorSelect').value;
+    else if (field === 'shelf') updateValue = this.pendingUpdates['shelf'];
+    
+    let displayField = field === 'gtin' ? 'GTIN' : (field === 'mfr' ? 'Manufacturer' : 'Shelf Location');
+
     this.pendingFieldUpdates.push({
       ref: DatabaseManager.getItemSku(this.currentMatchedItem),
-      field: field === 'gtin' ? 'GTIN' : 'Manufacturer',
-      newValue: field === 'gtin' ? this.pendingUpdates['gtin'] : document.getElementById('vendorSelect').value,
+      field: displayField,
+      newValue: updateValue,
       timestamp: new Date().toLocaleString()
     });
     localStorage.setItem('asp_pending_updates', JSON.stringify(this.pendingFieldUpdates));
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
     UIManager.hideAllConfirmButtons();
-  },  
+  }, 
 
   goToReviewStage() {
     let expField = document.getElementById('expInput');
-    if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) {
-      UIManager.formatExpDate(expField);
-    }
+    if (expField && expField.value.trim() !== "" && !document.getElementById('chkNaExp').checked) UIManager.formatExpDate(expField);
     
     const ref = document.getElementById('refInput').value.trim().toUpperCase();
-    if (!ref) { 
-      alert("Please enter or scan a REF/SKU before continuing."); 
-      return; 
-    }
+    if (!ref) { alert("Please enter or scan a REF/SKU before continuing."); return; }
     
     const gtin = document.getElementById('gtinInput').value.trim();
     const lot = document.getElementById('lotInput').value.trim().toUpperCase();
     const exp = document.getElementById('expInput').value.trim();
     const vendor = document.getElementById('vendorSelect').value;
     const qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
-    
-    // Safely grab the Customer and Order strings for the Review Screen
+    const shelf = document.getElementById('shelfInput') ? document.getElementById('shelfInput').value.trim().toUpperCase() : ''; // ✨ NEW
+
     const custVal = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value : '';
     const ordVal = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
     const cTag = custVal + (ordVal ? ` - ${ordVal}` : '');
@@ -1202,17 +531,14 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (refProgRow) refProgRow.style.display = 'flex';
       if (totalProgRow) totalProgRow.style.display = 'flex';
       
-      // Sum up all expected occurrences of this REF
       let totalExpectedForRef = this.expectedManifest.filter(i => i.ref === ref).reduce((acc, curr) => acc + curr.expectedQty, 0);
-
       let scannedRefQtySoFar = this.scannedObjects.filter(i => i.ref === ref).reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0);
       let newTotalScannedForRef = scannedRefQtySoFar + qty;
       
       if (refProgText) {
         if (totalExpectedForRef > 0) refProgText.textContent = `${newTotalScannedForRef} Scanned / ${totalExpectedForRef} Expected`;
-        else refProgText.innerHTML = `<span class="badge-info badge-alert">⚠️ Unexpected Item (Not on Manifest)</span>`;
+        else refProgText.innerHTML = `<span class="badge-info badge-alert">⚠️ Unexpected Item</span>`;
       }
-      
       let totalScannedOverall = this.scannedObjects.reduce((acc, curr) => acc + (parseInt(curr.qty, 10) || 0), 0) + qty;
       let totalExpectedOverall = this.expectedManifest.reduce((acc, curr) => acc + curr.expectedQty, 0);
       if (totalProgText) totalProgText.textContent = `${totalScannedOverall} / ${totalExpectedOverall} Total Order Items`;
@@ -1226,35 +552,25 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (document.getElementById('revLot')) document.getElementById('revLot').textContent = lot || '--';
     if (document.getElementById('revExp')) document.getElementById('revExp').textContent = exp || '--';
     if (document.getElementById('revMfr')) document.getElementById('revMfr').textContent = vendor;
+    if (document.getElementById('revShelf')) document.getElementById('revShelf').textContent = shelf || '--'; // ✨ NEW
     if (document.getElementById('revQty')) document.getElementById('revQty').textContent = qty;
-    
+
     if (document.getElementById('revItemNoteRow')) {
       document.getElementById('revItemNoteRow').style.display = iNote ? 'flex' : 'none';
       if (document.getElementById('revItemNote')) document.getElementById('revItemNote').textContent = ' ' + iNote;
     }
 
-    if (document.getElementById('revDesc')) {
-      document.getElementById('revDesc').textContent = DatabaseManager.getItemDesc(this.currentMatchedItem) || "Navigate to vendor website for item description.";
-    }
-    if (document.getElementById('revPrice')) {
-      document.getElementById('revPrice').textContent = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
-    }
-
-    if (document.getElementById('revAction')) {
-      document.getElementById('revAction').textContent = this.currentItemAction;
-    }
-    if (document.getElementById('revActionRow')) {
-      document.getElementById('revActionRow').style.display = this.currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
-    }
+    if (document.getElementById('revDesc')) document.getElementById('revDesc').textContent = DatabaseManager.getItemDesc(this.currentMatchedItem) || "Navigate to vendor website.";
+    if (document.getElementById('revPrice')) document.getElementById('revPrice').textContent = (this.currentMatchedItem && this.currentMatchedItem.price) ? this.currentMatchedItem.price : "$0.00";
+    if (document.getElementById('revAction')) document.getElementById('revAction').textContent = this.currentItemAction;
+    if (document.getElementById('revActionRow')) document.getElementById('revActionRow').style.display = this.currentWorkflowType.includes('Receiving & Reserving') ? 'flex' : 'none';
     
     let tagRow = document.getElementById('rowCustomerTag');
     let revTagRow = document.getElementById('revCustomerTagRow');
     if (tagRow && tagRow.style.display !== 'none' && revTagRow) {
       revTagRow.style.display = 'flex'; 
       if (document.getElementById('revCustomerTag')) document.getElementById('revCustomerTag').textContent = ' ' + (cTag || 'NONE');
-    } else if (revTagRow) { 
-      revTagRow.style.display = 'none'; 
-    }
+    } else if (revTagRow) { revTagRow.style.display = 'none'; }
 
     let diffBanner = document.getElementById('gtinDiffBanner');
     let btnGtin = document.getElementById('btnConfirmGtin');
@@ -1262,7 +578,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       this.pendingUpdates['gtin'] = gtin;
       if (btnGtin) btnGtin.style.display = 'inline-block';
       if (diffBanner) {
-        diffBanner.textContent = this.currentMatchedItem.gtin ? `⚠️ Replace Saved GTIN (${this.currentMatchedItem.gtin}) with Scanned GTIN (${gtin})?` : `[Link New GTIN: ${gtin}]`;
+        diffBanner.textContent = this.currentMatchedItem.gtin ? `⚠️ Replace Saved GTIN (${this.currentMatchedItem.gtin})?` : `[Link New GTIN]`;
         diffBanner.style.display = 'block';
       }
     } else {
@@ -1271,16 +587,37 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let btnMfr = document.getElementById('btnConfirmMfr');
-    if (btnMfr) {
-      btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
-    }    
+    if (btnMfr) btnMfr.style.display = (this.currentMatchedItem && DatabaseManager.getItemVendor(this.currentMatchedItem).toLowerCase() !== vendor.toLowerCase()) ? 'inline-block' : 'none';
+
+    // ✨ FIX: Force both variables to be uppercase strings to prevent false mismatches
+    let btnShelf = document.getElementById('btnConfirmShelf');
+    let dbShelf = this.currentMatchedItem ? String(this.currentMatchedItem.shelf || "").toUpperCase().trim() : "";
+    let uiShelf = String(shelf || "").toUpperCase().trim();
+    
+    if (this.currentMatchedItem && uiShelf && dbShelf !== uiShelf) {
+        this.pendingUpdates['shelf'] = shelf;
+        if (btnShelf) btnShelf.style.display = 'inline-block';
+    } else {
+        if (btnShelf) btnShelf.style.display = 'none';
+    }
+
+    // ✨ NEW: Auto-Check the Bundle box if this item is a known bundle!
+    if (this.currentMatchedItem && this.currentMatchedItem.parentRef && parseInt(this.currentMatchedItem.uomMult, 10) > 1) {
+        let chkBundle = document.getElementById('chkIsBundle');
+        let rowBundleData = document.getElementById('rowBundleData');
+        if (chkBundle && rowBundleData) {
+            chkBundle.checked = true;
+            rowBundleData.style.display = 'flex';
+            document.getElementById('bundleParentRef').value = this.currentMatchedItem.parentRef;
+            document.getElementById('bundleMult').value = this.currentMatchedItem.uomMult;
+        }
+    }
 
     document.getElementById('screenScanning').style.display = 'none';
     document.getElementById('screenReview').style.display = 'block';
   },
 
   returnToEdit() {
-    // ✨ FIX: Properly reset the bundle UI after the item is saved or cancelled
     let bundleChk = document.getElementById('chkIsBundle');
     let bundleRow = document.getElementById('rowBundleData');
     if (bundleChk) bundleChk.checked = false;
@@ -1313,26 +650,19 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         const vendor = document.getElementById('vendorSelect').value;
         let qty = parseInt(document.getElementById('qtyInput').value, 10) || 1;
         
-        // Changed const to let so we can mutate it
         let itemCust = document.getElementById('itemCustomerSelect') ? document.getElementById('itemCustomerSelect').value.trim() : '';
         const itemOrder = document.getElementById('itemOrderNumInput') ? document.getElementById('itemOrderNumInput').value.trim() : '';
         const iNote = document.getElementById('itemNoteInput') ? document.getElementById('itemNoteInput').value.trim() : '';
 
-        // ✨ V5.1 PATCH: Enforce Strict Proper Case for Customer Names
         if (itemCust) {
             let upperTag = itemCust.toUpperCase();
             let masterCustList = DatabaseManager.dbRaw && DatabaseManager.dbRaw.customers ? DatabaseManager.dbRaw.customers : [];
             let matchedCust = masterCustList.find(c => String(c).toUpperCase().trim() === upperTag);
-            
-            if (matchedCust) {
-                itemCust = matchedCust; // Force it to the exact case from the DB
-            }
+            if (matchedCust) itemCust = matchedCust; 
         }
 
     let cTag = itemCust.trim();
-    if (cTag && typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.resolveAlias === 'function') {
-        cTag = DatabaseManager.resolveAlias(cTag, 'customer');
-    }
+    if (cTag && typeof DatabaseManager !== 'undefined') cTag = DatabaseManager.resolveAlias(cTag, 'customer');
 
     let matchedDbItem = InventoryEngine.lookupAndNormalize(ref, rawGtin, DatabaseManager.db);
     
@@ -1343,7 +673,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let uomResult = InventoryEngine.calculateUOM(matchedDbItem, qty, ref);
     if (matchedDbItem && uomResult.trueRef !== matchedDbItem.sku && uomResult.trueRef !== matchedDbItem.ref) {
-      if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("UOM Conversion", `Box Barcode (${ref.toUpperCase()}) Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
+      if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("UOM Conversion", `Box Barcode Detected. Converted to ${uomResult.trueQty} individual units of ${uomResult.trueRef}.`);
       rawGtin = ""; 
       matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
       if (!matchedDbItem) matchedDbItem = this.pendingNewItems.find(i => (i.sku || i.ref || '').toUpperCase() === uomResult.trueRef);
@@ -1357,14 +687,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let uMult = 1;
 
     if (isNewItem) {
-       // ✨ V5.1 PATCH: Block new item creation during outbound orders
        let isOutbound = this.currentWorkflowType && (this.currentWorkflowType.toUpperCase().includes('ORDER') || this.currentWorkflowType.toUpperCase().includes('PACK'));
-       
        if (isOutbound) {
-           UIManager.showCustomAlert("Action Blocked", `You are packing an outbound order, but the barcode ${ref} does not exist in the database. Please process this item through a Receiving session first to establish its identity.`);
+           UIManager.showCustomAlert("Action Blocked", `You are packing an outbound order, but barcode ${ref} doesn't exist.`);
            return;
        }
-       // -----------------------------------------------------------
 
        let bundleChk = document.getElementById('chkIsBundle');
        let isBundle = bundleChk && bundleChk.checked;
@@ -1373,26 +700,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
            pRef = document.getElementById('bundleParentRef').value.trim().toUpperCase();
            uMult = parseInt(document.getElementById('bundleMult').value, 10) || 1;
            if (!pRef || uMult <= 1 || pRef === ref) {
-               UIManager.showCustomAlert("Bundle Error", "Please provide a valid Parent REF. The Parent REF cannot be exactly the same as the Box Barcode.");
+               UIManager.showCustomAlert("Bundle Error", "Please provide a valid Parent REF.");
                return;
            }
        }
 
-       let confirmNew = confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.\n\nAre you sure you want to create a BRAND NEW item?`);
-       if (!confirmNew) return;
+       if (!confirm(`⚠️ UNRECOGNIZED REF DETECTED ⚠️\n\nThe REF/SKU "${ref}" does not exist in the master database.\n\nAre you sure you want to create a BRAND NEW item?`)) return;
 
-       let alreadyPending = this.pendingNewItems.find(i => i.ref === ref);
-       if (!alreadyPending) {
+       if (!this.pendingNewItems.find(i => i.ref === ref)) {
            this.pendingNewItems.push({
                ref: ref, gtin: rawGtin, mfr: vendor, price: "$0.00", cost: "$0.00",
                onHand: 0, reservedQty: 0, availableQty: 0,
                onRevMed: "FALSE", revMedPrice: "", onDotMed: "FALSE", dotMedPrice: "",
                syncedThrive: "FALSE", syncedShopify: "FALSE",
                desc: "Navigate to vendor website for item description.", 
-               category: "General", 
-               shopifyCategory: "Medical Supplies", 
-               status: "ACTIVE",
-               parentRef: pRef, uomMult: uMult, shelf: ""
+               category: "General", shopifyCategory: "Medical Supplies", status: "ACTIVE",
+               parentRef: pRef, uomMult: uMult, shelf: document.getElementById('shelfInput') ? document.getElementById('shelfInput').value.trim().toUpperCase() : "" // ✨ NEW
            });
        }
 
@@ -1400,30 +723,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
            ref = pRef;
            qty = qty * uMult;
            matchedDbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === pRef);
-           
-           if (!matchedDbItem) {
-               let parentAlreadyPending = this.pendingNewItems.find(i => i.ref === pRef);
-               if (!parentAlreadyPending) {
-                   this.pendingNewItems.push({
-                       ref: pRef, gtin: "", mfr: vendor, price: "$0.00", cost: "$0.00",
-                       onHand: 0, reservedQty: 0, availableQty: 0,
-                       onRevMed: "FALSE", revMedPrice: "", onDotMed: "FALSE", dotMedPrice: "",
-                       syncedThrive: "FALSE", syncedShopify: "FALSE",
-                       desc: "Navigate to vendor website for item description.", 
-                       category: "General", 
-                       shopifyCategory: "Medical Supplies", 
-                       status: "ACTIVE",
-                       parentRef: "", uomMult: 1, shelf: ""
-                   });
-               }
+           if (!matchedDbItem && !this.pendingNewItems.find(i => i.ref === pRef)) {
+               this.pendingNewItems.push({
+                   ref: pRef, gtin: "", mfr: vendor, price: "$0.00", cost: "$0.00",
+                   onHand: 0, reservedQty: 0, availableQty: 0,
+                   onRevMed: "FALSE", revMedPrice: "", onDotMed: "FALSE", dotMedPrice: "",
+                   syncedThrive: "FALSE", syncedShopify: "FALSE",
+                   desc: "Navigate to vendor website for item description.", 
+                   category: "General", shopifyCategory: "Medical Supplies", status: "ACTIVE",
+                   parentRef: "", uomMult: 1, shelf: document.getElementById('shelfInput') ? document.getElementById('shelfInput').value.trim().toUpperCase() : "" // ✨ NEW
+               });
            }
        }
        localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
     }
 
     let effectiveTag = this.currentItemAction;
-    
-    // ✨ THE FIX: Whitelist Stocktake so it retains your manual Inventory/Reserved toggle choice
     if (!this.currentWorkflowType.includes('Receiving & Reserving') && !this.currentWorkflowType.includes('Stocktake')) {
       if (this.currentWorkflowType.includes('Reserving')) effectiveTag = 'Reserved';
       else if (this.currentWorkflowType.includes('Packing')) effectiveTag = 'Pack & Ship';
@@ -1440,28 +755,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (!finalOrderNum) finalOrderNum = this.currentOrderNum;
     }
     
-    if (finalCustomerTag.toUpperCase().trim() === "ASP DAMAGED INVENTORY" && iNote) {
-      finalOrderNum = iNote;
-    }
+    if (finalCustomerTag.toUpperCase().trim() === "ASP DAMAGED INVENTORY" && iNote) finalOrderNum = iNote;
 
-   let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
+    let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
     let bypassOverpackWarning = ignoreOverpack || !this.isManifestEnabled;
 
-    // ✨ THE FIX: Tally what has already been scanned this session to prevent over-reserving!
     let alreadyScannedQty = this.scannedObjects
         .filter(i => i.ref === ref && i.actionTag === effectiveTag)
         .reduce((acc, curr) => acc + curr.qty, 0);
 
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-      // Add the alreadyScannedQty to the requested qty for an accurate validation
       InventoryEngine.validateAvailability(ref, qty + alreadyScannedQty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, bypassOverpackWarning, this.currentWorkflowType);
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
-        let friendlyMsg = `You just scanned an item that isn't on the original reserve list or exceeds the expected quantity for this customer.\n\nDo you want to pull this from general inventory and add it to their shipment anyway?`;
-        UIManager.showCustomConfirm("📦 Extra Item Detected", friendlyMsg, () => {
-          SessionManager.saveItemLog(true); 
-        });
+        let friendlyMsg = `Item isn't on original reserve list or exceeds expected qty.\n\nDo you want to pull this from general inventory and add it anyway?`;
+        UIManager.showCustomConfirm("📦 Extra Item Detected", friendlyMsg, () => { this.saveItemLog(true); });
         return; 
       } else {
         UIManager.showCustomAlert("Inventory Error", error.message, true);
@@ -1502,12 +811,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       sessionId: this.sessionId,
       itemNote: iNote
     });
+    
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
 
     ScannerManager.resetScanLinesAndFields();
-    this.updateManifestProgressUI();
+    ManifestManager.updateManifestProgressUI();
     this.returnToEdit();
-
     this.saveToArchive('Pending');
   },
 
@@ -1517,7 +826,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenReview').style.display = 'none';
     AuditManager.updateSessionSummaryView();
     
-    // NEW STRICT DROPDOWN LOGIC
     let optCommit = document.getElementById('optCommitStock');
     let optComplete = document.querySelector('#exportDropdown option[value="complete"]');
     let isStocktake = this.currentWorkflowType.includes('Stocktake');
@@ -1525,18 +833,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (optCommit) {
       optCommit.style.display = isStocktake ? 'block' : 'none';
       if (optComplete) optComplete.style.display = isStocktake ? 'none' : 'block';
-      
-      // Auto-select the correct completion action
-      if (isStocktake) {
-        document.getElementById('exportDropdown').value = 'commit_stock';
-      } else {
-        document.getElementById('exportDropdown').value = 'continue';
-      }
+      document.getElementById('exportDropdown').value = isStocktake ? 'commit_stock' : 'continue';
     }
 
-    this.renderManifestReconciliation();
+    ManifestManager.renderManifestReconciliation();
     this.renderAdvancedReview(); 
-    
     document.getElementById('screenSummary').style.display = 'block';
   },
 
@@ -1544,33 +845,26 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let cleanMfr = (mfr || '').toUpperCase();
     if (cleanMfr.includes('ETHICON')) return 'https://www.ethicon.com/na/epc/search/';
     if (cleanMfr.includes('SYNERGY')) return 'https://www.synergysurgical.com/search/';
-    
     return `https://www.google.com/search?q=${encodeURIComponent(mfr + ' ' + ref)}`;
   },
 
   async autoFetchEthicon(ref, index) {
     let btn = document.getElementById(`btnEthiconFetch_${index}`);
     if (btn) { btn.textContent = "⏳ Fetching..."; btn.disabled = true; }
-    
     try {
-      // ✨ FIX: Changed "this" to SessionManager
-      let res = await fetch(`${SessionManager.getActiveArchiveUrl()}?action=FETCH_ETHICON&ref=${encodeURIComponent(ref)}`);
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=FETCH_ETHICON&ref=${encodeURIComponent(ref)}`);
       let text = await res.text();
       let data;
-      
-      // ✨ FIX: Catch Google HTML Rate Limit pages safely
       try { data = JSON.parse(text); } catch(e) { throw new Error("Google Server busy. Try again in 5 seconds."); }
       
       if (data.status === "success" && data.desc) {
          let input = document.getElementById(`advDesc_${index}`);
          if (input) {
              input.value = data.desc;
-             input.setAttribute('data-autofetched', 'true'); // ✨ THE FIX: Mark this as a successful AI fetch
+             input.setAttribute('data-autofetched', 'true'); 
          }
          if (btn) { btn.textContent = "✅ Success"; btn.style.backgroundColor = "#2e7d32"; }
-      } else {
-         throw new Error(data.message || "Parse failed.");
-      }
+      } else { throw new Error(data.message || "Parse failed."); }
     } catch(err) {
        alert("Ethicon Auto-Fetch failed: " + err.message);
        if (btn) { btn.textContent = "⚡ Auto-Fetch"; btn.disabled = false; }
@@ -1582,16 +876,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     const list = document.getElementById('advancedItemsList');
     if (!card || !list) return;
 
-    if (!Array.isArray(this.pendingNewItems)) {
-      this.pendingNewItems = [];
-    }
+    if (!Array.isArray(this.pendingNewItems)) this.pendingNewItems = [];
 
     let unresolved = this.pendingNewItems.filter(i => i.desc === "Navigate to vendor website for item description." || !i.desc);
-    
-    if (unresolved.length === 0) {
-      card.style.display = 'none';
-      return;
-    }
+    if (unresolved.length === 0) { card.style.display = 'none'; return; }
 
     card.style.display = 'block';
     list.innerHTML = '';
@@ -1600,7 +888,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let searchUrl = this.getVendorSearchUrl(item.mfr, item.ref);
       let isEthicon = (item.mfr || '').toUpperCase().includes('ETHICON');
       
-      // ✨ FIX: Added the Suture Checkbox right next to the Auto-Fetch Button
       let ethiconBtnHtml = isEthicon ? `
         <label style="font-size:0.85rem; font-weight:bold; color:#c62828; display:flex; align-items:center; gap:4px; margin-right:8px;">
           <input type="checkbox" id="chkSuture_${index}"> Suture?
@@ -1609,11 +896,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       ` : '';
 
       let div = document.createElement('div');
-      div.style.marginBottom = '10px';
-      div.style.padding = '10px';
-      div.style.backgroundColor = '#ffffff';
-      div.style.border = '1px solid #90caf9';
-      div.style.borderRadius = '4px';
+      div.style.marginBottom = '10px'; div.style.padding = '10px'; div.style.backgroundColor = '#ffffff'; div.style.border = '1px solid #90caf9'; div.style.borderRadius = '4px';
 
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -1629,7 +912,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
             <input type="text" id="advDesc_${index}" class="adv-desc-input" data-ref="${item.ref}" data-mfr="${item.mfr}" placeholder="Paste website description here..." style="flex:1; padding:6px; border: 1px solid #ccc; border-radius: 4px;">
             <span style="font-size:0.85rem; font-weight:bold; color:#555; white-space:nowrap;">${item.ref}</span>
           </div>
-          <!-- ✨ NEW CATEGORY DROPDOWN -->
           <div style="display:flex; align-items:center; gap:6px;">
             <label style="font-size:0.8rem; font-weight:bold; color:#0277bd; min-width:70px;">Category:</label>
             <select id="advCat_${index}" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:4px;">
@@ -1647,7 +929,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       `;
       list.appendChild(div);
 
-      // ✨ NEW: Add an event listener to handle the "Custom" option
       let catSelect = document.getElementById(`advCat_${index}`);
       if (catSelect) {
           catSelect.addEventListener('change', function() {
@@ -1655,13 +936,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
                   let customCat = prompt("Enter a custom category name:");
                   if (customCat && customCat.trim() !== "") {
                       let opt = document.createElement('option');
-                      opt.value = customCat.trim();
-                      opt.textContent = customCat.trim();
+                      opt.value = customCat.trim(); opt.textContent = customCat.trim();
                       this.insertBefore(opt, this.lastElementChild);
                       this.value = customCat.trim();
-                  } else {
-                      this.selectedIndex = 0; // Reset to default if cancelled
-                  }
+                  } else { this.selectedIndex = 0; }
               }
           });
       }
@@ -1678,12 +956,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       let mfr = input.getAttribute('data-mfr');
       
       if (rawDesc && rawDesc !== "Navigate to vendor website for item description.") {
-        
         let sutureChk = document.getElementById(`chkSuture_${index}`);
         let isSuture = sutureChk && sutureChk.checked;
         let isAutoFetched = input.getAttribute('data-autofetched') === 'true';
-        
-        // ✨ NEW: Grab the category selected by the user
         let catSelect = document.getElementById(`advCat_${index}`);
         let selectedCat = catSelect ? catSelect.value : "Medical Supplies";
         
@@ -1693,12 +968,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         if (pendingMatch) finalCategory = pendingMatch.category || "Medical Supplies";
 
         if (isSuture) {
-            // ✨ BUG 3 FIX: Category becomes "Suture, [Truncated REF]"
             let refBase = ref.slice(0, -1); 
             finalCategory = `Suture, ${refBase}`;
-            
             if (isAutoFetched) {
-                // ✨ BUG 2 FIX: Keep the box math, but append the FULL REF to the description
                 let boxQtyStr = "";
                 let lastChar = ref.slice(-1).toUpperCase();
                 if (mfr.toUpperCase().includes('ETHICON')) {
@@ -1706,34 +978,20 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
                     else if (lastChar === 'T') boxQtyStr = "(BX/24)";
                     else if (lastChar === 'H') boxQtyStr = "(BX/36)";
                 }
-                
                 finalDesc = `${mfr} ${rawDesc} ${boxQtyStr} ${ref}`.replace(/\s+/g, ' ').trim();
             } else {
-                // Manual Entry Suture
                 finalDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
             }
         } else {
-            // Standard Non-Suture Item
             finalDesc = `${mfr} ${rawDesc} ${ref}`.replace(/\s+/g, ' ').trim();
         }
         
-        // Apply the new Desc and Category to the local cache memory
-        if (pendingMatch) {
-            pendingMatch.desc = finalDesc;
-            pendingMatch.category = finalCategory;
-        }
+        if (pendingMatch) { pendingMatch.desc = finalDesc; pendingMatch.category = finalCategory; }
 
         let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
-        if (dbItem) {
-            dbItem.desc = finalDesc;
-            dbItem.category = finalCategory;
-        }
+        if (dbItem) { dbItem.desc = finalDesc; dbItem.category = finalCategory; }
 
-        this.scannedObjects.forEach(scanned => {
-          if (scanned.ref === ref && scanned.isNew) {
-            scanned.desc = finalDesc;
-          }
-        });
+        this.scannedObjects.forEach(scanned => { if (scanned.ref === ref && scanned.isNew) scanned.desc = finalDesc; });
         updatedCount++;
       }
     });
@@ -1742,12 +1000,9 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
       localStorage.setItem('asp_pending_new_items', JSON.stringify(this.pendingNewItems));
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
-      
       alert(`Successfully updated ${updatedCount} descriptions!`);
       this.renderAdvancedReview();
-    } else {
-      alert("No new descriptions were entered.");
-    }
+    } else alert("No new descriptions were entered.");
   },
 
   cancelSession() {
@@ -1758,9 +1013,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       this.scannedObjects = []; this.expectedManifest = [];
       localStorage.setItem('asp_session_scanned_objects', JSON.stringify([])); localStorage.setItem('asp_active_manifest', JSON.stringify([]));
 
-      // ✨ THE FIX: Destroy all pending metadata so it doesn't haunt the next session!
-      this.pendingNewItems = []; 
-      this.pendingFieldUpdates = [];
+      this.pendingNewItems = []; this.pendingFieldUpdates = [];
       localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
       localStorage.setItem('asp_pending_updates', JSON.stringify([]));
 
@@ -1787,34 +1040,27 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
   },
 
   completeSession(skipConfirm = false, skipShipping = false, skipIncoming = false) {
-    
-    // ✨ THE INTERCEPT: Trigger Shipment Manager for Pick & Pack
     if (this.currentWorkflowType === 'Picking & Packing' && !skipShipping) {
-      if (typeof ShippingManager !== 'undefined') {
-        ShippingManager.openModal();
-        return; // Halt normal completion until shipping is resolved
-      }
-    }
-
-    // ✨ THE INTERCEPT: Trigger Incoming Shipment Modal for Receiving
-    if (this.currentWorkflowType.includes('Receiving') && !skipIncoming) {
-      if (typeof ShippingManager !== 'undefined' && typeof ShippingManager.openIncomingModal === 'function') {
-        ShippingManager.openIncomingModal();
+      if (typeof ShippingManager !== 'undefined') { 
+        // ShippingManager.openModal(); <-- Commented out to temporarily bypass UI
+        ShippingManager.skipAndComplete(); // ✨ Instantly fires the skip function instead!
         return; 
       }
     }
+    if (this.currentWorkflowType.includes('Receiving') && !skipIncoming) {
+      if (typeof ShippingManager !== 'undefined' && typeof ShippingManager.openIncomingModal === 'function') { ShippingManager.openIncomingModal(); return; }
+    }
 
     const executeCompletion = async () => {
-      
       let overlay = document.createElement('div');
       overlay.id = 'sessionSaveOverlay';
       overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
       overlay.innerHTML = `
         <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
-          <h3 style="margin:0 0 15px 0; color:#0277bd;">💾 Committing Session</h3>
-          <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Applying Ledger Math...</div>
-          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Transmitting to Google...</div>
-          <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Verifying Uploads...</div>
+          <h3 style="margin:0 0 15px 0; color:#0277bd;">💾 Committing Session to Cloud</h3>
+          <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Validating Payload...</div>
+          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Server Processing...</div>
+          <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Downloading Fresh Sync...</div>
           <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
             <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
           </div>
@@ -1830,6 +1076,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       };
 
       try {
+        updateStep(1, "Payload Built", 33);
+        
         this.scannedObjects.forEach((item, index) => {
           let qtyEl = document.getElementById(`editQty_${index}`);
           let tagEl = document.getElementById(`editTag_${index}`);
@@ -1838,208 +1086,69 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
             if (tagEl) {
               let newTag = tagEl.value.trim().toUpperCase();
               item.customerTag = newTag;
-              if (newTag && this.currentWorkflowType.includes('Receiving')) {
-                item.actionTag = 'Reserved';
-              }
+              if (newTag && this.currentWorkflowType.includes('Receiving')) item.actionTag = 'Reserved';
             }
           }
+          if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
+             let manifestItem = this.expectedManifest.find(m => m.ref === item.ref.toUpperCase());
+             if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { 
+                 item.customerTag = manifestItem.allocations[0].customerTag; 
+             }
+          }
         });
-        localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
 
-        let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+        let sessionObj = {
+          id: this.sessionId,
+          status: "Completed",
+          userName: this.currentUserName,
+          sessionName: this.currentSessionName,
+          orderNum: this.currentOrderNum,
+          workflowType: this.currentWorkflowType,
+          dateStr: this.sessionDateStr,
+          startStr: this.sessionStartStr,
+          manifestEnabled: this.isManifestEnabled,
+          expectedManifest: this.expectedManifest,
+          scannedObjects: this.scannedObjects,
+          pendingNewItems: this.pendingNewItems,
+          pendingUpdates: this.pendingFieldUpdates,
+          lastUpdated: Date.now()
+        };
 
-        // ✨ THE FIX: Skip this manual loop during Stocktakes, because commitStocktake already perfectly built the array! 
-        // This stops completeSession from stacking duplicate entries on top of the Stocktake ones.
-        if (!this.currentWorkflowType.includes('Stocktake')) {
-            this.scannedObjects.forEach(item => {
-              // Inherit the tag from the manifest if doing a Pick & Pack
-              if (this.currentWorkflowType.includes('Packing') && this.isManifestEnabled) {
-                 let manifestItem = this.expectedManifest.find(m => m.ref === item.ref.toUpperCase());
-                 if (manifestItem && manifestItem.allocations && manifestItem.allocations.length > 0) { 
-                     item.customerTag = manifestItem.allocations[0].customerTag; 
-                 }
-              }
-
-              if (item.actionTag === 'Reserved' && item.customerTag) {
-                  let tag = item.customerTag.split(' - ')[0].trim().toUpperCase();
-                  let ref = item.ref.toUpperCase();
-                  
-                  if (!currentAllocations[tag]) currentAllocations[tag] = {};
-                  if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] };
-                  
-                  let cleanLot = (item.lot === 'NO_LOT' || item.lot === 'N/A' || item.lot === 'NA') ? '' : item.lot;
-                  let cleanExp = (item.exp === 'NO_EXP' || item.exp === 'N/A' || item.exp === 'NA') ? '' : item.exp;
-                  if (cleanExp.includes('T')) cleanExp = cleanExp.split('T')[0];
-                  
-                  currentAllocations[tag][ref].qty += item.qty;
-                  currentAllocations[tag][ref].details.push({
-                      lot: cleanLot,
-                      exp: cleanExp,
-                      qty: item.qty,
-                      orderNum: item.orderNum || '',
-                      sessionId: item.sessionId || this.sessionId
-                  });
-              } else if (item.actionTag === 'Pack & Ship' && item.customerTag) {
-                  let tag = item.customerTag.split(' - ')[0].trim().toUpperCase();
-                  let ref = item.ref.toUpperCase();
-                  
-                  if (currentAllocations[tag] && currentAllocations[tag][ref]) {
-                      let itemData = currentAllocations[tag][ref];
-                      
-                      if (itemData.details && itemData.details.length > 0) {
-                          let cleanLot = (item.lot === 'NO_LOT' || item.lot === 'N/A' || item.lot === 'NA') ? '' : item.lot;
-                          let cleanExp = (item.exp === 'NO_EXP' || item.exp === 'N/A' || item.exp === 'NA') ? '' : item.exp;
-                          if (cleanExp.includes('T')) cleanExp = cleanExp.split('T')[0];
-                          
-                          let detMatch = itemData.details.find(d => d.lot === cleanLot && d.exp === cleanExp);
-                          if (detMatch) {
-                              detMatch.qty -= item.qty;
-                              if (detMatch.qty <= 0) itemData.details = itemData.details.filter(d => d !== detMatch);
-                          } else if (itemData.details[0]) {
-                              itemData.details[0].qty -= item.qty;
-                              if (itemData.details[0].qty <= 0) itemData.details.shift();
-                          }
-                      }
-                      
-                      if (typeof itemData === 'object') {
-                          itemData.qty -= item.qty;
-                          if (itemData.qty <= 0) delete currentAllocations[tag][ref];
-                      } else {
-                          currentAllocations[tag][ref] -= item.qty;
-                          if (currentAllocations[tag][ref] <= 0) delete currentAllocations[tag][ref];
-                      }
-                      
-                      if (Object.keys(currentAllocations[tag]).length === 0) delete currentAllocations[tag];
-                  }
-              }
-            });
-        }
-
-        // Execute DB updates separately
-        if (this.pendingNewItems && this.pendingNewItems.length > 0) {
-          this.pendingNewItems.forEach(newItem => { 
-            let exists = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (newItem.ref || newItem.sku || '').toUpperCase()); 
-            if (!exists) DatabaseManager.db.push(newItem); 
-          });
-        }
-
-        let ledgerResult;
-        if (this.currentWorkflowType.includes('Stocktake')) {
-            ledgerResult = { updatedDb: DatabaseManager.db };
-        } else {
-            // ✨ THE FIX: Create a Dummy Clone to block the engine from duplicating the allocations array!
-            let dummyAllocationsForEngine = JSON.parse(JSON.stringify(currentAllocations));
-            ledgerResult = InventoryEngine.commitLedgerMath(this.scannedObjects, DatabaseManager.db, dummyAllocationsForEngine, this.currentWorkflowType);
-        }
-
-        // We explicitly use our manually crafted Allocations object here to guarantee the payload is formatted safely for Google!
-        localStorage.setItem('asp_allocations', JSON.stringify(currentAllocations));
-
-        if (this.pendingFieldUpdates && this.pendingFieldUpdates.length > 0) {
-          this.pendingFieldUpdates.forEach(update => { 
-            let dbItem = ledgerResult.updatedDb.find(i => (i.sku || i.ref || '').toUpperCase() === update.ref.toUpperCase()); 
-            if (dbItem && update.field) dbItem[update.field] = update.value; 
-          });
-        }
+        updateStep(2, "Server Calculating...", 66);
         
-        DatabaseManager.db = ledgerResult.updatedDb;
+        let res = await fetch(ApiManager.getActiveArchiveUrl(), { 
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "COMMIT_SESSION", payload: sessionObj })
+        });
         
-        // ✨ THE FIX: Define Shopify sync list early and flag them as TRUE in the database
-        let refsToSync = [];
+        let data = await res.json();
+        if (data.status !== "success") throw new Error(data.message);
+
+        // ✨ FIX 1: Capture the REFs to sync *before* we wipe the local session memory, but DON'T build the payload yet!
+        let refsToSyncToShopify = [];
         if (this.currentWorkflowType === 'Full Stocktake') {
-            refsToSync = DatabaseManager.db.map(i => i.sku || i.ref);
+            refsToSyncToShopify = DatabaseManager.db.map(i => i.sku || i.ref);
         } else {
-            refsToSync = this.scannedObjects.map(scan => scan.ref);
-        }
-        
-        refsToSync.forEach(ref => {
-            let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === (ref || '').toUpperCase());
-            if (dbItem) dbItem.syncedShopify = "TRUE";
-        });
-        
-        localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-
-        let dbPayload = null;
-        let archiveUrl = this.getActiveArchiveUrl();
-        if (archiveUrl) {
-            dbPayload = { 
-              action: "SYNC_LOCAL_DB", 
-              payload: { 
-                items: DatabaseManager.db,
-                customers: DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!"),
-                suppliers: DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!"),
-                vendors: DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!")
-              } 
-            };
+            refsToSyncToShopify = this.scannedObjects.map(scan => scan.ref);
+            this.pendingNewItems.forEach(item => { if (item.ref) refsToSyncToShopify.push(item.ref); });
         }
 
-        let completedSessionObj = this.saveToArchive('Completed');
-        
-        // ✨ Yield thread to repaint UI visually
-        updateStep(1, "Ledger Math Applied", 33);
-        await new Promise(r => requestAnimationFrame(() => setTimeout(r, 100))); 
-
-       // --- CONCURRENT UPLOAD FOR LIGHTNING SPEED ---
-        updateStep(2, "Transmitting to Google & Shopify...", 66);
-        let networkTasks = [];
-        
-        networkTasks.push(this.syncAllocationsToCloud());
-        
-        if (archiveUrl && dbPayload) {
-            networkTasks.push(fetch(archiveUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {}));
-        }
-        
-        if (completedSessionObj) {
-            networkTasks.push(this.pushToCloudArchive(completedSessionObj));
-            networkTasks.push(this.pushQboWriteBack(completedSessionObj));
-        }
-
-        let shopifyUpdatePayload = DatabaseManager.buildShopifyPayload(refsToSync);
-        
-        if (shopifyUpdatePayload.length > 0 && archiveUrl) {
-            networkTasks.push(fetch(archiveUrl, { 
-                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifyUpdatePayload }) 
-            }).catch(e => console.warn("Shopify background sync failed")));
-        }
-
-        await Promise.all(networkTasks);
-        
-        await new Promise(r => requestAnimationFrame(() => setTimeout(r, 1000))); 
-        
-        updateStep(3, "Session Safely Archived!", 100);
-        await new Promise(r => setTimeout(r, 300)); 
-
-        // ✨ FIX: Mark the local session as officially synced so the red dot doesn't appear
-        if (completedSessionObj) {
-            let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-            let targetIdx = localArchive.findIndex(s => s.id === completedSessionObj.id);
-            if (targetIdx > -1) {
-                localArchive[targetIdx].isSynced = true;
-                localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
-            }
-        }
-
-        // ✨ FIX: Update the Cloud Sync timestamp instantly so the app knows *we* caused the cloud update
-        localStorage.setItem('asp_last_cloud_sync', Date.now().toString());
-
+        // Clean up Local Memory
         this.pendingNewItems = []; this.pendingFieldUpdates = [];
         localStorage.setItem('asp_pending_new_items', JSON.stringify([])); 
         localStorage.setItem('asp_pending_updates', JSON.stringify([]));
-        
-        // ✨ WAREHOUSE BUG FIX: Wipe the active manifest so it doesn't accumulate on the next order!
         this.expectedManifest = [];
         localStorage.setItem('asp_active_manifest', JSON.stringify([]));
+        this.scannedObjects = [];
+        localStorage.setItem('asp_session_scanned_objects', JSON.stringify([]));
         
-        let recList = document.getElementById('manifestReconcileList');
-        let recCard = document.getElementById('manifestReconcileCard');
-        if (recList) recList.innerHTML = '';
-        if (recCard) recCard.style.display = 'none';
-
+        let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+        localArchive = localArchive.filter(s => s.id !== this.sessionId);
+        localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
+        
         document.getElementById('sessionNoteInput').value = ""; document.getElementById('chkSessionNote').checked = false;
         document.getElementById('orderDetailsInput').value = ""; 
         if (typeof UIManager !== 'undefined' && UIManager.toggleSessionNote) UIManager.toggleSessionNote();
-
         const chkPreload = document.getElementById('chkPreloadManifest');
         if (chkPreload) { chkPreload.checked = false; chkPreload.dispatchEvent(new Event('change')); }
         
@@ -2047,26 +1156,73 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         localStorage.setItem('asp_session_is_active', 'false'); localStorage.setItem('asp_manifest_enabled', 'false');
         this.currentItemAction = 'Inventory'; 
 
-        document.body.removeChild(overlay);
+        if (sessionObj.orderNum) { QboManager.pushQboWriteBack(sessionObj); }
 
+        document.body.removeChild(overlay);
         document.getElementById('screenSummary').style.display = 'none';
         document.getElementById('screenSetup').style.display = 'block';
-        if (typeof UIManager !== 'undefined') UIManager.showCustomAlert("Session Complete", "✅ All inventory math and cloud syncs finished successfully!");
-        
-        if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) UIManager.evaluateSyncIndicator();
+
+        // 5. Download the Newly Calculated Database natively via the Master Sync!
+        sessionStorage.setItem('asp_allocations_verified', 'true');
+        if (typeof window.masterSystemSync === 'function') {
+            await window.masterSystemSync(null); 
+        } else {
+            UIManager.showCustomAlert("Session Complete", "✅ Inventory successfully updated in the Cloud!");
+        }
+
+        // ✨ FIX 2: NOW that the freshly calculated database is downloaded, build the Shopify payload!
+        try {
+            let shopifyUpdatePayload = DatabaseManager.buildShopifyPayload(refsToSyncToShopify);
+            
+            if (shopifyUpdatePayload.length > 0 && ApiManager.getActiveArchiveUrl()) {
+                
+                // ✨ FIX: Show floating sync indicator
+                if (typeof UIManager !== 'undefined' && UIManager.showShopifySyncingBadge) {
+                    UIManager.showShopifySyncingBadge(true, shopifyUpdatePayload.length);
+                }
+
+                // Fire-and-forget batched Shopify Sync to prevent timeouts
+                (async () => {
+                  let batchSize = 40; 
+                  let totalBatches = Math.ceil(shopifyUpdatePayload.length / batchSize); // ✨ FIX: Calculate exact batches
+                  
+                  for (let i = 0; i < shopifyUpdatePayload.length; i += batchSize) {
+                      let currentBatch = (i / batchSize) + 1;
+                      let batch = shopifyUpdatePayload.slice(i, i + batchSize);
+                      
+                      // ✨ FIX: Update UI meter before sending the batch
+                      if (typeof UIManager !== 'undefined' && UIManager.showShopifySyncingBadge) {
+                          UIManager.showShopifySyncingBadge(true, shopifyUpdatePayload.length, currentBatch, totalBatches);
+                      }
+                      
+                      try {
+                          await fetch(ApiManager.getActiveArchiveUrl(), { 
+                              method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                              body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: batch }) 
+                          });
+                      } catch(e) { console.warn("Shopify batch sync failed:", e); }
+                      
+                      await new Promise(r => setTimeout(r, 1500));
+                  }
+                  
+                  if (typeof UIManager !== 'undefined' && UIManager.showShopifySyncingBadge) {
+                      UIManager.showShopifySyncingBadge(false);
+                  }
+              })();
+            }
+        } catch(e) {
+            console.warn("Shopify background sync setup failed", e);
+        }
 
       } catch (err) {
         let overlayEl = document.getElementById('sessionSaveOverlay');
         if (overlayEl) document.body.removeChild(overlayEl);
-        alert("Error during session commit: " + err.message);
+        alert("Commit Error: Failed to save session to the cloud: " + err.message);
       }
     };
 
-    if (!skipConfirm) {
-      UIManager.showCustomConfirm("Complete Session", "Are you ready to complete this session?", executeCompletion);
-    } else {
-      executeCompletion();
-    }
+    if (!skipConfirm) { UIManager.showCustomConfirm("Complete Session", "Are you ready to commit this session to the cloud?", executeCompletion); } 
+    else { executeCompletion(); }
   },
 
   commitStocktake() {
@@ -2077,7 +1233,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let noteVal = noteEl ? noteEl.value.trim() : '';
     
     if (this.currentWorkflowType === 'Full Stocktake' && (!chkNote.checked || !noteVal)) {
-      alert("A mandatory Session Note is required to commit a Full Stocktake (e.g., 'Q3 Inventory Audit'). Please check 'Add Session Note' and provide a reason.");
+      alert("A mandatory Session Note is required to commit a Full Stocktake. Please check 'Add Session Note' and provide a reason.");
       return;
     }
 
@@ -2092,7 +1248,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let varianceData = [];
     let netFinancialImpact = 0;
 
-    // 1. Calculate Variance for ALL items (Existing and Brand New)
     DatabaseManager.db.forEach(dbItem => {
       let sku = (dbItem.sku || dbItem.ref || '').toUpperCase();
       let expected = dbItem.onHand || 0;
@@ -2106,98 +1261,125 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         let costVal = parseFloat(costStr.replace(/[^0-9.-]+/g,"")) || 0;
         let financialVar = variance * costVal;
         netFinancialImpact += financialVar;
-        
         varianceData.push({ ref: sku, desc: dbItem.desc, mfr: dbItem.mfr, expected: expected, counted: counted, variance: variance, financialImpact: financialVar });
       }
     });
 
-    // Check for Brand New REFs that aren't in the DB yet
     Object.keys(scannedTotals).forEach(sku => {
       let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === sku.toUpperCase());
       if (!dbMatch) {
         let counted = scannedTotals[sku];
         let scanObj = this.scannedObjects.find(i => i.ref.toUpperCase() === sku.toUpperCase());
-        
         let costVal = scanObj ? parseFloat(String(scanObj.price || "0").replace(/[^0-9.-]+/g,"")) || 0 : 0;
         let financialVar = counted * costVal;
         netFinancialImpact += financialVar;
-        
         varianceData.push({ ref: sku, desc: scanObj ? scanObj.desc : "New Item", mfr: scanObj ? scanObj.mfr : "N/A", expected: 0, counted: counted, variance: counted, financialImpact: financialVar });
       }
     });
 
-    // 2. Clear Database Totals
-    if (this.currentWorkflowType === 'Full Stocktake') {
-      DatabaseManager.db.forEach(dbItem => {
-        dbItem.onHand = 0;
-        dbItem.reservedQty = 0; // ✨ FIX: Wipe reserved totals so they can be accurately rebuilt
-      });
-      // ✨ FIX: Wipe the active allocations memory so it can be rebuilt from the physical scan
-      localStorage.setItem('asp_allocations', JSON.stringify({}));
-    } else {
-      Object.keys(scannedTotals).forEach(ref => {
-        let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-        if (dbItem) dbItem.onHand = 0;
-      });
+    // ✨ ALL LOCAL MUTATIONS DELETED! We simply generate the Variance Report and then hand off to the cloud!
+    if (varianceData.length > 0) ReportsManager.generateVarianceReportPDF(varianceData, this.currentWorkflowType, netFinancialImpact);
+    else alert("No variances detected! Your physical counts match the system perfectly.");
+    
+    // Hand off to completeSession to push the payload to the Ledger Engine
+    setTimeout(() => { this.completeSession(true); }, UIManager.printTimeout);
+  },
+
+  async executeSessionReversal() {
+    let select = document.getElementById('reversalSessionSelect');
+    let targetId = select ? select.value : "";
+    if (!targetId) { alert("Please select a session to reverse."); return; }
+
+    let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+    let targetLite = dir.find(s => String(s.id) === String(targetId));
+    if (!targetLite) return;
+
+    if (!confirm(`Are you absolutely sure you want to mathematically REVERSE the session:\n\n"${targetLite.sessionName}"?\n\nThis will download the payload from the cloud and subtract all items that were originally added.`)) return;
+
+    // ✨ FIX: Identify all parts of a split payload automatically
+    let partsToFetch = [targetLite];
+    let baseName = targetLite.sessionName;
+
+    let match = targetLite.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)$/i);
+    if (match) {
+      baseName = match[1].trim();
+      partsToFetch = dir.filter(s => {
+          let smatch = s.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)$/i);
+          let sBase = smatch ? smatch[1].trim() : s.sessionName;
+          return sBase === baseName && s.dateStr === targetLite.dateStr;
+      }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
     }
 
-    // 3. Apply Scanned Totals
-    Object.keys(scannedTotals).forEach(ref => {
-      let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-      if (dbItem) {
-        dbItem.onHand = (dbItem.onHand || 0) + scannedTotals[ref];
-      }
-    });
+    let overlay = document.createElement('div');
+    overlay.id = 'reversalOverlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
+    overlay.innerHTML = `<h3>🔄 Reversing Session...</h3><p id="revStatusText" style="color:#a5d6a7;">Downloading cloud payloads...</p>`;
+    document.body.appendChild(overlay);
 
-    // 4. ✨ FIX: Process new Reservations made during the Stocktake
-    let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-    let madeReservations = false;
-    
-    this.scannedObjects.forEach(item => {
-        if (item.actionTag === 'Reserved' && item.customerTag) {
-            let tag = item.customerTag.split(' - ')[0].trim().toUpperCase();
-            let ref = item.ref.toUpperCase();
+    let combinedScans = [];
+    let targetSession = null;
+
+    try {
+        // Download all parts and stitch them together
+        for (let i = 0; i < partsToFetch.length; i++) {
+            let partLite = partsToFetch[i];
+            if (partsToFetch.length > 1) document.getElementById('revStatusText').innerText = `Downloading part ${i+1} of ${partsToFetch.length}...`;
             
-            if (!currentAllocations[tag]) currentAllocations[tag] = {};
-            if (!currentAllocations[tag][ref]) currentAllocations[tag][ref] = { qty: 0, details: [] };
+            let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${partLite.id}`);
+            let partData = await res.json();
+            if (!partData || partData.status === "error") throw new Error(partData.message || "Cloud payload missing.");
             
-            // ✨ FIX: Format NO_LOT and NO_EXP as clean blanks to match standard entries
-            let cleanLot = (item.lot === 'NO_LOT' || item.lot === 'N/A' || item.lot === 'NA') ? '' : item.lot;
-            let cleanExp = (item.exp === 'NO_EXP' || item.exp === 'N/A' || item.exp === 'NA') ? '' : item.exp;
-            if (cleanExp.includes('T')) cleanExp = cleanExp.split('T')[0];
+            if (i === 0) targetSession = partData;
+            combinedScans = combinedScans.concat(partData.scannedObjects || []);
+        }
+
+        document.getElementById('revStatusText').innerText = "Transmitting negative payloads to the Cloud Ledger...";
+
+        // Convert all scanned items to negative quantities
+        let revScannedObjects = combinedScans.map(item => {
+            return { ...item, qty: -(item.qty), itemNote: item.itemNote ? `[REVERSAL] ${item.itemNote}` : `REVERSAL of ${targetSession.id}` };
+        });
+
+        // Build the Master Reversal Payload
+        let masterSessionObj = {
+          id: Date.now().toString(), status: 'Completed', userName: this.currentUserName || 'Thomas',
+          sessionName: `[REVERSED] ${baseName}`, orderNum: targetSession.orderNum,
+          workflowType: targetSession.workflowType, dateStr: new Date().toLocaleDateString().replace(/\//g, '.'),
+          startStr: new Date().toLocaleTimeString(), manifestEnabled: false, expectedManifest: [],
+          scannedObjects: revScannedObjects, pendingNewItems: [], pendingUpdates: [], lastUpdated: Date.now()
+        };
+
+        // Split it back into chunks if it exceeds the 45,000 char cell limit
+        let chunks = this.splitPayloadIfNeeded(masterSessionObj);
+
+        // Push chunks sequentially to COMMIT_SESSION
+        for (let i = 0; i < chunks.length; i++) {
+            if (chunks.length > 1) document.getElementById('revStatusText').innerText = `Committing reversed part ${i+1} of ${chunks.length}...`;
             
-            currentAllocations[tag][ref].qty += item.qty;
-            currentAllocations[tag][ref].details.push({
-                lot: cleanLot,
-                exp: cleanExp,
-                qty: item.qty,
-                orderNum: item.orderNum || '',
-                sessionId: item.sessionId || this.sessionId
+            let res = await fetch(ApiManager.getActiveArchiveUrl(), { 
+                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "COMMIT_SESSION", payload: chunks[i] })
             });
             
-            let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
-            if (dbItem) dbItem.reservedQty = (dbItem.reservedQty || 0) + item.qty;
+            let data = await res.json();
+            if (data.status !== "success") throw new Error(data.message);
             
-            madeReservations = true;
+            await new Promise(r => setTimeout(r, 1000)); 
         }
-    });
+        
+        document.body.removeChild(overlay);
+        
+        sessionStorage.setItem('asp_allocations_verified', 'true');
+        if (typeof window.masterSystemSync === 'function') await window.masterSystemSync(null); 
+        
+        alert("Session successfully reversed! The database and cloud audit log have been updated with the negative quantities.");
+        this.loadReversibleSessions(); 
 
-    if (madeReservations) {
-        localStorage.setItem('asp_allocations', JSON.stringify(currentAllocations));
-        // ✨ FIX: Removed this.syncAllocationsToCloud() to prevent duplicate simultaneous API calls 
-        // since completeSession() is about to fire and handle the cloud push safely!
+    } catch (err) {
+        let overlayEl = document.getElementById('reversalOverlay');
+        if (overlayEl) document.body.removeChild(overlayEl);
+        alert("Reversal Failed: " + err.message);
     }
-
-    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-    alert("Stocktake successfully committed to the master database!");
-    
-    if (varianceData.length > 0) {
-      ReportsManager.generateVarianceReportPDF(varianceData, this.currentWorkflowType, netFinancialImpact);
-    } else {
-      alert("No variances detected! Your physical counts match the system perfectly.");
-    }
-    
-    setTimeout(() => { this.completeSession(true); }, UIManager.printTimeout);
   },
 
   suspendToBackorder() {
@@ -2227,8 +1409,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     localStorage.setItem('asp_session_is_active', 'false'); 
     localStorage.setItem('asp_manifest_enabled', 'false');
 
-    this.currentItemAction = 'Inventory'; // FIX
-
+    this.currentItemAction = 'Inventory'; 
     this.saveToArchive('Pending');
   },
 
@@ -2259,10 +1440,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     let cutoff = Date.now() - 2592000000;
     archive = archive.filter(s => s.lastUpdated > cutoff);
-    
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
-
-    // Return the sealed object so completeSession can queue it in the background thread
     return sessionObj;
   },
 
@@ -2270,13 +1448,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     let select = document.getElementById('reversalSessionSelect');
     if (!select) return;
     
-    // Pull the directory directly from the Cloud Vault instead of local storage
     let archive = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
     let cutoff = Date.now() - (24 * 60 * 60 * 1000); 
     
     let reversible = archive.filter(s => {
         if (s.status !== 'Completed') return false;
-        // Parse the timestamp properly
         let sTime = parseInt(s.id, 10);
         if (isNaN(sTime) || sTime < cutoff) return false;
         
@@ -2289,165 +1465,10 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     reversible.forEach(s => {
         let opt = document.createElement('option');
         opt.value = s.id;
-        // Highlight that it is a cloud pull
         opt.textContent = `☁️ ${s.dateStr} | ${s.sessionName} (${s.workflowType})`;
         select.appendChild(opt);
     });
-  },
-
-  async executeSessionReversal() {
-    let select = document.getElementById('reversalSessionSelect');
-    let targetId = select ? select.value : "";
-    if (!targetId) { alert("Please select a session to reverse."); return; }
-
-    let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
-    let targetLite = dir.find(s => String(s.id) === String(targetId));
-    if (!targetLite) return;
-
-    if (!confirm(`Are you absolutely sure you want to mathematically REVERSE the session:\n\n"${targetLite.sessionName}"?\n\nThis will download the payload from the cloud and subtract all items that were originally added.`)) return;
-
-    // Fetch the actual payload from the cloud
-    let targetSession = null;
-    try {
-        let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${targetId}`);
-        targetSession = await res.json();
-        if (!targetSession || targetSession.status === "error") throw new Error("Cloud payload missing.");
-    } catch(err) {
-        alert("Failed to download session payload from cloud: " + err.message);
-        return;
-    }
-
-    let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-    
-    // Run the negative math
-    let ledgerResult = InventoryEngine.reverseLedgerMath(
-        targetSession.scannedObjects,
-        DatabaseManager.db,
-        currentAllocations,
-        targetSession.workflowType
-    );
-
-    // Save the negated database locally
-    localStorage.setItem('asp_allocations', JSON.stringify(ledgerResult.updatedAllocations));
-    this.syncAllocationsToCloud();
-    DatabaseManager.db = ledgerResult.updatedDb;
-    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-
-    // Create the new Reversal Payload for the Audit Log
-    let revScannedObjects = targetSession.scannedObjects.map(item => {
-        return { 
-           ...item, 
-           qty: -(item.qty), 
-           itemNote: item.itemNote ? `[REVERSAL] ${item.itemNote}` : `REVERSAL of ${targetSession.id}` 
-        };
-    });
-
-    let revSession = {
-      id: Date.now().toString(),
-      status: 'Completed',
-      userName: this.currentUserName || 'Thomas',
-      sessionName: `[REVERSED] ${targetSession.sessionName}`,
-      orderNum: targetSession.orderNum,
-      workflowType: targetSession.workflowType,
-      dateStr: new Date().toLocaleDateString().replace(/\//g, '.'),
-      startStr: new Date().toLocaleTimeString(),
-      manifestEnabled: false,
-      expectedManifest: [],
-      scannedObjects: revScannedObjects,
-      pendingNewItems: [],
-      pendingUpdates: [],
-      lastUpdated: Date.now()
-    };
-
-    // Push to local archive and cloud
-    let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-    localArchive.unshift(revSession);
-    localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
-    this.pushToCloudArchive(revSession);
-
-    // Sync the updated catalog math
-    if (this.getActiveArchiveUrl()) {
-      let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
-      let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
-      let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
-
-      let dbPayload = { 
-        action: "SYNC_LOCAL_DB", 
-        payload: { items: DatabaseManager.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors } 
-      };
-      fetch(this.getActiveArchiveUrl(), { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dbPayload) }).catch(e => {});
-    }
-
-    alert("Session successfully reversed! The database and cloud audit log have been updated with the negative quantities.");
-    this.loadReversibleSessions(); 
-  },
-
-  renderManifestReconciliation() {
-    const card = document.getElementById('manifestReconcileCard');
-    const list = document.getElementById('manifestReconcileList');
-    if (!card || !list || !this.isManifestEnabled || this.expectedManifest.length === 0) return;
-
-    let scannedMap = {};
-    this.scannedObjects.forEach(i => { scannedMap[i.ref] = (scannedMap[i.ref] || 0) + i.qty; });
-
-    let expectedMap = {};
-    this.expectedManifest.forEach(exp => {
-        expectedMap[exp.ref] = (expectedMap[exp.ref] || 0) + exp.expectedQty;
-    });
-
-    let hasDiscrepancy = false;
-    let html = '';
-
-    Object.keys(expectedMap).sort().forEach(ref => {
-      let eQty = expectedMap[ref];
-      let sQty = scannedMap[ref] || 0;
-      if (sQty !== eQty) {
-        hasDiscrepancy = true;
-        html += `
-          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; background:#fff; padding:8px; border:1px solid #ccc; border-radius:4px;" class="manifest-rec-row">
-            <input type="text" class="rec-ref-input" value="${ref}" style="flex:2; text-transform:uppercase; font-weight:bold; color:#0277bd;" readonly>
-            <input type="number" class="rec-qty-input" data-original="${eQty}" value="${eQty}" min="0" style="flex:1;">
-            <span style="font-size:0.8rem; color:#555; flex:1.5;">Scanned: <strong>${sQty}</strong></span>
-          </div>
-        `;
-      }
-    });
-
-    if (hasDiscrepancy) {
-      card.style.display = 'block';
-      list.innerHTML = html;
-    } else {
-      card.style.display = 'none';
-    }
-  },
-
-  saveManifestReconciliation() {
-    const list = document.getElementById('manifestReconcileList');
-    if (!list) return;
-
-    let rows = list.querySelectorAll('.manifest-rec-row');
-    rows.forEach(row => {
-      let ref = row.querySelector('.rec-ref-input').value.trim().toUpperCase();
-      let newQty = parseInt(row.querySelector('.rec-qty-input').value, 10) || 0;
-      let origQty = parseInt(row.querySelector('.rec-qty-input').getAttribute('data-original'), 10) || 0;
-      
-      if (newQty !== origQty) {
-         let diff = newQty - origQty;
-         let targetExp = this.expectedManifest.find(e => e.ref === ref);
-         if (targetExp) {
-             targetExp.expectedQty += diff;
-             if (targetExp.expectedQty < 0) targetExp.expectedQty = 0;
-         } else {
-             this.expectedManifest.push({ ref: ref, expectedQty: newQty, allocations: [] });
-         }
-      }
-    });
-
-    this.expectedManifest = this.expectedManifest.filter(e => e.expectedQty > 0);
-    localStorage.setItem('asp_active_manifest', JSON.stringify(this.expectedManifest));
-    alert("Manifest updated! Recalculating session summaries...");
-    this.goToSummaryScreen();
-  },
+  },  
 
   updateScannedItem(index) {
     if (!this.scannedObjects[index]) return;
@@ -2464,12 +1485,12 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     if (newTag) this.scannedObjects[index].actionTag = 'Reserved';
 
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
-    this.updateManifestProgressUI();
+    ManifestManager.updateManifestProgressUI();
     this.saveToArchive('Pending');
     
     alert(`Updated REF ${this.scannedObjects[index].ref} (Qty: ${newQty}${newTag ? ', Tag: ' + newTag : ''})`);
     AuditManager.updateSessionSummaryView();
-    this.renderManifestReconciliation();
+    ManifestManager.renderManifestReconciliation();
     this.renderAdvancedReview();
   },
 
@@ -2481,8 +1502,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
 
     this.scannedObjects.splice(index, 1);
     
-    // ✨ THE FIX: If it was a new item, check if there are any other scans of it left. 
-    // If not, completely purge its metadata from the waiting room!
     if (item.isNew) {
         let stillExists = this.scannedObjects.some(i => i.ref === item.ref && i.isNew);
         if (!stillExists) {
@@ -2492,11 +1511,11 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     localStorage.setItem('asp_session_scanned_objects', JSON.stringify(this.scannedObjects));
-    this.updateManifestProgressUI();
+    ManifestManager.updateManifestProgressUI();
     this.saveToArchive('Pending');
 
     AuditManager.updateSessionSummaryView();
-    this.renderManifestReconciliation();
+    ManifestManager.renderManifestReconciliation();
     this.renderAdvancedReview();
   },
 
@@ -2520,7 +1539,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     document.getElementById('screenArchive').style.display = 'none';
     document.getElementById('screenSetup').style.display = 'block';
   },
-
+  
   renderArchiveList() {
     const container = document.getElementById('archiveListContainer');
     
@@ -2537,7 +1556,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     }
 
     let filterVal = document.getElementById('archiveFilter').value;
-    // Search Input Value
     let searchVal = document.getElementById('archiveSearchInput') ? document.getElementById('archiveSearchInput').value.trim().toLowerCase() : '';
     let hideCancelled = document.getElementById('chkHideCancelled') ? document.getElementById('chkHideCancelled').checked : false;
     let onlyActive = document.getElementById('chkOnlyActive') ? document.getElementById('chkOnlyActive').checked : false;
@@ -2553,7 +1571,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (hideCancelled && s.status === 'Cancelled') return false;
       if (onlyActive && s.status !== 'Pending') return false; 
       
-      // Apply the text search filter
       if (searchVal) {
           let searchTarget = `${s.sessionName} ${s.orderNum} ${s.dateStr} ${s.id}`.toLowerCase();
           if (!searchTarget.includes(searchVal)) return false;
@@ -2636,7 +1653,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
         let partsToFetch = [targetLite];
         let baseName = targetLite.sessionName;
 
-        // Auto-detect if this is part of a split session
         let match = targetLite.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)$/i);
         if (match) {
           baseName = match[1].trim();
@@ -2659,7 +1675,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           let dlText = document.getElementById('dlText');
           if (dlText && partsToFetch.length > 1) dlText.textContent = `Downloading part ${i+1} of ${partsToFetch.length}...`;
 
-          let res = await fetch(`${this.getActiveArchiveUrl()}?action=GET_SESSION&id=${partLite.id}`);
+          let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${partLite.id}`);
           let partData = await res.json();
           
           if (!partData || partData.status === "error") {
@@ -2715,7 +1731,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     this.pendingNewItems = sessionData.pendingNewItems || [];
     this.pendingFieldUpdates = sessionData.pendingUpdates || [];
 
-    // --- NEW UI REBUILD & STATE OVERRIDE ---
     let destRow = document.getElementById('rowItemDestination');
     let tagRow = document.getElementById('rowCustomerTag');
 
@@ -2737,7 +1752,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
       if (destRow) destRow.style.display = 'none';
       if (tagRow) tagRow.style.display = 'none';
     }
-    // ----------------------------------------
 
     localStorage.setItem('asp_session_id', this.sessionId);
     localStorage.setItem('asp_session_is_active', 'true');
@@ -2764,66 +1778,6 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
     archive = archive.filter(s => s.id !== id);
     localStorage.setItem('asp_session_archive', JSON.stringify(archive));
     this.renderArchiveList();
-  },
-
-  async pushQboWriteBack(sessionObj) {
-    if (!this.getActiveFeederUrl() || this.getActiveFeederUrl().includes("YOUR_")) return; 
-    
-    // Removed the "Packing" restriction so it works for Incoming Shipments too
-    if (!sessionObj.orderNum) return;
-    
-    // 1. Update internal QBO_Feed (Archive URL)
-    try {
-      await fetch(this.getActiveArchiveUrl(), { 
-        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "QBO_WRITEBACK", payload: sessionObj })
-      });
-    } catch (err) {}
-
-    // 2. Update external DEMO ORDERS Feed (Feeder URL)
-    try {
-      await fetch(this.getActiveFeederUrl(), { 
-        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "COMPLETE_SESSION", sessionName: sessionObj.sessionName, orderNum: sessionObj.orderNum })
-      });
-    } catch (err) {}
-  },
-
-  bindOrderInputListener() {
-    let orderInput = document.getElementById('orderDetailsInput');
-    if (orderInput) {
-      orderInput.addEventListener('change', (e) => {
-        let val = e.target.value.trim().toUpperCase();
-        if (!val) return;
-        
-        // STRICT CHECK: Only trigger for Orders that are Picking & Packing
-        let typeRadio = document.querySelector('input[name="sessionType"]:checked');
-        let wType = document.getElementById('workflowTypeSelect').value;
-        if (!typeRadio || typeRadio.value !== 'Order' || wType !== 'Picking & Packing') return;
-        
-        let match = Object.keys(this.fetchedStagedData).find(key => key.toUpperCase().includes(val));
-        
-        if (match) {
-          let isDone = this.fetchedStagedData[match].isCompleted === true;
-          if (isDone) return; 
-
-          UIManager.showCustomConfirm(
-            "Order Found",
-            `📦 Order ${val} found in the QBO Feed!\n\nWould you like to auto-fill the customer and pre-load the expected items for packing?`,
-            () => {
-              let customerName = match.split('-')[0].trim();
-              let custSelect = document.getElementById('customerSelect');
-              if (custSelect) {
-                 let opt = Array.from(custSelect.options).find(o => o.value.toUpperCase() === customerName.toUpperCase());
-                 if (opt) custSelect.value = opt.value;
-              }
-              document.getElementById('chkPreloadManifest').checked = true;
-              this.loadSelectedStagedOrder(match);
-            }
-          );
-        }
-      });
-    }
   },
 
   // Un-Reserve Logic Engine (With Partial Quantity Support)
@@ -2897,7 +1851,7 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           overlay.innerHTML = `
             <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
               <h3 style="margin:0 0 15px 0; color:#d32f2f;">🔄 Processing Un-Reserve</h3>
-              <div style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ Adjusting inventory and syncing to the cloud...</div>
+              <div id="unresStep1" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ Adjusting inventory and syncing to the cloud...</div>
               <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
                 <div style="width:100%; height:100%; background:#d32f2f; animation: pulse 1.5s infinite;"></div>
               </div>
@@ -2905,10 +1859,8 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
           `;
           document.body.appendChild(overlay);
 
-          let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
           let unreservedItems = [];
           
-          // Adjust local memory using specific quantities
           checkboxes.forEach(chk => {
               let ref = chk.getAttribute('data-ref');
               let lot = chk.getAttribute('data-lot');
@@ -2916,76 +1868,22 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
               let sessionId = chk.getAttribute('data-session');
               let maxQty = parseInt(chk.getAttribute('data-max'), 10) || 0;
               
-              // ✨ WAREHOUSE BUG FIX: Traverse the DOM relative to the checkbox to safely grab the exact number typed
               let rowWrapper = chk.closest('.unreserve-item-row');
               let qtyInput = rowWrapper ? rowWrapper.querySelector('input[type="number"]') : null;
               let unresQty = qtyInput ? parseInt(qtyInput.value, 10) : maxQty;
               
-              // Prevent them from un-reserving more than what actually exists
               if (isNaN(unresQty) || unresQty <= 0) return;
               if (unresQty > maxQty) unresQty = maxQty;
-              
-              // Prevent them from un-reserving more than what actually exists
-              if (isNaN(unresQty) || unresQty <= 0) return;
-              if (unresQty > maxQty) unresQty = maxQty;
-
-              if (allocations[custName] && allocations[custName][ref]) {
-                  let itemData = allocations[custName][ref];
-                  if (itemData.details) {
-                      let detIndex = itemData.details.findIndex(d => d.lot === lot && d.exp === exp && d.sessionId === sessionId);
-                      if (detIndex > -1) {
-                          itemData.details[detIndex].qty -= unresQty;
-                          if (itemData.details[detIndex].qty <= 0) itemData.details.splice(detIndex, 1);
-                      }
-                      itemData.qty -= unresQty;
-                      if (itemData.qty <= 0) delete allocations[custName][ref];
-                  } else if (itemData.qty !== undefined) {
-                      itemData.qty -= unresQty;
-                      if (itemData.qty <= 0) delete allocations[custName][ref];
-                  }
-                  if (Object.keys(allocations[custName]).length === 0) delete allocations[custName];
-              }
-
-              let dbItem = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
-              if (dbItem) {
-                  dbItem.reservedQty = Math.max(0, (dbItem.reservedQty || 0) - unresQty);
-              }
 
               unreservedItems.push({
                   ref: ref, lot: lot || "N/A", exp: exp || "N/A", qty: unresQty,
-                  actionTag: "Un-Reserved", customerTag: custName, isNew: false, sessionId: Date.now().toString(),
+                  actionTag: "Un-Reserve",
+                  customerTag: custName, isNew: false, sessionId: Date.now().toString(),
                   itemNote: "Un-Reserved from Bin"
               });
           });
 
-          localStorage.setItem('asp_allocations', JSON.stringify(allocations));
-          localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
           document.getElementById('modalUnreserve').style.display = 'none';
-
-          this.syncAllocationsToCloud();
-
-          let cleanCustomers = DatabaseManager.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
-          let cleanSuppliers = DatabaseManager.suppliers.filter(s => !s.startsWith("+") && s !== "#ERROR!");
-          let cleanVendors = DatabaseManager.vendors.filter(v => !v.startsWith("+") && v !== "#ERROR!");
-
-          let networkTasks = [];
-
-          networkTasks.push(
-              fetch(this.getActiveArchiveUrl(), {
-                  method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({ action: "SYNC_LOCAL_DB", payload: { items: DatabaseManager.db, customers: cleanCustomers, suppliers: cleanSuppliers, vendors: cleanVendors } })
-              })
-          );
-
-          let refsToSync = unreservedItems.map(scan => scan.ref);
-          let shopifySyncPayload = DatabaseManager.buildShopifyPayload(refsToSync);
-          
-          if (shopifySyncPayload.length > 0) {
-              networkTasks.push(fetch(this.getActiveArchiveUrl(), { 
-                  method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                  body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifySyncPayload }) 
-              }).catch(e => console.warn("Shopify background sync failed")));
-          }
 
           let uNameInput = document.getElementById('userNameInput');
           let userName = uNameInput && uNameInput.value ? uNameInput.value.trim() : "Operator";
@@ -2998,25 +1896,65 @@ REF [Tab] Quantity [Tab] Lot [Tab] Exp`;
               pendingNewItems: [], pendingUpdates: [], lastUpdated: Date.now()
           };
 
-          let localArchive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
-          localArchive.unshift(auditPayload);
-          localStorage.setItem('asp_session_archive', JSON.stringify(localArchive));
+          // 1. Send to the Cloud Ledger Engine for secure math calculation
+          let res = await fetch(ApiManager.getActiveArchiveUrl(), {
+              method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "COMMIT_SESSION", payload: auditPayload })
+          });
+          
+          let data = await res.json();
+          if (data.status !== "success") throw new Error(data.message);
 
-          networkTasks.push(
-              fetch(this.getActiveArchiveUrl(), {
-                  method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({ action: "ARCHIVE_SESSION", payload: auditPayload })
-              })
-          );
+          document.getElementById('unresStep1').innerHTML = `✅ <span style="color:#2e7d32;">Cloud math calculated! Downloading fresh sync...</span>`;
 
-          await Promise.all(networkTasks);
+          // ✨ FIX 1: Force the app to download the freshly calculated database FIRST!
+          sessionStorage.setItem('asp_allocations_verified', 'true');
+          if (typeof window.masterSystemSync === 'function') await window.masterSystemSync(null);
+
+          // ✨ FIX 2: NOW build the Shopify payload using the updated, accurate math
+          let refsToSync = unreservedItems.map(scan => scan.ref);
+          let shopifyUpdatePayload = DatabaseManager.buildShopifyPayload(refsToSync);
+          
+          if (shopifyUpdatePayload.length > 0 && ApiManager.getActiveArchiveUrl()) {
+              
+              if (typeof UIManager !== 'undefined' && UIManager.showShopifySyncingBadge) {
+                  UIManager.showShopifySyncingBadge(true, shopifyUpdatePayload.length);
+              }
+
+              (async () => {
+                  let batchSize = 40; 
+                  let totalBatches = Math.ceil(shopifyUpdatePayload.length / batchSize); // ✨ FIX: Calculate exact batches
+                  
+                  for (let i = 0; i < shopifyUpdatePayload.length; i += batchSize) {
+                      let currentBatch = (i / batchSize) + 1;
+                      let batch = shopifyUpdatePayload.slice(i, i + batchSize);
+                      
+                      // ✨ FIX: Update UI meter before sending the batch
+                      if (typeof UIManager !== 'undefined' && UIManager.showShopifySyncingBadge) {
+                          UIManager.showShopifySyncingBadge(true, shopifyUpdatePayload.length, currentBatch, totalBatches);
+                      }
+                      
+                      try {
+                          await fetch(ApiManager.getActiveArchiveUrl(), { 
+                              method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                              body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: batch }) 
+                          });
+                      } catch(e) { console.warn("Shopify batch sync failed:", e); }
+                      
+                      await new Promise(r => setTimeout(r, 1500));
+                  }
+                  
+                  if (typeof UIManager !== 'undefined' && UIManager.showShopifySyncingBadge) {
+                      UIManager.showShopifySyncingBadge(false);
+                  }
+              })();
+          }
 
           let overlayEl = document.getElementById('unreserveOverlay');
           if (overlayEl) document.body.removeChild(overlayEl);
 
           UIManager.showCustomAlert("Success", `Successfully un-reserved ${unreservedItems.length} item(s) and synced inventory!`);
           
-          // UI REFRESH FIX: Immediately reload the specific modal that was open
           if (custName === "ASP DAMAGED INVENTORY") {
               if (typeof UIManager !== 'undefined' && UIManager.openDamagedBinViewerModal) UIManager.openDamagedBinViewerModal();
           } else {

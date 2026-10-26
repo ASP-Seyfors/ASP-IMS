@@ -89,7 +89,7 @@ async function sendDeploymentBlast() {
 
     try {
         // FIXED: Using the correct URL method (getActiveArchiveUrl)
-        let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+        let res = await fetch(ApiManager.getActiveArchiveUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
@@ -147,7 +147,7 @@ async function sendPreDeploymentBlast() {
     };
 
     try {
-        let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+        let res = await fetch(ApiManager.getActiveArchiveUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
@@ -220,7 +220,7 @@ async function exportAppsScriptFiles(event) {
     btn.disabled = true;
 
     try {
-        let res = await fetch(SessionManager.getActiveArchiveUrl(), {
+        let res = await fetch(ApiManager.getActiveArchiveUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: "EXPORT_APPS_SCRIPT" })
@@ -398,22 +398,24 @@ window.handleItemCustomerSelect = (val) => DatabaseManager.handleItemCustomerSel
 
 window.startSession = () => SessionManager.startSession();
 window.rescueLastSession = () => SessionManager.rescueLastSession();
-window.processPastedSpreadsheet = () => SessionManager.processPastedSpreadsheet();
-window.addManifestRow = () => SessionManager.addManifestRow();
-window.cancelManifestEntry = () => SessionManager.cancelManifestEntry();
-window.goToManifestReview = () => SessionManager.goToManifestReview();
-window.returnToManifestEdit = () => SessionManager.returnToManifestEdit();
-window.confirmManifestAndStart = () => SessionManager.confirmManifestAndStart();
-window.toggleManifestResRow = (idx) => SessionManager.toggleManifestResRow(idx);
 window.goToSummaryScreen = () => SessionManager.goToSummaryScreen();
 window.goToReviewStage = () => SessionManager.goToReviewStage();
 window.confirmFieldUpdate = (field) => SessionManager.confirmFieldUpdate(field);
 window.returnToEdit = () => SessionManager.returnToEdit();
 window.cancelScannedItem = () => SessionManager.cancelScannedItem();
 window.saveItemLog = () => SessionManager.saveItemLog();
-window.clearManifestList = () => SessionManager.clearManifestList();
-window.triggerQboSync = (e) => SessionManager.triggerQboSync(e);
 window.offloadAndPurgeHistory = (e) => SessionManager.offloadAndPurgeHistory(e);
+
+// Moved from Session Manager to new QBO Manager and Manifest Manager.
+window.triggerQboSync = (e) => QboManager.triggerQboSync(e);
+window.addManifestRow = () => ManifestManager.addManifestRow();
+window.cancelManifestEntry = () => ManifestManager.cancelManifestEntry();
+window.goToManifestReview = () => ManifestManager.goToManifestReview();
+window.returnToManifestEdit = () => ManifestManager.returnToManifestEdit();
+window.confirmManifestAndStart = () => ManifestManager.confirmManifestAndStart();
+window.toggleManifestResRow = (idx) => ManifestManager.toggleManifestResRow(idx);
+window.clearManifestList = () => ManifestManager.clearManifestList();
+window.processPastedSpreadsheet = () => ManifestManager.processPastedSpreadsheet();
 
 window.scanDocumentOCR = (e) => ScannerManager.scanDocumentOCR(e);
 window.resetScanLinesAndFields = () => ScannerManager.resetScanLinesAndFields();
@@ -463,7 +465,7 @@ window.addEventListener('visibilitychange', () => {
                 }
             };
             
-            let activeUrl = (typeof SessionManager !== 'undefined') ? SessionManager.getActiveArchiveUrl() : ENV_CONFIG.CLOUD_ARCHIVE_URL;
+            let activeUrl = (typeof ApiManager !== 'undefined') ? ApiManager.getActiveArchiveUrl() : ENV_CONFIG.CLOUD_ARCHIVE_URL;
             
             if (activeUrl) {
                 // sendBeacon guarantees the payload is transmitted even if the browser tab is instantly destroyed
