@@ -409,3 +409,15 @@ body.theme-sage #quickLookupModal h3 {
 #modalUnreserve {
     z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
 }
+
+/* ✨ FIX: Force the Pricing Block and its Labels to obey Dark Mode overrides */
+body.theme-slate #modalPricingBlock,
+body.theme-sage #modalPricingBlock {
+    background-color: var(--raw-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.theme-slate #modalPricingBlock label,
+body.theme-sage #modalPricingBlock label {
+    color: var(--text-main) !important;
+}

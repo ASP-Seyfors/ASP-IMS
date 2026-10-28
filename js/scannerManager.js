@@ -333,6 +333,12 @@ const ScannerManager = {
         lot = `${lot} [v${variant}]`;
     }
 
+    // ✨ FIX: Isolate the variant into its own field instead of gluing it to the Lot
+    let verInput = document.getElementById('verInput');
+    if (verInput) {
+        verInput.value = variant ? variant : "";
+    }
+
     if (gtin && !document.getElementById('chkNaGtin').checked) document.getElementById('gtinInput').value = gtin;
     if (lot && !document.getElementById('chkNaLot').checked) document.getElementById('lotInput').value = lot;
     if (exp && !document.getElementById('chkNaExp').checked) document.getElementById('expInput').value = exp;

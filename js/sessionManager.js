@@ -799,6 +799,8 @@ const SessionManager = {
       gtin: rawGtin || (this.currentMatchedItem ? this.currentMatchedItem.gtin : ''),
       ref: ref,
       lot: lot || 'NO_LOT',
+      // ✨ NEW: Tell the app to grab the version box data and save it!
+      version: document.getElementById('verInput') ? document.getElementById('verInput').value.trim() : "",
       exp: exp || 'NO_EXP',
       mfr: vendor,
       desc: desc,

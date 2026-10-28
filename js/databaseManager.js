@@ -419,10 +419,10 @@ const DatabaseManager = {
     pricingBlock.style.gap = '10px';
 
     pricingBlock.innerHTML = `
-      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">Selling Price</label>${priceInputHtml}</div>
-      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">Unit Cost</label>${costInputHtml}</div>
-      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">RM Price</label>${rmPriceInputHtml}</div>
-      <div><label style="font-weight:bold; font-size:0.85rem; color:#555;">DM Price</label>${dmPriceInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Selling Price</label>${priceInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Unit Cost</label>${costInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">RM Price</label>${rmPriceInputHtml}</div>
+      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">DM Price</label>${dmPriceInputHtml}</div>
     `;
 
     document.getElementById('itemEditModal').style.display = 'flex';
@@ -597,7 +597,10 @@ const DatabaseManager = {
     
     let gtinInput = document.getElementById('gtinInput');
     if (gtinInput && !document.getElementById('chkNaGtin').checked) {
-        gtinInput.value = item.gtin || "";
+        // ✨ FIX: Only overwrite the input if the database HAS a GTIN. 
+        if (item.gtin) {
+            gtinInput.value = item.gtin || "";
+        }
     }
 
     // ✨ NEW: Auto-fill the Shelf Location
