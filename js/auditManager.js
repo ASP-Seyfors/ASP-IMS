@@ -2133,6 +2133,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let currentVendors = JSON.parse(localStorage.getItem('asp_wh_vendors')) || [];
     let currentCustomers = JSON.parse(localStorage.getItem('asp_wh_customers')) || [];
     let currentSuppliers = JSON.parse(localStorage.getItem('asp_wh_suppliers')) || [];
+    
+    // Catch the missing arrays from local memory
+    let currentUsers = JSON.parse(localStorage.getItem('asp_wh_users')) || [];
+    let currentCustAliases = JSON.parse(localStorage.getItem('asp_wh_cust_aliases')) || {};
+    let currentSupAliases = JSON.parse(localStorage.getItem('asp_wh_sup_aliases')) || {};
+    let currentShippingRules = JSON.parse(localStorage.getItem('asp_shipping_rules')) || {};
+
     let newItemsMap = new Map(), updatesMap = new Map();
     
     this.parsedAuditSessions.forEach(sess => {
@@ -2155,11 +2162,15 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       }
     });
 
-    // ✨ FIX: Bundle all four arrays into the final JSON export
+    // Bundle all arrays securely into the final JSON export
     let outJSON = { 
         customers: currentCustomers,
         suppliers: currentSuppliers,
         vendors: currentVendors, 
+        users: currentUsers,
+        customerAliases: currentCustAliases,
+        supplierAliases: currentSupAliases,
+        shippingRules: currentShippingRules,
         items: currentDB 
     };
     UIManager.triggerShareOrDownload(JSON.stringify(outJSON, null, 2), `database_updated_${Date.now()}.json`, 'application/json');
