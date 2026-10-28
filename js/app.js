@@ -35,7 +35,7 @@ async function checkAppUpdates() {
         if (registration.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           alert("🎉 New update found and applied! Reloading application...");
-          window.location.reload(true);
+          setTimeout(() => { window.location.reload(true); }, 500); // ✨ Give SW time to activate
           return;
         }
 
