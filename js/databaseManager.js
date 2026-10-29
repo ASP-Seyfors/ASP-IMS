@@ -965,6 +965,13 @@ const DatabaseManager = {
       localStorage.setItem('asp_shipping_rules', JSON.stringify(this.shippingRules));
     }
 
+    // ✨ NEW: Catch the live user list and save it to the tablet
+    if (cloudDb.users && cloudDb.users.length > 0) {
+      this.users = cloudDb.users;
+      if (!this.users.includes("+ New User")) this.users.push("+ New User");
+      localStorage.setItem('asp_wh_users', JSON.stringify(this.users));
+    }
+
     if (cloudDb.items && cloudDb.items.length > 0) {
       this.db = cloudDb.items;
       localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
@@ -991,6 +998,13 @@ const DatabaseManager = {
     this.populateItemCustomerSelect();
     if (typeof UIManager !== 'undefined' && typeof UIManager.populateCustomerDropdown === 'function') {
       UIManager.populateCustomerDropdown();
+    }
+    
+    // ✨ NEW: Refresh the Workstation Dropdown instantly!
+    let uSelect = document.getElementById('userNameSelect');
+    if (uSelect) {
+        uSelect.innerHTML = this.users.map(u => `<option value="${u}">${u}</option>`).join('');
+        uSelect.value = localStorage.getItem('asp_user_name') || this.users[0];
     }
   }
 };
