@@ -596,9 +596,10 @@ const DatabaseManager = {
     if (itemSku && !document.getElementById('refInput').value.trim()) document.getElementById('refInput').value = itemSku;
     
     let gtinInput = document.getElementById('gtinInput');
+    let currentGtinVal = gtinInput ? gtinInput.value.trim() : "";
     if (gtinInput && !document.getElementById('chkNaGtin').checked) {
-        // ✨ FIX: Only overwrite the input if the database HAS a GTIN. 
-        if (item.gtin) {
+        // ✨ FIX: Only overwrite the input if the UI field is empty
+        if (item.gtin && currentGtinVal === "") {
             gtinInput.value = item.gtin || "";
         }
     }

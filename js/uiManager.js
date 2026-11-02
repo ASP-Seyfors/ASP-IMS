@@ -743,6 +743,13 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     document.getElementById('screenSettings').style.display = 'block';
   },
 
+  hideAllConfirmButtons() {
+    if (document.getElementById('btnConfirmGtin')) document.getElementById('btnConfirmGtin').style.display = 'none';
+    if (document.getElementById('btnConfirmMfr')) document.getElementById('btnConfirmMfr').style.display = 'none';
+    if (document.getElementById('gtinDiffBanner')) document.getElementById('gtinDiffBanner').style.display = 'none';
+    if (document.getElementById('btnConfirmShelf')) document.getElementById('btnConfirmShelf').style.display = 'none'; // ✨ NEW
+  },
+
   // ==========================================
   // CHEAT CODE ENGINE
   // ==========================================
