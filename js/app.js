@@ -307,10 +307,10 @@ window.masterSystemSync = async (event) => {
   }
   
   modal.innerHTML = `
-    <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+    <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
       <h3 style="margin:0 0 15px 0; color:#0277bd; text-align:center;">🔄 Master System Sync</h3>
-      <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Uploading Local History...</div>
-      <div id="syncStep2" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 2. Syncing Master Database...</div>
+      <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:var(--text-main, #555);">⏳ 1. Uploading Local History...</div>
+      <div id="syncStep2" style="margin-bottom:15px; font-weight:bold; color:var(--text-main, #555);">⏳ 2. Syncing Master Database...</div>
       <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
         <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
       </div>
@@ -449,6 +449,10 @@ window.exportAppsScriptFiles = exportAppsScriptFiles;
 
 // Address Book Editor
 window.openAddressBookEditor = () => ReportsManager.openAddressBookEditor();
+// ✨ THE FIX: Expose the Custom Flyer and Sales Reports functions globally
+window.openCustomSalesFlyer = () => AuditManager.openCustomSalesFlyer();
+window.openCustomerStockReportEditor = () => AuditManager.openCustomerStockReportEditor();
+window.openInternalSalesReportOptions = () => AuditManager.openInternalSalesReportOptions();
 
 window.forceAppUpdate = forceAppUpdate;
 

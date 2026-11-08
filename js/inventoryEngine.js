@@ -29,7 +29,8 @@ const InventoryEngine = {
 
     if (matchedItem && matchedItem.parentRef && matchedItem.uomMult > 1) {
       finalQty = finalQty * matchedItem.uomMult;
-      finalRef = matchedItem.parentRef.toUpperCase();
+      // ✨ THE FIX: Strip the '*' prefix if the item is marked as Sell As Box Only
+      finalRef = String(matchedItem.parentRef).replace(/^\*/, '').trim().toUpperCase();
     }
 
     return { trueRef: finalRef, trueQty: finalQty };
@@ -41,7 +42,7 @@ const InventoryEngine = {
     }
 
     let dbItem = currentDb.find(i => (i.sku || i.ref || '').toUpperCase() === trueRef);
-    if (!dbItem) throw new Error(`HARD ERROR: Item ${trueRef} missing from database. Cannot reserve or pack.`);
+    if (!dbItem) throw new Error(`Item ${trueRef} was not found in the database. Cannot reserve or pack.`);
 
     let onHand = parseInt(dbItem.onHand, 10) || 0;
     let reserved = parseInt(dbItem.reservedQty, 10) || 0;
@@ -49,7 +50,7 @@ const InventoryEngine = {
 
     if (action === 'Reserved') {
       if (requestedQty > available) {
-        throw new Error(`HARD ERROR: Insufficient stock. You are trying to reserve ${requestedQty}, but only ${available} are available.`);
+        throw new Error(`You are trying to reserve ${requestedQty}, with ${available} available.`);
       }
     }
 
@@ -61,10 +62,10 @@ const InventoryEngine = {
       if (requestedQty > allocatedToCust) {
         let extraNeeded = requestedQty - allocatedToCust;
         if (extraNeeded > available) {
-            throw new Error(`HARD ERROR: Insufficient stock to over-pack. You need ${extraNeeded} extra units, but only ${available} are available on the shelf.`);
+            throw new Error(`There are currently ${available} units available.`);
         } 
         else if (!ignoreOverpack) {
-            throw new Error(`OVERPACK_WARNING: You are packing ${requestedQty}, but this customer only has ${allocatedToCust} reserved. This will pull ${extraNeeded} extra unit(s) from standard inventory. Proceed?`);
+            throw new Error(`OVERPACK_WARNING: You are packing ${requestedQty}, but this customer only has ${allocatedToCust} reserved. This will pull ${extraNeeded} unit(s) from available inventory. Proceed?`);
         }
       }
     }
@@ -75,7 +76,7 @@ const InventoryEngine = {
       let allocatedToCust = typeof allocData === 'object' ? (allocData.qty || 0) : allocData;
       
       if (requestedQty > allocatedToCust) {
-         throw new Error(`HARD ERROR: Cannot Un-Reserve ${requestedQty} units. Customer ${baseTag} only has ${allocatedToCust} units of ${trueRef} currently reserved.`);
+         throw new Error(`Cannot Un-Reserve ${requestedQty} units. Customer ${baseTag} only has ${allocatedToCust} units of ${trueRef} currently reserved.`);
       }
     }
 

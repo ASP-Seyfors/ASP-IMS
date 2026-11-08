@@ -27,8 +27,36 @@ const AuditManager = {
     return val.replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim() || 'N/A';
   },
 
+  getTrueAvailability(item) {
+      if (!item) return 0;
+      let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
+      
+      if (isBundle) {
+          let pSku = DatabaseManager.getCleanParentRef(item).toUpperCase();
+          let pItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === pSku);
+          if (pItem) {
+              let pAvail = (parseInt(pItem.onHand, 10) || 0) - (parseInt(pItem.reservedQty, 10) || 0);
+              return Math.floor(pAvail / parseInt(item.uomMult, 10));
+          }
+          return 0;
+      } else {
+          let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0);
+          let children = DatabaseManager.db.filter(c => DatabaseManager.getCleanParentRef(c).toUpperCase() === DatabaseManager.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
+          if (children.length > 0) {
+              // ✨ FIX: Check for Box Only flag across all environments
+              let hasBoxOnly = children.some(c => DatabaseManager.isBoxOnly(c));
+              if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only
+              
+              let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
+              if (largestBundle > 1) avail = avail % largestBundle;
+          }
+          return avail;
+      }
+  },
+
   loadCloudSessionsForExport() {
-    let select = document.getElementById('cloudExportSessionSelect');
+    // ✨ THE FIX: Match the exact ID used in screens/reports.html
+    let select = document.getElementById('archiveExportSelect');
     if (!select) return;
 
     let archive = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
@@ -820,35 +848,36 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     document.getElementById('internalReportCustomerName').textContent = cust;
     document.getElementById('btnExportInternalReport').onclick = () => {
-      // ✨ FIX: Changed from ReportsManager to AuditManager
-      AuditManager.generateInternalSalesReport(cust, limit);
-      document.getElementById('internalReportOptionsModal').style.display = 'none';
+      AuditManager.generateInternalSalesReport(cust);
     };
 
     document.getElementById('internalReportOptionsModal').style.display = 'flex';
   },
 
-  generateInternalSalesReport(cust) {
+  async generateInternalSalesReport(cust) {
     if (!cust) return;
     
-    // Read the limit selection from the main reports screen
-    let limitRadio = document.querySelector('#screenReports input[name="internalReportScope"]:checked');
-    let limit = limitRadio ? limitRadio.value : '10';
+    let btn = document.getElementById('btnExportInternalReport');
+    let origText = btn ? btn.textContent : "🖨️ Export PDF";
+    if (btn) { btn.textContent = "⏳ Fetching History..."; btn.disabled = true; }
 
-    let incDesc = document.getElementById('chkIntDesc') ? document.getElementById('chkIntDesc').checked : true;
-    let incHist = document.getElementById('chkIntHist') ? document.getElementById('chkIntHist').checked : true;
-    let incOnHand = document.getElementById('chkIntOnHand') ? document.getElementById('chkIntOnHand').checked : true;
-    let incPrice = document.getElementById('chkIntPrice') ? document.getElementById('chkIntPrice').checked : true;
-    let incCost = document.getElementById('chkIntCost') ? document.getElementById('chkIntCost').checked : true;
+    try {
+        let limitRadio = document.querySelector('#screenReports input[name="internalReportScope"]:checked');
+        let limit = limitRadio ? limitRadio.value : '10';
 
-    let scopeTitle = limit === 'all' ? 'All Historical Items' : 'Top 10 Items';
-    // Remove the .pdf here
-    let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}`;
+        let incDesc = document.getElementById('chkIntDesc') ? document.getElementById('chkIntDesc').checked : true;
+        let incHist = document.getElementById('chkIntHist') ? document.getElementById('chkIntHist').checked : true;
+        let incOnHand = document.getElementById('chkIntOnHand') ? document.getElementById('chkIntOnHand').checked : true;
+        let incPrice = document.getElementById('chkIntPrice') ? document.getElementById('chkIntPrice').checked : true;
+        let incCost = document.getElementById('chkIntCost') ? document.getElementById('chkIntCost').checked : true;
 
-    // Pass the limit parameter here!
-    let skuMap = this.getHistoricalCustomerData(cust, limit); 
-    
-    let html = `<!DOCTYPE html><html><head><title>${filename}</title>
+        let scopeTitle = limit === 'all' ? 'All Historical Items' : 'Top 10 Items';
+        let filename = `Internal_Sales_Report_${cust}_${SessionManager.sessionDateStr}`;
+
+        // ✨ Await the fetch!
+        let skuMap = await this.getHistoricalCustomerData(cust, limit); 
+        
+        let html = `<!DOCTYPE html><html><head><title>${filename}</title>
     <style>
       body { font-family: 'Helvetica Neue', Arial, sans-serif; margin:30px; color:#333; font-size:12px; }
       .header { border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
@@ -894,12 +923,16 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let formattedPrice = item.price ? (item.price.startsWith('$') ? item.price : '$' + item.price) : '$0.00';
       let formattedCost = item.cost ? (item.cost.startsWith('$') ? item.cost : '$' + item.cost) : '$0.00';
 
+      // ✨ NEW: Format historical volume and on-hand stock
+      let displayHist = DatabaseManager.formatPackaging(item.histQty, item.uomMult);
+      let displayOnHand = DatabaseManager.formatPackaging(item.onHand, item.uomMult);
+
       html += `
         <tr>
           <td class="ref-cell">${item.ref}</td>
           ${incDesc ? `<td class="desc-cell">${item.desc}</td>` : ''}
-          ${incHist ? `<td><strong>${item.histQty} units</strong></td>` : ''}
-          ${incOnHand ? `<td style="color:${item.onHand > 0 ? '#2e7d32' : '#c62828'}; font-weight:bold;">${item.onHand}</td>` : ''}
+          ${incHist ? `<td><strong>${displayHist}</strong></td>` : ''}
+          ${incOnHand ? `<td style="color:${item.onHand > 0 ? '#2e7d32' : '#c62828'}; font-weight:bold;">${displayOnHand}</td>` : ''}
           ${incPrice ? `<td>${formattedPrice}</td>` : ''}
           ${incCost ? `<td>${formattedCost}</td>` : ''}
         </tr>`;
@@ -908,35 +941,48 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     html += `</tbody></table></body></html>`;
 
     let win = window.open('', '_blank');
-    if (win) { 
-      win.document.write(html); 
-      let safeTitle = filename.replace(/\./g, '\u2024');
-      win.document.title = safeTitle; 
-      win.focus(); 
-      setTimeout(() => win.print(), UIManager.printTimeout);
+        if (win) { 
+          win.document.write(html); 
+          let safeTitle = filename.replace(/\./g, '\u2024');
+          win.document.title = safeTitle; 
+          win.focus(); 
+          setTimeout(() => win.print(), UIManager.printTimeout);
+        }
+        
+        let modal = document.getElementById('internalReportOptionsModal');
+        if (modal) modal.style.display = 'none';
+
+    } catch(err) {
+        alert("Report Error: " + err.message);
+    } finally {
+        if (btn) { btn.textContent = origText; btn.disabled = false; }
     }
-    
-    let modal = document.getElementById('internalReportOptionsModal');
-    if (modal) modal.style.display = 'none'; // Changed from modal.remove()
   },
 
   // ==========================================================================
   // CUSTOMER INVENTORY STOCK REPORT EDITOR (CUSTOMER-FACING)
   // ==========================================================================
-  openCustomerStockReportEditor() {
+  async openCustomerStockReportEditor() {
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
+    
+    // Find the triggering button to show a loading state
+    let btn = Array.from(document.querySelectorAll('#customerReportControls button')).find(b => b.textContent.includes('On-Hand Stock Flyer'));
+    let origText = btn ? btn.innerHTML : `<i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Flyer`;
+    if (btn) { btn.innerHTML = "⏳ Loading Data..."; btn.disabled = true; }
 
-    // Read the scope selected in screens/reports.html
-    let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
-    let limit = scopeRadio ? scopeRadio.value : '10';
+    try {
+        // Read the scope selected in screens/reports.html
+        let scopeRadio = document.querySelector('input[name="internalReportScope"]:checked');
+        let limit = scopeRadio ? scopeRadio.value : '10';
 
-    let items = this.getHistoricalCustomerData(cust, limit).filter(i => {
-      let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;
-      return numPrice > 0;
-    });
+        let historicalData = await this.getHistoricalCustomerData(cust, limit);
+        let items = historicalData.filter(i => {
+          let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+          return numPrice > 0 && i.onHand > 0;
+        });
 
-    let rowsHtml = '';
+        let rowsHtml = '';
     items.forEach((it, idx) => {
       let safeDesc = (it.desc || '').replace(/"/g, '&quot;');
       let safeRef = (it.ref || '').replace(/"/g, '&quot;');
@@ -965,11 +1011,17 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     // 2. Inject Data and Bind Buttons
     document.getElementById('reportItemRowsContainer').innerHTML = rowsHtml;
+    // ✨ FIX: Pointed back to ReportsManager where the functions actually live
     document.getElementById('btnExportStockReportPdf').onclick = () => AuditManager.exportCustomerStockReportPDF(cust);
     document.getElementById('btnExportStockReportEmail').onclick = () => AuditManager.draftEmailFlyer(cust);
 
     // 3. Show Modal
-    document.getElementById('stockReportEditorModal').style.display = 'flex';
+        document.getElementById('stockReportEditorModal').style.display = 'flex';
+    } catch (err) {
+        alert("Error loading customer data: " + err.message);
+    } finally {
+        if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+    }
   },
 
   openCustomSalesFlyer() {
@@ -977,18 +1029,19 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     let custInput = document.getElementById('customerReportSelect');
     let cust = (custInput && custInput.value) ? custInput.value : 'PROMO';
     
+    let hiddenParents = typeof DatabaseManager !== 'undefined' ? DatabaseManager.getHiddenParentRefs() : new Set();
+    
     // Pull ALL available inventory directly from the master database
     let availableItems = [];
     if (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) {
       availableItems = DatabaseManager.db.filter(dbItem => {
-        let total = parseInt(dbItem.onHand, 10) || 0;
-        let res = parseInt(dbItem.reservedQty, 10) || 0;
-        return (total - res) > 0;
+        if (hiddenParents.has(DatabaseManager.getItemSku(dbItem))) return false; 
+        return DatabaseManager.getTrueAvailability(dbItem) > 0;
       }).map(dbItem => {
         return {
           ref: DatabaseManager.getItemSku(dbItem),
           desc: DatabaseManager.getItemDesc(dbItem),
-          onHand: (parseInt(dbItem.onHand, 10) || 0) - (parseInt(dbItem.reservedQty, 10) || 0),
+          onHand: DatabaseManager.getTrueAvailability(dbItem),
           price: dbItem.price || '$0.00'
         };
       }).sort((a, b) => a.ref.localeCompare(b.ref));
@@ -1024,7 +1077,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     // 2. Inject Data and Bind Buttons
     document.getElementById('reportItemRowsContainer').innerHTML = rowsHtml.length > 0 ? rowsHtml : '<div style="text-align:center; padding:10px; color:#777;">No items currently available in stock.</div>';
     
-    // ✨ FIX: Pointed to AuditManager instead of ReportsManager
+    // ✨ FIX: Pointed back to ReportsManager where the functions actually live
     document.getElementById('btnExportStockReportPdf').onclick = () => AuditManager.exportCustomerStockReportPDF(cust);
     document.getElementById('btnExportStockReportEmail').onclick = () => AuditManager.draftEmailFlyer(cust);
 
@@ -1083,6 +1136,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let qty = r.querySelector('.rep-qty').value.trim(); 
       let price = r.querySelector('.rep-price').value.trim();
       
+      // Use the raw numerical quantity provided in the modal
+      let displayQty = qty;
+      
       let formattedPrice = '<span style="color:#d32f2f; font-weight:bold;">Contact Us</span>';
       if (price) {
           let numPrice = parseFloat(price.replace(/[^0-9.-]+/g, ""));
@@ -1101,7 +1157,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         html += `<tr style="background-color: #ffffff;">
           <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; color: #0277bd;">${ref}</td>
           ${includeDesc ? `<td style="padding: 10px; border: 1px solid #ccc;">${desc}</td>` : ''}
-          ${includeQty ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: center; font-weight: bold;">${qty}</td>` : ''}
+          ${includeQty ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: center; font-weight: bold;">${displayQty}</td>` : ''}
           ${includePrice ? `<td style="padding: 10px; border: 1px solid #ccc; text-align: right; color: #2e7d32; font-weight: bold;">${formattedPrice}</td>` : ''}
         </tr>`;
       }
@@ -1177,11 +1233,15 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let desc = r.querySelector('.rep-desc').value.trim();
       let qty = r.querySelector('.rep-qty').value.trim(); 
       let price = r.querySelector('.rep-price').value.trim();
+
+      // Use the raw numerical quantity provided in the modal
+      let displayQty = qty;
+
       let numPrice = parseFloat(String(price).replace(/[^0-9.-]+/g, ""));
       let formattedPrice = (numPrice === 0 || !price) ? '<span style="color:#d32f2f; font-weight:bold;">Contact Us</span>' : (price.startsWith('$') ? price : '$' + price);
 
       if (ref) {
-        html += `<tr><td class="ref-col">${ref}</td>${includeDesc ? `<td class="desc-col">${desc || 'Surgical Products Item'}</td>` : ''}${includeQty ? `<td style="text-align:center;"><span class="qty-badge">${qty}</span></td>` : ''}${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}</tr>`;
+        html += `<tr><td class="ref-col">${ref}</td>${includeDesc ? `<td class="desc-col">${desc || 'Surgical Products Item'}</td>` : ''}${includeQty ? `<td style="text-align:center;"><strong style="font-size:13px; color:#333;">${displayQty}</strong></td>` : ''}${includePrice ? `<td style="text-align:right; font-weight:bold; color:#2e7d32;">${formattedPrice}</td>` : ''}</tr>`;
       }
     });
 
@@ -1202,22 +1262,67 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     document.getElementById('stockReportEditorModal').style.display = 'none';
   },
 
-  getHistoricalCustomerData(cust, limit = '10') {
+  async getHistoricalCustomerData(cust, limit = '10') {
     let cleanCust = cust.toUpperCase().trim();
     let skuVolumeMap = {};
 
-    // Primary Source: Aggregate directly from active master allocations
+    // 1. Primary Source: Aggregate directly from active master allocations
     let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
     let custAllocations = allocations[cleanCust] || {};
     
-    // ✨ FIX: Safely extract integer quantity if the data is an object
     Object.keys(custAllocations).forEach(ref => {
       let rawVal = custAllocations[ref];
       let allocQty = typeof rawVal === 'object' ? (rawVal.qty || 0) : (parseInt(rawVal, 10) || 0);
       skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + allocQty;
     });
 
-    // Layer in remote analytics if present (for historical context)
+    // 2. ✨ NEW: Scan the local Session Archive for past packing data!
+    let archive = JSON.parse(localStorage.getItem('asp_session_archive')) || [];
+    archive.forEach(sess => {
+      let wType = (sess.workflowType || '').toUpperCase();
+      let sName = (sess.sessionName || '').toUpperCase();
+      
+      if (sess.status === 'Completed' && (wType.includes('PACK') || wType.includes('ORDER'))) {
+          let nameMatch = sName.includes(cleanCust);
+          
+          (sess.scannedObjects || []).forEach(scan => {
+              let tagMatch = (scan.customerTag || '').toUpperCase().includes(cleanCust);
+              if (nameMatch || tagMatch) {
+                  skuVolumeMap[scan.ref] = (skuVolumeMap[scan.ref] || 0) + (parseInt(scan.qty, 10) || 0);
+              }
+          });
+      }
+    });
+
+    // 3. ✨ NEW: Fetch Live Cloud Ledger to guarantee absolute historical accuracy!
+    try {
+        let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+        let text = await res.text();
+        let responseData = JSON.parse(text);
+        if (responseData.status === "success" && responseData.data) {
+            let auditLog = responseData.data;
+            auditLog.forEach(row => {
+                let workflow = String(row['Workflow'] || '').toUpperCase();
+                if (workflow.includes('PACK') || workflow.includes('SHIP')) {
+                    let sName = String(row['Session / Reason'] || '').toUpperCase();
+                    let dest = String(row['Destination / Action'] || '').toUpperCase();
+                    let nameMatch = sName.includes(cleanCust);
+                    let tagMatch = dest.includes(cleanCust);
+                    if (nameMatch || tagMatch) {
+                        let ref = row['REF / SKU'];
+                        let qty = Math.abs(parseInt(row['Qty Moved'], 10) || 0);
+                        if (ref && qty > 0) {
+                            skuVolumeMap[ref] = (skuVolumeMap[ref] || 0) + qty;
+                        }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.warn("Could not fetch live ledger for historical data:", e);
+    }
+
+    // 4. Layer in remote analytics if present (for historical context)
     let analytics = JSON.parse(localStorage.getItem('asp_remote_analytics')) || {};
     let remoteSkuCounts = analytics[cleanCust] || {};
     Object.keys(remoteSkuCounts).forEach(ref => {
@@ -1234,21 +1339,20 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     sortedSkus.forEach(ref => {
       let dbItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === ref);
       
-      // ✨ FIX: Calculate True Available Qty instead of Raw Total Qty
+      // ✨ FIX: Safely pull the calculation from the universal DatabaseManager
       let trueAvailable = 0;
-      if (dbItem) {
-          let total = parseInt(dbItem.onHand, 10) || 0;
-          let reserved = parseInt(dbItem.reservedQty, 10) || 0;
-          trueAvailable = total - reserved;
+      if (dbItem && typeof DatabaseManager !== 'undefined') {
+          trueAvailable = DatabaseManager.getTrueAvailability(dbItem);
       }
 
       resultList.push({
         ref: ref,
         desc: dbItem ? DatabaseManager.getItemDesc(dbItem) : 'Surgical Item',
         histQty: skuVolumeMap[ref] || 0,
-        onHand: trueAvailable > 0 ? trueAvailable : 0, // Prevents negative numbers from showing on the flyer
+        onHand: trueAvailable > 0 ? trueAvailable : 0, 
         price: dbItem ? dbItem.price : '$0.00',
-        cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00'
+        cost: dbItem ? (dbItem.cost || '$0.00') : '$0.00',
+        uomMult: dbItem ? (parseInt(dbItem.uomMult, 10) || 1) : 1 // ✨ NEW
       });
     });
 
@@ -2579,14 +2683,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return;
       }
 
-      let html = `<div style="margin-top:10px; padding:10px; background:#e8f5e9; border:1px solid #4caf50; border-radius:4px;">
-                    <h4 style="margin:0 0 8px 0; color:#2e7d32;">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
+      let html = `<div style="margin-top:10px; padding:10px; background:var(--raw-bg, #e8f5e9); border:1px solid var(--border-color, #4caf50); border-radius:4px;">
+                    <h4 style="margin:0 0 8px 0; color:var(--heading-color, #2e7d32);">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
       foundEvents.forEach(ev => {
-        // ✨ FIX: Injected color:#333; to force dark text on the white background
-        html += `<div style="background:#fff; color:#333; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #0277bd; font-size:0.85rem;">
-                  <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
-                  <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
-                  <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
+        html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #0277bd); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div><strong style="color:var(--heading-color, #0277bd);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #0277bd);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #0277bd);">Action:</strong> ${ev.actionTag}</div>
+                  <div style="margin: 4px 0;"><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                  <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user}</div>
                 </div>`;
       });
       html += `</div>`;
@@ -2625,14 +2728,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return;
       }
 
-      let html = `<div style="margin-top:10px; padding:10px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px;">
-                    <h4 style="margin:0 0 8px 0; color:#7b1fa2;">🗄️ Deep Archive Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
+      let html = `<div style="margin-top:10px; padding:10px; background:var(--raw-bg, #f3e5f5); border:1px solid var(--border-color, #ce93d8); border-radius:4px;">
+                    <h4 style="margin:0 0 8px 0; color:var(--heading-color, #7b1fa2);">🗄️ Deep Archive Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
       foundEvents.forEach(ev => {
-        // ✨ FIX: Injected color:#333; to force dark text on the white background
-        html += `<div style="background:#fff; color:#333; padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid #7b1fa2; font-size:0.85rem;">
-                  <div><strong>REF:</strong> ${ev.ref} | <strong>Qty:</strong> ${ev.qty} | <strong>Action:</strong> ${ev.actionTag}</div>
-                  <div><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
-                  <div style="color:#666;">Date: ${ev.date} | Operator: ${ev.user}</div>
+        html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #7b1fa2); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div><strong style="color:var(--heading-color, #7b1fa2);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #7b1fa2);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #7b1fa2);">Action:</strong> ${ev.actionTag}</div>
+                  <div style="margin: 4px 0;"><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                  <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user}</div>
                 </div>`;
       });
       html += `</div>`;
@@ -2641,6 +2743,155 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     } catch(err) {
       resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching Deep Archive data: ${err.message}</div>`;
     }
+  }, // <-- THIS IS LINE 348
+
+  // ✨ NEW: Multi-variable Historical Ledger Search
+  async searchLedgerHistory() {
+    let inputEl = document.getElementById('ledgerSearchInput');
+    let resultsContainer = document.getElementById('ledgerSearchResults');
+    let timeframe = document.getElementById('ledgerSearchTimeframe').value;
+    
+    if (!inputEl || !resultsContainer) return;
+
+    // Split by comma for multiple REFs/Terms
+    let rawQueries = inputEl.value.trim().toUpperCase().split(',').map(q => q.trim()).filter(q => q);
+    if (rawQueries.length === 0) { 
+        UIManager.showCustomAlert("Notice", "Please enter at least one search term (REF, PO, Customer, etc)."); 
+        return; 
+    }
+
+    resultsContainer.innerHTML = '<div style="padding:15px; color:#7b1fa2; text-align:center; font-weight:bold;">⏳ Querying live cloud ledger...</div>';
+
+    try {
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let text = await res.text();
+      let responseData = JSON.parse(text);
+      
+      if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
+
+      let auditLog = responseData.data;
+
+      let cutoffDate = new Date();
+      if (timeframe === '30d') cutoffDate.setDate(cutoffDate.getDate() - 30);
+      else if (timeframe === '90d') cutoffDate.setDate(cutoffDate.getDate() - 90);
+      else if (timeframe === '180d') cutoffDate.setDate(cutoffDate.getDate() - 180);
+      else cutoffDate = new Date(2000, 0, 1); 
+
+      let foundEvents = [];
+      let totalQty = 0;
+
+      auditLog.forEach(row => {
+        let rowDate = new Date(row['Timestamp']);
+        if (rowDate < cutoffDate) return;
+
+        let rRef = String(row['REF / SKU'] || '').toUpperCase();
+        let rSession = String(row['Session / Reason'] || '').toUpperCase();
+        let rDest = String(row['Destination / Action'] || '').toUpperCase();
+        let rLot = String(row['Lot'] || '').toUpperCase();
+        let rUser = String(row['User'] || '').toUpperCase();
+
+        // Check if ANY of the queries match this row
+        let isMatch = rawQueries.some(q => 
+            rRef.includes(q) || rSession.includes(q) || rDest.includes(q) || rLot.includes(q) || rUser.includes(q)
+        );
+
+        if (isMatch) {
+          let qty = parseInt(row['Qty Moved'], 10) || 0;
+          foundEvents.push({
+            sessionName: row['Session / Reason'] || "Unknown Session",
+            workflow: row['Workflow'] || "Unknown Workflow",
+            date: row['Timestamp'] || "Unknown Date",
+            user: row['User'] || "Operator",
+            qty: qty,
+            ref: row['REF / SKU'],
+            lot: row['Lot'],
+            exp: row['Exp Date'],
+            actionTag: row['Destination / Action']
+          });
+          totalQty += Math.abs(qty);
+        }
+      });
+
+      if (foundEvents.length === 0) {
+        resultsContainer.innerHTML = `
+          <div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">
+            No records found for your search terms within the selected timeframe.
+          </div>`;
+        return;
+      }
+
+      // Sort reverse chronological (newest first)
+      foundEvents.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      let html = `<div style="margin-top:10px; padding:10px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h4 style="margin:0; color:#7b1fa2;">📊 Results (${foundEvents.length} events)</h4>
+                        <span class="badge-info" style="background-color:#7b1fa2; color:#fff;">Total Units Moved: ${totalQty}</span>
+                    </div>
+                    <div style="max-height: 350px; overflow-y: auto; padding-right:4px;">`;
+                    
+      foundEvents.forEach(ev => {
+        let actColor = '#555';
+        if (ev.workflow.includes('Receiving')) actColor = '#2e7d32'; // Green
+        if (ev.workflow.includes('Packing') || ev.workflow.includes('Ship')) actColor = '#e65100'; // Orange
+        if (ev.workflow.includes('Reserving')) actColor = '#0277bd'; // Blue
+
+        html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid ${actColor}; font-size:0.85rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                      <strong style="color:var(--heading-color, #0277bd); font-size:0.9rem;">${ev.ref}</strong>
+                      <strong style="color:${actColor}; font-size:0.9rem;">Qty: ${ev.qty}</strong>
+                  </div>
+                  <div style="margin-bottom:4px; font-size:0.8rem; color:var(--text-main, #555);">
+                      Lot: <strong>${ev.lot || 'N/A'}</strong> | Exp: <strong>${ev.exp || 'N/A'}</strong>
+                  </div>
+                  <div style="margin-bottom:2px; color:var(--text-main, #333);"><strong>Session:</strong> ${ev.sessionName}</div>
+                  <div style="margin-bottom:4px; color:var(--text-main, #555);"><strong>Dest/Note:</strong> ${ev.actionTag}</div>
+                  <div style="color:var(--text-main, #777); font-size:0.75rem; display:flex; justify-content:space-between; border-top:1px dashed var(--border-color, #eee); padding-top:4px; margin-top:4px;">
+                      <span>${ev.date}</span>
+                      <span>Operator: ${ev.user}</span>
+                  </div>
+                </div>`;
+      });
+      html += `</div>`;
+      
+      html += `<div style="text-align:right; margin-top:10px; border-top:1px solid #ce93d8; padding-top:10px;">
+                  <button class="btn-small" style="background:#7b1fa2; color:#fff; padding:8px 16px; font-weight:bold; cursor:pointer;" onclick="AuditManager.exportLedgerSearchResults()">📥 Export Results to CSV</button>
+               </div></div>`;
+
+      resultsContainer.innerHTML = html;
+      this.lastLedgerSearchResults = foundEvents;
+
+    } catch(err) {
+      resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching ledger data: ${err.message}</div>`;
+    }
+  },
+
+  exportLedgerSearchResults() {
+      if (!this.lastLedgerSearchResults || this.lastLedgerSearchResults.length === 0) {
+          UIManager.showCustomAlert("Notice", "No search results to export.");
+          return;
+      }
+      
+      let csvContent = "DATE,OPERATOR,SESSION,WORKFLOW,REF/SKU,LOT,EXP,QTY MOVED,DESTINATION/NOTE\r\n";
+      
+      this.lastLedgerSearchResults.forEach(ev => {
+          let date = String(ev.date || '').replace(/"/g, '""');
+          let user = String(ev.user || '').replace(/"/g, '""');
+          let session = String(ev.sessionName || '').replace(/"/g, '""');
+          let wf = String(ev.workflow || '').replace(/"/g, '""');
+          let ref = String(ev.ref || '').replace(/"/g, '""');
+          let lot = String(ev.lot || '').replace(/"/g, '""');
+          let exp = String(ev.exp || '').replace(/"/g, '""');
+          let qty = ev.qty || 0;
+          let dest = String(ev.actionTag || '').replace(/"/g, '""');
+          
+          csvContent += `"${date}","${user}","${session}","${wf}","${ref}","${lot}","${exp}",${qty},"${dest}"\r\n`;
+      });
+      
+      let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+      if (typeof UIManager !== 'undefined' && UIManager.triggerShareOrDownload) {
+          UIManager.triggerShareOrDownload(csvContent, `ASP_Ledger_Search_Results_${dateStr}.csv`, 'text/csv');
+      }
   },
 
   exportShopifyProducts() {
@@ -2949,5 +3200,123 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     });
 
     return { updatedDb: currentDb, updatedAllocations: currentAllocations };
+  },
+
+  // ==========================================================================
+  // PAYLOAD SANDBOX SIMULATOR
+  // ==========================================================================
+  simDb: null,
+  simAllocations: null,
+
+  openSimulatorModal() {
+      this.resetSimulator();
+      document.getElementById('simulatorModal').style.display = 'flex';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  resetSimulator() {
+      // Create a fresh deep copy of the live database and allocations
+      this.simDb = JSON.parse(JSON.stringify(DatabaseManager.db));
+      this.simAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+      
+      document.getElementById('simPayloadInput').value = '';
+      document.getElementById('simResultsConsole').innerHTML = `
+        <div style="color:#64b5f6;">> Sandbox initialized.</div>
+        <div style="color:#64b5f6;">> Virtual database cloned from live memory (${this.simDb.length} master items).</div>
+        <div style="color:#64b5f6;">> Virtual allocations mapped.</div>
+        <div style="color:#888;">> Waiting for payload...</div>
+      `;
+  },
+
+  runSimulatedPayload() {
+      let inputVal = document.getElementById('simPayloadInput').value.trim();
+      let consoleEl = document.getElementById('simResultsConsole');
+      
+      const log = (msg, color = "#fff") => {
+          let div = document.createElement('div');
+          div.style.color = color;
+          div.style.paddingTop = "4px";
+          div.textContent = msg;
+          consoleEl.appendChild(div);
+          consoleEl.scrollTop = consoleEl.scrollHeight;
+      };
+
+      if (!inputVal) {
+          log("> ERROR: Payload input is empty.", "#ef5350");
+          return;
+      }
+
+      let payload;
+      try {
+          payload = JSON.parse(inputVal);
+      } catch(e) {
+          log("> ERROR: Invalid JSON format. Ensure you pasted a valid session payload.", "#ef5350");
+          return;
+      }
+
+      let scans = payload.scannedObjects || [];
+      let wType = payload.workflowType || "Unknown";
+      
+      log(`\n=========================================`, "#888");
+      log(`> RUNNING: ${payload.sessionName || 'Unnamed Session'} (${wType})`, "#ffb300");
+      log(`> SCANNED ITEMS: ${scans.length}`, "#ffb300");
+      log(`=========================================`, "#888");
+
+      if (scans.length === 0) {
+          log("> Notice: No scanned objects found in payload.", "#888");
+          return;
+      }
+
+      // Snapshot the before-state for the items involved
+      let beforeState = {};
+      scans.forEach(scan => {
+          let ref = (scan.ref || scan.sku || '').toUpperCase().trim();
+          if (!beforeState[ref]) {
+              let dbItem = this.simDb.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+              beforeState[ref] = {
+                  onHand: dbItem ? (parseInt(dbItem.onHand, 10) || 0) : 0,
+                  reserved: dbItem ? (parseInt(dbItem.reservedQty, 10) || 0) : 0
+              };
+          }
+      });
+
+      try {
+          // Process the math using the internal Ledger Engine replayer
+          let result = this._replayLedgerMath(scans, this.simDb, this.simAllocations, wType);
+          this.simDb = result.updatedDb;
+          this.simAllocations = result.updatedAllocations;
+
+          // Calculate and output the deltas
+          let processedRefs = Object.keys(beforeState).sort();
+          processedRefs.forEach(ref => {
+              let dbItem = this.simDb.find(i => (i.sku || i.ref || '').toUpperCase() === ref);
+              let afterOnHand = dbItem ? (parseInt(dbItem.onHand, 10) || 0) : 0;
+              let afterReserved = dbItem ? (parseInt(dbItem.reservedQty, 10) || 0) : 0;
+              
+              let diffOnHand = afterOnHand - beforeState[ref].onHand;
+              let diffReserved = afterReserved - beforeState[ref].reserved;
+              
+              let outputStr = `[${ref}] `;
+              let changes = [];
+              
+              if (diffOnHand !== 0) {
+                  changes.push(`Inventory: ${diffOnHand > 0 ? '+' : ''}${diffOnHand} (Total: ${afterOnHand})`);
+              }
+              if (diffReserved !== 0) {
+                  changes.push(`Reserved: ${diffReserved > 0 ? '+' : ''}${diffReserved} (Total: ${afterReserved})`);
+              }
+              
+              if (changes.length > 0) {
+                  log(outputStr + changes.join(" | "), diffOnHand < 0 || diffReserved < 0 ? "#ff8a65" : "#a5d6a7");
+              } else {
+                  log(outputStr + "No net quantity change.", "#888");
+              }
+          });
+          
+          log(`> ✅ Payload execution complete. Virtual state saved.`, "#4caf50");
+
+      } catch (err) {
+          log(`> FATAL MATH ERROR: ${err.message}`, "#ef5350");
+      }
   }
 };

@@ -10,7 +10,21 @@
         <input type="text" id="quickLookupInput" placeholder="e.g. 8698G or Scan 2D" style="flex:1; padding:8px; font-size:1rem; text-transform:uppercase;" onkeypress="if(event.key==='Enter') UIManager.executeQuickLookup()">
         <button onclick="UIManager.executeQuickLookup()" style="background:#00796b; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Search</button>
       </div>
+      <!-- ✨ NEW: Filter for Box Variants -->
+      <div style="margin-top:10px;">
+        <label style="font-size:0.85rem; color:var(--text-main, #555); cursor:pointer; font-weight:bold;">
+            <input type="checkbox" id="chkFilterBoxVariantsOnly" onchange="UIManager.executeQuickLookup()"> Show Box (Bundles) Variants Only
+        </label>
+      </div>
     </div>
+    <!-- ✨ NEW: Request Restock Button -->
+        <div style="margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+           <button id="btnRequestRestock" class="btn-small" style="background:#f57f17; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="UIManager.requestItemRestock()">🔔 Request Restock</button>
+           
+           <div id="restockPendingBadge" style="display:none; align-items:center; gap:6px; color:#c62828; font-size:0.8rem; font-weight:bold;">
+               <div style="width:12px; height:12px; background-color:#c62828; border-radius:50%; animation: pulse 1.5s infinite;"></div> Restock Pending
+           </div>
+        </div>
     <div id="quickLookupResult" style="min-height:120px;">
       <div style="text-align:center; color:#777; padding:20px;">Scan or type a REF/GTIN above to inspect database records.</div>
     </div>

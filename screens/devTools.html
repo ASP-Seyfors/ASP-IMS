@@ -51,11 +51,11 @@
   </div>
 
   <!-- Traceability Generation -->
-  <div style="background: #e8f5e9; border: 1px solid #2e7d32; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #2e7d32;"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Generate Traceability Report</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a timeframe to pull a comprehensive lifecycle audit from the live Cloud Ledger.</p>
+  <div style="background: var(--raw-bg, #e8f5e9); border: 1px solid var(--border-color, #2e7d32); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #4caf50;"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Generate Traceability Report</h4>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Select a timeframe to pull a comprehensive lifecycle audit from the live Cloud Ledger.</p>
     <div style="display: flex; gap: 8px; align-items: center;">
-      <label style="font-weight:bold; font-size:0.85rem;">Timeframe:</label>
+      <label style="font-weight:bold; font-size:0.85rem; color: var(--text-main, #333);">Timeframe:</label>
       <select id="traceTimeframe" style="flex:1; padding:6px; border:1px solid #2e7d32; border-radius:4px;">
         <option value="24h">Last 24 Hours</option>
         <option value="7d" selected>Last 7 Days (End of Week)</option>
@@ -68,9 +68,9 @@
   </div>
 
   <!-- End of Week Rollup -->
-  <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
-    <h4 style="margin: 0 0 10px 0; color: #0277bd; text-align: left;"><i data-lucide="calendar-check" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>End of Week Rollup Report</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
+  <div style="background: var(--raw-bg, #e3f2fd); border: 1px solid var(--border-color, #90caf9); padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
+    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #0277bd); text-align: left;"><i data-lucide="calendar-check" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>End of Week Rollup Report</h4>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
     <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Week Summary Report</button>
   </div>  
 
@@ -81,6 +81,8 @@
       <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>QuickBooks Online Sync</button>
       
       <!-- NEW BACKUP BUTTON -->
+       <!-- ✨ NEW: Payload Simulator Button -->
+      <button class="btn-action btn-auto" style="background-color: #00796b; color: #fff; margin:0; padding: 10px;" onclick="AuditManager.openSimulatorModal()"><i data-lucide="flask-conical" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Payload Simulator</button>
       <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #fff; margin:0; padding: 10px;" onclick="exportAppsScriptFiles(event)"><i data-lucide="download" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Backup Apps Script Files</button><button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
       <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Offload & Purge Local History</button>
       <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()"><i data-lucide="trash-2" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Force Update / Clear Cache</button>
@@ -151,9 +153,9 @@
   -->
 
   <!-- Session Reversal Tool -->
-  <div style="background: #fce4ec; border: 1px solid #d81b60; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #d81b60;"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Undo / Reverse Session</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
+  <div style="background: var(--raw-bg, #fce4ec); border: 1px solid var(--border-color, #d81b60); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #d81b60);"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Undo / Reverse Session</h4>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
     <div style="display: flex; gap: 8px;">
       <select id="reversalSessionSelect" style="flex: 2; padding: 8px; border: 1px solid #d81b60; border-radius: 4px; font-weight: bold;"></select>
       <button class="btn-action btn-auto" style="flex: 1; background-color: #d81b60; color: #fff; margin: 0; padding: 8px;" onclick="SessionManager.executeSessionReversal()">Reverse Math</button>
@@ -161,15 +163,52 @@
   </div>
 
   <!-- System Restore -->
-  <div style="background: #fff3e0; border: 1px solid #e65100; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #e65100;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Event Replay & Restore</h4>
+  <div style="background: var(--raw-bg, #fff3e0); border: 1px solid var(--border-color, #e65100); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #e65100);"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Event Replay & Restore</h4>
     <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="AuditManager.openRestoreModal()"><i data-lucide="rewind" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Execute System Restore</button>
   </div>  
   
   <!-- Floating Debug Console Toggle -->
-  <div style="background: #e8f5e9; border: 1px solid #2e7d32; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #2e7d32;"><i data-lucide="bug" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Live Debug Console</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">Open a floating console window to monitor background execution while using the app.</p>
+  <div style="background: var(--raw-bg, #e8f5e9); border: 1px solid var(--border-color, #2e7d32); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #2e7d32);"><i data-lucide="bug" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Live Debug Console</h4>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Open a floating console window to monitor background execution while using the app.</p>
     <button class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="UIManager.toggleDebugConsole()">Toggle Floating Console</button>
+  </div>
+</div>
+
+<!-- ✨ NEW: PAYLOAD SIMULATOR MODAL -->
+<div id="simulatorModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:800px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #00796b; padding:15px 20px; flex-shrink:0;">
+      <h2 style="margin:0; color:#00796b; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="flask-conical" style="width:24px; height:24px;"></i> Payload Sandbox Simulator
+      </h2>
+      <button onclick="document.getElementById('simulatorModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main, #333);">×</button>
+    </div>
+
+    <div style="padding:20px; flex-grow:1; display:flex; flex-direction:column; gap:15px; overflow:hidden;">
+      <div style="display:flex; gap:15px; height:100%;">
+        
+        <!-- Left: Input Area -->
+        <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+          <label style="font-size:0.85rem; font-weight:bold; color:var(--text-main, #333);">Paste JSON Session Payload:</label>
+          <textarea id="simPayloadInput" style="flex:1; padding:10px; font-family:monospace; font-size:0.8rem; border:1px solid #ccc; border-radius:4px; resize:none;" placeholder='{"sessionName": "Test", "workflowType": "Receiving", "scannedObjects": [...]}'></textarea>
+          <button class="btn-action" style="background:#00796b; color:#fff; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer; border:none;" onclick="AuditManager.runSimulatedPayload()">▶ Run Payload</button>
+        </div>
+
+        <!-- Right: Results Console -->
+        <div style="flex:1.5; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+             <label style="font-size:0.85rem; font-weight:bold; color:var(--text-main, #333);">Simulation Results:</label>
+             <button class="btn-small" style="background:#c62828; color:#fff; padding:4px 10px; border-radius:4px; border:none; cursor:pointer; font-size:0.75rem;" onclick="AuditManager.resetSimulator()">🔄 Restart Simulation</button>
+          </div>
+          <div id="simResultsConsole" style="flex:1; background:#1e1e1e; color:#a5d6a7; font-family:monospace; font-size:0.8rem; padding:12px; border-radius:4px; overflow-y:auto; border:2px solid #000; box-shadow:inset 0 2px 6px rgba(0,0,0,0.5);">
+            <!-- Logs injected here -->
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>

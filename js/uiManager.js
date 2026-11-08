@@ -70,9 +70,11 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   // POPULATE CUSTOMER REPORT SELECTOR FROM MASTER CUSTOMER LIST
   populateCustomerDropdown() {
     let select = document.getElementById('customerReportSelect');
+    let subSelect = document.getElementById('subCustomerId'); // ✨ NEW
     if (!select) return;
 
     select.innerHTML = '<option value="">-- Select Customer Account --</option>';
+    if (subSelect) subSelect.innerHTML = '<option value="">-- Link to Customer Account --</option>'; // ✨ NEW
     
     // Pull the clean, verified master customer list
     let custList = (typeof DatabaseManager !== 'undefined' && DatabaseManager.customers) 
@@ -81,12 +83,10 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
     let uniqueSet = new Set();
     
-    // Filter out prompts, force uppercase, and trim spaces
     let cleanList = custList
       .filter(c => c && c !== '+ Add Customer' && c.toUpperCase() !== 'SHELF' && c.toUpperCase() !== 'UNTAGGED')
       .map(c => c.trim().toUpperCase());
 
-    // Sort and append only unique names
     cleanList.sort((a, b) => a.localeCompare(b)).forEach(cust => {
       if (!uniqueSet.has(cust)) {
         uniqueSet.add(cust);
@@ -94,6 +94,13 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         opt.value = cust;
         opt.textContent = cust;
         select.appendChild(opt);
+        
+        // ✨ NEW: Append to Subscriber list too!
+        if (subSelect) {
+            let subOpt = document.createElement('option');
+            subOpt.value = cust; subOpt.textContent = cust;
+            subSelect.appendChild(subOpt);
+        }
       }
     });
   },
@@ -161,12 +168,17 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                 let qty = parseInt(rawQty, 10) || 0; 
                 
                 if (qty <= 0) return;
-                
                 totalItems += qty;
+                
+                // ✨ NEW: Lookup the item in the DB to find its UOM, then format the quantity
+                let dbItem = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) : null;
+                let uom = dbItem ? (parseInt(dbItem.uomMult, 10) || 1) : 1;
+                let displayQty = DatabaseManager.formatPackaging(qty, uom);
+
                 rowsHtml += `
                     <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
                         <span style="font-weight:bold; color:#0277bd;">${ref}</span>
-                        <span style="font-weight:bold; color:#333;">Qty: ${qty}</span>
+                        <span style="font-weight:bold; color:#333;">Qty: ${displayQty}</span>
                     </div>
                 `;
             });
@@ -318,112 +330,218 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       } else { idx++; }
     }
     
-    // Determine what to pass to the engine
     let searchRef = extractedGtin ? "" : clean;
     let searchGtin = extractedGtin ? extractedGtin : "";
 
     let item;
     try {
-        // USE THE NEW ENGINE STRICT LOOKUP
         item = InventoryEngine.lookupAndNormalize(searchRef, searchGtin, DatabaseManager.db);
-        if (!item) throw new Error("Item not found"); // Explicitly throw if null
+        if (!item) throw new Error("Item not found"); 
     } catch (e) {
-        resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Match Found</strong><br>REF or GTIN "${query}" does not exist in the local catalog.</div>`;
+        // ✨ FIX: Enforced inline color for the span/div to prevent Dark Mode from overriding it to white
+        resContainer.innerHTML = `<div style="background:#ffebee; padding:12px; border-radius:4px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                                    <strong style="color:#c62828 !important;">No Match Found</strong><br>
+                                    <span style="color:#c62828 !important;">REF or GTIN "${query}" does not exist in the local catalog.</span>
+                                  </div>`;
         return;
     }
 
-    let ref = DatabaseManager.getItemSku(item);
-    let mfr = DatabaseManager.getItemVendor(item) || 'UNKNOWN';
-    let desc = DatabaseManager.getItemDesc(item) || 'No description available.';
-    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
-    let price = item.price || '$0.00';
-    let cost = isAdmin ? (item.cost || '$0.00') : '<span style="color:#999; font-style:italic;">Admin Only</span>';
+    // ✨ NEW: Family Gathering Logic
+    let family = [];
+    let isChild = item.parentRef && parseInt(item.uomMult, 10) > 1;
+    let parentSku = isChild ? DatabaseManager.getCleanParentRef(item).toUpperCase() : DatabaseManager.getItemSku(item);
     
-    let dbOnHand = parseInt(item.onHand || item.TotalQty, 10) || 0;
-    let dbReserved = parseInt(item.reservedQty, 10) || 0;
-    let dbAvailable = dbOnHand - dbReserved;
-    let dbShelf = item.shelf || 'Unassigned'; // ✨ NEW
+    let parentItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === parentSku);
+    if (parentItem) family.push(parentItem);
+    
+    let children = DatabaseManager.db.filter(i => DatabaseManager.getCleanParentRef(i).toUpperCase() === parentSku && parseInt(i.uomMult, 10) > 1);
+    family = family.concat(children);
+    
+    if (family.length === 0) family.push(item);
+    
+    let uniqueFamily = [];
+    let seenRefs = new Set();
+    family.forEach(f => {
+        let s = DatabaseManager.getItemSku(f);
+        if (!seenRefs.has(s)) { seenRefs.add(s); uniqueFamily.push(f); }
+    });
 
-    // --- LIVE CLOUD LOT TRACING ---
-    resContainer.innerHTML = `
-      <div style="background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:12px;">
-        <div style="font-size:1.1rem; font-weight:bold; color:#00796b;">REF: ${ref}</div>
-        <div style="font-size:0.85rem; color:#555; margin-bottom:8px;">
-            Manufacturer: <strong>${mfr}</strong> | Shelf: <strong style="color:#0277bd;">${dbShelf}</strong>
-        </div>
-        <div style="font-size:0.85rem; color:#333; margin-bottom:10px;">${desc}</div>
-        
-        <div style="background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; margin-bottom:12px; font-size:0.85rem;">
-          <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
-            <span>Selling Price: <strong style="color:#2e7d32;">${price}</strong></span>
-            <span>Unit Cost: <strong style="color:#555;">${cost}</strong></span>
-          </div>
-          <div style="display:flex; justify-content:space-between; padding-top: 6px; border-top: 1px dashed #eee;">
-            <span>RM Price: <strong>${item.revMedPrice || ''}</strong></span>
-            <span>DM Price: <strong>${item.dotMedPrice || ''}</strong></span>
-          </div>
-        </div>
-
-        <div style="font-weight:bold; font-size:0.85rem; color:#0277bd; margin-bottom:6px; display:flex; justify-content:space-between;">
-          <span>Total On-Hand: ${dbOnHand}</span>
-          <span style="color:${dbAvailable > 0 ? '#2e7d32' : '#c62828'};">Available to Sell: ${dbAvailable}</span>
-        </div>
-        <div id="quickLookupLotBox" style="text-align:center; padding:10px; color:#00796b; font-weight:bold;">⏳ Querying Live Cloud Ledger for Lot History...</div>
-      </div>
-    `;
-
-    if (dbOnHand > 0 || dbReserved > 0) {
-      // If we have inventory, fetch the clean, pre-calculated EXP_TRACK ledger
-      fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_EXP_TRACK&t=${Date.now()}`)
-        .then(res => res.text())
-        .then(text => {
-          let responseData = JSON.parse(text);
-          if (responseData.status !== "success" || !responseData.data) throw new Error("Failed");
-
-          let lotRows = '';
-          let shelf = item.shelf ? item.shelf : '--'; // ✨ Pulls shelf location from local DB
-
-          // ✨ THE FIX: Match the exact ALL-CAPS headers from Google Sheets!
-          let activeLots = responseData.data.filter(row => String(row['REF / SKU']).trim().toUpperCase() === String(ref).trim().toUpperCase() && parseInt(row['QTY'], 10) > 0);
-
-          activeLots.sort((a,b) => new Date(a['EXP DATE']) - new Date(b['EXP DATE'])).forEach(l => {
-            lotRows += `
-              <tr style="border-bottom:1px solid #eee;">
-                <td style="padding:4px;"><strong>${l['LOT']}</strong></td>
-                <td style="padding:4px;">${l['EXP DATE']}</td>
-                <td style="padding:4px; text-align:center; font-weight:bold; color:#0277bd;">${l['QTY']}</td>
-                <td style="padding:4px; text-align:right; font-size:0.75rem; color:#555; font-weight:bold;">${shelf}</td>
-              </tr>`;
-          });
-
-          let box = document.getElementById('quickLookupLotBox');
-          if (box) {
-            box.innerHTML = lotRows 
-              ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:#fff; border:1px solid #ddd; margin-top:8px;">
-                   <tr style="background:#eee; text-align:left;">
-                     <th style="padding:4px;">Lot</th>
-                     <th style="padding:4px;">Exp</th>
-                     <th style="padding:4px; text-align:center;">Qty</th>
-                     <th style="padding:4px; text-align:right;">Shelf</th>
-                   </tr>
-                   ${lotRows}
-                 </table>`
-              : `<div style="font-size:0.8rem; color:#777; font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
-            box.style.textAlign = 'left';
-            box.style.padding = '0';
-          }
-        })
-        .catch(err => {
-          let box = document.getElementById('quickLookupLotBox');
-          if (box) box.innerHTML = `<span style="color:#c62828;">⚠️ Cloud ledger unreachable.</span>`;
-        });
-    } else {
-      let box = document.getElementById('quickLookupLotBox');
-      if (box) {
-        box.innerHTML = `<div style="font-size:0.8rem; color:#777; font-style:italic; padding:10px;">No physical inventory available to track.</div>`;
-        box.style.padding = '0';
-      }
+    // ✨ NEW: Filter for Box Variants Only
+    let showBoxOnly = document.getElementById('chkFilterBoxVariantsOnly') && document.getElementById('chkFilterBoxVariantsOnly').checked;
+    if (showBoxOnly) {
+        uniqueFamily = uniqueFamily.filter(f => parseInt(f.uomMult, 10) > 1);
+        if (uniqueFamily.length === 0) {
+             resContainer.innerHTML = `<div style="background:#ffebee; color:#c62828; padding:12px; border-radius:4px; text-align:center;"><strong>No Box Variants Found</strong><br>This item does not have any Box/Bundle variants configured.</div>`;
+             return;
+        }
     }
+
+    // ✨ RESTORED: Restock Logic Check
+    let localRequests = JSON.parse(localStorage.getItem('asp_restock_requests')) || { date: new Date().toLocaleDateString(), refs: [] };
+    if (localRequests.date !== new Date().toLocaleDateString()) {
+        localRequests = { date: new Date().toLocaleDateString(), refs: [] }; // Reset if it's a new day
+    }
+    
+    // Check if any item in the displayed family has a pending restock
+    let hasPendingRestock = uniqueFamily.some(f => localRequests.refs.includes(DatabaseManager.getItemSku(f)));
+    let badge = document.getElementById('restockPendingBadge');
+    if (badge) badge.style.display = hasPendingRestock ? 'flex' : 'none';
+
+    let htmlOutput = '';
+    let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
+    
+    uniqueFamily.forEach((famItem) => {
+        let ref = DatabaseManager.getItemSku(famItem);
+        let mfr = DatabaseManager.getItemVendor(famItem) || 'UNKNOWN';
+        let desc = DatabaseManager.getItemDesc(famItem) || 'No description available.';
+        let price = famItem.price || '$0.00';
+        let cost = isAdmin ? (famItem.cost || '$0.00') : '<span style="color:#999; font-style:italic;">Admin Only</span>';
+        
+        let dbOnHand = parseInt(famItem.onHand || famItem.TotalQty, 10) || 0;
+        let dbReserved = parseInt(famItem.reservedQty, 10) || 0;
+        let dbAvailable = dbOnHand - dbReserved;
+        let dbShelf = famItem.shelf || 'Unassigned'; 
+        
+        let uom = parseInt(famItem.uomMult, 10) || 1;
+        let displayOnHand = DatabaseManager.formatPackaging(dbOnHand, uom);
+        let displayAvailable = DatabaseManager.formatPackaging(dbAvailable, uom);
+        
+        let isBoxOnlyLabel = DatabaseManager.isBoxOnly(famItem) ? `<span style="background-color:#e65100; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;">BOX ONLY</span>` : '';
+        
+        htmlOutput += `
+          <div style="background:var(--raw-bg, #f9f9f9); border:1px solid var(--border-color, #e0e0e0); border-radius:6px; padding:12px; margin-bottom: 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-size:1.1rem; font-weight:bold; color:var(--heading-color, #00796b);">REF: ${ref} ${isBoxOnlyLabel}</div>
+                <div style="font-size:0.8rem; font-weight:bold; color:var(--text-main, #555);">UOM: ${uom > 1 ? `Box of ${uom}` : 'Each'}</div>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-main, #555); margin-bottom:8px;">
+                Manufacturer: <strong>${mfr}</strong> | Shelf: <strong style="color:var(--heading-color, #0277bd);">${dbShelf}</strong>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-main, #333); margin-bottom:10px;">${desc}</div>
+            
+            <div style="background:var(--card-bg, #fff); border:1px solid var(--border-color, #ccc); border-radius:4px; padding:8px; margin-bottom:12px; font-size:0.85rem;">
+              <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                <span style="color:var(--text-main, #555);">Selling Price: <strong style="color:#2e7d32;">${price}</strong></span>
+                <span style="color:var(--text-main, #555);">Unit Cost: <strong>${cost}</strong></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-top: 6px; border-top: 1px dashed var(--border-color, #eee);">
+                <span style="color:var(--text-main, #555);">RM Price: <strong>${famItem.revMedPrice || ''}</strong></span>
+                <span style="color:var(--text-main, #555);">DM Price: <strong>${famItem.dotMedPrice || ''}</strong></span>
+              </div>
+            </div>
+
+            <div style="font-weight:bold; font-size:0.85rem; color:var(--heading-color, #0277bd); margin-bottom:6px; display:flex; justify-content:space-between;">
+              <span>Total On-Hand: ${displayOnHand}</span>
+              <span style="color:${dbAvailable > 0 ? '#2e7d32' : '#c62828'};">Available to Sell: ${displayAvailable}</span>
+            </div>
+            <div id="quickLookupLotBox_${ref}" style="text-align:center; padding:10px; color:var(--heading-color, #00796b); font-weight:bold;">⏳ Querying Live Cloud Ledger...</div>
+          </div>
+        `;
+    });
+    
+    resContainer.innerHTML = htmlOutput;
+    
+    // ✨ NEW: Fetch Lot Data for each member of the family
+    uniqueFamily.forEach(famItem => {
+       let ref = DatabaseManager.getItemSku(famItem);
+       let dbOnHand = parseInt(famItem.onHand || famItem.TotalQty, 10) || 0;
+       let dbReserved = parseInt(famItem.reservedQty, 10) || 0;
+
+       if (dbOnHand > 0 || dbReserved > 0) {
+         fetch(`${SessionManager.getActiveArchiveUrl()}?action=GET_EXP_TRACK&t=${Date.now()}`)
+           .then(res => res.text())
+           .then(text => {
+             let responseData = JSON.parse(text);
+             if (responseData.status !== "success" || !responseData.data) throw new Error("Failed");
+
+             let lotRows = '';
+             let shelf = famItem.shelf ? famItem.shelf : '--';
+             let activeLots = responseData.data.filter(row => String(row['REF / SKU']).trim().toUpperCase() === String(ref).trim().toUpperCase() && parseInt(row['QTY'], 10) > 0);
+
+             activeLots.sort((a,b) => new Date(a['EXP DATE']) - new Date(b['EXP DATE'])).forEach(l => {
+               lotRows += `
+                 <tr style="border-bottom:1px solid var(--border-color, #eee);">
+                   <td style="padding:4px; color:var(--text-main, #333);"><strong>${l['LOT']}</strong></td>
+                   <td style="padding:4px; color:var(--text-main, #333);">${l['EXP DATE']}</td>
+                   <td style="padding:4px; text-align:center; font-weight:bold; color:var(--heading-color, #0277bd);">${l['QTY']}</td>
+                   <td style="padding:4px; text-align:right; font-size:0.75rem; color:var(--text-main, #555); font-weight:bold;">${shelf}</td>
+                 </tr>`;
+             });
+
+             let box = document.getElementById(`quickLookupLotBox_${ref}`);
+             if (box) {
+               box.innerHTML = lotRows 
+                 ? `<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:var(--card-bg, #fff); border:1px solid var(--border-color, #ddd); margin-top:8px;">
+                      <tr style="background:var(--raw-bg, #eee); text-align:left;">
+                        <th style="padding:4px; color:var(--text-main, #333);">Lot</th>
+                        <th style="padding:4px; color:var(--text-main, #333);">Exp</th>
+                        <th style="padding:4px; text-align:center; color:var(--text-main, #333);">Qty</th>
+                        <th style="padding:4px; text-align:right; color:var(--text-main, #333);">Shelf</th>
+                      </tr>
+                      ${lotRows}
+                    </table>`
+                 : `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
+               box.style.textAlign = 'left';
+               box.style.padding = '0';
+             }
+           }).catch(err => {
+             let box = document.getElementById(`quickLookupLotBox_${ref}`);
+             if (box) box.innerHTML = `<span style="color:#c62828;">⚠️ Cloud ledger unreachable.</span>`;
+           });
+       } else {
+         let box = document.getElementById(`quickLookupLotBox_${ref}`);
+         if (box) {
+           box.innerHTML = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">No physical inventory available to track.</div>`;
+           box.style.padding = '0';
+         }
+       }
+    });
+  },
+
+  requestItemRestock() {
+    let ref = document.getElementById('refInput').value.trim().toUpperCase();
+    if (!ref) return;
+
+    let localRequests = JSON.parse(localStorage.getItem('asp_restock_requests')) || { date: new Date().toLocaleDateString(), refs: [] };
+    
+    // Safety check: Don't let them submit it twice
+    if (localRequests.refs.includes(ref)) {
+       this.showCustomAlert("Already Requested", `A restock request for ${ref} is already pending and will be sent to the Procurement team at the end of the day.`);
+       return;
+    }
+
+    this.showCustomConfirm("Request Restock", `Are you sure you want to flag ${ref} for restocking?\n\nThis will instantly alert the procurement team at the end of the day.`, async () => {
+        let btn = document.getElementById('btnRequestRestock');
+        let origText = btn.textContent;
+        if (btn) { btn.textContent = "⏳ Sending..."; btn.disabled = true; }
+        
+        let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : "Operator";
+        
+        try {
+            // Fire API payload to Apps Script (we will build this backend function next!)
+            await fetch(ApiManager.getActiveArchiveUrl(), {
+                method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: "LOG_RESTOCK_REQUEST",
+                    payload: { ref: ref, user: userName }
+                })
+            });
+            
+            // Save to local cache so the red dot stays visible all day
+            localRequests.refs.push(ref);
+            localStorage.setItem('asp_restock_requests', JSON.stringify(localRequests));
+            
+            // Update UI
+            let badge = document.getElementById('restockPendingBadge');
+            if (badge) badge.style.display = 'flex';
+            this.showCustomAlert("Success", `✅ Restock request for ${ref} has been queued!`);
+            
+        } catch (err) {
+            alert("Network Error: " + err.message);
+        } finally {
+            if (btn) { btn.textContent = origText; btn.disabled = false; }
+        }
+    });
   },
 
   openStocktakeModal() {
@@ -658,9 +776,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     let color = isError ? '#c62828' : '#0277bd';
     modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+      <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
         <h3 style="color:${color}; margin-top:0;">${title}</h3>
-        <p style="color:#555; font-size:0.95rem; margin-bottom:20px;">${message}</p>
+        <p style="color:var(--text-main, #555); font-size:0.95rem; margin-bottom:20px;">${message}</p>
         <button onclick="this.parentElement.parentElement.remove()" style="background:${color}; color:#fff; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">OK</button>
       </div>`;
     document.body.appendChild(modal);
@@ -670,9 +788,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let modal = document.createElement('div');
     modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
     modal.innerHTML = `
-      <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+      <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
         <h3 style="color:#0277bd; margin-top:0;">${title}</h3>
-        <p style="color:#555; font-size:0.95rem; margin-bottom:20px;">${message}</p>
+        <p style="color:var(--text-main, #555); font-size:0.95rem; margin-bottom:20px;">${message}</p>
         <div style="display:flex; justify-content:space-between; gap:10px;">
           <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
           <button id="btnConfirmAction" style="flex:1; background:#0277bd; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">Confirm</button>

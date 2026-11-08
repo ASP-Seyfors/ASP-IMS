@@ -20,30 +20,53 @@ body.font-large input, body.font-large select, body.font-large button { font-siz
   max-width: 80px;
 }
 
+/* =========================================================
+   ✨ PHASE 1: LAYOUT & ALIGNMENT FIXES
+========================================================= */
+/* Fix Textarea Alignments globally to be left-aligned */
+textarea {
+    text-align: left !important;
+    text-align-last: left !important;
+}
+
+/* Remove blue outline from Cheat Code box */
+#cheatCodeInput:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* ✨ Universal Modal Close Button Enlarger ("X") */
+#quickLookupModal > div > div:first-child > button,
+#binViewerModal > div > div:first-child > button,
+#damagedBinViewerModal > div > div:first-child > button,
+#shipmentTrackingModal > div > div:first-child > button,
+#modalUnreserve > div > div:first-child > button,
+#incomingShipmentModal > div > div:first-child > button,
+#stockReportEditorModal > div > div:first-child > button,
+#itemEditModal > div > div:first-child > button,
+#qboModal > div > div:first-child > button,
+#systemRestoreModal > div > div:first-child > button,
+#internalReportOptionsModal > div > div:first-child > button,
+#inventoryReportOptionsModal > div > div:first-child > button,
+#bugReportModal > div > div:first-child > button,
+#addressBookModal > div > div:first-child > button,
+#shipmentEditModal > div > div:first-child > button,
+#shipmentManagerModal > div > div:first-child > button,
+#ethiconMonitorModal > div > div:first-child > button {
+    font-size: 1.75rem !important;
+    font-weight: bold !important;
+    padding: 0 8px !important;
+    line-height: 1 !important;
+    transition: color 0.2s ease;
+}
+
+[id$="Modal"] > div > div:first-child > button:hover,
+[id*="Modal"] > div > div:first-child > button:hover {
+    color: #d32f2f !important;
+}
+
 /* FIX FOR JAVASCRIPT MODALS IN DARK MODE */
-#workstationUserModal > div,
-#bugReportModal > div,
-#qboModal > div,
-#systemRestoreModal > div,
-#modalUnreserve > div {
-    background-color: var(--card-bg) !important;
-    color: var(--text-main) !important;
-}
-
-#workstationUserModal h3,
-#bugReportModal h3,
-#qboModal h3,
-#systemRestoreModal h3,
-#modalUnreserve h3 {
-    color: var(--heading-color) !important;
-}
-#workstationUserModal p,
-#bugReportModal p,
-#qboModal p,
-#systemRestoreModal p {
-    color: var(--text-main) !important;
-}
-
 #workstationUserModal > div,
 #bugReportModal > div,
 #qboModal > div,
@@ -61,6 +84,12 @@ body.font-large input, body.font-large select, body.font-large button { font-siz
 #modalUnreserve h3,
 #modalSubCategories h3 {
     color: var(--heading-color) !important;
+}
+#workstationUserModal p,
+#bugReportModal p,
+#qboModal p,
+#systemRestoreModal p {
+    color: var(--text-main) !important;
 }
 
 .gtin-diff-banner {
@@ -109,131 +138,108 @@ body.font-large input, body.font-large select, body.font-large button { font-siz
 /* =========================================================
    REPORT MODALS & UI OVERRIDES FOR DARK MODE
 ========================================================= */
-body.theme-slate #reportOptionsModal > div,
-body.theme-sage #reportOptionsModal > div,
-body.theme-slate #internalReportOptionsModal > div,
-body.theme-sage #internalReportOptionsModal > div,
-body.theme-slate #stockReportEditorModal > div,
-body.theme-sage #stockReportEditorModal > div,
-body.theme-slate #binViewerModal > div,
-body.theme-sage #binViewerModal > div,
-body.theme-slate #damagedBinViewerModal > div,
-body.theme-sage #damagedBinViewerModal > div,
-body.theme-slate #quickLookupModal > div,
-body.theme-sage #quickLookupModal > div,
-body.theme-slate #modalUnreserve > div,
-body.theme-sage #modalUnreserve > div, 
-body.theme-slate #shipmentManagerModal > div,
-body.theme-sage #shipmentManagerModal > div,
-body.theme-slate #addressBookModal > div,
-body.theme-sage #addressBookModal > div,
-body.theme-slate #shipmentEditModal > div,
-body.theme-sage #shipmentEditModal > div {
+body.theme-slate #reportOptionsModal > div, body.theme-sage #reportOptionsModal > div,
+body.theme-slate #internalReportOptionsModal > div, body.theme-sage #internalReportOptionsModal > div,
+body.theme-slate #stockReportEditorModal > div, body.theme-sage #stockReportEditorModal > div,
+body.theme-slate #binViewerModal > div, body.theme-sage #binViewerModal > div,
+body.theme-slate #damagedBinViewerModal > div, body.theme-sage #damagedBinViewerModal > div,
+body.theme-slate #quickLookupModal > div, body.theme-sage #quickLookupModal > div,
+body.theme-slate #modalUnreserve > div, body.theme-sage #modalUnreserve > div, 
+body.theme-slate #shipmentManagerModal > div, body.theme-sage #shipmentManagerModal > div,
+body.theme-slate #addressBookModal > div, body.theme-sage #addressBookModal > div,
+body.theme-slate #shipmentEditModal > div, body.theme-sage #shipmentEditModal > div {
     background-color: var(--card-bg) !important;
     color: var(--text-main) !important;
 }
 
-body.theme-slate #shipmentManagerModal h2,
-body.theme-sage #shipmentManagerModal h2 {
-    color: var(--heading-color) !important;
-}
-
-body.theme-slate #reportOptionsModal h3,
-body.theme-sage #reportOptionsModal h3,
-body.theme-slate #internalReportOptionsModal h3,
-body.theme-sage #internalReportOptionsModal h3,
-body.theme-slate #stockReportEditorModal h3,
-body.theme-sage #stockReportEditorModal h3,
-body.theme-slate #binViewerModal h3,
-body.theme-sage #binViewerModal h3,
-body.theme-slate #damagedBinViewerModal h3,
-body.theme-sage #damagedBinViewerModal h3,
-body.theme-slate #quickLookupModal h3,
-body.theme-sage #quickLookupModal h3,
-body.theme-slate #modalUnreserve h3,
-body.theme-sage #modalUnreserve h3,
-body.theme-slate #addressBookModal h2,
-body.theme-sage #addressBookModal h2,
-body.theme-slate #addressBookModal h4,
-body.theme-sage #addressBookModal h4,
-body.theme-slate #shipmentEditModal h2,
-body.theme-sage #shipmentEditModal h2 {
+body.theme-slate #shipmentManagerModal h2, body.theme-sage #shipmentManagerModal h2,
+body.theme-slate #reportOptionsModal h3, body.theme-sage #reportOptionsModal h3,
+body.theme-slate #internalReportOptionsModal h3, body.theme-sage #internalReportOptionsModal h3,
+body.theme-slate #stockReportEditorModal h3, body.theme-sage #stockReportEditorModal h3,
+body.theme-slate #binViewerModal h3, body.theme-sage #binViewerModal h3,
+body.theme-slate #damagedBinViewerModal h3, body.theme-sage #damagedBinViewerModal h3,
+body.theme-slate #quickLookupModal h3, body.theme-sage #quickLookupModal h3,
+body.theme-slate #modalUnreserve h3, body.theme-sage #modalUnreserve h3,
+body.theme-slate #addressBookModal h2, body.theme-sage #addressBookModal h2,
+body.theme-slate #addressBookModal h4, body.theme-sage #addressBookModal h4,
+body.theme-slate #shipmentEditModal h2, body.theme-sage #shipmentEditModal h2 {
     color: var(--heading-color) !important;
 }
 
 /* Target all the hardcoded light-colored summary boxes in modals */
-body.theme-slate [style*="background:#f3e5f5"], 
-body.theme-sage [style*="background:#f3e5f5"],
-body.theme-slate [style*="background:#e8f5e9"],
-body.theme-sage [style*="background:#e8f5e9"],
-body.theme-slate [style*="background:#fff3e0"],
-body.theme-sage [style*="background:#fff3e0"],
-body.theme-slate [style*="background:#f0f8ff"],
-body.theme-sage [style*="background:#f0f8ff"],
-body.theme-slate [style*="background:#fafafa"],
-body.theme-sage [style*="background:#fafafa"],
-body.theme-slate [style*="background:#f9f9f9"],
-body.theme-sage [style*="background:#f9f9f9"],
-body.theme-slate [style*="background:#f1f8e9"],
-body.theme-sage [style*="background:#f1f8e9"] {
+body.theme-slate [style*="background:#f3e5f5"], body.theme-sage [style*="background:#f3e5f5"],
+body.theme-slate [style*="background:#e8f5e9"], body.theme-sage [style*="background:#e8f5e9"],
+body.theme-slate [style*="background:#fff3e0"], body.theme-sage [style*="background:#fff3e0"],
+body.theme-slate [style*="background:#f0f8ff"], body.theme-sage [style*="background:#f0f8ff"],
+body.theme-slate [style*="background:#fafafa"], body.theme-sage [style*="background:#fafafa"],
+body.theme-slate [style*="background:#f9f9f9"], body.theme-sage [style*="background:#f9f9f9"],
+body.theme-slate [style*="background:#f1f8e9"], body.theme-sage [style*="background:#f1f8e9"] {
     background-color: var(--raw-bg) !important;
     border-color: var(--border-color) !important;
     color: var(--text-main) !important;
 }
 
 /* Make inputs inside the Customer Flyer Builder visible in dark mode */
-body.theme-slate .flyer-item-row input[type="text"],
-body.theme-sage .flyer-item-row input[type="text"],
-body.theme-slate .flyer-item-row input[type="number"],
-body.theme-sage .flyer-item-row input[type="number"],
-body.theme-slate .flyer-item-row input[type="text"][readonly],
-body.theme-sage .flyer-item-row input[type="text"][readonly] {
+body.theme-slate .flyer-item-row input[type="text"], body.theme-sage .flyer-item-row input[type="text"],
+body.theme-slate .flyer-item-row input[type="number"], body.theme-sage .flyer-item-row input[type="number"],
+body.theme-slate .flyer-item-row input[type="text"][readonly], body.theme-sage .flyer-item-row input[type="text"][readonly] {
     background-color: var(--input-bg) !important;
     color: var(--text-main) !important;
     border-color: var(--border-color) !important;
 }
 
-/* ✨ FIX: Force dark text inside light-colored Active Shipment columns in Dark Mode */
-body.theme-slate #shipmentManagerModal div[style*="background"],
-body.theme-sage #shipmentManagerModal div[style*="background"],
-body.theme-slate #shipmentManagerModal div[style*="background"] div,
-body.theme-sage #shipmentManagerModal div[style*="background"] div,
-body.theme-slate #shipmentManagerModal div[style*="background"] span,
-body.theme-sage #shipmentManagerModal div[style*="background"] span {
+/* Force dark text inside light-colored Active Shipment columns in Dark Mode */
+body.theme-slate #shipmentManagerModal div[style*="background"], body.theme-sage #shipmentManagerModal div[style*="background"],
+body.theme-slate #shipmentManagerModal div[style*="background"] div, body.theme-sage #shipmentManagerModal div[style*="background"] div,
+body.theme-slate #shipmentManagerModal div[style*="background"] span, body.theme-sage #shipmentManagerModal div[style*="background"] span,
+body.theme-slate #shipmentTrackingModal div[style*="background"], body.theme-sage #shipmentTrackingModal div[style*="background"],
+body.theme-slate #shipmentTrackingModal div[style*="background"] div, body.theme-sage #shipmentTrackingModal div[style*="background"] div,
+body.theme-slate #shipmentTrackingModal div[style*="background"] span, body.theme-sage #shipmentTrackingModal div[style*="background"] span,
+body.theme-slate #shipmentTrackingModal div[style*="background"] strong, body.theme-sage #shipmentTrackingModal div[style*="background"] strong,
+body.theme-slate #shipmentTrackingModal div[style*="background"] b, body.theme-sage #shipmentTrackingModal div[style*="background"] b {
     color: #333333 !important;
 }
 
 /* Ensure the carrier tracking links remain blue */
-body.theme-slate #shipmentManagerModal div[style*="background"] a,
-body.theme-sage #shipmentManagerModal div[style*="background"] a {
-    color: #0277bd !important;
-}
-
-/* ✨ FIX: Force dark text inside light-colored Active Shipment columns in Dark Mode */
-body.theme-slate #shipmentTrackingModal div[style*="background"],
-body.theme-sage #shipmentTrackingModal div[style*="background"],
-body.theme-slate #shipmentTrackingModal div[style*="background"] div,
-body.theme-sage #shipmentTrackingModal div[style*="background"] div,
-body.theme-slate #shipmentTrackingModal div[style*="background"] span,
-body.theme-sage #shipmentTrackingModal div[style*="background"] span,
-body.theme-slate #shipmentTrackingModal div[style*="background"] strong,
-body.theme-sage #shipmentTrackingModal div[style*="background"] strong,
-body.theme-slate #shipmentTrackingModal div[style*="background"] b,
-body.theme-sage #shipmentTrackingModal div[style*="background"] b {
-    color: #333333 !important;
-}
-
-/* Ensure the carrier tracking links remain blue */
-body.theme-slate #shipmentTrackingModal div[style*="background"] a,
-body.theme-sage #shipmentTrackingModal div[style*="background"] a {
+body.theme-slate #shipmentManagerModal div[style*="background"] a, body.theme-sage #shipmentManagerModal div[style*="background"] a,
+body.theme-slate #shipmentTrackingModal div[style*="background"] a, body.theme-sage #shipmentTrackingModal div[style*="background"] a {
     color: #0277bd !important;
 }
 
 /* =========================================================
-   ✨ FIX: HYBRID/DARK MODE CONTRAST OVERRIDES FOR ALL MODALS
+   REPORT MODALS & UI OVERRIDES FOR DARK MODE
 ========================================================= */
+body.theme-slate #reportOptionsModal > div, body.theme-sage #reportOptionsModal > div,
+body.theme-slate #internalReportOptionsModal > div, body.theme-sage #internalReportOptionsModal > div,
+body.theme-slate #stockReportEditorModal > div, body.theme-sage #stockReportEditorModal > div,
+body.theme-slate #binViewerModal > div, body.theme-sage #binViewerModal > div,
+body.theme-slate #damagedBinViewerModal > div, body.theme-sage #damagedBinViewerModal > div,
+body.theme-slate #quickLookupModal > div, body.theme-sage #quickLookupModal > div,
+body.theme-slate #modalUnreserve > div, body.theme-sage #modalUnreserve > div, 
+body.theme-slate #shipmentManagerModal > div, body.theme-sage #shipmentManagerModal > div,
+body.theme-slate #addressBookModal > div, body.theme-sage #addressBookModal > div,
+body.theme-slate #shipmentEditModal > div, body.theme-sage #shipmentEditModal > div,
+body.theme-slate #itemEditModal > div, body.theme-sage #itemEditModal > div {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
+}
 
-/* 1. Edit Item Details Modal (Screenshot 37 - Missing from Dark Mode list) */
+body.theme-slate #shipmentManagerModal h2, body.theme-sage #shipmentManagerModal h2,
+body.theme-slate #reportOptionsModal h3, body.theme-sage #reportOptionsModal h3,
+body.theme-slate #internalReportOptionsModal h3, body.theme-sage #internalReportOptionsModal h3,
+body.theme-slate #stockReportEditorModal h3, body.theme-sage #stockReportEditorModal h3,
+body.theme-slate #binViewerModal h3, body.theme-sage #binViewerModal h3,
+body.theme-slate #damagedBinViewerModal h3, body.theme-sage #damagedBinViewerModal h3,
+body.theme-slate #quickLookupModal h3, body.theme-sage #quickLookupModal h3,
+body.theme-slate #modalUnreserve h3, body.theme-sage #modalUnreserve h3,
+body.theme-slate #addressBookModal h2, body.theme-sage #addressBookModal h2,
+body.theme-slate #addressBookModal h4, body.theme-sage #addressBookModal h4,
+body.theme-slate #shipmentEditModal h2, body.theme-sage #shipmentEditModal h2,
+body.theme-slate #itemEditModal h3, body.theme-sage #itemEditModal h3 {
+    color: var(--heading-color) !important;
+}
+
+/* 1. Edit Item Details Modal Inputs */
 body.theme-slate #itemEditModal input[type="text"], body.theme-sage #itemEditModal input[type="text"],
 body.theme-slate #itemEditModal input[type="number"], body.theme-sage #itemEditModal input[type="number"],
 body.theme-slate #itemEditModal select, body.theme-sage #itemEditModal select,
@@ -242,182 +248,114 @@ body.theme-slate #itemEditModal textarea, body.theme-sage #itemEditModal textare
     color: var(--text-main) !important;
     border-color: var(--border-color) !important;
 }
-
 body.theme-slate #itemEditModal input[type="text"][readonly], body.theme-sage #itemEditModal input[type="text"][readonly] {
     background-color: var(--raw-bg) !important;
     color: #888 !important;
 }
 
-body.theme-slate #itemEditModal > div,
-body.theme-sage #itemEditModal > div {
-    background-color: var(--card-bg) !important;
-    color: var(--text-main) !important;
-}
-body.theme-slate #itemEditModal h2, body.theme-sage #itemEditModal h2,
-body.theme-slate #itemEditModal h3, body.theme-sage #itemEditModal h3 {
-    color: var(--heading-color) !important;
-}
-body.theme-slate #itemEditModal div, body.theme-sage #itemEditModal div,
-body.theme-slate #itemEditModal label, body.theme-sage #itemEditModal label {
-    color: var(--text-main) !important;
-}
-
-/* 2. Customer Bin & Damaged Bin Viewers (Screenshots 34 & 35 - Override hardcoded dark greys) */
-body.theme-slate #binViewerModal span[style*="color: #555"], body.theme-sage #binViewerModal span[style*="color: #555"],
-body.theme-slate #binViewerModal span[style*="color:#555"], body.theme-sage #binViewerModal span[style*="color:#555"],
-body.theme-slate #binViewerModal span[style*="color: #666"], body.theme-sage #binViewerModal span[style*="color: #666"],
-body.theme-slate #binViewerModal span[style*="color:#666"], body.theme-sage #binViewerModal span[style*="color:#666"],
-body.theme-slate #damagedBinViewerModal span[style*="color: #555"], body.theme-sage #damagedBinViewerModal span[style*="color: #555"],
-body.theme-slate #damagedBinViewerModal span[style*="color:#555"], body.theme-sage #damagedBinViewerModal span[style*="color:#555"],
-body.theme-slate #damagedBinViewerModal span[style*="color: #666"], body.theme-sage #damagedBinViewerModal span[style*="color: #666"],
-body.theme-slate #damagedBinViewerModal span[style*="color:#666"], body.theme-sage #damagedBinViewerModal span[style*="color:#666"] {
-    color: var(--text-main) !important;
-}
-
-/* 3. Quick Lookup Modal (Screenshot 36 - Override hardcoded white backgrounds) */
-body.theme-slate #quickLookupModal div[style*="background: #fff"], body.theme-sage #quickLookupModal div[style*="background: #fff"],
-body.theme-slate #quickLookupModal div[style*="background:#fff"], body.theme-sage #quickLookupModal div[style*="background:#fff"],
-body.theme-slate #quickLookupModal div[style*="background: #ffffff"], body.theme-sage #quickLookupModal div[style*="background: #ffffff"],
-body.theme-slate #quickLookupModal div[style*="background:#ffffff"], body.theme-sage #quickLookupModal div[style*="background:#ffffff"] {
+/* Force the Pricing Block to obey Dark Mode */
+body.theme-slate #modalPricingBlock, body.theme-sage #modalPricingBlock {
     background-color: var(--raw-bg) !important;
-    color: var(--text-main) !important;
     border-color: var(--border-color) !important;
-}
-body.theme-slate #quickLookupModal table, body.theme-sage #quickLookupModal table,
-body.theme-slate #quickLookupModal th, body.theme-sage #quickLookupModal th,
-body.theme-slate #quickLookupModal td, body.theme-sage #quickLookupModal td {
-    background-color: var(--raw-bg) !important;
-    color: var(--text-main) !important;
-    border-color: var(--border-color) !important;
-}
-/* Brighten the dark green "Available to Sell" text for better dark mode visibility */
-body.theme-slate #quickLookupModal [style*="color: #2e7d32"], body.theme-sage #quickLookupModal [style*="color: #2e7d32"],
-body.theme-slate #quickLookupModal [style*="color:#2e7d32"], body.theme-sage #quickLookupModal [style*="color:#2e7d32"] {
-    color: #4caf50 !important; 
-}
-
-/* 4. Custom Promotional Flyer & Stock Report Builder (Screenshots 38 & 39 - Fix dark grey text) */
-body.theme-slate #stockReportHeaderBox, body.theme-sage #stockReportHeaderBox,
-body.theme-slate #stockReportItemCount, body.theme-sage #stockReportItemCount,
-body.theme-slate #stockReportEditorModal label, body.theme-sage #stockReportEditorModal label {
-    color: var(--text-main) !important;
 }
 
 /* =========================================================
-   ✨ FIX: HYBRID/DARK MODE CONTRAST FOR BINS & QUICK LOOKUP
+   ADDITIONAL DARK MODE FIXES (11.08.2026 2PM)
 ========================================================= */
 
-/* 1. Customer Bin Viewer - Fix dark blue REFs and dark gray Qty text */
-body.theme-slate #binViewerModal [style*="color: #0277bd"],
-body.theme-sage #binViewerModal [style*="color: #0277bd"],
-body.theme-slate #binViewerModal [style*="color:#0277bd"],
-body.theme-sage #binViewerModal [style*="color:#0277bd"] {
+/* 1. Session Reports Background Fix */
+body.theme-slate #panelArchiveExport, body.theme-sage #panelArchiveExport {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 3. Historical Ledger Search Header & Dropdown */
+body.theme-slate [style*="background: var(--raw-bg, #f3e5f5)"],
+body.theme-sage [style*="background: var(--raw-bg, #f3e5f5)"] {
+    background-color: var(--card-bg) !important;
+}
+body.theme-slate h4[style*="color: #7b1fa2"], body.theme-sage h4[style*="color: #7b1fa2"],
+body.theme-slate #lotTraceResults h3, body.theme-sage #lotTraceResults h3 {
     color: var(--heading-color) !important;
 }
-body.theme-slate #binViewerModal [style*="color: #555"],
-body.theme-sage #binViewerModal [style*="color: #555"],
-body.theme-slate #binViewerModal [style*="color:#555"],
-body.theme-sage #binViewerModal [style*="color:#555"],
-body.theme-slate #binViewerModal [style*="color: #666"],
-body.theme-sage #binViewerModal [style*="color: #666"],
-body.theme-slate #binViewerModal [style*="color:#666"],
-body.theme-sage #binViewerModal [style*="color:#666"] {
-    color: var(--text-main) !important;
-}
-
-/* 2. Damaged Inventory - Fix dark gray Lot/Exp and Note text */
-body.theme-slate #damagedBinViewerModal [style*="color: #555"],
-body.theme-sage #damagedBinViewerModal [style*="color: #555"],
-body.theme-slate #damagedBinViewerModal [style*="color:#555"],
-body.theme-sage #damagedBinViewerModal [style*="color:#555"],
-body.theme-slate #damagedBinViewerModal [style*="color: #666"],
-body.theme-sage #damagedBinViewerModal [style*="color: #666"],
-body.theme-slate #damagedBinViewerModal [style*="color:#666"],
-body.theme-sage #damagedBinViewerModal [style*="color:#666"],
-body.theme-slate #damagedBinViewerModal [style*="color: #777"],
-body.theme-sage #damagedBinViewerModal [style*="color: #777"],
-body.theme-slate #damagedBinViewerModal [style*="color:#777"],
-body.theme-sage #damagedBinViewerModal [style*="color:#777"] {
-    color: var(--text-main) !important;
-}
-
-/* 3. Quick Lookup - Strip white backgrounds & fix text colors */
-body.theme-slate #quickLookupModal div[style*="background"],
-body.theme-sage #quickLookupModal div[style*="background"],
-body.theme-slate #quickLookupModal table,
-body.theme-sage #quickLookupModal table,
-body.theme-slate #quickLookupModal th,
-body.theme-sage #quickLookupModal th,
-body.theme-slate #quickLookupModal td,
-body.theme-sage #quickLookupModal td,
-body.theme-slate #quickLookupModal tr,
-body.theme-sage #quickLookupModal tr {
-    background-color: var(--raw-bg) !important;
+body.theme-slate #ledgerSearchTimeframe, body.theme-sage #ledgerSearchTimeframe {
+    background-color: var(--input-bg) !important;
     color: var(--text-main) !important;
     border-color: var(--border-color) !important;
 }
 
-/* Brighten the green "Available to Sell" text for dark mode readability */
-body.theme-slate #quickLookupModal [style*="color: #2e7d32"],
-body.theme-sage #quickLookupModal [style*="color: #2e7d32"],
-body.theme-slate #quickLookupModal [style*="color:#2e7d32"],
-body.theme-sage #quickLookupModal [style*="color:#2e7d32"] {
-    color: #4caf50 !important; 
-}
-
-/* Map hardcoded ASP Blue to the dynamic Twilight Yellow heading color */
-body.theme-slate #quickLookupModal [style*="color: #0277bd"],
-body.theme-sage #quickLookupModal [style*="color: #0277bd"],
-body.theme-slate #quickLookupModal [style*="color:#0277bd"],
-body.theme-sage #quickLookupModal [style*="color:#0277bd"] {
-    color: var(--heading-color) !important; 
-}
-
-/* ✨ FIX: Final Readability Polish for Customer Bin Viewer & Quick Lookup */
-
-/* 1. Customer Bin Viewer - Force all unstyled text and quantities to light text */
-body.theme-slate #binViewerModal div:not([style*="background"]),
-body.theme-sage #binViewerModal div:not([style*="background"]),
-body.theme-slate #binViewerModal span,
-body.theme-sage #binViewerModal span {
+/* 4 & 6. Customer Bin Viewer & Damaged Inventory Modal Text */
+body.theme-slate #binViewerModal div, body.theme-sage #binViewerModal div,
+body.theme-slate #binViewerModal span, body.theme-sage #binViewerModal span,
+body.theme-slate #damagedBinViewerModal div, body.theme-sage #damagedBinViewerModal div,
+body.theme-slate #damagedBinViewerModal span, body.theme-sage #damagedBinViewerModal span {
     color: var(--text-main) !important;
 }
 
-/* 2. Quick Lookup Modal - Fix dark manufacturer, description, and unit cost text */
-body.theme-slate #quickLookupModal div,
-body.theme-sage #quickLookupModal div,
-body.theme-slate #quickLookupModal span,
-body.theme-sage #quickLookupModal span,
-body.theme-slate #quickLookupModal p,
-body.theme-sage #quickLookupModal p {
+/* 5. Un-Reserve Items Modal Text */
+body.theme-slate #modalUnreserve div, body.theme-sage #modalUnreserve div,
+body.theme-slate #modalUnreserve p, body.theme-sage #modalUnreserve p,
+body.theme-slate #modalUnreserve span, body.theme-sage #modalUnreserve span {
+    color: var(--text-main) !important;
+}
+body.theme-slate #modalUnreserve select, body.theme-sage #modalUnreserve select {
+    background-color: var(--input-bg) !important;
     color: var(--text-main) !important;
 }
 
-/* Preserve specific highlight and heading colors inside Quick Lookup */
-body.theme-slate #quickLookupModal [style*="color: #2e7d32"],
-body.theme-sage #quickLookupModal [style*="color: #2e7d32"],
-body.theme-slate #quickLookupModal [style*="color:#2e7d32"],
-body.theme-sage #quickLookupModal [style*="color:#2e7d32"] {
-    color: #4caf50 !important;
+/* 7. Add New Incoming Shipment Modal */
+body.theme-slate #incomingShipmentModal > div, body.theme-sage #incomingShipmentModal > div {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
 }
-
-body.theme-slate #quickLookupModal h3,
-body.theme-sage #quickLookupModal h3 {
-    color: var(--heading-color) !important;
+body.theme-slate #incomingShipmentModal h2, body.theme-sage #incomingShipmentModal h2,
+body.theme-slate #incomingShipmentModal label, body.theme-sage #incomingShipmentModal label,
+body.theme-slate #incomingShipmentModal div, body.theme-sage #incomingShipmentModal div {
+    color: var(--text-main) !important;
 }
-
-#modalUnreserve {
-    z-index: 9999999 !important; /* 7 nines to guarantee it sits on top of everything */
-}
-
-/* ✨ FIX: Force the Pricing Block and its Labels to obey Dark Mode overrides */
-body.theme-slate #modalPricingBlock,
-body.theme-sage #modalPricingBlock {
-    background-color: var(--raw-bg) !important;
+body.theme-slate #incomingShipmentModal input, body.theme-sage #incomingShipmentModal input,
+body.theme-slate #incomingShipmentModal select, body.theme-sage #incomingShipmentModal select,
+body.theme-slate #incomingShipmentModal textarea, body.theme-sage #incomingShipmentModal textarea {
+    background-color: var(--input-bg) !important;
+    color: var(--text-main) !important;
     border-color: var(--border-color) !important;
 }
 
-body.theme-slate #modalPricingBlock label,
-body.theme-sage #modalPricingBlock label {
+/* 8. Incoming Shipment Smart Order Drop-Down */
+body.theme-slate #itemKnownOrdersSelect, body.theme-sage #itemKnownOrdersSelect {
+    background-color: var(--input-bg) !important;
     color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* =========================================================
+   ADDITIONAL CONTRAST FIXES (FLYER, LOOKUP, VERIFY)
+========================================================= */
+
+/* 1. Custom Promotional Flyer Modal (Labels & Header) */
+body.theme-slate #stockReportEditorModal label[style*="color:#333"], 
+body.theme-sage #stockReportEditorModal label[style*="color:#333"],
+body.theme-slate #stockReportItemCount, 
+body.theme-sage #stockReportItemCount {
+    color: var(--text-main) !important;
+}
+
+/* 2. Scanning Screen: "REF / SKU Lookup" Label */
+body.theme-slate #screenScanning .form-label[style*="color: #000000"], 
+body.theme-sage #screenScanning .form-label[style*="color: #000000"] {
+    color: var(--heading-color) !important;
+}
+
+/* 3. Verify Item Details: MFR, GTIN, Shelf, Desc */
+/* Targets the parent wrapper to turn the bold labels white */
+body.theme-slate #screenReview div[style*="color: #555"], 
+body.theme-sage #screenReview div[style*="color: #555"] {
+    color: var(--text-main) !important;
+}
+/* Targets the specific injected span values to turn them yellow/blue */
+body.theme-slate #revMfr, body.theme-sage #revMfr,
+body.theme-slate #revGtin, body.theme-sage #revGtin,
+body.theme-slate #revShelf, body.theme-sage #revShelf,
+body.theme-slate #revDesc, body.theme-sage #revDesc {
+    color: var(--heading-color) !important;
 }

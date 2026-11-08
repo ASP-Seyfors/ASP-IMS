@@ -43,11 +43,11 @@
       <select id="customerReportSelect" style="flex: 1; padding: 6px;"></select>
     </div>
 
-    <div style="margin-bottom: 12px; background: #e8f5e9; border: 1px solid #c8e6c9; padding: 8px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+    <div style="margin-bottom: 12px; background: var(--raw-bg, #e8f5e9); border: 1px solid var(--border-color, #c8e6c9); padding: 8px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
       <strong style="color: #2e7d32;">Sales Report Scope:</strong>
       <div style="display: flex; gap: 12px;">
-        <label style="cursor:pointer;"><input type="radio" name="internalReportScope" value="10" checked> Top 10</label>
-        <label style="cursor:pointer;"><input type="radio" name="internalReportScope" value="all"> All</label>
+        <label style="cursor:pointer; color:var(--text-main, #333);"><input type="radio" name="internalReportScope" value="10" checked> Top 10</label>
+        <label style="cursor:pointer; color:var(--text-main, #333);"><input type="radio" name="internalReportScope" value="all"> All</label>
       </div>
     </div>
 
@@ -56,35 +56,55 @@
       <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()"><i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Flyer</button>
       <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="AuditManager.openCustomSalesFlyer()"><i data-lucide="sparkles" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Custom Sales Flyer</button>
     </div>
-  </div>
 
   <!-- Automated Stock Report Distribution List -->
   <div id="panelSubscribers" style="background: #e1f5fe; border: 1px solid #03a9f4; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #01579b;">Automated Stock Report Distribution List</h4>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom: 10px; padding: 8px; background: #fff; border: 1px dashed #03a9f4; border-radius: 4px;">
-      <input type="text" id="subName" placeholder="Customer/Company Name" style="padding:4px; font-size:0.85rem;" />
-      <input type="email" id="subEmail" placeholder="Email Address" style="padding:4px; font-size:0.85rem;" />
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom: 10px; padding: 10px; background: #fff; border: 1px dashed #03a9f4; border-radius: 4px;">
+      <!-- ✨ NEW: Added Linked Customer Account Dropdown -->
       <div style="display:flex; gap:6px;">
-        <select id="subFreq" style="flex:1; padding:4px; font-size:0.85rem;">
+        <input type="text" id="subName" placeholder="Contact Name (e.g. Mike)" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" />
+        <select id="subCustomerId" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" title="Link this subscriber to a Master Customer Account to track purchase history.">
+          <option value="">-- Link to Customer Account --</option>
+        </select>
+      </div>
+      <input type="email" id="subEmail" placeholder="Email Address" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" />
+      
+      <div style="display:flex; gap:6px;">
+        <select id="subFreq" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;">
           <option value="Quarterly">Quarterly</option>
           <option value="Monthly">Monthly</option>
           <option value="Weekly">Weekly</option>
           <option value="Daily">Daily</option>
         </select>
-        <select id="subStatus" style="flex:1; padding:4px; font-size:0.85rem;">
+        <select id="subStatus" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;">
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
       </div>
-      <!-- ✨ NEW: Category Selector Input -->
-      <input type="text" id="subCategories" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="padding:4px; font-size:0.85rem; cursor:pointer; background-color:#f9f9f9; color: #333 !important;" title="Click to select specific categories" />
+
+      <!-- ✨ FIX: Layout and Fallback Selectors normalized colors -->
+      <div style="display:flex; gap:6px;">
+        <select id="subFormat" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="Choose the email layout design.">
+          <option value="SMART">Smart Intro + PDF (STAT Style)</option>
+          <option value="LEGACY">Full Catalog in Email Body</option>
+        </select>
+        <select id="subFallback" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="If they have no purchase history, what should we show them?">
+          <option value="SELLERS">Fallback: Top Sellers</option>
+          <option value="VALUE">Fallback: High Value</option>
+          <option value="NONE">Fallback: None (PDF Only)</option>
+        </select>
+      </div>
       
-      <button class="btn-small" style="background-color: #0277bd; color: #fff; width: 100%; margin-top:4px;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+      <input type="text" id="subCategories" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="padding:6px; font-size:0.85rem; cursor:pointer; background-color:var(--input-bg); color: var(--text-main) !important; border:1px solid var(--border-color); border-radius:3px;" title="Click to select specific categories" />
+      
+      <button class="btn-small" style="background-color: #0277bd; color: #fff; width: 100%; margin-top:4px; padding:8px;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
     </div>
-    <div id="subListContainer" style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; font-size: 0.8rem;">
-      <p style="text-align:center; color:#777; margin:0;">Click 'Refresh' to view Active Subscribers.</p>
+    <!-- ✨ FIX: Changed hardcoded #fff background to CSS variables so text stays readable in Dark Mode -->
+    <div id="subListContainer" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #ccc); padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; font-size: 0.8rem;">
+      <p style="text-align:center; color:var(--text-main, #777); margin:0;">Click 'Refresh' to view Active Subscribers.</p>
     </div>
-    <button class="btn-small" style="background-color: #555; color: #fff; width: 100%; margin-top:6px;" onclick="ReportsManager.loadSubscribers()">Refresh</button>
+    <button class="btn-small" style="background-color: #555; color: #fff; width: 100%; margin-top:6px; padding:8px;" onclick="ReportsManager.loadSubscribers()">Refresh</button>
   </div>
 
   <!-- RevMed Reports -->
@@ -99,7 +119,7 @@
   <!-- Cloud Session Generator (Moved to Bottom) -->
   <div id="panelArchiveExport" style="background: #e8eaf6; border: 1px solid #9fa8da; padding: 12px; border-radius: 4px;">
     <h4 style="margin: 0 0 5px 0; color: #283593;">Session Reports</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-bottom: 10px;">Select a previously archived session to generate a report from a previous session.</p>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-bottom: 10px;">Select a previously archived session to generate a report from a previous session.</p>
     <div style="display: flex; flex-direction: column; gap: 8px;">
       <select id="archiveExportSelect" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
         <option value="">-- Select an Archived Session --</option>

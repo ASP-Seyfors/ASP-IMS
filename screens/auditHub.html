@@ -29,13 +29,31 @@
   </p>
 
   <!-- LOT TRACEABILITY TOOL -->
-  <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+  <div style="background: var(--raw-bg, #e3f2fd); border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
     <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="search" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Active Recall & Lot Traceability</h4>
     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
       <input type="text" id="lotSearchInput" placeholder="Scan or type Lot Number..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="this.value = this.value.toUpperCase();" onkeypress="if(event.key==='Enter') { AuditManager.traceLotNumber(); }">
       <button class="btn-action btn-auto" style="flex: 1; background-color: #0277bd; color: #fff; margin: 0; padding: 8px 16px;" onclick="AuditManager.traceLotNumber()">Trace</button>
     </div>
     <div id="lotTraceResults"></div>
+  </div>
+
+  <!-- ✨ NEW: HISTORICAL LEDGER SEARCH -->
+  <div style="background: var(--raw-bg, #f3e5f5); border: 1px solid var(--border-color, #7b1fa2); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #7b1fa2;"><i data-lucide="database" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Historical Ledger Search</h4>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Search the cloud audit log for specific REFs, POs, or Partners to analyze historical volume.</p>
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <input type="text" id="ledgerSearchInput" placeholder="Enter REF, PO, Customer, or Supplier..." style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="this.value = this.value.toUpperCase();" onkeypress="if(event.key==='Enter') { AuditManager.searchLedgerHistory(); }">
+      <select id="ledgerSearchTimeframe" style="flex: 1; padding: 8px; border: 1px solid #7b1fa2; border-radius: 4px; color: #7b1fa2; font-weight: bold;">
+          <option value="30d">Last 30 Days</option>
+          <option value="90d" selected>Last 90 Days</option>
+          <option value="180d">Last 6 Months</option>
+          <option value="all">All Time</option>
+      </select>
+      <button class="btn-action btn-auto" style="flex: 1; background-color: #7b1fa2; color: #fff; margin: 0; padding: 8px 16px;" onclick="AuditManager.searchLedgerHistory()">Search</button>
+    </div>
+    <div id="ledgerSearchResults"></div>
   </div>
 
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
@@ -66,9 +84,9 @@
   </div>
 
   <!-- DAMAGED INVENTORY HUB -->
-  <div class="card" style="background-color: #ffebee; border: 1px solid #c62828; padding: 15px; margin-top: 20px; text-align: center;">
+  <div class="card" style="background-color: var(--raw-bg, #ffebee); border: 1px solid var(--border-color, #c62828); padding: 15px; margin-top: 20px; text-align: center;">
     <h4 style="margin: 0 0 10px 0; color: #c62828;"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Inventory Hub</h4>
-    <p style="font-size: 0.8rem; color: #555; margin-top: 0; margin-bottom: 10px;">View, manage, and export items currently quarantined as damaged.</p>
+    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">View, manage, and export items currently quarantined as damaged.</p>
     <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; max-width: 350px; padding: 10px;" onclick="UIManager.openDamagedBinViewerModal()"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Damaged Items Bin</button>
   </div>
 </div>

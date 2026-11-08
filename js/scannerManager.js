@@ -166,6 +166,7 @@ const ScannerManager = {
              shelfInp.readOnly = true;
              shelfInp.style.backgroundColor = '#f0f0f0';
              shelfInp.style.color = '#888';
+             if (document.getElementById('btnConfirmShelf')) document.getElementById('btnConfirmShelf').style.display = 'none'; // ✨ NEW
         } else {
              shelfInp.readOnly = false;
              shelfInp.style.backgroundColor = '';
@@ -329,9 +330,9 @@ const ScannerManager = {
     });
 
     // ✨ FIX: Bind the variant to the lot string before populating the UI
-    if (lot && variant) {
-        lot = `${lot} [v${variant}]`;
-    }
+    // if (lot && variant) {
+     //    lot = `${lot} [v${variant}]`;
+    // }
 
     // ✨ FIX: Isolate the variant into its own field instead of gluing it to the Lot
     let verInput = document.getElementById('verInput');

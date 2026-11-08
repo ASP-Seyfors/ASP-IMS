@@ -71,6 +71,32 @@ const ReportsManager = {
     document.getElementById('modalSubCategories').style.display = 'none';
   },
 
+  // ✨ NEW: Centralized Report Math Engine
+  getTrueAvailability(item) {
+      if (!item) return 0;
+      let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
+      
+      if (isBundle) {
+          let pSku = DatabaseManager.getCleanParentRef(item).toUpperCase();
+          let pItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === pSku);
+          if (pItem) {
+              let pAvail = (parseInt(pItem.onHand, 10) || 0) - (parseInt(pItem.reservedQty, 10) || 0);
+              return Math.floor(pAvail / parseInt(item.uomMult, 10));
+          }
+          return 0;
+      } else {
+          let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0);
+          let children = DatabaseManager.db.filter(c => DatabaseManager.getCleanParentRef(c).toUpperCase() === DatabaseManager.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
+          if (children.length > 0) {
+              let hasBoxOnly = children.some(c => DatabaseManager.isBoxOnly(c));
+              if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only!
+              let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
+              if (largestBundle > 1) avail = avail % largestBundle;
+          }
+          return avail;
+      }
+  },
+
   openAddressBookEditor() {
     this.renderAddressBookGrid();
     document.getElementById('addressBookModal').style.display = 'flex';
@@ -269,18 +295,19 @@ const ReportsManager = {
     let incTotal = document.getElementById('chkInvTotal') ? document.getElementById('chkInvTotal').checked : false;
     let incRes = document.getElementById('chkInvRes') ? document.getElementById('chkInvRes').checked : false;
 
+    let hiddenParents = typeof DatabaseManager !== 'undefined' ? DatabaseManager.getHiddenParentRefs() : new Set();
+
     // Apply Dynamic Naming
     if (type === 'in_stock') {
       filtered = db.filter(i => {
-        let total = parseInt(i.onHand, 10) || 0;
-        let res = parseInt(i.reservedQty, 10) || 0;
-        let avail = total - res;
-        let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
-        let numPrice = parseFloat(priceStr) || 0;
-        return avail > 0;
+        if (hiddenParents.has((i.sku || i.ref || '').toUpperCase())) return false; 
+        return DatabaseManager.getTrueAvailability(i) > 0;
       });
     } else if (type === 'out_of_stock') {
-      filtered = db.filter(i => !i.onHand || i.onHand === 0);
+      filtered = db.filter(i => {
+        if (hiddenParents.has((i.sku || i.ref || '').toUpperCase())) return false; // ✨ Filter Box Only
+        return !i.onHand || i.onHand === 0;
+      });
       title = "Out of Stock Items Report";
       fileSuffix = "Out_Of_Stock";
     } else if (type === 'pricing') {
@@ -347,7 +374,9 @@ const ReportsManager = {
       
       let total = parseInt(item.onHand, 10) || 0;
       let res = parseInt(item.reservedQty, 10) || 0;
-      let avail = total - res;
+      
+      // ✨ FIX: Use the True Availability engine for the visual PDF table
+      let avail = typeof DatabaseManager !== 'undefined' ? DatabaseManager.getTrueAvailability(item) : (total - res);
       
       html += `<tr>
         ${incMfr ? `<td>${item.mfr || 'UNKNOWN'}</td>` : ''}
@@ -815,15 +844,14 @@ const ReportsManager = {
       return;
     }
 
+    let hiddenParents = typeof DatabaseManager !== 'undefined' ? DatabaseManager.getHiddenParentRefs() : new Set();
+
     let filtered = db;
     if (mode === 'onhand') {
       filtered = db.filter(item => {
-        let total = parseInt(item.onHand || item.TotalQty, 10) || 0;
-        let res = parseInt(item.reservedQty, 10) || 0;
-        let avail = total - res;
-        let priceStr = String(item.price || item.Price || '').replace(/[^0-9.-]+/g, '');
-        let numPrice = parseFloat(priceStr) || 0;
-        return avail > 0 && numPrice > 0;
+        if (hiddenParents.has(DatabaseManager.getItemSku(item))) return false; 
+        let numPrice = parseFloat(String(item.price || item.Price || '').replace(/[^0-9.-]+/g, '')) || 0;
+        return DatabaseManager.getTrueAvailability(item) > 0 && numPrice > 0;
       });
     }
     
@@ -867,12 +895,8 @@ const ReportsManager = {
       fileSuffix = "Not_On_RevMed";
       filtered = db.filter(i => {
         let isFalse = String(i.onRevMed).toUpperCase() !== 'TRUE';
-        let total = parseInt(i.onHand || 0, 10);
-        let res = parseInt(i.reservedQty || 0, 10);
-        let avail = total - res;
-        let priceStr = String(i.price || '').replace(/[^0-9.-]+/g, '');
-        let numPrice = parseFloat(priceStr) || 0;
-        return isFalse && avail > 0 && numPrice > 0;
+        let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;
+        return isFalse && DatabaseManager.getTrueAvailability(i) > 0 && numPrice > 0;
       });
     }
 
@@ -919,27 +943,37 @@ const ReportsManager = {
     }
   },
 
-  // ✨ FIX: Switched to a GET request so the browser can read the response!
   async loadSubscribers() {
       const container = document.getElementById('subListContainer');
       container.innerHTML = '<p style="text-align:center; color:#0277bd;">Loading...</p>';
       try {
-          // Use GET with URL parameters to bypass CORS restrictions
           let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SUBSCRIBERS`);
           let data = await res.json();
           
           if (data.status === "success" && data.subs && data.subs.length > 0) {
               let html = '<table style="width:100%; border-collapse:collapse; text-align:left;">';
-              html += '<tr style="background:#f0f0f0; border-bottom:1px solid #ccc;"><th style="padding:4px;">Name</th><th style="padding:4px;">Email</th><th style="padding:4px;">Freq</th><th style="padding:4px;">Status</th><th style="padding:4px;"></th></tr>';
+              // ✨ FIX: Swapped hardcoded hex colors for your Light/Dark Mode CSS variables
+              html += '<tr style="background:var(--raw-bg, #f0f0f0); border-bottom:1px solid var(--border-color, #ccc);"><th style="padding:4px; color:var(--text-main, #333);">Name</th><th style="padding:4px; color:var(--text-main, #333);">Email</th><th style="padding:4px; color:var(--text-main, #333);">Freq</th><th style="padding:4px; color:var(--text-main, #333);">Status</th><th style="padding:4px;"></th></tr>';
               
               data.subs.forEach(sub => {
+                  // Pass the new variables safely to the edit button
+                  let safeCat = (sub.categories || '').replace(/'/g, "\\'");
                   html += `<tr style="border-bottom:1px solid #eee;">
                     <td style="padding:4px;">${sub.name}</td>
-                    <td style="padding:4px; color:#0277bd;">${sub.email}</td>
+                    <td style="padding:4px; color:#0277bd; word-break:break-all;">${sub.email}</td>
                     <td style="padding:4px;">${sub.freq}</td>
-                    <td style="padding:4px; color:${sub.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
+                    <td style="padding:4px; font-weight:bold; color:${sub.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
                     <td style="padding:4px; text-align:right;">
-                       <button class="btn-small" style="padding:2px 6px; font-size:0.7rem;" onclick="document.getElementById('subName').value='${sub.name}'; document.getElementById('subEmail').value='${sub.email}'; document.getElementById('subFreq').value='${sub.freq === 'Daily' ? 'Daily' : 'Weekly'}'; document.getElementById('subStatus').value='${sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}'; document.getElementById('subCategories').value='${sub.categories || ''}';">Edit</button>
+                       <button class="btn-small" style="padding:4px 8px; font-size:0.75rem;" onclick="
+                          document.getElementById('subName').value='${sub.name}'; 
+                          document.getElementById('subEmail').value='${sub.email}'; 
+                          document.getElementById('subFreq').value='${sub.freq}'; 
+                          document.getElementById('subStatus').value='${sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}'; 
+                          document.getElementById('subCategories').value='${safeCat}';
+                          if(document.getElementById('subFormat')) document.getElementById('subFormat').value='${sub.format || 'SMART'}';
+                          if(document.getElementById('subFallback')) document.getElementById('subFallback').value='${sub.fallback || 'SELLERS'}';
+                          if(document.getElementById('subCustomerId')) document.getElementById('subCustomerId').value='${sub.customerId || ''}'; // ✨ NEW
+                       ">Edit</button>
                     </td>
                   </tr>`;
               });
@@ -954,7 +988,6 @@ const ReportsManager = {
   },
 
   saveSubscriber(event) {
-      // Grab the button and save its original text
       let btn = event ? event.target : document.activeElement;
       let origText = btn.textContent;
       btn.textContent = "⏳ Saving..."; btn.disabled = true;
@@ -963,16 +996,21 @@ const ReportsManager = {
       let email = document.getElementById('subEmail').value.trim();
       let freq = document.getElementById('subFreq').value;
       let status = document.getElementById('subStatus').value;
+      let format = document.getElementById('subFormat') ? document.getElementById('subFormat').value : "SMART";
+      let fallback = document.getElementById('subFallback') ? document.getElementById('subFallback').value : "SELLERS";
+      let categoryPref = document.getElementById('subCategories').value.trim();
+      let customerId = document.getElementById('subCustomerId') ? document.getElementById('subCustomerId').value : ""; // ✨ NEW
 
       if (!name || !email) {
           UIManager.showCustomAlert("Error", "Please provide a name and email address.");
-          btn.textContent = origText; btn.disabled = false; // Reset button
+          btn.textContent = origText; btn.disabled = false; 
           return;
       }
-
-      let categoryPref = document.getElementById('subCategories').value.trim();
        
-      let payload = { name: name, email: email, freq: freq, status: status, categories: categoryPref };
+      let payload = { 
+          name: name, email: email, freq: freq, status: status, 
+          categories: categoryPref, format: format, fallback: fallback, customerId: customerId // ✨ NEW
+      };
 
       fetch(ApiManager.getActiveArchiveUrl(), {
           method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -981,12 +1019,11 @@ const ReportsManager = {
           UIManager.showCustomAlert("Success", `${name} has been updated in the cloud!`);
           document.getElementById('subName').value = "";
           document.getElementById('subEmail').value = "";
+          this.loadSubscribers(); // Auto-refresh the list
       }).catch(err => {
           UIManager.showCustomAlert("Error", "Failed to save subscriber.");
       }).finally(() => {
-          // This always runs at the very end to restore the button!
-          btn.textContent = origText; 
-          btn.disabled = false;
+          btn.textContent = origText; btn.disabled = false;
       });
   },
 
@@ -1087,7 +1124,7 @@ async function runEthiconUiScan(mode) {
             tableHtml += `<tr style="border-bottom:1px solid #ccc;">
                 <td style="padding:6px; font-weight:bold; color:#d32f2f;">${hit.ref}</td>
                 <td style="padding:6px; font-weight:bold; color:#2e7d32;">${alts}</td>
-                <td style="padding:6px; font-size:0.8rem; color:#555;">${cleanDate}</td>
+                <td style="padding:6px; font-size:0.8rem; color:var(--text-main, #555);">${cleanDate}</td>
             </tr>`;
         });
         tableHtml += `</table>`;
@@ -1156,7 +1193,7 @@ function openEthiconMonitorModal() {
               tableHtml += `<tr style="border-bottom:1px solid #ccc;">
                   <td style="padding:6px; font-weight:bold; color:#d32f2f;">${hit.ref}</td>
                   <td style="padding:6px; font-weight:bold; color:#2e7d32;">${hit.alts}</td>
-                  <td style="padding:6px; font-size:0.8rem; color:#555;">${cleanDate}</td>
+                  <td style="padding:6px; font-size:0.8rem; color:var(--text-main, #555);">${cleanDate}</td>
               </tr>`;
           });
           tableHtml += `</table>`;

@@ -40,11 +40,73 @@ const DatabaseManager = {
   customerAliases: JSON.parse(localStorage.getItem('asp_wh_cust_aliases')) || {},
   supplierAliases: JSON.parse(localStorage.getItem('asp_wh_sup_aliases')) || {},
 
+  // ✨ NEW: Box Only Signal Helpers
+  isBoxOnly(item) {
+      return item && item.parentRef && String(item.parentRef).startsWith('*');
+  },
+  getCleanParentRef(item) {
+      return item && item.parentRef ? String(item.parentRef).replace(/^\*/, '').trim() : '';
+  },
+
+  getHiddenParentRefs() {
+      let hiddenParents = new Set();
+      this.db.forEach(i => {
+          if (this.isBoxOnly(i)) {
+              hiddenParents.add(this.getCleanParentRef(i).toUpperCase());
+          }
+      });
+      return hiddenParents;
+  },
+
+  getTrueAvailability(item) {
+      if (!item) return 0;
+      let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
+      
+      if (isBundle) {
+          let pSku = this.getCleanParentRef(item).toUpperCase();
+          let pItem = this.db.find(i => this.getItemSku(i) === pSku);
+          if (pItem) {
+              let pAvail = (parseInt(pItem.onHand, 10) || 0) - (parseInt(pItem.reservedQty, 10) || 0);
+              return Math.floor(pAvail / parseInt(item.uomMult, 10));
+          }
+          return 0;
+      } else {
+          let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0);
+          let children = this.db.filter(c => this.getCleanParentRef(c).toUpperCase() === this.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
+          if (children.length > 0) {
+              let hasBoxOnly = children.some(c => this.isBoxOnly(c));
+              if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only!
+              let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
+              if (largestBundle > 1) avail = avail % largestBundle;
+          }
+          return avail;
+      }
+  },
+
   resolveAlias(name, type = 'customer') {
     if (!name) return name;
     let cleanName = String(name).trim().toUpperCase();
     let dict = type === 'supplier' ? this.supplierAliases : this.customerAliases;
     return dict[cleanName] ? dict[cleanName] : String(name).trim();
+  },
+
+  formatPackaging(qty, uomMult, isBundle) {
+    let uom = parseInt(uomMult, 10) || 1;
+    let total = parseInt(qty, 10) || 0;
+    if (uom <= 1 || total === 0) return total.toString();
+    
+    // ✨ THE FIX: If this item is already a Box variant, just return the raw integer
+    if (isBundle) return total.toString(); 
+    
+    let isNegative = total < 0;
+    let absTotal = Math.abs(total);
+    let boxes = Math.floor(absTotal / uom);
+    let eaches = absTotal % uom;
+    let sign = isNegative ? "-" : "";
+    
+    if (boxes === 0) return `${sign}${eaches} Eaches`;
+    if (eaches === 0) return `${sign}${boxes} Box(es) of ${uom}`;
+    return `${sign}${boxes} Box(es) of ${uom} + ${eaches} Eaches`;
   },
 
   async init() {
@@ -331,6 +393,7 @@ const DatabaseManager = {
     let mfrFilter = (document.getElementById('dbMfrFilter') ? document.getElementById('dbMfrFilter').value : 'ALL');
     let needsPriceFilter = document.getElementById('chkNeedsPrice') ? document.getElementById('chkNeedsPrice').checked : false;
     let needsPriceInStockFilter = document.getElementById('chkNeedsPriceInStock') ? document.getElementById('chkNeedsPriceInStock').checked : false;
+    let showBoxOnlyFilter = document.getElementById('chkShowBoxOnly') ? document.getElementById('chkShowBoxOnly').checked : false;
 
     let mfrDropdown = document.getElementById('dbMfrFilter');
     if (mfrDropdown && mfrDropdown.options.length <= 1) {
@@ -343,28 +406,62 @@ const DatabaseManager = {
     let dbCopy = this.db.filter(i => {
         let matchesSearch = !searchQuery || (i.ref || i.sku || '').toLowerCase().includes(searchQuery) || (i.desc || '').toLowerCase().includes(searchQuery);
         let matchesMfr = mfrFilter === 'ALL' || i.mfr === mfrFilter;
-        
         let isMissingPrice = (!i.price || i.price === '$0.00' || i.price === '0');
         let matchesPrice = needsPriceFilter ? isMissingPrice : true;
         
-        // ✨ NEW: Missing Price AND physically available in the warehouse
-        let avail = (parseInt(i.onHand, 10) || 0) - (parseInt(i.reservedQty, 10) || 0);
+        let total = parseInt(i.onHand, 10) || 0;
+        let res = parseInt(i.reservedQty, 10) || 0;
+        let avail = total - res;
         let matchesPriceInStock = needsPriceInStockFilter ? (isMissingPrice && avail > 0) : true;
 
-        return matchesSearch && matchesMfr && matchesPrice && matchesPriceInStock;
+        let isBundle = i.parentRef && parseInt(i.uomMult, 10) > 1;
+        let matchesBoxOnly = showBoxOnlyFilter ? isBundle : true;
+
+        return matchesSearch && matchesMfr && matchesPrice && matchesPriceInStock && matchesBoxOnly;
       })
       .sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     
     let html = '';
     dbCopy.forEach((item, idx) => {
-      let safeRef = String(item.ref || item.sku || '').replace(/"/g, '&quot;');
-      let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0); // ✨ MATH
+      let safeRef = String(item.ref || item.sku || '').replace(/"/g, '"');
+      
+      // ✨ NEW MATH: Calculate Bundle Quantities and "Each" Remainders dynamically!
+      let avail = 0;
+      let isBoxOnlyLabel = "";
+      let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
+      
+      if (isBundle) {
+          let parentSku = this.getCleanParentRef(item);
+          let parentItem = this.db.find(p => this.getItemSku(p) === parentSku);
+          if (parentItem) {
+              let pTotal = parseInt(parentItem.onHand, 10) || 0;
+              let pRes = parseInt(parentItem.reservedQty, 10) || 0;
+              let pAvail = pTotal - pRes;
+              avail = Math.floor(pAvail / parseInt(item.uomMult, 10)); // Total full boxes available
+          }
+          if (this.isBoxOnly(item)) {
+              isBoxOnlyLabel = `<span style="background-color:#e65100; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;" title="This variant is hidden from customer reports">BOX ONLY</span>`;
+          } else {
+              isBoxOnlyLabel = `<span style="background-color:#00796b; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;">BUNDLE</span>`;
+          }
+      } else {
+          let total = parseInt(item.onHand, 10) || 0;
+          let res = parseInt(item.reservedQty, 10) || 0;
+          avail = total - res;
+          
+          // ✨ If it's a parent Each, only show the loose remainder left over outside of boxes
+          let children = this.db.filter(c => this.getCleanParentRef(c) === this.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
+          if (children.length > 0) {
+              let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
+              if (largestBundle > 1) avail = avail % largestBundle;
+          }
+      }
       
       html += `
-        <tr style="border-bottom: 1px solid #eee; background-color: ${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
-          <td style="padding:10px; color:#555;">${item.mfr || '--'}</td>
-          <td style="padding:10px; font-weight:bold; color:#00796b;">${item.ref || item.sku}</td>
-          <td style="padding:10px; font-size:0.85rem; color:#333;">${item.desc || '--'}</td>
+        <tr style="border-bottom: 1px solid var(--border-color, #eee); background-color: ${idx % 2 === 0 ? 'var(--input-bg, #fff)' : 'var(--raw-bg, #f9f9f9)'};">
+          <td style="padding:10px; color:var(--text-main, #555);">${item.mfr || '--'}</td>
+          <td style="padding:10px; font-weight:bold; color:var(--heading-color, #00796b);">${item.ref || item.sku} ${isBoxOnlyLabel}</td>
+          <td style="padding:10px; font-size:0.85rem; color:var(--text-main, #333);">${item.desc || '--'}</td>
           <td style="padding:10px; text-align:center; font-weight:bold; color:${avail > 0 ? '#2e7d32' : '#c62828'};">${avail}</td>
           <td style="padding:10px; text-align:center;">
             <button class="btn-small btn-auto" style="background-color: #00796b; color: #fff; margin:0; padding:6px 12px; display:flex; align-items:center; gap:6px;" onclick="DatabaseManager.openEditModal('${safeRef}')">
@@ -375,7 +472,6 @@ const DatabaseManager = {
       `;
     });
     tbody.innerHTML = html;
-
     if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
@@ -407,10 +503,25 @@ const DatabaseManager = {
     document.getElementById('modalDesc').value = dbItem.desc || '';
     document.getElementById('modalCat').value = dbItem.category || '';
     document.getElementById('modalShelf').value = dbItem.shelf || '';
+    document.getElementById('modalMinStock').value = dbItem.minStock || 0; // ✨ NEW
     
     let statusEl = document.getElementById('modalStatus');
     statusEl.value = dbItem.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
     statusEl.style.color = dbItem.status === 'ACTIVE' ? '#2e7d32' : '#c62828';
+
+    // ✨ THE FIX: Only show the "Box Only" checkbox if the item is ACTUALLY a Box/Bundle variant!
+    let bundleRow = document.getElementById('modalBundleRow');
+    let sellAsBoxOnlyChk = document.getElementById('modalSellAsBoxOnly');
+    let uomMultNum = parseInt(dbItem.uomMult, 10) || 1;
+    
+    if (bundleRow && sellAsBoxOnlyChk) {
+        if (uomMultNum > 1) {
+            bundleRow.style.display = 'block';
+            sellAsBoxOnlyChk.checked = this.isBoxOnly(dbItem);
+        } else {
+            bundleRow.style.display = 'none';
+        }
+    }
 
     // ✨ NEW: Override the container to display as a 2x2 Grid instead of a single row
     let pricingBlock = document.getElementById('modalPricingBlock');
@@ -434,6 +545,7 @@ const DatabaseManager = {
     let desc = document.getElementById('modalDesc').value.trim();
     let cat = document.getElementById('modalCat').value.trim();
     let shelf = document.getElementById('modalShelf').value.trim().toUpperCase();
+    let minStock = parseInt(document.getElementById('modalMinStock').value, 10) || 0; // ✨ NEW
     let status = document.getElementById('modalStatus').value;
     
     let price = document.getElementById('modalPrice').value.trim();
@@ -448,13 +560,28 @@ const DatabaseManager = {
 
     let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
     if (dbItem) {
+      // ✨ Box Only logic tracking
+      let uomMultNum = parseInt(dbItem.uomMult, 10) || 1;
+      let isBoxOnly = document.getElementById('modalSellAsBoxOnly') ? document.getElementById('modalSellAsBoxOnly').checked : false;
+      
+      // ✨ FIX: Reject tagging "Each" items as "Box Only"
+      if (isBoxOnly && uomMultNum <= 1) {
+          UIManager.showCustomAlert("Invalid Flag", "You cannot flag a base 'Each' variant as 'Box Only'. This flag can only be applied to bundled variants (multipliers > 1).", true);
+          document.getElementById('modalSellAsBoxOnly').checked = false;
+          isBoxOnly = false;
+      }
+
+      let currentIsBoxOnly = this.isBoxOnly(dbItem);
+
       let changed = (
-        dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || 
-        (isAdmin && dbItem.price !== price) || 
-        (isAdmin && cost !== null && dbItem.cost !== cost) ||
-        (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) ||
-        (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice)
-      );
+      dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || 
+      (parseInt(dbItem.minStock, 10) || 0) !== minStock || 
+      (dbItem.parentRef && uomMultNum > 1 && isBoxOnly !== currentIsBoxOnly) ||
+      (isAdmin && dbItem.price !== price) || 
+      (isAdmin && cost !== null && dbItem.cost !== cost) ||
+      (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) ||
+      (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice)
+    );
       
       if (changed || dbItem.shelf !== shelf) {
         let changeNotes = [];
@@ -462,7 +589,16 @@ const DatabaseManager = {
         if (dbItem.desc !== desc) changeNotes.push(`Desc Updated`);
         if (dbItem.category !== cat) changeNotes.push(`Cat: ${dbItem.category} -> ${cat}`);
         if (dbItem.shelf !== shelf) changeNotes.push(`Shelf: ${dbItem.shelf} -> ${shelf}`);
+        if ((parseInt(dbItem.minStock, 10) || 0) !== minStock) changeNotes.push(`Min Stock Updated to ${minStock}`); 
         if (dbItem.status !== status) changeNotes.push(`Status: ${dbItem.status} -> ${status}`);
+        
+        // ✨ THE FIX: Remove the uomMult > 1 requirement so it saves for ANY item
+        if (isBoxOnly !== currentIsBoxOnly) {
+            changeNotes.push(`Box Only: ${isBoxOnly ? 'YES' : 'NO'}`);
+            let cleanParent = this.getCleanParentRef(dbItem);
+            dbItem.parentRef = isBoxOnly ? `*${cleanParent}` : cleanParent;
+        }
+
         if (isAdmin && dbItem.price !== price) changeNotes.push(`Price: ${dbItem.price} -> ${price}`);
         if (isAdmin && cost !== null && dbItem.cost !== cost) changeNotes.push(`Cost Updated`);
         if (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) changeNotes.push(`RM Price Updated`);
@@ -472,6 +608,7 @@ const DatabaseManager = {
         dbItem.desc = desc;
         dbItem.category = cat;
         dbItem.shelf = shelf;
+        dbItem.minStock = minStock; // ✨ NEW
         dbItem.status = status;
         if (isAdmin) {
           dbItem.price = price;
@@ -699,7 +836,8 @@ const DatabaseManager = {
             syncedShopify: row[20], 
             onRevMed: row[21], 
             onDotMed: row[22], 
-            shopifyCategory: row[23] || "Medical Supplies"
+            shopifyCategory: row[23] || "Medical Supplies",
+            minStock: parseInt(row[24], 10) || 0 // ✨ NEW: Captures Column Y
           }));
           
           fullDb.items = fullDb.items.concat(mappedItems);
@@ -769,12 +907,12 @@ const DatabaseManager = {
         let overlay = document.createElement('div');
         overlay.id = 'dbUploadOverlay';
         overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
-        overlay.innerHTML = `
-          <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+       overlay.innerHTML = `
+          <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
             <h3 style="margin:0 0 15px 0; color:#0277bd;">⬆️ Uploading Database Edits</h3>
-            <div id="updStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Packaging Data...</div>
-            <div id="updStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Transmitting to Google...</div>
-            <div id="updStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Verifying Upload...</div>
+            <div id="updStep1" style="margin-bottom:10px; font-weight:bold; color:var(--text-main, #555);">⏳ 1. Packaging Data...</div>
+            <div id="updStep2" style="margin-bottom:10px; font-weight:bold; color:var(--text-main, #555);">⏳ 2. Transmitting to Google...</div>
+            <div id="updStep3" style="margin-bottom:15px; font-weight:bold; color:var(--text-main, #555);">⏳ 3. Verifying Upload...</div>
             <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
               <div id="updProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
             </div>
@@ -851,7 +989,7 @@ const DatabaseManager = {
 
     UIManager.showCustomConfirm(
         "Review Pending Upload", 
-        `You have <b>${newItemsCount}</b> new items and <b>${updatesCount}</b> field edits pending.\n\nDo you want to push these changes to the master Google Sheet now?`, 
+        `You have <b>${newItemsCount}</b> new items and <b>${updatesCount}</b> existing items with pending field edits.\n\nDo you want to push these changes to the master Google Sheet now?`, 
         confirmUpload
     );
   },
@@ -873,7 +1011,7 @@ const DatabaseManager = {
 
         // Always identify the Parent to ensure the whole bundle family syncs together
         let isBundle = (dbItem.parentRef && parseInt(dbItem.uomMult, 10) > 1);
-        let parentRef = isBundle ? dbItem.parentRef : (dbItem.sku || dbItem.ref);
+        let parentRef = isBundle ? this.getCleanParentRef(dbItem) : (dbItem.sku || dbItem.ref);
         let parentItem = this.db.find(i => String(i.sku || i.ref || '').toUpperCase() === String(parentRef).toUpperCase()) || dbItem;
 
         let pHandle = String(parentRef).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');

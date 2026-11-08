@@ -227,6 +227,55 @@ const SessionManager = {
     QboManager.bindOrderInputListener(); 
   },
 
+  populateCustomerOrdersDropdown(custName) {
+    let orderSelect = document.getElementById('itemKnownOrdersSelect');
+    let orderInput = document.getElementById('itemOrderNumInput');
+    
+    if (!orderSelect || !orderInput || !custName || custName === '+ Add Customer') {
+        if (orderSelect) orderSelect.style.display = 'none';
+        return;
+    }
+
+    let cleanCust = custName.toUpperCase().trim();
+    let knownOrders = new Set();
+
+    // 1. Check existing Allocations (Reserved Bins)
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
+    let custAllocations = allocations[cleanCust];
+    
+    if (custAllocations) {
+        Object.keys(custAllocations).forEach(ref => {
+            let data = custAllocations[ref];
+            if (data.details && data.details.length > 0) {
+                data.details.forEach(det => {
+                    if (det.orderNum && det.qty > 0) knownOrders.add(det.orderNum);
+                });
+            }
+        });
+    }
+
+    // 2. Check items already scanned during THIS session
+    this.scannedObjects.forEach(scan => {
+        let tagParts = scan.customerTag ? scan.customerTag.split(' - ') : [];
+        if (tagParts[0] && tagParts[0].trim().toUpperCase() === cleanCust && tagParts[1]) {
+            knownOrders.add(tagParts[1].trim());
+        }
+    });
+
+    if (knownOrders.size > 0) {
+        orderSelect.innerHTML = '<option value="">-- Known Orders (Select to Auto-Fill) --</option>';
+        Array.from(knownOrders).sort().forEach(ord => {
+            let opt = document.createElement('option');
+            opt.value = ord;
+            opt.textContent = ord;
+            orderSelect.appendChild(opt);
+        });
+        orderSelect.style.display = 'block';
+    } else {
+        orderSelect.style.display = 'none';
+    }
+  },
+
   startStocktakeSession(mode) {
     let uName = document.getElementById('userNameInput').value.trim();
     if (typeof AuthManager !== 'undefined' && AuthManager.isWorkstation) {
@@ -500,8 +549,21 @@ const SessionManager = {
     });
     localStorage.setItem('asp_pending_updates', JSON.stringify(this.pendingFieldUpdates));
     localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
-    UIManager.hideAllConfirmButtons();
-  }, 
+    
+    // ✨ THE FIX: Target the specific button and hide it, rather than nuking all of them!
+    if (field === 'gtin') {
+        let btnGtin = document.getElementById('btnConfirmGtin');
+        let diffBanner = document.getElementById('gtinDiffBanner');
+        if (btnGtin) btnGtin.style.display = 'none';
+        if (diffBanner) diffBanner.style.display = 'none';
+    } else if (field === 'mfr') {
+        let btnMfr = document.getElementById('btnConfirmMfr');
+        if (btnMfr) btnMfr.style.display = 'none';
+    } else if (field === 'shelf') {
+        let btnShelf = document.getElementById('btnConfirmShelf');
+        if (btnShelf) btnShelf.style.display = 'none';
+    }
+  },
 
   goToReviewStage() {
     let expField = document.getElementById('expInput');
@@ -548,7 +610,11 @@ const SessionManager = {
     }
 
     if (document.getElementById('revRef')) document.getElementById('revRef').textContent = ref;
-    if (document.getElementById('revGtin')) document.getElementById('revGtin').textContent = gtin || '--';
+    if (document.getElementById('revGtin')) {
+        // ✨ FIX: If the DB is missing the GTIN, show the new one you just scanned!
+        let displayGtin = (this.currentMatchedItem && this.currentMatchedItem.gtin) ? this.currentMatchedItem.gtin : gtin;
+        document.getElementById('revGtin').textContent = displayGtin || '--';
+    }
     if (document.getElementById('revLot')) document.getElementById('revLot').textContent = lot || '--';
     if (document.getElementById('revExp')) document.getElementById('revExp').textContent = exp || '--';
     if (document.getElementById('revMfr')) document.getElementById('revMfr').textContent = vendor;
@@ -578,7 +644,8 @@ const SessionManager = {
       this.pendingUpdates['gtin'] = gtin;
       if (btnGtin) btnGtin.style.display = 'inline-block';
       if (diffBanner) {
-        diffBanner.textContent = this.currentMatchedItem.gtin ? `⚠️ Replace Saved GTIN (${this.currentMatchedItem.gtin})?` : `[Link New GTIN]`;
+        let oldGtin = this.currentMatchedItem.gtin ? this.currentMatchedItem.gtin : 'None';
+        diffBanner.textContent = this.currentMatchedItem.gtin ? `⚠️ Replace Saved GTIN (${this.currentMatchedItem.gtin})?` : `[Link New GTIN: ${gtin} replacing ${oldGtin}]`;
         diffBanner.style.display = 'block';
       }
     } else {
@@ -792,6 +859,15 @@ const SessionManager = {
       let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
       if (dbMatch) dbMatch.gtin = rawGtin;
       localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+      
+      // ✨ THE FIX: We must queue this GTIN to be uploaded!
+      this.pendingFieldUpdates.push({
+        ref: ref,
+        field: 'GTIN',
+        newValue: rawGtin,
+        timestamp: new Date().toLocaleString()
+      });
+      localStorage.setItem('asp_pending_updates', JSON.stringify(this.pendingFieldUpdates));
     }
 
     this.scannedObjects.push({
@@ -1058,11 +1134,11 @@ const SessionManager = {
       overlay.id = 'sessionSaveOverlay';
       overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;';
       overlay.innerHTML = `
-        <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
+        <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:400px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5); text-align:center;">
           <h3 style="margin:0 0 15px 0; color:#0277bd;">💾 Committing Session to Cloud</h3>
-          <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 1. Validating Payload...</div>
-          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:#555;">⏳ 2. Server Processing...</div>
-          <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:#555;">⏳ 3. Downloading Fresh Sync...</div>
+          <div id="syncStep1" style="margin-bottom:10px; font-weight:bold; color:var(--text-main, #555);">⏳ 1. Validating Payload...</div>
+          <div id="syncStep2" style="margin-bottom:10px; font-weight:bold; color:var(--text-main, #555);">⏳ 2. Server Processing...</div>
+          <div id="syncStep3" style="margin-bottom:15px; font-weight:bold; color:var(--text-main, #555);">⏳ 3. Downloading Fresh Sync...</div>
           <div style="width:100%; background:#eee; border-radius:4px; height:8px; overflow:hidden;">
             <div id="syncProgressBar" style="width:0%; height:100%; background:#2e7d32; transition:width 0.3s ease;"></div>
           </div>

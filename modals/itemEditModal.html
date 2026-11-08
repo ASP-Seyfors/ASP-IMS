@@ -5,35 +5,47 @@
       <button onclick="document.getElementById('itemEditModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
     </div>
     <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:#555;">REF / SKU (Read-Only)</label>
+      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">REF / SKU (Read-Only)</label>
       <input type="text" id="modalRef" readonly style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background:#f0f0f0; font-weight:bold; color:#00796b;">
     </div>
     <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:#555;">Manufacturer</label>
+      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Manufacturer</label>
       <input type="text" id="modalMfr" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
     </div>
     <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:#555;">Description</label>
+      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Description</label>
       <textarea id="modalDesc" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; resize:vertical; min-height:60px;"></textarea>
     </div>
     <div style="display:flex; gap:10px; margin-bottom:10px;">
       <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:#555;">Category</label>
+        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Category</label>
         <input type="text" id="modalCat" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
       </div>
       <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:#555;">Shelf Location</label>
+        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Shelf Location</label>
         <input type="text" id="modalShelf" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; text-transform:uppercase;" placeholder="e.g. A-14">
       </div>
     </div>
     <div style="display:flex; gap:10px; margin-bottom:10px;">
       <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:#555;">Status</label>
+        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Status</label>
         <select id="modalStatus" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:bold;">
           <option value="ACTIVE">ACTIVE</option>
           <option value="INACTIVE">INACTIVE</option>
         </select>
       </div>
+      <div style="flex:1;">
+        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Min Stock Level</label>
+        <input type="number" id="modalMinStock" min="0" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;" title="When available inventory falls to or below this number, the automated Restock Report is triggered.">
+      </div>
+    </div>
+    
+    <!-- ✨ NEW: Bundle / Box Only Toggle -->
+    <div id="modalBundleRow" style="display:none; margin-bottom:10px; padding:10px; background:#fff3e0; border:1px dashed #e65100; border-radius:4px;">
+        <label style="font-weight:bold; font-size:0.85rem; color:#e65100; display:flex; align-items:center; gap:6px; cursor:pointer;" title="If checked, the individual 'Each' unit will be hidden from all inventory reports.">
+            <input type="checkbox" id="modalSellAsBoxOnly">
+            Sell As Box Only (Hide individual 'Each' units from reports)
+        </label>
     </div>
     <div style="display:flex; gap:10px; margin-bottom:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;" id="modalPricingBlock">
       <!-- Pricing injected via JS -->

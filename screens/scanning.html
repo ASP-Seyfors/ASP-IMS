@@ -115,9 +115,15 @@
     <!-- Customer Tag -->
     <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
       <div class="form-label" style="color: #0277bd;">Customer Tag:</div>
-      <div class="input-wrapper" style="display: flex; gap: 6px;">
-        <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value)" title="Select the customer to reserve this item for."></select>
-        <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;" title="Optional: Enter a specific PO or Order number.">
+      <div class="input-wrapper" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+        <div style="display: flex; gap: 6px; width: 100%;">
+          <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value); SessionManager.populateCustomerOrdersDropdown(this.value)" title="Select the customer to reserve this item for."></select>
+          <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;" title="Optional: Enter a specific PO or Order number.">
+        </div>
+        <!-- ✨ NEW: Smart Order Dropdown -->
+        <select id="itemKnownOrdersSelect" style="display:none; width: 100%; padding: 6px; font-size: 0.85rem; border: 1px solid #0277bd; border-radius: 4px; background: #fff;" onchange="if(this.value) document.getElementById('itemOrderNumInput').value = this.value;">
+            <option value="">-- Known Orders (Select to Auto-Fill) --</option>
+        </select>
       </div>
     </div>
 
