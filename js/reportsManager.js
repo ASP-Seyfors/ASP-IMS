@@ -745,21 +745,35 @@ const ReportsManager = {
 
       // ✨ FIX: Map to the exact ALL-CAPS headers provided by the Google Sheets JSON
       activeLots.forEach(row => {
-          let ref = row['REF / SKU'];
+          let rawRef = row['REF / SKU'] || '';
+          
+          // ✨ FIX 3: Clean the REF of (EACH) tags so the Master Database can accurately match it
+          let cleanRef = rawRef.replace(/\(EACH\)/i, '').split('(')[0].trim().toUpperCase(); 
+          
           let lot = row['LOT']; 
           let exp = row['EXP DATE']; 
           let qty = parseInt(row['QTY'], 10) || 0; 
           let status = row['EXP STATUS']; 
           
-          if (!ref || qty <= 0) return;
+          if (!rawRef || qty <= 0) return;
           
           let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
-            ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) 
+            ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === cleanRef) 
             : null;
+            
+          // Fallback just in case it is an older variant
+          if (!dbMatch) dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === rawRef.toUpperCase());
+
+          // ✨ CRITICAL FIX 4: Cross-reference the live database. If it's completely out of stock globally, drop it from the report.
+          let trueAvail = dbMatch ? DatabaseManager.getTrueAvailability(dbMatch) : 0;
+          let reserved = dbMatch ? (parseInt(dbMatch.reservedQty, 10) || 0) : 0;
+          if (dbMatch && (trueAvail + reserved) <= 0) return;
+
           let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
           let shelf = dbMatch ? (dbMatch.shelf || 'Standard') : 'Unknown';
+          let displayRef = dbMatch ? (dbMatch.sku || dbMatch.ref) : cleanRef;
           
-          let itemObj = { ref, lot, exp, mfr, shelf, qty };
+          let itemObj = { ref: displayRef, lot, exp, mfr, shelf, qty };
 
           if (status === "EXPIRED") groups.expired.push(itemObj);
           else if (status === "SHORT6") groups.six.push(itemObj);
@@ -943,6 +957,26 @@ const ReportsManager = {
     }
   },
 
+  // ✨ NEW: Toggle Day Selector based on Frequency
+  toggleSubSendDay() {
+      let freq = document.getElementById('subFreq').value;
+      let daySel = document.getElementById('subSendDay');
+      if (!daySel) return;
+      
+      if (freq === 'Weekly') {
+          daySel.style.display = 'block';
+          daySel.innerHTML = `<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>`;
+      } else if (freq === 'Monthly') {
+          daySel.style.display = 'block';
+          let opts = '';
+          for (let i=1; i<=31; i++) opts += `<option value="${i}">Day ${i}</option>`;
+          opts += `<option value="Last">Last Day of Month</option>`;
+          daySel.innerHTML = opts;
+      } else {
+          daySel.style.display = 'none';
+      }
+  },
+
   async loadSubscribers() {
       const container = document.getElementById('subListContainer');
       container.innerHTML = '<p style="text-align:center; color:#0277bd;">Loading...</p>';
@@ -952,27 +986,35 @@ const ReportsManager = {
           
           if (data.status === "success" && data.subs && data.subs.length > 0) {
               let html = '<table style="width:100%; border-collapse:collapse; text-align:left;">';
-              // ✨ FIX: Swapped hardcoded hex colors for your Light/Dark Mode CSS variables
               html += '<tr style="background:var(--raw-bg, #f0f0f0); border-bottom:1px solid var(--border-color, #ccc);"><th style="padding:4px; color:var(--text-main, #333);">Name</th><th style="padding:4px; color:var(--text-main, #333);">Email</th><th style="padding:4px; color:var(--text-main, #333);">Freq</th><th style="padding:4px; color:var(--text-main, #333);">Status</th><th style="padding:4px;"></th></tr>';
               
               data.subs.forEach(sub => {
-                  // Pass the new variables safely to the edit button
                   let safeCat = (sub.categories || '').replace(/'/g, "\\'");
+                  let safePromo = (sub.promoRefs || '').replace(/'/g, "\\'");
+                  let safeDay = (sub.sendDay || '').replace(/'/g, "\\'");
+                  
                   html += `<tr style="border-bottom:1px solid #eee;">
                     <td style="padding:4px;">${sub.name}</td>
                     <td style="padding:4px; color:#0277bd; word-break:break-all;">${sub.email}</td>
                     <td style="padding:4px;">${sub.freq}</td>
-                    <td style="padding:4px; font-weight:bold; color:${sub.status === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
+                    <td style="padding:4px; font-weight:bold; color:${String(sub.status).toUpperCase() === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
                     <td style="padding:4px; text-align:right;">
                        <button class="btn-small" style="padding:4px 8px; font-size:0.75rem;" onclick="
                           document.getElementById('subName').value='${sub.name}'; 
                           document.getElementById('subEmail').value='${sub.email}'; 
-                          document.getElementById('subFreq').value='${sub.freq}'; 
-                          document.getElementById('subStatus').value='${sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}'; 
+                          
+                          // ✨ FIX: Case-insensitive check prevents defaulting to Inactive
+                          document.getElementById('subStatus').value='${String(sub.status).toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive'}'; 
+                          
                           document.getElementById('subCategories').value='${safeCat}';
                           if(document.getElementById('subFormat')) document.getElementById('subFormat').value='${sub.format || 'SMART'}';
                           if(document.getElementById('subFallback')) document.getElementById('subFallback').value='${sub.fallback || 'SELLERS'}';
-                          if(document.getElementById('subCustomerId')) document.getElementById('subCustomerId').value='${sub.customerId || ''}'; // ✨ NEW
+                          if(document.getElementById('subCustomerId')) document.getElementById('subCustomerId').value='${sub.customerId || ''}';
+                          if(document.getElementById('subPromoRefs')) document.getElementById('subPromoRefs').value='${safePromo}';
+                          let fSel = document.getElementById('subFreq');
+                          if(fSel) { fSel.value='${sub.freq}'; if(typeof ReportsManager.toggleSubSendDay === 'function') ReportsManager.toggleSubSendDay(); }
+                          let dSel = document.getElementById('subSendDay');
+                          if(dSel && '${safeDay}') dSel.value='${safeDay}';
                        ">Edit</button>
                     </td>
                   </tr>`;
@@ -999,7 +1041,14 @@ const ReportsManager = {
       let format = document.getElementById('subFormat') ? document.getElementById('subFormat').value : "SMART";
       let fallback = document.getElementById('subFallback') ? document.getElementById('subFallback').value : "SELLERS";
       let categoryPref = document.getElementById('subCategories').value.trim();
-      let customerId = document.getElementById('subCustomerId') ? document.getElementById('subCustomerId').value : ""; // ✨ NEW
+      let customerId = document.getElementById('subCustomerId') ? document.getElementById('subCustomerId').value : ""; 
+      let promoRefs = document.getElementById('subPromoRefs') ? document.getElementById('subPromoRefs').value.trim() : "";
+      
+      let sendDay = "";
+      if (freq === 'Weekly' || freq === 'Monthly') {
+          let dSel = document.getElementById('subSendDay');
+          if (dSel) sendDay = dSel.value;
+      }
 
       if (!name || !email) {
           UIManager.showCustomAlert("Error", "Please provide a name and email address.");
@@ -1009,7 +1058,8 @@ const ReportsManager = {
        
       let payload = { 
           name: name, email: email, freq: freq, status: status, 
-          categories: categoryPref, format: format, fallback: fallback, customerId: customerId // ✨ NEW
+          categories: categoryPref, format: format, fallback: fallback, customerId: customerId,
+          promoRefs: promoRefs, sendDay: sendDay
       };
 
       fetch(ApiManager.getActiveArchiveUrl(), {

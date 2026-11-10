@@ -71,17 +71,23 @@
       <input type="email" id="subEmail" placeholder="Email Address" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" />
       
       <div style="display:flex; gap:6px;">
-        <select id="subFreq" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;">
+        <select id="subFreq" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;" onchange="ReportsManager.toggleSubSendDay()">
           <option value="Quarterly">Quarterly</option>
           <option value="Monthly">Monthly</option>
           <option value="Weekly">Weekly</option>
           <option value="Daily">Daily</option>
+        </select>
+        <!-- ✨ NEW: Dynamic Day Selector -->
+        <select id="subSendDay" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px; display:none;">
+          <option value="Monday">Monday</option>
         </select>
         <select id="subStatus" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;">
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
       </div>
+      <!-- ✨ NEW: Promo REFs Input -->
+      <input type="text" id="subPromoRefs" placeholder="Highlighted Promo REFs (e.g. Y427H, 4350)" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" title="Force these specific REFs to appear at the top of the email if they are in stock." />
 
       <!-- ✨ FIX: Layout and Fallback Selectors normalized colors -->
       <div style="display:flex; gap:6px;">
