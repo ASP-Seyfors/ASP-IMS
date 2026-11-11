@@ -89,17 +89,34 @@
       <!-- ✨ NEW: Promo REFs Input -->
       <input type="text" id="subPromoRefs" placeholder="Highlighted Promo REFs (e.g. Y427H, 4350)" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" title="Force these specific REFs to appear at the top of the email if they are in stock." />
 
-      <!-- ✨ FIX: Layout and Fallback Selectors normalized colors -->
+      <!-- ✨ FIX: Added Manage Lists Button next to Fallback, and the new Custom Message Box -->
       <div style="display:flex; gap:6px;">
         <select id="subFormat" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="Choose the email layout design.">
           <option value="SMART">Smart Intro + PDF (STAT Style)</option>
           <option value="LEGACY">Full Catalog in Email Body</option>
         </select>
-        <select id="subFallback" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="If they have no purchase history, what should we show them?">
-          <option value="SELLERS">Fallback: Top Sellers</option>
-          <option value="VALUE">Fallback: High Value</option>
-          <option value="NONE">Fallback: None (PDF Only)</option>
-        </select>
+        <div style="flex:1; display:flex; gap:4px;">
+          <select id="subFallback" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="If they have no purchase history, what should we show them?">
+            <option value="SELLERS">Fallback: Top Sellers</option>
+            <option value="VALUE">Fallback: High Value</option>
+            <option value="NONE">Fallback: None (PDF Only)</option>
+            <!-- Custom lists will be injected here automatically by JS -->
+          </select>
+          <button class="btn-small" style="background:#0277bd; color:#fff; padding:0 10px; border:none; border-radius:3px; cursor:pointer;" onclick="ReportsManager.openCustomListsModal()" title="Manage Custom Lists">📝</button>
+        </div>
+      </div>
+      
+      <!-- ✨ NEW: Custom Message Override -->
+      <textarea id="subCustomMessage" placeholder="Custom Message Override (Leave blank to use default system message)" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main); resize:vertical; min-height:50px; font-family:inherit;" title="Replace the standard intro paragraph for this specific customer."></textarea>
+
+      <!-- ✨ NEW: Advanced Fallback Toggles -->
+      <div style="display:flex; gap:15px; margin-top:6px; font-size:0.85rem; color:#555; align-items:center;">
+        <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+          <input type="checkbox" id="subIgnoreHistory"> Force Fallback (Ignore History)
+        </label>
+        <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+          <input type="checkbox" id="subIncludeBoth"> Include Both (History & Fallback)
+        </label>
       </div>
       
       <input type="text" id="subCategories" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="padding:6px; font-size:0.85rem; cursor:pointer; background-color:var(--input-bg); color: var(--text-main) !important; border:1px solid var(--border-color); border-radius:3px;" title="Click to select specific categories" />
@@ -151,6 +168,42 @@
       <div style="display:flex; justify-content:space-between; gap:10px;">
         <button class="btn-small" style="background:#777; color:#fff; flex:1;" onclick="document.getElementById('modalSubCategories').style.display='none'">Cancel</button>
         <button class="btn-small" style="background:#0277bd; color:#fff; flex:1;" onclick="ReportsManager.confirmCategorySelection()">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✨ NEW: Custom Lists Manager Modal -->
+  <div id="customListsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:8px; width:90%; max-width:500px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0277bd; padding-bottom:8px; margin-bottom:15px;">
+        <h3 style="margin:0; color:#0277bd;">📝 Manage Custom Lists</h3>
+        <button onclick="document.getElementById('customListsModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#333;">×</button>
+      </div>
+      
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; background:var(--raw-bg, #f4f4f4); padding:12px; border-radius:4px; border:1px solid var(--border-color, #ccc);">
+        <strong style="color:#0277bd; font-size:0.9rem;">Create New List</strong>
+        <input type="text" id="listNameInput" placeholder="List Name (e.g., Popular Sutures)" style="padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;" />
+        <input type="text" id="listRefsInput" placeholder="Comma-separated REFs (e.g., VCP316H, 4350, DNX12)" style="padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;" />
+        <button id="btnSaveCustomList" class="btn-small" style="background:#00796b; color:#fff; padding:8px; border:none; border-radius:3px; cursor:pointer; font-weight:bold;" onclick="ReportsManager.saveCustomList()">Save to Cloud</button>
+      </div>
+
+      <div id="customListsGrid" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:8px; padding-right:4px;">
+        <div style="text-align:center; padding:20px; color:#777; font-style:italic;">Loading saved lists...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✨ NEW: Live Email Preview Modal -->
+  <div id="emailPreviewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center;">
+    <div style="background:#fff; border-radius:8px; width:95%; max-width:800px; height:90vh; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0277bd; padding:12px 20px;">
+        <h3 style="margin:0; color:#0277bd;">👁️ Live Email Preview</h3>
+        <button onclick="document.getElementById('emailPreviewModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+      <div style="flex:1; padding:20px; overflow-y:auto; background:#f4f4f4;">
+         <div id="emailPreviewContent" style="background:#fff; border:1px solid #ccc; padding:30px; min-height:100%; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <!-- Rendered HTML goes here -->
+         </div>
       </div>
     </div>
   </div>

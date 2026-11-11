@@ -985,37 +985,21 @@ const ReportsManager = {
           let data = await res.json();
           
           if (data.status === "success" && data.subs && data.subs.length > 0) {
+              this.currentSubs = data.subs; // ✨ FIX: Save data to memory to prevent quote-escaping bugs!
+              
               let html = '<table style="width:100%; border-collapse:collapse; text-align:left;">';
               html += '<tr style="background:var(--raw-bg, #f0f0f0); border-bottom:1px solid var(--border-color, #ccc);"><th style="padding:4px; color:var(--text-main, #333);">Name</th><th style="padding:4px; color:var(--text-main, #333);">Email</th><th style="padding:4px; color:var(--text-main, #333);">Freq</th><th style="padding:4px; color:var(--text-main, #333);">Status</th><th style="padding:4px;"></th></tr>';
               
               data.subs.forEach(sub => {
-                  let safeCat = (sub.categories || '').replace(/'/g, "\\'");
-                  let safePromo = (sub.promoRefs || '').replace(/'/g, "\\'");
-                  let safeDay = (sub.sendDay || '').replace(/'/g, "\\'");
-                  
                   html += `<tr style="border-bottom:1px solid #eee;">
                     <td style="padding:4px;">${sub.name}</td>
                     <td style="padding:4px; color:#0277bd; word-break:break-all;">${sub.email}</td>
                     <td style="padding:4px;">${sub.freq}</td>
                     <td style="padding:4px; font-weight:bold; color:${String(sub.status).toUpperCase() === 'ACTIVE' ? '#2e7d32' : '#c62828'};">${sub.status}</td>
                     <td style="padding:4px; text-align:right;">
-                       <button class="btn-small" style="padding:4px 8px; font-size:0.75rem;" onclick="
-                          document.getElementById('subName').value='${sub.name}'; 
-                          document.getElementById('subEmail').value='${sub.email}'; 
-                          
-                          // ✨ FIX: Case-insensitive check prevents defaulting to Inactive
-                          document.getElementById('subStatus').value='${String(sub.status).toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive'}'; 
-                          
-                          document.getElementById('subCategories').value='${safeCat}';
-                          if(document.getElementById('subFormat')) document.getElementById('subFormat').value='${sub.format || 'SMART'}';
-                          if(document.getElementById('subFallback')) document.getElementById('subFallback').value='${sub.fallback || 'SELLERS'}';
-                          if(document.getElementById('subCustomerId')) document.getElementById('subCustomerId').value='${sub.customerId || ''}';
-                          if(document.getElementById('subPromoRefs')) document.getElementById('subPromoRefs').value='${safePromo}';
-                          let fSel = document.getElementById('subFreq');
-                          if(fSel) { fSel.value='${sub.freq}'; if(typeof ReportsManager.toggleSubSendDay === 'function') ReportsManager.toggleSubSendDay(); }
-                          let dSel = document.getElementById('subSendDay');
-                          if(dSel && '${safeDay}') dSel.value='${safeDay}';
-                       ">Edit</button>
+                       <button class="btn-small" style="padding:4px 8px; font-size:0.75rem; margin-right:4px; background:#f57f17; border:none; color:#fff; cursor:pointer;" onclick="ReportsManager.previewSubscriberEmail('${sub.email}')">👁️ Preview</button>
+                       <!-- ✨ FIX: Clean, safe function call -->
+                       <button class="btn-small" style="padding:4px 8px; font-size:0.75rem;" onclick="ReportsManager.editSubscriber('${sub.email}')">Edit</button>
                     </td>
                   </tr>`;
               });
@@ -1027,6 +1011,38 @@ const ReportsManager = {
       } catch (err) {
           container.innerHTML = '<p style="text-align:center; color:#c62828;">Failed to load subscribers.</p>';
       }
+  },
+
+  // ✨ NEW: Clean edit function that pulls directly from memory
+  editSubscriber(email) {
+      if (!this.currentSubs) return;
+      let sub = this.currentSubs.find(s => s.email === email);
+      if (!sub) return;
+
+      document.getElementById('subName').value = sub.name || "";
+      document.getElementById('subEmail').value = sub.email || "";
+      document.getElementById('subStatus').value = String(sub.status).toUpperCase() === 'ACTIVE' ? 'Active' : 'Inactive';
+      document.getElementById('subCategories').value = sub.categories || "";
+      
+      if(document.getElementById('subFormat')) document.getElementById('subFormat').value = sub.format || "SMART";
+      if(document.getElementById('subFallback')) document.getElementById('subFallback').value = sub.fallback || "SELLERS";
+      if(document.getElementById('subCustomerId')) document.getElementById('subCustomerId').value = sub.customerId || "";
+      if(document.getElementById('subPromoRefs')) document.getElementById('subPromoRefs').value = sub.promoRefs || "";
+      if(document.getElementById('subCustomMessage')) document.getElementById('subCustomMessage').value = sub.customMessage || "";
+      
+      // Load the new toggle checkboxes
+      if(document.getElementById('subIgnoreHistory')) document.getElementById('subIgnoreHistory').checked = (sub.ignoreHistory === true || String(sub.ignoreHistory).toUpperCase() === "TRUE");
+      if(document.getElementById('subIncludeBoth')) document.getElementById('subIncludeBoth').checked = (sub.includeBoth === true || String(sub.includeBoth).toUpperCase() === "TRUE");
+
+      let fSel = document.getElementById('subFreq');
+      if(fSel) { 
+          fSel.value = sub.freq || "Daily"; 
+          if(typeof this.toggleSubSendDay === 'function') this.toggleSubSendDay(); 
+      }
+      let dSel = document.getElementById('subSendDay');
+      if(dSel && sub.sendDay) dSel.value = sub.sendDay;
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the form
   },
 
   saveSubscriber(event) {
@@ -1043,7 +1059,11 @@ const ReportsManager = {
       let categoryPref = document.getElementById('subCategories').value.trim();
       let customerId = document.getElementById('subCustomerId') ? document.getElementById('subCustomerId').value : ""; 
       let promoRefs = document.getElementById('subPromoRefs') ? document.getElementById('subPromoRefs').value.trim() : "";
+      let customMessage = document.getElementById('subCustomMessage') ? document.getElementById('subCustomMessage').value.trim() : "";
       
+      let ignoreHistory = document.getElementById('subIgnoreHistory') ? document.getElementById('subIgnoreHistory').checked : false;
+      let includeBoth = document.getElementById('subIncludeBoth') ? document.getElementById('subIncludeBoth').checked : false;
+
       let sendDay = "";
       if (freq === 'Weekly' || freq === 'Monthly') {
           let dSel = document.getElementById('subSendDay');
@@ -1059,7 +1079,8 @@ const ReportsManager = {
       let payload = { 
           name: name, email: email, freq: freq, status: status, 
           categories: categoryPref, format: format, fallback: fallback, customerId: customerId,
-          promoRefs: promoRefs, sendDay: sendDay
+          promoRefs: promoRefs, sendDay: sendDay, customMessage: customMessage,
+          ignoreHistory: ignoreHistory, includeBoth: includeBoth // ✨ Map the new toggles
       };
 
       fetch(ApiManager.getActiveArchiveUrl(), {
@@ -1069,7 +1090,10 @@ const ReportsManager = {
           UIManager.showCustomAlert("Success", `${name} has been updated in the cloud!`);
           document.getElementById('subName').value = "";
           document.getElementById('subEmail').value = "";
-          this.loadSubscribers(); // Auto-refresh the list
+          if (document.getElementById('subCustomMessage')) document.getElementById('subCustomMessage').value = "";
+          if (document.getElementById('subIgnoreHistory')) document.getElementById('subIgnoreHistory').checked = false;
+          if (document.getElementById('subIncludeBoth')) document.getElementById('subIncludeBoth').checked = false;
+          this.loadSubscribers(); 
       }).catch(err => {
           UIManager.showCustomAlert("Error", "Failed to save subscriber.");
       }).finally(() => {
@@ -1128,6 +1152,162 @@ const ReportsManager = {
     `;
     
     container.insertAdjacentHTML('afterbegin', html); 
+  },
+
+  // ==========================================
+  // ✨ NEW: CUSTOM LISTS ENGINE
+  // ==========================================
+  async openCustomListsModal() {
+      document.getElementById('listNameInput').value = '';
+      document.getElementById('listRefsInput').value = '';
+      document.getElementById('customListsModal').style.display = 'flex';
+      this.refreshCustomListsUI();
+  },
+
+  async refreshCustomListsUI() {
+      let grid = document.getElementById('customListsGrid');
+      let dropdown = document.getElementById('subFallback');
+      if (grid) grid.innerHTML = '<div style="text-align:center; padding:20px; color:#777;">Loading...</div>';
+
+      try {
+          let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_CUSTOM_LISTS&t=${Date.now()}`);
+          let data = await res.json();
+          
+          if (data.status === "success") {
+              // 1. Rebuild the Grid
+              if (grid) {
+                  if (data.lists.length === 0) {
+                      grid.innerHTML = '<div style="text-align:center; padding:20px; color:#777; font-style:italic; border:1px solid #ccc; border-radius:4px;">No custom lists saved yet.</div>';
+                  } else {
+                      let html = '';
+                      data.lists.forEach(list => {
+                          html += `
+                          <div style="background:#fff; border:1px solid #ccc; border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                              <div>
+                                  <strong style="color:#0277bd; font-size:1rem;">${list.name}</strong>
+                                  <div style="font-size:0.75rem; color:#555; margin-top:4px; word-break:break-all;">${list.refs}</div>
+                              </div>
+                              <button class="btn-small" style="background:#d32f2f; color:#fff; border:none; padding:4px 8px; border-radius:3px; cursor:pointer; margin-left:10px;" onclick="ReportsManager.deleteCustomList('${list.name}')">🗑️</button>
+                          </div>`;
+                      });
+                      grid.innerHTML = html;
+                  }
+              }
+              
+              // 2. Rebuild the Dropdown Options
+              if (dropdown) {
+                  // Keep the current selection if possible
+                  let currentVal = dropdown.value; 
+                  
+                  let optsHtml = `
+                    <option value="SELLERS">Fallback: Top Sellers</option>
+                    <option value="VALUE">Fallback: High Value</option>
+                    <option value="NONE">Fallback: None (PDF Only)</option>
+                  `;
+                  
+                  if (data.lists.length > 0) {
+                      optsHtml += `<optgroup label="--- Custom Shared Lists ---">`;
+                      data.lists.forEach(list => {
+                          optsHtml += `<option value="LIST_${list.name}">${list.name}</option>`;
+                      });
+                      optsHtml += `</optgroup>`;
+                  }
+                  
+                  dropdown.innerHTML = optsHtml;
+                  // Try to restore selection
+                  if (Array.from(dropdown.options).some(o => o.value === currentVal)) {
+                      dropdown.value = currentVal;
+                  }
+              }
+          }
+      } catch (err) {
+          if (grid) grid.innerHTML = '<div style="text-align:center; padding:20px; color:#c62828;">Failed to load lists.</div>';
+      }
+  },
+
+  async saveCustomList() {
+      let name = document.getElementById('listNameInput').value.trim();
+      let refs = document.getElementById('listRefsInput').value.trim();
+      let btn = document.getElementById('btnSaveCustomList');
+
+      if (!name || !refs) {
+          alert("Please provide both a List Name and at least one REF.");
+          return;
+      }
+      
+      // Ensure the name doesn't conflict with our base logic tags
+      if (name.toUpperCase() === "SELLERS" || name.toUpperCase() === "VALUE" || name.toUpperCase() === "NONE") {
+          alert("Reserved name. Please choose a different list name.");
+          return;
+      }
+
+      let origText = btn.innerText;
+      btn.innerText = "⏳ Saving..."; btn.disabled = true;
+
+      let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : "Unknown";
+
+      try {
+          let res = await fetch(ApiManager.getActiveArchiveUrl(), {
+              method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({
+                  action: "SAVE_CUSTOM_LIST",
+                  payload: { name: name, refs: refs, author: userName }
+              })
+          });
+          let result = await res.json();
+          
+          if (result.status === "success") {
+              document.getElementById('listNameInput').value = '';
+              document.getElementById('listRefsInput').value = '';
+              this.refreshCustomListsUI();
+          } else {
+              alert("Error: " + result.message);
+          }
+      } catch(err) {
+          alert("Network Error: " + err.message);
+      } finally {
+          btn.innerText = origText; btn.disabled = false;
+      }
+  },
+
+  async deleteCustomList(listName) {
+      if (!confirm(`Are you sure you want to delete the list "${listName}"?`)) return;
+
+      try {
+          let res = await fetch(ApiManager.getActiveArchiveUrl(), {
+              method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "DELETE_CUSTOM_LIST", payload: { name: listName } })
+          });
+          let result = await res.json();
+          
+          if (result.status === "success") {
+              this.refreshCustomListsUI();
+          } else {
+              alert("Error: " + result.message);
+          }
+      } catch(err) {
+          alert("Network Error: " + err.message);
+      }
+  },
+
+  async previewSubscriberEmail(email) {
+      let contentDiv = document.getElementById('emailPreviewContent');
+      contentDiv.innerHTML = '<div style="text-align:center; padding:40px; color:#555; font-weight:bold;">⏳ Generating Live Preview from Cloud Ledger...<br><span style="font-weight:normal; font-size:0.85rem;">This may take a moment while we calculate the inventory math.</span></div>';
+      document.getElementById('emailPreviewModal').style.display = 'flex';
+
+      try {
+          // Fire a GET request to the cloud specifically for this email
+          let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=PREVIEW_EMAIL&email=${encodeURIComponent(email)}&t=${Date.now()}`);
+          let data = await res.json();
+          
+          if (data.status === "success") {
+              contentDiv.innerHTML = data.html;
+          } else {
+              contentDiv.innerHTML = `<div style="color:#c62828; text-align:center; padding:20px;">Error generating preview: ${data.message}</div>`;
+          }
+      } catch (err) {
+          contentDiv.innerHTML = `<div style="color:#c62828; text-align:center; padding:20px;">Network Error: ${err.message}</div>`;
+      }
   }
 };
 
