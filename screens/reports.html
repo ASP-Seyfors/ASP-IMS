@@ -121,7 +121,10 @@
       
       <input type="text" id="subCategories" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="padding:6px; font-size:0.85rem; cursor:pointer; background-color:var(--input-bg); color: var(--text-main) !important; border:1px solid var(--border-color); border-radius:3px;" title="Click to select specific categories" />
       
-      <button class="btn-small" style="background-color: #0277bd; color: #fff; width: 100%; margin-top:4px; padding:8px;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="btn-small" style="background-color: #757575; color: #fff; flex: 1; padding:8px; border:none; border-radius:3px; cursor:pointer;" onclick="ReportsManager.clearSubscriberFields()">Clear Fields</button>
+        <button class="btn-small" style="background-color: #0277bd; color: #fff; flex: 2; padding:8px; border:none; border-radius:3px; cursor:pointer;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+      </div>
     </div>
     <!-- ✨ FIX: Changed hardcoded #fff background to CSS variables so text stays readable in Dark Mode -->
     <div id="subListContainer" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #ccc); padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; font-size: 0.8rem;">

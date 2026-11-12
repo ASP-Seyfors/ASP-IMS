@@ -549,17 +549,8 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
              let emptyMessage = "";
              if (isBundle) {
-                 let rawParentTotal = 0;
-                 let pItem = uniqueFamily.find(f => DatabaseManager.getItemSku(f) === targetRefForLots);
-                 if (pItem) rawParentTotal = parseInt(pItem.onHand || pItem.TotalQty, 10) || 0;
-                 
-                 // ✨ NEW: Dynamically change the out-of-stock message based on mathematical possibility
-                 let canMix = Math.floor(rawParentTotal / uomMult) > 0;
-                 if (canMix) {
-                     emptyMessage = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">A full Box can be created using a mixture of available Each variants of this REF.</div>`;
-                 } else {
-                     emptyMessage = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">No physical inventory available to track.</div>`;
-                 }
+                 // ✨ NEW: Strict Box Message dynamically shows if there isn't enough matching lot/exp
+                 emptyMessage = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Insufficient matching Lot/Exp combinations to formulate a complete sealed Box.</div>`;
              } else {
                  emptyMessage = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
              }
@@ -809,11 +800,18 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   openReportsHub() {
-    this.lockCheatCodes(); // ✨ Added
+    this.lockCheatCodes(); 
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenReports').style.display = 'block';
+    
     if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
     if (typeof AuditManager.loadCloudSessionsForExport === 'function') AuditManager.loadCloudSessionsForExport();
+    
+    // ✨ NEW: Automatically pull the latest Subscribers and Custom Lists from the cloud!
+    if (typeof ReportsManager !== 'undefined') {
+        if (typeof ReportsManager.loadSubscribers === 'function') ReportsManager.loadSubscribers();
+        if (typeof ReportsManager.refreshCustomListsUI === 'function') ReportsManager.refreshCustomListsUI();
+    }
   },
 
   closeReportsHub() {

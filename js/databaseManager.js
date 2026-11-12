@@ -30,6 +30,9 @@ const defaultCustomers = ["AHS", "Animal Eye Care", "BL", "RFP", "CASCADE", "RED
 const DatabaseManager = {
   users: JSON.parse(localStorage.getItem('asp_wh_users')) || ["Trey", "Thomas", "Jessica", "+ New User"],
   db: JSON.parse(localStorage.getItem('asp_wh_db')) || [],
+
+  expTrack: JSON.parse(localStorage.getItem('asp_wh_exp_track')) || [],
+
   vendors: JSON.parse(localStorage.getItem('asp_wh_vendors')) || defaultVendors,
   suppliers: JSON.parse(localStorage.getItem('asp_wh_suppliers')) || defaultSuppliers,
   customers: JSON.parse(localStorage.getItem('asp_wh_customers')) || defaultCustomers,
@@ -48,6 +51,45 @@ const DatabaseManager = {
       return item && item.parentRef ? String(item.parentRef).replace(/^\*/, '').trim() : '';
   },
 
+  // ✨ NEW: Strict Box Math for the UI
+  getStrictBoxInventory(parentRef, uomMult) {
+      if (!this.expTrack || this.expTrack.length === 0) return { totalBoxes: 0, rowsHtml: "" };
+      let lotBuckets = {};
+      
+      this.expTrack.forEach(row => {
+          let ref = row[0];
+          if (ref === parentRef) {
+              let lot = row[1] || "--";
+              let exp = row[2] || "--";
+              let qty = parseInt(row[3], 10) || 0;
+              if (qty > 0) {
+                  let key = lot + "|" + exp;
+                  if (!lotBuckets[key]) lotBuckets[key] = { lot: lot, exp: exp, qty: 0 };
+                  lotBuckets[key].qty += qty;
+              }
+          }
+      });
+      
+      let totalBoxes = 0;
+      let rowsHtml = "";
+      
+      Object.keys(lotBuckets).forEach(key => {
+          let bucket = lotBuckets[key];
+          let boxesAvailable = Math.floor(bucket.qty / uomMult);
+          if (boxesAvailable > 0) {
+              totalBoxes += boxesAvailable;
+              rowsHtml += `<tr style="border-bottom:1px solid #334e68;">
+                <td style="padding:6px; font-weight:bold; color:#f0f4f8;">${bucket.lot}</td>
+                <td style="padding:6px; font-weight:bold; color:#f0f4f8;">${bucket.exp}</td>
+                <td style="padding:6px; text-align:center; font-weight:bold; color:#f57f17;">${boxesAvailable}</td>
+                <td style="padding:6px; text-align:right;">--</td>
+              </tr>`;
+          }
+      });
+      
+      return { totalBoxes: totalBoxes, rowsHtml: rowsHtml };
+  },
+
   getHiddenParentRefs() {
       let hiddenParents = new Set();
       this.db.forEach(i => {
@@ -64,20 +106,21 @@ const DatabaseManager = {
       
       if (isBundle) {
           let pSku = this.getCleanParentRef(item).toUpperCase();
-          let pItem = this.db.find(i => this.getItemSku(i) === pSku);
-          if (pItem) {
-              let pAvail = (parseInt(pItem.onHand, 10) || 0) - (parseInt(pItem.reservedQty, 10) || 0);
-              return Math.floor(pAvail / parseInt(item.uomMult, 10));
-          }
-          return 0;
+          let strictMath = this.getStrictBoxInventory(pSku, parseInt(item.uomMult, 10));
+          return strictMath.totalBoxes;
       } else {
           let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0);
           let children = this.db.filter(c => this.getCleanParentRef(c).toUpperCase() === this.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
           if (children.length > 0) {
               let hasBoxOnly = children.some(c => this.isBoxOnly(c));
               if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only!
+              
               let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
-              if (largestBundle > 1) avail = avail % largestBundle;
+              if (largestBundle > 1) {
+                  // ✨ FIX: Properly subtract STRICT boxes from the Eaches total, instead of old fuzzy modulo math
+                  let strictMath = this.getStrictBoxInventory(this.getItemSku(item).toUpperCase(), largestBundle);
+                  avail = avail - (strictMath.totalBoxes * largestBundle);
+              }
           }
           return avail;
       }
@@ -852,6 +895,8 @@ const DatabaseManager = {
             
             // ✨ Catch the shipping rules so importCloudDatabase can save them
             fullDb.shippingRules = data.db.shippingRules || {};
+
+            fullDb.expTrack = data.db.expTrack || [];
           }
           totalPages = data.totalPages || 1;
           page++;
@@ -1088,6 +1133,9 @@ const DatabaseManager = {
   },
 
   importCloudDatabase(cloudDb) {
+    this.expTrack = cloudDb.expTrack || [];
+    localStorage.setItem('asp_wh_exp_track', JSON.stringify(this.expTrack));
+
     // ✨ NEW: Save Aliases to tablet cache
     if (cloudDb.customerAliases) {
       this.customerAliases = cloudDb.customerAliases;

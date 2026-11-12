@@ -1045,6 +1045,26 @@ const ReportsManager = {
       window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the form
   },
 
+  // ✨ NEW: Master reset for the Subscriber entry form
+  clearSubscriberFields() {
+      if (document.getElementById('subName')) document.getElementById('subName').value = "";
+      if (document.getElementById('subEmail')) document.getElementById('subEmail').value = "";
+      if (document.getElementById('subFreq')) document.getElementById('subFreq').value = "Weekly";
+      if (document.getElementById('subStatus')) document.getElementById('subStatus').value = "Active";
+      if (document.getElementById('subFormat')) document.getElementById('subFormat').value = "SMART";
+      if (document.getElementById('subFallback')) document.getElementById('subFallback').value = "SELLERS";
+      if (document.getElementById('subCustomerId')) document.getElementById('subCustomerId').value = "";
+      if (document.getElementById('subPromoRefs')) document.getElementById('subPromoRefs').value = "";
+      if (document.getElementById('subSendDay')) document.getElementById('subSendDay').value = "";
+      if (document.getElementById('subCustomMessage')) document.getElementById('subCustomMessage').value = "";
+      if (document.getElementById('subIgnoreHistory')) document.getElementById('subIgnoreHistory').checked = false;
+      if (document.getElementById('subIncludeBoth')) document.getElementById('subIncludeBoth').checked = false;
+      if (document.getElementById('subCategories')) document.getElementById('subCategories').value = "";
+      
+      // Ensure the "Send Day" dropdown hides itself if the default frequency is changed back to Daily
+      if (typeof this.toggleSubSendDay === 'function') this.toggleSubSendDay();
+  },
+
   saveSubscriber(event) {
       let btn = event ? event.target : document.activeElement;
       let origText = btn.textContent;
@@ -1088,11 +1108,10 @@ const ReportsManager = {
           body: JSON.stringify({ action: "UPDATE_SUBSCRIBER", payload: payload })
       }).then(() => {
           UIManager.showCustomAlert("Success", `${name} has been updated in the cloud!`);
-          document.getElementById('subName').value = "";
-          document.getElementById('subEmail').value = "";
-          if (document.getElementById('subCustomMessage')) document.getElementById('subCustomMessage').value = "";
-          if (document.getElementById('subIgnoreHistory')) document.getElementById('subIgnoreHistory').checked = false;
-          if (document.getElementById('subIncludeBoth')) document.getElementById('subIncludeBoth').checked = false;
+          
+          // ✨ NEW: Trigger the master wipe function to reset the entire form for the next entry
+          this.clearSubscriberFields();
+          
           this.loadSubscribers(); 
       }).catch(err => {
           UIManager.showCustomAlert("Error", "Failed to save subscriber.");
@@ -1208,7 +1227,7 @@ const ReportsManager = {
                   if (data.lists.length > 0) {
                       optsHtml += `<optgroup label="--- Custom Shared Lists ---">`;
                       data.lists.forEach(list => {
-                          optsHtml += `<option value="LIST_${list.name}">${list.name}</option>`;
+                          optsHtml += `<option value="LIST_${list.name.toUpperCase()}">${list.name}</option>`;
                       });
                       optsHtml += `</optgroup>`;
                   }

@@ -32,23 +32,22 @@ const AuditManager = {
       let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
       
       if (isBundle) {
-          let pSku = DatabaseManager.getCleanParentRef(item).toUpperCase();
-          let pItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === pSku);
-          if (pItem) {
-              let pAvail = (parseInt(pItem.onHand, 10) || 0) - (parseInt(pItem.reservedQty, 10) || 0);
-              return Math.floor(pAvail / parseInt(item.uomMult, 10));
-          }
-          return 0;
+          let pSku = this.getCleanParentRef(item).toUpperCase();
+          let strictMath = this.getStrictBoxInventory(pSku, parseInt(item.uomMult, 10));
+          return strictMath.totalBoxes;
       } else {
           let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0);
-          let children = DatabaseManager.db.filter(c => DatabaseManager.getCleanParentRef(c).toUpperCase() === DatabaseManager.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
+          let children = this.db.filter(c => this.getCleanParentRef(c).toUpperCase() === this.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
           if (children.length > 0) {
-              // ✨ FIX: Check for Box Only flag across all environments
-              let hasBoxOnly = children.some(c => DatabaseManager.isBoxOnly(c));
-              if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only
+              let hasBoxOnly = children.some(c => this.isBoxOnly(c));
+              if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only!
               
               let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
-              if (largestBundle > 1) avail = avail % largestBundle;
+              if (largestBundle > 1) {
+                  // ✨ FIX: Properly subtract STRICT boxes from the Eaches total, instead of old fuzzy modulo math
+                  let strictMath = this.getStrictBoxInventory(this.getItemSku(item).toUpperCase(), largestBundle);
+                  avail = avail - (strictMath.totalBoxes * largestBundle);
+              }
           }
           return avail;
       }
