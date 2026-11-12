@@ -1033,6 +1033,7 @@ const ReportsManager = {
       // Load the new toggle checkboxes
       if(document.getElementById('subIgnoreHistory')) document.getElementById('subIgnoreHistory').checked = (sub.ignoreHistory === true || String(sub.ignoreHistory).toUpperCase() === "TRUE");
       if(document.getElementById('subIncludeBoth')) document.getElementById('subIncludeBoth').checked = (sub.includeBoth === true || String(sub.includeBoth).toUpperCase() === "TRUE");
+      if(document.getElementById('subIgnoreFallback')) document.getElementById('subIgnoreFallback').checked = (sub.ignoreFallback === true || String(sub.ignoreFallback).toUpperCase() === "TRUE");      
 
       let fSel = document.getElementById('subFreq');
       if(fSel) { 
@@ -1059,7 +1060,9 @@ const ReportsManager = {
       if (document.getElementById('subCustomMessage')) document.getElementById('subCustomMessage').value = "";
       if (document.getElementById('subIgnoreHistory')) document.getElementById('subIgnoreHistory').checked = false;
       if (document.getElementById('subIncludeBoth')) document.getElementById('subIncludeBoth').checked = false;
+      if (document.getElementById('subIgnoreFallback')) document.getElementById('subIgnoreFallback').checked = false;
       if (document.getElementById('subCategories')) document.getElementById('subCategories').value = "";
+
       
       // Ensure the "Send Day" dropdown hides itself if the default frequency is changed back to Daily
       if (typeof this.toggleSubSendDay === 'function') this.toggleSubSendDay();
@@ -1083,6 +1086,7 @@ const ReportsManager = {
       
       let ignoreHistory = document.getElementById('subIgnoreHistory') ? document.getElementById('subIgnoreHistory').checked : false;
       let includeBoth = document.getElementById('subIncludeBoth') ? document.getElementById('subIncludeBoth').checked : false;
+      let ignoreFallback = document.getElementById('subIgnoreFallback') ? document.getElementById('subIgnoreFallback').checked : false; // ✨ NEW
 
       let sendDay = "";
       if (freq === 'Weekly' || freq === 'Monthly') {
@@ -1100,7 +1104,7 @@ const ReportsManager = {
           name: name, email: email, freq: freq, status: status, 
           categories: categoryPref, format: format, fallback: fallback, customerId: customerId,
           promoRefs: promoRefs, sendDay: sendDay, customMessage: customMessage,
-          ignoreHistory: ignoreHistory, includeBoth: includeBoth // ✨ Map the new toggles
+          ignoreHistory: ignoreHistory, includeBoth: includeBoth, ignoreFallback: ignoreFallback // ✨ Map the new toggles
       };
 
       fetch(ApiManager.getActiveArchiveUrl(), {

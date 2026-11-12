@@ -308,6 +308,43 @@ const DatabaseManager = {
     }
   },
 
+  // ✨ NEW: Handles the + Add Customer prompt explicitly for the Subscriber Form
+  handleSubscriberCustomerSelect(val) {
+    if (val === "+ Add Customer") {
+      let newC = prompt("Enter new Customer name:");
+      if (newC) {
+        let resolvedName = this.resolveAlias(newC, 'customer');
+        if (resolvedName.toUpperCase() !== newC.trim().toUpperCase()) {
+           alert(`Alias Detected: Auto-correcting "${newC}" to primary account "${resolvedName}"`);
+           newC = resolvedName;
+        }
+
+        let upperList = this.customers.map(c => c.toUpperCase());
+        let existingIdx = upperList.indexOf(newC.trim().toUpperCase());
+        let exactName = newC.trim();
+
+        if (existingIdx === -1) {
+           this.customers.splice(this.customers.length - 1, 0, exactName);
+           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+             localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+           }
+        } else {
+           exactName = this.customers[existingIdx];
+        }
+        
+        this.populatePartners();
+        this.populateItemCustomerSelect();
+        if (typeof UIManager !== 'undefined' && typeof UIManager.populateCustomerDropdown === 'function') {
+           UIManager.populateCustomerDropdown();
+        }
+        
+        document.getElementById('subCustomerId').value = exactName;
+      } else {
+        document.getElementById('subCustomerId').selectedIndex = 0;
+      }
+    }
+  },
+
   handlePartnerSelect(val, type) {
     if (val === "+ Add Supplier") {
       let newS = prompt("Enter new Supplier/Vendor name:");

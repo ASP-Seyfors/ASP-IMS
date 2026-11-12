@@ -95,7 +95,6 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         opt.textContent = cust;
         select.appendChild(opt);
         
-        // ✨ NEW: Append to Subscriber list too!
         if (subSelect) {
             let subOpt = document.createElement('option');
             subOpt.value = cust; subOpt.textContent = cust;
@@ -103,6 +102,21 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         }
       }
     });
+    
+    // ✨ NEW: Append + Add Customer to the subscriber dropdown and bind the listener dynamically
+    if (subSelect) {
+        let addOpt = document.createElement('option');
+        addOpt.value = "+ Add Customer"; 
+        addOpt.textContent = "+ Add Customer";
+        subSelect.appendChild(addOpt);
+        
+        // Ensure the listener is dynamically bound so it triggers the popup window
+        subSelect.onchange = function() {
+            if (typeof DatabaseManager !== 'undefined') {
+                DatabaseManager.handleSubscriberCustomerSelect(this.value);
+            }
+        };
+    }
   },
 
   // ADVANCED MODE CONTROLLER
