@@ -3567,7 +3567,7 @@
     {
       "ref": "DNX12",
       "mfr": "ETHICON",
-      "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive DNX12",
+      "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive  (BX/12) DNX12",
       "gtin": "20705031203539",
       "price": "$210.00",
       "cost": "$150.00",
@@ -3590,7 +3590,7 @@
       "ref": "DNX12 (EACH)",
       "mfr": "ETHICON",
       "desc": "ETHICON Dermabond Advanced Topical Skin Adhesive DNX12 (EACH)",
-      "gtin": "",
+      "gtin": "10705031203532",
       "price": "$0.00",
       "cost": "$0.00",
       "onHand": 0,
