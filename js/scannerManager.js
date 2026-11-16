@@ -154,6 +154,10 @@ const ScannerManager = {
 
     let refInp = document.getElementById('refInput');
     if (refInp) refInp.value = '';
+
+    // ✨ FIX: Clear the Version field after saving an item or starting/resetting a session
+    let verInp = document.getElementById('verInput');
+    if (verInp) verInp.value = '';
     
     let qtyInp = document.getElementById('qtyInput');
     if (qtyInp) qtyInp.value = '1';

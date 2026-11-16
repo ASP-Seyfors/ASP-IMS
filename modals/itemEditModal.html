@@ -5,8 +5,18 @@
       <button onclick="document.getElementById('itemEditModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
     </div>
     <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">REF / SKU (Read-Only)</label>
+      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555); display:flex; justify-content:space-between;">
+        <span>REF / SKU</span>
+        <!-- ✨ PHASE 3: Admin Rename Tool -->
+        <button id="btnAdminRenameRef" onclick="DatabaseManager.promptRenameRef()" style="display:none; background:none; border:none; color:#c62828; font-size:0.75rem; font-weight:bold; cursor:pointer; text-decoration:underline;" title="Globally rename this REF across the entire system.">[ Admin Rename ]</button>
+      </label>
       <input type="text" id="modalRef" readonly style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background:#f0f0f0; font-weight:bold; color:#00796b;">
+    </div>
+    
+    <!-- ✨ PHASE 3: Display Alias -->
+    <div style="margin-bottom:10px;">
+      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);" title="Optional: An alternative name shown on customer-facing reports (e.g. '48360B (BX)'). Internal math will still use the strict REF.">Display Alias (Reports Only)</label>
+      <input type="text" id="modalDisplayAlias" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; color:#0277bd; font-weight:bold;">
     </div>
     <div style="margin-bottom:10px;">
       <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Manufacturer</label>

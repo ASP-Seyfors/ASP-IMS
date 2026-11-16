@@ -422,6 +422,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     
     uniqueFamily.forEach((famItem) => {
         let ref = DatabaseManager.getItemSku(famItem);
+        let displayRef = famItem.displayAlias ? famItem.displayAlias : ref;
         let mfr = DatabaseManager.getItemVendor(famItem) || 'UNKNOWN';
         let desc = DatabaseManager.getItemDesc(famItem) || 'No description available.';
         let price = famItem.price || '$0.00';
@@ -441,7 +442,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
         htmlOutput += `
           <div style="background:var(--raw-bg, #f9f9f9); border:1px solid var(--border-color, #e0e0e0); border-radius:6px; padding:12px; margin-bottom: 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <div style="font-size:1.1rem; font-weight:bold; color:var(--heading-color, #00796b);">REF: ${ref} ${isBoxOnlyLabel}</div>
+                <div style="font-size:1.1rem; font-weight:bold; color:var(--heading-color, #00796b);">REF: ${displayRef} ${isBoxOnlyLabel}</div>
                 
                 <!-- ✨ NEW: Inline Restock Button specifically for this variant -->
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -810,6 +811,38 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       else if (!obj.el.value.trim()) obj.el.classList.add('needs-attention');
       else obj.el.classList.remove('needs-attention');
     });
+
+    // ✨ PHASE 2: Evaluate Date and Trigger Warning Badge
+    let expField = document.getElementById('expInput');
+    let expBadge = document.getElementById('expDateWarningBadge');
+    let chkNaExp = document.getElementById('chkNaExp');
+    
+    if (expField && expBadge) {
+        let expVal = expField.value.trim();
+        if (!expVal || (chkNaExp && chkNaExp.checked) || expVal.toUpperCase() === 'N/A' || expVal.toUpperCase() === 'NO_EXP') {
+            expBadge.style.display = 'none';
+        } else {
+            let d = new Date(expVal);
+            if (!isNaN(d.getTime())) {
+                let today = new Date();
+                let monthsDiff = (d.getFullYear() - today.getFullYear()) * 12 + (d.getMonth() - today.getMonth());
+                
+                if (d < today) {
+                    expBadge.textContent = '🚨 EXPIRED';
+                    expBadge.style.cssText = 'display:inline-block; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; white-space:nowrap; margin-left:12px; background:#ffebee; color:#c62828; border:1px solid #c62828;';
+                } else if (monthsDiff <= 12) {
+                    expBadge.textContent = `⚠️ SHORT DATED (<${monthsDiff <= 6 ? '6' : '12'}m)`;
+                    expBadge.style.cssText = 'display:inline-block; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; white-space:nowrap; margin-left:12px; background:#fff3e0; color:#e65100; border:1px solid #e65100;';
+                } else {
+                    expBadge.textContent = '✓ GOOD DATE';
+                    expBadge.style.cssText = 'display:inline-block; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; white-space:nowrap; margin-left:12px; background:#e8f5e9; color:#2e7d32; border:1px solid #2e7d32;';
+                }
+            } else {
+                expBadge.style.display = 'none';
+            }
+        }
+    }
+
     this.updateCameraOverlayStatus();
   },
 
@@ -940,7 +973,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:400px; padding:20px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
         <h3 style="color:${color}; margin-top:0;">${title}</h3>
         <p style="color:var(--text-main, #555); font-size:0.95rem; margin-bottom:20px;">${message}</p>
-        <button onclick="this.parentElement.parentElement.remove()" style="background:${color}; color:#fff; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">OK</button>
+        <button onclick="this.parentElement.parentElement.remove(); if (document.getElementById('screenScanning') && document.getElementById('screenScanning').style.display !== 'none') { setTimeout(() => { let el = document.getElementById('rawScan1'); if(el) el.focus(); }, 100); }" style="background:${color}; color:#fff; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">OK</button>
       </div>`;
     document.body.appendChild(modal);
   },

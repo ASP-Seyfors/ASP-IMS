@@ -827,13 +827,17 @@ const SessionManager = {
     let cTagCombined = finalCustomerTag + (finalOrderNum ? ` - ${finalOrderNum}` : '');
     let bypassOverpackWarning = ignoreOverpack || !this.isManifestEnabled;
 
-    let alreadyScannedQty = this.scannedObjects
-        .filter(i => i.ref === ref && i.actionTag === effectiveTag)
-        .reduce((acc, curr) => acc + curr.qty, 0);
+    let priorMatchingScans = this.scannedObjects.filter(i => i.ref === ref && i.actionTag === effectiveTag);
+    let alreadyScannedQty = priorMatchingScans.reduce((acc, curr) => acc + curr.qty, 0);
 
     try {
       let currentAllocations = JSON.parse(localStorage.getItem('asp_allocations')) || {};
-      InventoryEngine.validateAvailability(ref, qty + alreadyScannedQty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, bypassOverpackWarning, this.currentWorkflowType);
+      InventoryEngine.validateAvailability(ref, qty + alreadyScannedQty, effectiveTag, DatabaseManager.db, cTagCombined, currentAllocations, bypassOverpackWarning, this.currentWorkflowType, {
+        currentQty: qty,
+        currentLot: lot || 'NO_LOT',
+        currentExp: exp || 'NO_EXP',
+        priorScans: priorMatchingScans
+      });
     } catch (error) {
       if (error.message.startsWith('OVERPACK_WARNING:')) {
         let friendlyMsg = `Item isn't on original reserve list or exceeds expected qty.\n\nDo you want to pull this from general inventory and add it anyway?`;

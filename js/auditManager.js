@@ -229,7 +229,8 @@ const AuditManager = {
     document.getElementById('auditPreviewContent').innerHTML = '<div style="text-align:center; padding:20px; color:#0277bd; font-weight:bold;">⏳ Processing live ledger from the cloud... Please wait.</div>';
     
     try {
-      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let needCold = (timeframe === '90d' || timeframe === 'all') ? '&includeCold=true' : '';
+      let res = await fetch(`${ApiManager.cloudArchiveUrl}?action=GET_AUDIT_LOG${needCold}&t=${Date.now()}`);
       let text = await res.text();
       let responseData = JSON.parse(text);
       if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
@@ -983,9 +984,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
         let rowsHtml = '';
     items.forEach((it, idx) => {
-      let safeDesc = (it.desc || '').replace(/"/g, '&quot;');
-      let safeRef = (it.ref || '').replace(/"/g, '&quot;');
-      let safePrice = (it.price || '').replace(/"/g, '&quot;');
+  let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db.find(d => DatabaseManager.getItemSku(d) === String(it.ref || '').toUpperCase()) : null;
+  let safeDesc = (it.desc || '').replace(/"/g, '&' + 'quot;');
+  let safeRef = ((dbMatch && dbMatch.displayAlias) ? dbMatch.displayAlias : (it.ref || '')).replace(/"/g, '&' + 'quot;');
+  let safePrice = (it.price || '').replace(/"/g, '&' + 'quot;');
 
       rowsHtml += `
         <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;" id="reportEditRow_${idx}" class="flyer-item-row">
@@ -1038,7 +1040,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return DatabaseManager.getTrueAvailability(dbItem) > 0;
       }).map(dbItem => {
         return {
-          ref: DatabaseManager.getItemSku(dbItem),
+          ref: dbItem.displayAlias ? dbItem.displayAlias : DatabaseManager.getItemSku(dbItem),
           desc: DatabaseManager.getItemDesc(dbItem),
           onHand: DatabaseManager.getTrueAvailability(dbItem),
           price: dbItem.price || '$0.00'
@@ -1295,7 +1297,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     // 3. ✨ NEW: Fetch Live Cloud Ledger to guarantee absolute historical accuracy!
     try {
-        let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+        let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&includeCold=true&t=${Date.now()}`);
         let text = await res.text();
         let responseData = JSON.parse(text);
         if (responseData.status === "success" && responseData.data) {
@@ -2663,7 +2665,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             user: row['User'] || "Operator",
             qty: row['Qty Moved'],
             ref: row['REF / SKU'],
-            actionTag: row['Destination / Action']
+            actionTag: row['Destination / Action'],
+            version: row['Version'] || "" // ✨ Phase 2
           });
         }
       });
@@ -2688,10 +2691,14 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #0277bd); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                   <div><strong style="color:var(--heading-color, #0277bd);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #0277bd);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #0277bd);">Action:</strong> ${ev.actionTag}</div>
                   <div style="margin: 4px 0;"><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
-                  <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user}</div>
+                  <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user} | Ver: <strong>${ev.version || 'N/A'}</strong></div>
                 </div>`;
       });
-      html += `</div>`;
+      html += `<div style="text-align:center; margin-top:10px; padding-top:8px; border-top:1px dashed #a5d6a7;">
+                 <button class="btn-small" style="background:#7b1fa2; color:#fff; padding:6px 14px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="AuditManager.traceDeepArchiveLotNumber('${targetLot}')">
+                   🗄️ Also Search Deep Cold Storage Archive
+                 </button>
+               </div></div>`;
 
       resultsContainer.innerHTML = html;
     } catch(err) {
@@ -2714,12 +2721,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       
       let foundEvents = responseData.data.map(row => ({
           sessionName: row['Session / Reason'] || "Unknown Session",
-          workflow: row['Workflow'] || "Unknown Workflow",
-          date: row['Timestamp'] || "Unknown Date",
-          user: row['User'] || "Operator",
-          qty: row['Qty Moved'],
-          ref: row['REF / SKU'],
-          actionTag: row['Destination / Action']
+            workflow: row['Workflow'] || "Unknown Workflow",
+            date: row['Timestamp'] || "Unknown Date",
+            user: row['User'] || "Operator",
+            qty: row['Qty Moved'],
+            ref: row['REF / SKU'],
+            actionTag: row['Destination / Action'],
+            version: row['Version'] || "" // ✨ Phase 2
       }));
 
       if (foundEvents.length === 0) {
@@ -2730,10 +2738,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let html = `<div style="margin-top:10px; padding:10px; background:var(--raw-bg, #f3e5f5); border:1px solid var(--border-color, #ce93d8); border-radius:4px;">
                     <h4 style="margin:0 0 8px 0; color:var(--heading-color, #7b1fa2);">🗄️ Deep Archive Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
       foundEvents.forEach(ev => {
-        html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #7b1fa2); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                  <div><strong style="color:var(--heading-color, #7b1fa2);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #7b1fa2);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #7b1fa2);">Action:</strong> ${ev.actionTag}</div>
+        html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #0277bd); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div><strong style="color:var(--heading-color, #7b1fa2);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #7b1fa2);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #0277bd);">Action:</strong> ${ev.actionTag}</div>
                   <div style="margin: 4px 0;"><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
-                  <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user}</div>
+                  <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user} | Ver: <strong>${ev.version || 'N/A'}</strong></div>
                 </div>`;
       });
       html += `</div>`;
@@ -2759,10 +2767,11 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return; 
     }
 
-    resultsContainer.innerHTML = '<div style="padding:15px; color:#7b1fa2; text-align:center; font-weight:bold;">⏳ Querying live cloud ledger...</div>';
+    resultsContainer.innerHTML = '<div style="padding:15px; color:#7b1fa2; text-align:center; font-weight:bold;">⏳ Querying cloud ledger...</div>';
 
     try {
-      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG&t=${Date.now()}`);
+      let needCold = (timeframe !== '30d') ? '&includeCold=true' : '';
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_AUDIT_LOG${needCold}&t=${Date.now()}`);
       let text = await res.text();
       let responseData = JSON.parse(text);
       
@@ -2805,7 +2814,8 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             ref: row['REF / SKU'],
             lot: row['Lot'],
             exp: row['Exp Date'],
-            actionTag: row['Destination / Action']
+            actionTag: row['Destination / Action'],
+            version: row['Version'] || "" // ✨ Phase 2
           });
           totalQty += Math.abs(qty);
         }
@@ -2813,8 +2823,13 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
       if (foundEvents.length === 0) {
         resultsContainer.innerHTML = `
-          <div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">
-            No records found for your search terms within the selected timeframe.
+          <div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center; margin-bottom:12px;">
+            No records found in the recent live ledger for your search terms.
+          </div>
+          <div style="text-align:center;">
+             <button class="btn-action" style="background:#7b1fa2; color:#fff; padding:10px 20px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="AuditManager.searchDeepArchiveLedgerHistory()">
+               🗄️ Search Deep Cold Storage Archive
+             </button>
           </div>`;
         return;
       }
@@ -2841,7 +2856,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                       <strong style="color:${actColor}; font-size:0.9rem;">Qty: ${ev.qty}</strong>
                   </div>
                   <div style="margin-bottom:4px; font-size:0.8rem; color:var(--text-main, #555);">
-                      Lot: <strong>${ev.lot || 'N/A'}</strong> | Exp: <strong>${ev.exp || 'N/A'}</strong>
+                    Lot: <strong>${ev.lot || 'N/A'}</strong> | Exp: <strong>${ev.exp || 'N/A'}</strong> | Ver: <strong>${ev.version || 'N/A'}</strong>
                   </div>
                   <div style="margin-bottom:2px; color:var(--text-main, #333);"><strong>Session:</strong> ${ev.sessionName}</div>
                   <div style="margin-bottom:4px; color:var(--text-main, #555);"><strong>Dest/Note:</strong> ${ev.actionTag}</div>
@@ -2862,6 +2877,101 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
 
     } catch(err) {
       resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching ledger data: ${err.message}</div>`;
+    }
+  },
+
+  // ✨ PHASE 2: Deep Archive Cross-Reference Search
+  async searchDeepArchiveLedgerHistory() {
+    let inputEl = document.getElementById('ledgerSearchInput');
+    let resultsContainer = document.getElementById('ledgerSearchResults');
+    let timeframe = document.getElementById('ledgerSearchTimeframe').value;
+    
+    if (!inputEl || !resultsContainer) return;
+    let rawQueries = inputEl.value.trim().toUpperCase().split(',').map(q => q.trim()).filter(q => q);
+    
+    resultsContainer.innerHTML = '<div style="padding:15px; color:#7b1fa2; font-weight:bold; text-align:center;">⏳ Waking up Cold Storage... Searching deep archive ledgers...</div>';
+
+    try {
+      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=SEARCH_DEEP_ARCHIVE&query=${encodeURIComponent(rawQueries.join(','))}`);
+      let responseData = await res.json();
+      
+      if (responseData.status !== "success" || !responseData.data) throw new Error(responseData.message || "Failed to parse deep archive.");
+      
+      let cutoffDate = new Date();
+      if (timeframe === '30d') cutoffDate.setDate(cutoffDate.getDate() - 30);
+      else if (timeframe === '90d') cutoffDate.setDate(cutoffDate.getDate() - 90);
+      else if (timeframe === '180d') cutoffDate.setDate(cutoffDate.getDate() - 180);
+      else cutoffDate = new Date(2000, 0, 1); 
+
+      let foundEvents = [];
+      let totalQty = 0;
+
+      responseData.data.forEach(row => {
+        let rowDate = new Date(row['Timestamp']);
+        if (rowDate < cutoffDate) return;
+        
+        let qty = parseInt(row['Qty Moved'], 10) || 0;
+        foundEvents.push({
+          sessionName: row['Session / Reason'] || "Unknown Session",
+          workflow: row['Workflow'] || "Unknown Workflow",
+          date: row['Timestamp'] || "Unknown Date",
+          user: row['User'] || "Operator",
+          qty: qty,
+          ref: row['REF / SKU'],
+          lot: row['Lot'],
+          exp: row['Exp Date'],
+          actionTag: row['Destination / Action'],
+          version: row['Version'] || ""
+        });
+        totalQty += Math.abs(qty);
+      });
+
+      if (foundEvents.length === 0) {
+        resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">No records found anywhere in Cold Storage for your search terms.</div>`;
+        return;
+      }
+
+      foundEvents.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      let html = `<div style="margin-top:10px; padding:10px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h4 style="margin:0; color:#7b1fa2;">🗄️ Deep Archive Results (${foundEvents.length} events)</h4>
+                        <span class="badge-info" style="background-color:#7b1fa2; color:#fff;">Total Units Moved: ${totalQty}</span>
+                    </div>
+                    <div style="max-height: 350px; overflow-y: auto; padding-right:4px;">`;
+                    
+      foundEvents.forEach(ev => {
+        let actColor = '#555';
+        if (ev.workflow.includes('Receiving')) actColor = '#2e7d32'; 
+        if (ev.workflow.includes('Packing') || ev.workflow.includes('Ship')) actColor = '#e65100'; 
+        if (ev.workflow.includes('Reserving')) actColor = '#0277bd'; 
+
+        html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid ${actColor}; font-size:0.85rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                      <strong style="color:var(--heading-color, #0277bd); font-size:0.9rem;">${ev.ref}</strong>
+                      <strong style="color:${actColor}; font-size:0.9rem;">Qty: ${ev.qty}</strong>
+                  </div>
+                  <div style="margin-bottom:4px; font-size:0.8rem; color:var(--text-main, #555);">
+                      Lot: <strong>${ev.lot || 'N/A'}</strong> | Exp: <strong>${ev.exp || 'N/A'}</strong> | Ver: <strong>${ev.version || 'N/A'}</strong>
+                  </div>
+                  <div style="margin-bottom:2px; color:var(--text-main, #333);"><strong>Session:</strong> ${ev.sessionName}</div>
+                  <div style="margin-bottom:4px; color:var(--text-main, #555);"><strong>Dest/Note:</strong> ${ev.actionTag}</div>
+                  <div style="color:var(--text-main, #777); font-size:0.75rem; display:flex; justify-content:space-between; border-top:1px dashed var(--border-color, #eee); padding-top:4px; margin-top:4px;">
+                      <span>${ev.date}</span>
+                      <span>Operator: ${ev.user}</span>
+                  </div>
+                </div>`;
+      });
+      html += `</div>
+               <div style="text-align:right; margin-top:10px; border-top:1px solid #ce93d8; padding-top:10px;">
+                  <button class="btn-small" style="background:#7b1fa2; color:#fff; padding:8px 16px; font-weight:bold; cursor:pointer;" onclick="AuditManager.exportLedgerSearchResults()">📥 Export Results to CSV</button>
+               </div></div>`;
+
+      resultsContainer.innerHTML = html;
+      this.lastLedgerSearchResults = foundEvents;
+
+    } catch(err) {
+      resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching Deep Archive data: ${err.message}</div>`;
     }
   },
 

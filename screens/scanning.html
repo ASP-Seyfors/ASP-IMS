@@ -172,6 +172,9 @@
       <div class="input-wrapper">
         <input type="text" id="expInput" class="needs-attention input-short" placeholder="YYYY-MM-DD" onchange="formatExpDate(this)" oninput="evaluateFieldAttention();" title="Item expiration date in YYYY-MM-DD format.">
         <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not expire."><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
+        
+        <!-- ✨ PHASE 2: Dynamic Warning Badge -->
+        <span id="expDateWarningBadge" style="display:none;"></span>
       </div>
     </div>
 

@@ -380,7 +380,7 @@ const ReportsManager = {
       
       html += `<tr>
         ${incMfr ? `<td>${item.mfr || 'UNKNOWN'}</td>` : ''}
-        <td style="font-weight:bold; color:#0277bd;">${item.ref || item.sku}</td>
+        <td style="font-weight:bold; color:#0277bd;">${item.displayAlias || item.ref || item.sku}</td>
         ${incDesc ? `<td style="font-size:11px; color:#555;">${item.desc || '--'}</td>` : ''}
         ${incTotal ? `<td class="qty-sub">${total}</td>` : ''}
         ${incRes ? `<td class="qty-sub" style="color:#d32f2f;">${res}</td>` : ''}
@@ -745,10 +745,10 @@ const ReportsManager = {
 
       // ✨ FIX: Map to the exact ALL-CAPS headers provided by the Google Sheets JSON
       activeLots.forEach(row => {
-          let rawRef = row['REF / SKU'] || '';
+          let rawRef = String(row['REF / SKU'] || '').trim();
           
-          // ✨ FIX 3: Clean the REF of (EACH) tags so the Master Database can accurately match it
-          let cleanRef = rawRef.replace(/\(EACH\)/i, '').split('(')[0].trim().toUpperCase(); 
+          // ✨ FIX 3: Preserve exact REF / SKU string (no stripping of (EACH) or parentheticals)
+          let cleanRef = rawRef.toUpperCase();
           
           let lot = row['LOT']; 
           let exp = row['EXP DATE']; 
