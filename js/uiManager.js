@@ -132,8 +132,13 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let elHub = document.getElementById('panelEnterpriseHub');
     if (elHub) elHub.style.display = isAdv ? 'block' : 'none';
     
-    let elDamaged = document.getElementById('panelDamagedHub');
-    if (elDamaged) elDamaged.style.display = isAdv ? 'block' : 'none';
+    // ✨ Control Inbound Task Hub visibility with Advanced Mode
+    let elInboundHub = document.getElementById('inboundTaskHub');
+    let typeRadio = document.querySelector('input[name="sessionType"]:checked');
+    let isShipment = typeRadio ? typeRadio.value === 'Shipment' : true;
+    if (elInboundHub) {
+        elInboundHub.style.display = (isAdv && isShipment) ? 'block' : 'none';
+    }
     
     this.togglePreloadFeed();
   },
@@ -761,6 +766,20 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     document.getElementById('rowSupplier').style.display = type === 'Shipment' ? 'flex' : 'none';
     document.getElementById('rowCustomer').style.display = type === 'Order' ? 'flex' : 'none';
     document.getElementById('rowProcess').style.display = type === 'Order' ? 'flex' : 'none';
+    
+    // Reset order details and partner fields when switching modes
+    let orderInput = document.getElementById('orderDetailsInput');
+    if (orderInput) orderInput.value = "";
+    
+    let supSelect = document.getElementById('supplierSelect');
+    if (supSelect) supSelect.value = "";
+    
+    let custSelect = document.getElementById('customerSelect');
+    if (custSelect) custSelect.value = "";
+
+    if (typeof ShippingManager !== 'undefined' && typeof ShippingManager.toggleInboundTaskHub === 'function') {
+      ShippingManager.toggleInboundTaskHub(type);
+    }
   },
 
   formatExpDate(inputEl) {

@@ -19,6 +19,50 @@
  * ======================================================================= */
 const ReportsManager = {
 
+  // ✨ EXTERNAL STOREFRONT & MARKETPLACE EXPORT TRIGGERS
+  async triggerVetcoveVariance() {
+      await this._fetchAndDownloadCsv('EXPORT_VETCOVE_VARIANCE', 'Vetcove_Variance_Export.csv');
+  },
+  async triggerVetcoveFull() {
+      await this._fetchAndDownloadCsv('EXPORT_VETCOVE_FULL', 'Vetcove_Full_Export.csv');
+  },
+  async triggerDotMedVariance() {
+      await this._fetchAndDownloadCsv('EXPORT_DOTMED_VARIANCE', 'DotMed_Variance_Export.csv');
+  },
+  async triggerDotMedFull() {
+      await this._fetchAndDownloadCsv('EXPORT_DOTMED_FULL', 'DotMed_Full_Export.csv');
+  },
+  async triggerRevMedExport() {
+      await this._fetchAndDownloadCsv('EXPORT_REVMED', 'RevMed_Catalog_Export.csv');
+  },
+
+  async triggerOnHandCsv() {
+    await this._fetchAndDownloadCsv('EXPORT_ON_HAND_CSV', 'ASP_OnHand_Stock_Export.csv');
+  },
+
+  async _fetchAndDownloadCsv(actionName, defaultFilename) {
+      try {
+          let baseUrl = ApiManager.getActiveArchiveUrl();
+          let joiner = baseUrl.includes('?') ? '&' : '?';
+          let targetUrl = `${baseUrl}${joiner}action=${actionName}&t=${Date.now()}`;
+          
+          let response = await fetch(targetUrl);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          
+          let csvText = await response.text();
+          if (csvText.trim().startsWith('<')) {
+              throw new Error("Server returned an HTML page instead of CSV data. Check authentication or Apps Script deployment parameters.");
+          }
+
+          let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+          let filename = defaultFilename.replace('.csv', `_${dateStr}.csv`);
+          
+          UIManager.triggerShareOrDownload(csvText, filename, 'text/csv');
+      } catch (err) {
+          alert("CSV Export Failed: " + err.message);
+      }
+  },
+
   openCategoryModal() {
     let container = document.getElementById('subCategoryChecklist');
     container.innerHTML = '';

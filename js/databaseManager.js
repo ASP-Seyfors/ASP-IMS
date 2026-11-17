@@ -279,32 +279,25 @@ const DatabaseManager = {
     if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
-        // ✨ NEW: Intercept and resolve alias
         let resolvedName = this.resolveAlias(newC, 'customer');
-        if (resolvedName.toUpperCase() !== newC.trim().toUpperCase()) {
-           alert(`Alias Detected: Auto-correcting "${newC}" to primary account "${resolvedName}"`);
-           newC = resolvedName;
-        }
-
-        let upperList = this.customers.map(c => c.toUpperCase());
-        let existingIdx = upperList.indexOf(newC.trim().toUpperCase());
         let exactName = newC.trim();
         
-        if (existingIdx === -1) {
-           // Add new customer using exactly what was resolved
+        let upperList = this.customers.map(c => c.toUpperCase());
+        if (!upperList.includes(exactName.toUpperCase())) {
+           // Insert right before "+ Add Customer"
            this.customers.splice(this.customers.length - 1, 0, exactName);
-           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
-             localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
-           }
-        } else {
-           // ✨ THE FIX: Look up the exact original casing in the array so the HTML dropdown doesn't break
-           exactName = this.customers[existingIdx];
+           localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+           
+           // ✨ Push to Google Sheet immediately
+           let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+           fetch(ApiManager.getActiveArchiveUrl(), {
+             method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+             body: JSON.stringify({ action: "SYNC_LOCAL_DB", payload: { customers: cleanCustomers } })
+           }).catch(e => console.warn("Background customer sync failed."));
         }
         
         this.populatePartners();
         this.populateItemCustomerSelect();
-        
-        // ✨ THE FIX: Safely set the dropdown to the exact case-sensitive string
         document.getElementById('itemCustomerSelect').value = exactName;
       } else {
         document.getElementById('itemCustomerSelect').selectedIndex = 0;
@@ -384,34 +377,28 @@ const DatabaseManager = {
     } else if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
-        // ✨ NEW: Intercept and resolve alias
         let resolvedName = this.resolveAlias(newC, 'customer');
-        if (resolvedName.toUpperCase() !== newC.trim().toUpperCase()) {
-           alert(`Alias Detected: Auto-correcting "${newC}" to primary account "${resolvedName}"`);
-           newC = resolvedName;
-        }
-
-        let upperList = this.customers.map(c => c.toUpperCase());
-        let existingIdx = upperList.indexOf(newC.trim().toUpperCase());
         let exactName = newC.trim();
-
-        if (existingIdx === -1) {
+        
+        let upperList = this.customers.map(c => c.toUpperCase());
+        if (!upperList.includes(exactName.toUpperCase())) {
+           // Insert right before "+ Add Customer"
            this.customers.splice(this.customers.length - 1, 0, exactName);
-           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
-             localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
-           }
-        } else {
-           // ✨ THE FIX: Look up the exact original casing in the array
-           exactName = this.customers[existingIdx];
+           localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+           
+           // ✨ Push to Google Sheet immediately
+           let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
+           fetch(ApiManager.getActiveArchiveUrl(), {
+             method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+             body: JSON.stringify({ action: "SYNC_LOCAL_DB", payload: { customers: cleanCustomers } })
+           }).catch(e => console.warn("Background customer sync failed."));
         }
         
         this.populatePartners();
         this.populateItemCustomerSelect();
-        
-        // ✨ THE FIX: Safely set the dropdown
-        document.getElementById('customerSelect').value = exactName;
+        document.getElementById('itemCustomerSelect').value = exactName;
       } else {
-        document.getElementById('customerSelect').selectedIndex = 0;
+        document.getElementById('itemCustomerSelect').selectedIndex = 0;
       }
     }
   },

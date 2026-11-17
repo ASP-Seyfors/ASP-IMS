@@ -300,29 +300,31 @@ const ScannerManager = {
              lot = rem.substring(0, gsIdx);
              idx += 2 + gsIdx; 
           } else {
-            let breakIdx = rem.search(/(11\d{6}|17\d{6}|20\d{2}|21[a-zA-Z0-9]{4,})/);
-            
-            if (breakIdx > 1) {
-              lot = rem.substring(0, breakIdx);
-              idx += 2 + breakIdx; 
-            } else {
-              let swallowed17Match = rem.match(/^(.*?)(17)([2-3]\d(?:0[1-9]|1[0-2])(?:0[0-9]|[1-2]\d|3[0-1]))(.*)$/);
-              
-              if (swallowed17Match) {
-                  lot = swallowed17Match[1]; 
-                  let rawExp = swallowed17Match[3]; 
-                  
-                  if (!exp) {
-                      let yy = parseInt(rawExp.substring(0, 2), 10);
-                      let year = yy < 50 ? (2000 + yy) : (1900 + yy);
-                      exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
-                  }
-                  idx += 2 + lot.length + 8; 
-              } else {
-                  lot = rem;
-                  break;
-              }
-            }
+             // ✨ FIX: Look for standard GS1 AI boundaries (11 = Prod Date, 17 = Exp Date, 20 = Variant, 21 = Serial, 310x = Weight)
+             let breakMatch = rem.match(/(11\d{6}|17\d{6}|20\d{2}|21[a-zA-Z0-9]{4,}|310\d{5})/);
+             
+             if (breakMatch && breakMatch.index > 0) {
+               let breakIdx = breakMatch.index;
+               lot = rem.substring(0, breakIdx);
+               idx += 2 + breakIdx; 
+             } else {
+               let swallowed17Match = rem.match(/^(.*?)(17)([2-3]\d(?:0[1-9]|1[0-2])(?:0[0-9]|[1-2]\d|3[0-1]))(.*)$/);
+               
+               if (swallowed17Match) {
+                   lot = swallowed17Match[1]; 
+                   let rawExp = swallowed17Match[3]; 
+                   
+                   if (!exp) {
+                       let yy = parseInt(rawExp.substring(0, 2), 10);
+                       let year = yy < 50 ? (2000 + yy) : (1900 + yy);
+                       exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
+                   }
+                   idx += 2 + lot.length + 8; 
+               } else {
+                   lot = rem;
+                   break;
+               }
+             }
           }
         } else if (/^\d{12,14}$/.test(clean)) {
           if (!gtin) gtin = clean;

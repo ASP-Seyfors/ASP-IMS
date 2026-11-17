@@ -35,19 +35,19 @@ async function openActiveShipmentsHub() {
                 let safeData = encodeURIComponent(JSON.stringify(s));
                 let type = s.weight !== undefined ? 'Outgoing' : 'Incoming';
 
-                return `<div style="background:#fff; border:1px solid #ddd; padding:8px; margin-bottom:8px; border-radius:4px;">
-                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:4px; margin-bottom:4px;">
-                                <a href="javascript:void(0)" onclick="openShipmentEditor('${type}', ${s.rowIdx}, '${safeData}')" style="font-weight:bold; color:#333; text-decoration:none; cursor:pointer;" title="Click to Edit">
-                                    ✏️ ${s.partner}
-                                </a>
-                                <span style="color:#777; font-size:0.75rem;">${dStr}</span>
-                            </div>
-                            <div style="color:#555; font-size:0.8rem;">PO / Invoice: ${s.po || 'N/A'}</div>
-                            <div style="margin-top:4px; display:flex; justify-content:space-between;">
-                                ${link}
-                                <span style="font-size:0.75rem; color:${s.status==='Pending'?'#e65100':'#2e7d32'}; font-weight:bold;">${s.status}</span>
-                            </div>
-                        </div>`;
+                return `<div style="background:#fff; border:1px solid #ddd; padding:8px; margin-bottom:8px; border-radius:4px; cursor:pointer;" onclick="clickInboundTask('${s.partner}', '${s.po}', '${s.eta}')" title="Click to Load PO">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:4px; margin-bottom:4px;">
+                <span style="font-weight:bold; color:#0277bd;">
+                    📥 ${s.partner}
+                </span>
+                <span style="color:#777; font-size:0.75rem;">Expected: ${dStr}</span>
+            </div>
+            <div style="color:#555; font-size:0.8rem;">PO / Invoice: ${s.po || 'N/A'}</div>
+            <div style="margin-top:4px; display:flex; justify-content:space-between;">
+                ${link}
+                <span style="font-size:0.75rem; color:${s.status==='Pending'?'#e65100':'#2e7d32'}; font-weight:bold;">${s.status}</span>
+            </div>
+        </div>`;
             }).join('');
         };
 
@@ -153,5 +153,28 @@ async function saveShipmentEdit() {
         alert("Network Error: " + err.message);
     } finally {
         btn.innerHTML = origText; btn.disabled = false;
+    }
+}
+
+function clickInboundTask(partner, po, eta) {
+    // 1. Resolve supplier using DatabaseManager alias mapping so variations match correctly
+    let supSelect = document.getElementById('supplierSelect') || document.getElementById('vendorSelect');
+    if (supSelect) {
+        let resolvedSupplier = (typeof DatabaseManager !== 'undefined' && DatabaseManager.resolveAlias) 
+            ? DatabaseManager.resolveAlias(partner, 'supplier') 
+            : partner;
+        supSelect.value = resolvedSupplier;
+        supSelect.dispatchEvent(new Event('change'));
+    }
+
+    // 2. Format PO with clean "Order# " prefix (stripping duplicates if clicked repeatedly)
+    let cleanPo = String(po || '').replace(/^Order#\s*/i, '').trim();
+    let formattedPo = cleanPo ? "Order# " + cleanPo : "";
+
+    // 3. Populate Order Details / PO input
+    let orderInput = document.getElementById('orderNumberInput') || document.getElementById('shipEditPo');
+    if (orderInput) {
+        orderInput.value = formattedPo;
+        orderInput.dispatchEvent(new Event('input'));
     }
 }

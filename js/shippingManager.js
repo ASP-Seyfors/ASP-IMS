@@ -734,15 +734,22 @@ const ShippingManager = {
     },
     
     skipAndComplete(isLoggedElsewhere = false) {
-        // ✨ NEW: If clicked via the UI "Skip" button, auto-log it to Outgoing with blank tracking fields!
         if (isLoggedElsewhere !== true) {
+            // ✨ FIX: Robust customer resolution fallback using SessionManager.currentSessionName
+            let rawComp = document.getElementById('shipAddressCompany') ? document.getElementById('shipAddressCompany').value.trim() : "";
+            let rawCustInput = document.getElementById('shipCustName') ? document.getElementById('shipCustName').value.trim() : "";
+            let sessionFallback = (typeof SessionManager !== 'undefined' && SessionManager.currentSessionName) ? SessionManager.currentSessionName.split('(')[0].split('-')[0].trim() : "";
+            
+            let finalCustomerName = (rawComp && rawComp !== "Unknown Customer") ? rawComp : (rawCustInput && rawCustInput !== "Unknown Customer" ? rawCustInput : sessionFallback);
+            if (!finalCustomerName) finalCustomerName = "UNKNOWN";
+
             let payload = {
                 action: "LOG_MANUAL_TRACKING",
                 payload: {
-                    customerName: document.getElementById('shipAddressCompany').value.trim() || document.getElementById('shipCustName').value.trim(),
+                    customerName: finalCustomerName,
                     orderNum: SessionManager.currentOrderNum || "",
                     carrier: document.getElementById('shipCarrier') ? document.getElementById('shipCarrier').value : "Manual",
-                    trackingNumber: "", // ✨ Left deliberately blank so you can fill it in on the Google Sheet later
+                    trackingNumber: "", 
                     totalWeight: document.getElementById('shipWeight').value || "",
                     dimL: document.getElementById('shipDimL').value || "",
                     dimW: document.getElementById('shipDimW').value || "",
@@ -750,7 +757,6 @@ const ShippingManager = {
                 }
             };
             try {
-                // Fire without awaiting so it doesn't freeze or slow down the skip UI
                 fetch(ApiManager.getActiveArchiveUrl(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -773,18 +779,23 @@ const ShippingManager = {
 
     async logManualTracking() {
         let trackingNum = prompt("Please paste the pre-provided tracking number:");
-        
-        // ✨ THE FIX: Explicitly catch the Cancel button (null) and Empty strings
         if (trackingNum === null || trackingNum.trim() === "") return;
 
         let btn = document.getElementById('btnLogTrackingOnly');
         let origText = btn.innerText;
         if (btn) { btn.innerText = "⏳ Logging..."; btn.disabled = true; }
 
+        let rawComp = document.getElementById('shipAddressCompany') ? document.getElementById('shipAddressCompany').value.trim() : "";
+        let rawCustInput = document.getElementById('shipCustName') ? document.getElementById('shipCustName').value.trim() : "";
+        let sessionFallback = (typeof SessionManager !== 'undefined' && SessionManager.currentSessionName) ? SessionManager.currentSessionName.split('(')[0].split('-')[0].trim() : "";
+        
+        let finalCustomerName = (rawComp && rawComp !== "Unknown Customer") ? rawComp : (rawCustInput && rawCustInput !== "Unknown Customer" ? rawCustInput : sessionFallback);
+        if (!finalCustomerName) finalCustomerName = "UNKNOWN";
+
         let payload = {
             action: "LOG_MANUAL_TRACKING",
             payload: {
-                customerName: document.getElementById('shipAddressCompany').value.trim() || document.getElementById('shipCustName').value.trim(),
+                customerName: finalCustomerName,
                 orderNum: SessionManager.currentOrderNum || "",
                 carrier: document.getElementById('shipCarrier').value,
                 trackingNumber: trackingNum.trim(),
@@ -958,6 +969,88 @@ const ShippingManager = {
         
         if (stateMap[s]) {
             el.value = stateMap[s];
+        }
+    },
+
+    async loadInboundTaskList() {
+        let container = document.getElementById('inboundTaskCardsContainer');
+        if (!container) return;
+
+        container.innerHTML = "<div style='text-align:center; color:#e65100; padding:6px;'>⏳ Loading expected shipments...</div>";
+
+        try {
+            let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_PENDING_SHIPMENTS`);
+            let data = await res.json();
+            
+            if (!data.incoming || data.incoming.length === 0) {
+                container.innerHTML = "<div style='color:#777; font-style:italic; text-align:center; padding:6px;'>No pending incoming shipments found.</div>";
+                return;
+            }
+
+            // Filter for pending or in-transit incoming shipments
+            let pending = data.incoming.filter(s => String(s.status).toLowerCase() !== 'delivered');
+            if (pending.length === 0) {
+                container.innerHTML = "<div style='color:#777; font-style:italic; text-align:center; padding:6px;'>All incoming shipments have been delivered.</div>";
+                return;
+            }
+
+            let html = pending.map(s => {
+                let dStr = s.eta ? new Date(s.eta).toLocaleDateString() : (s.date ? new Date(s.date).toLocaleDateString() : 'TBD');
+                let safePartner = String(s.partner || '').replace(/'/g, "\\'");
+                let safePo = String(s.po || '').replace(/'/g, "\\'");
+                
+                return `
+                <div onclick="ShippingManager.selectInboundTask('${safePartner}', '${safePo}')" style="background:#fff; border:1px solid #ffcc80; padding:8px 10px; border-radius:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" title="Click to auto-fill supplier and PO">
+                    <div>
+                        <strong style="color:#e65100;">${s.partner}</strong> | <span style="color:#333; font-weight:bold;">PO: ${s.po || 'N/A'}</span>
+                        <div style="font-size:0.75rem; color:#666;">Carrier: ${s.carrier || 'N/A'} | Tracking: ${s.tracking || 'None'}</div>
+                    </div>
+                    <span class="badge-info" style="background:#e65100; color:#fff; font-size:0.75rem; padding:2px 6px;">ETA: ${dStr}</span>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = html;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (err) {
+            container.innerHTML = "<div style='color:red; text-align:center; padding:6px;'>Failed to load inbound task list.</div>";
+        }
+    },
+
+    selectInboundTask(partnerName, poNumber) {
+        // 1. Auto-fill and resolve Supplier Dropdown using alias mapping
+        let supSel = document.getElementById('supplierSelect');
+        if (supSel) {
+            let resolvedSupplier = (typeof DatabaseManager !== 'undefined' && DatabaseManager.resolveAlias) 
+                ? DatabaseManager.resolveAlias(partnerName, 'supplier') 
+                : partnerName;
+            supSel.value = resolvedSupplier;
+            supSel.dispatchEvent(new Event('change'));
+        }
+
+        // 2. Format PO with clean "Order# " prefix (stripping duplicates if clicked repeatedly)
+        let cleanPo = String(poNumber || '').replace(/^Order#\s*/i, '').trim();
+        let formattedPo = cleanPo ? "Order# " + cleanPo : "";
+
+        // 3. Auto-fill Order Details / PO input
+        let orderInput = document.getElementById('orderDetailsInput');
+        if (orderInput) {
+            orderInput.value = formattedPo;
+            orderInput.dispatchEvent(new Event('input'));
+        }
+
+        // 4. Subtle visual confirmation alert
+        if (typeof UIManager !== 'undefined') {
+            UIManager.showCustomAlert("Shipment Selected", `✅ Auto-filled Supplier <b>${partnerName}</b> and PO <b>${formattedPo}</b>.`);
+        }
+    },
+
+    toggleInboundTaskHub(sessionType) {
+        let hub = document.getElementById('inboundTaskHub');
+        if (hub) {
+            hub.style.display = (sessionType === 'Shipment') ? 'block' : 'none';
+            if (sessionType === 'Shipment') {
+                this.loadInboundTaskList();
+            }
         }
     }
 };

@@ -111,6 +111,20 @@ const InventoryEngine = {
 
         let consumeFromReserved = (q, sLot, sExp) => {
           let rem = q;
+          let isNaScan = (!sLot || sLot === 'N/A' || sLot === 'NA' || sLot === 'NO_LOT');
+
+          // If the operator selected N/A for lot/exp, bypass strict lot matching and consume from buckets freely
+          if (isNaScan) {
+              buckets.forEach(b => {
+                if (rem > 0 && b.remQty > 0) {
+                  let take = Math.min(b.remQty, rem);
+                  b.remQty -= take;
+                  rem -= take;
+                }
+              });
+              return rem;
+          }
+
           // 1. Exact Lot + Exp match
           buckets.forEach(b => {
             if (rem > 0 && b.remQty > 0 && b.lot === sLot && b.exp === sExp) {

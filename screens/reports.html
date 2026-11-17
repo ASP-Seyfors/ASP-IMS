@@ -24,17 +24,39 @@
   </div>
 
   <!-- Warehouse Inventory Reports -->
-  <div id="panelInventoryReports" style="background: #f3e5f5; border: 1px solid #ce93d8; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #4a148c;">Warehouse Inventory Reports</h4>
+  <div id="panelInventoryReports" style="background: var(--raw-bg, #f3e5f5); border: 1px solid var(--border-color, #ce93d8); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #4a148c);">Warehouse Inventory Reports</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Report</button>
-      <button class="btn-small btn-auto" style="background-color: #e65100; color: #fff;" onclick="ReportsManager.generateUnifiedExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Expiration Report</button>
-      <button class="btn-small btn-auto" style="background-color: #8e24aa; color: #fff;" onclick="ReportsManager.openAddressBookEditor()"><i data-lucide="book-open" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Manage Address Book</button>
-      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #ffffff; margin: 0; padding: 10px;" onclick="window.openEthiconMonitorModal()">
+      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; width:100%;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Report</button>
+      <button class="btn-action btn-auto" style="background-color: #e65100; color: #fff; margin:0; width:100%;" onclick="ReportsManager.generateUnifiedExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Expiration Report</button>
+      <button class="btn-action btn-auto" style="background-color: #8e24aa; color: #fff; margin:0; width:100%;" onclick="ReportsManager.openAddressBookEditor()"><i data-lucide="book-open" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Manage Address Book</button>
+      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #ffffff; margin: 0; width:100%;" onclick="window.openEthiconMonitorModal()">
         <i data-lucide="shield-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Ethicon Monitor
       </button>
     </div>
+    <!-- Single full-width row for the CSV Export button below -->
+    <div style="margin-top: 8px;">
+      <button class="btn-action" style="background-color: #2e7d32; color: #ffffff; margin:0; width:100%;" onclick="ReportsManager.triggerOnHandCsv()">
+        <i data-lucide="file-spreadsheet" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Export On-Hand Stock CSV
+      </button>
+    </div>
   </div>
+
+  <!-- ✨ EXTERNAL STOREFRONT & MARKETPLACE EXPORTS SECTION
+<div class="report-section-card" style="background:var(--input-bg); border:1px solid var(--border-color); padding:15px; border-radius:6px; margin-bottom:20px;">
+  <h3 style="margin-top:0; color:var(--heading-color, #0277bd); font-size:1rem;">🛒 External Storefront & Marketplace Exports</h3>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-top:10px;">
+    
+    <button class="btn-action" style="background:#2e7d32; color:#fff;" onclick="ReportsManager.triggerVetcoveVariance()">📦 Export Vetcove Variance CSV</button>
+    <button class="btn-action" style="background:#1b5e20; color:#fff;" onclick="ReportsManager.triggerVetcoveFull()">📦 Export Vetcove Full CSV</button>
+    
+    <button class="btn-action" style="background:#0277bd; color:#fff;" onclick="ReportsManager.triggerDotMedVariance()">🏥 Export DotMed Variance CSV</button>
+    <button class="btn-action" style="background:#01579b; color:#fff;" onclick="ReportsManager.triggerDotMedFull()">🏥 Export DotMed Full CSV</button>
+    
+    <button class="btn-action" style="background:#f57f17; color:#fff;" onclick="ReportsManager.triggerRevMedExport()">💊 Export RevMed CSV</button>
+    
+  </div>
+</div> -->
 
   <!-- Customer Specific Reports -->
   <div id="panelCustomerReports" style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">

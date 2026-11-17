@@ -997,22 +997,47 @@ const SessionManager = {
           <div style="display:flex; align-items:center; gap:6px;">
             <label style="font-size:0.8rem; font-weight:bold; color:#0277bd; min-width:70px;">Category:</label>
             <select id="advCat_${index}" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:4px;">
-                <option value="Medical Supplies">Medical Supplies (General)</option>
-                <option value="Suture">Suture</option>
-                <option value="Endomechanical">Endomechanical</option>
-                <option value="Energy">Energy</option>
-                <option value="Mesh">Mesh</option>
-                <option value="Orthopedic">Orthopedic</option>
-                <option value="Wound Care">Wound Care</option>
-                <option value="Custom">+ Add Custom Category...</option>
+                <!-- Dynamically populated below -->
             </select>
           </div>
         </div>
       `;
       list.appendChild(div);
 
+      // ✨ DYNAMIC CATEGORY BUILDER: Pulls all unique categories from master database + defaults
       let catSelect = document.getElementById(`advCat_${index}`);
       if (catSelect) {
+          let defaultCats = ["Medical Supplies", "Suture", "Endomechanical", "Energy", "Mesh", "Orthopedic", "Wound Care"];
+          let dbCats = new Set(defaultCats);
+          
+          if (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db)) {
+              DatabaseManager.db.forEach(i => {
+                  if (i.category) {
+                      String(i.category).split(',').forEach(c => {
+                          let clean = c.trim();
+                          if (clean) dbCats.add(clean);
+                      });
+                  }
+              });
+          }
+
+          let sortedCats = Array.from(dbCats).sort((a,b) => a.localeCompare(b));
+          let currentItemCat = (item.category && item.category !== "General") ? item.category : "Medical Supplies";
+
+          catSelect.innerHTML = "";
+          sortedCats.forEach(cat => {
+              let opt = document.createElement('option');
+              opt.value = cat;
+              opt.textContent = cat;
+              if (cat.toLowerCase() === currentItemCat.toLowerCase()) opt.selected = true;
+              catSelect.appendChild(opt);
+          });
+
+          let customOpt = document.createElement('option');
+          customOpt.value = "Custom";
+          customOpt.textContent = "+ Add Custom Category...";
+          catSelect.appendChild(customOpt);
+
           catSelect.addEventListener('change', function() {
               if (this.value === 'Custom') {
                   let customCat = prompt("Enter a custom category name:");
