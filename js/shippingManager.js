@@ -1046,9 +1046,11 @@ const ShippingManager = {
 
     toggleInboundTaskHub(sessionType) {
         let hub = document.getElementById('inboundTaskHub');
+        let advChk = document.getElementById('chkAdvancedMode');
+        let isAdv = advChk ? advChk.checked : false;
         if (hub) {
-            hub.style.display = (sessionType === 'Shipment') ? 'block' : 'none';
-            if (sessionType === 'Shipment') {
+            hub.style.display = (isAdv && sessionType === 'Shipment') ? 'block' : 'none';
+            if (isAdv && sessionType === 'Shipment') {
                 this.loadInboundTaskList();
             }
         }

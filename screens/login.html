@@ -16,17 +16,39 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/login.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- LOGIN & AUTHENTICATION -->
-<div id="screenLogin" style="display: none; height: 90vh; justify-content: center; align-items: center; flex-direction: column;">
-  <div class="card" style="width: 100%; max-width: 400px; text-align: center; padding: 30px 20px;">
-    <img id="loginLogo" style="max-height: 80px; margin-bottom: 20px;" alt="ASP Logo" />
-    <h2 style="justify-content: center; border: none; color: #0277bd; font-size: 1.3rem;">Allied Surgical Products</h2>
-    <p style="font-size: 0.9rem; color: #555; margin-bottom: 25px;">Please sign in with your corporate workspace account to access warehouse tools.</p>
+<div id="screenLogin" style="display: none; min-height: 88vh; justify-content: center; align-items: center; flex-direction: column; padding: 16px; box-sizing: border-box;">
+  <div class="saas-dashboard-container saas-login-card">
     
-    <div id="googleAuthButton" style="display: flex; justify-content: center; margin-bottom: 20px; min-height: 40px;"></div>
+    <div class="login-brand-well">
+      <img id="loginLogo" style="max-height: 76px; margin-bottom: 14px; object-fit: contain;" alt="ASP Logo" />
+      <h2 style="justify-content: center; border: none; color: var(--heading-color); font-size: 1.35rem; font-weight: 800; margin: 0 0 6px 0;">
+        Allied Surgical Products
+      </h2>
+      <span class="saas-workflow-pill" style="display: inline-block; margin-bottom: 4px;">Inventory Management System</span>
+    </div>
+
+    <p style="font-size: 0.88rem; color: var(--text-main); opacity: 0.85; line-height: 1.45; margin: 16px 0 20px 0;">
+      Sign in with your authorized corporate Google Workspace account to access warehouse operations and live cloud ledgers.
+    </p>
     
-    <div style="border-top: 1px solid #ccc; margin: 20px 0;"></div>
+    <div class="saas-meta-well" style="padding: 18px 12px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 54px;">
+      <div id="googleAuthButton" style="display: flex; justify-content: center;"></div>
+    </div>
     
-    <button class="btn-action btn-auto" style="background-color: #757575; color: #fff; width: 100%;" onclick="AuthManager.continueAsGuest()">Continue as Guest Scanner</button>
+    <div style="border-top: 1px solid var(--border-color); margin: 18px 0; position: relative;">
+      <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--card-bg); padding: 0 10px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-main); opacity: 0.6;">
+        Or Restricted Access
+      </span>
+    </div>
+    
+    <button class="btn-saas-secondary" style="width: 100%; padding: 12px; font-size: 0.9rem; font-weight: 700;" onclick="AuthManager.continueAsGuest()">
+      <i data-lucide="scan-barcode" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Continue as Guest Scanner
+    </button>
+
   </div>
 </div>

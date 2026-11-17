@@ -1,21 +1,38 @@
-<div id="bugReportModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-    <h3 style="margin:0 0 10px 0; color:#c62828; display:flex; align-items:center; gap:6px;"><i data-lucide="bug" style="width:20px; height:20px;"></i> Report a System Issue</h3>
-    <p style="font-size:0.85rem; color:#555; margin-top:0;">Please describe the error or unexpected behavior below. Diagnostic data will be attached automatically.</p>
-    <div style="margin-bottom:12px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:#333; display:block; margin-bottom:4px;">Issue Category:</label>
-      <select id="bugCategorySelect" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:0.9rem;">
-        <option value="General Bug / App Error">🐞 General Bug / App Error</option>
-        <option value="Scanning / Barcode Issue">📦 Scanning / Barcode Issue</option>
-        <option value="Database Correction">🗄️ Database / Item Info Correction</option>
-        <option value="Feature Request">✨ Feature Request / Suggestion</option>
-        <option value="Other">❓ Other / Not Sure</option>
-      </select>
+<div id="bugReportModal" class="saas-modal-backdrop" style="display:none; z-index:999999;">
+  <div class="saas-modal-card" style="max-width:500px;">
+    
+    <div class="saas-modal-header" style="border-bottom-color:#c62828;">
+      <h3 style="margin:0; color:#ef5350; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="bug" style="width:18px; height:18px;"></i> Report a System Issue
+      </h3>
+      <button class="saas-modal-close" onclick="document.getElementById('bugReportModal').style.display='none'">×</button>
     </div>
-    <textarea id="bugDescInput" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; resize:vertical; font-family:inherit; font-size:0.9rem;" placeholder="What were you doing when the issue occurred?"></textarea>
-    <div style="display:flex; justify-content:space-between; gap:10px; margin-top:15px;">
-      <button onclick="document.getElementById('bugReportModal').style.display='none'" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
-      <button id="btnSubmitBug" onclick="UIManager.submitBugPayload()" style="flex:1; background:#c62828; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">Submit Report</button>
+
+    <p style="font-size:0.83rem; color:var(--text-main); opacity:0.8; margin:0 0 14px 0;">
+      Describe the error or unexpected behavior below. Session diagnostic metadata will be attached automatically.
+    </p>
+
+    <div class="saas-modal-body" style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;">Issue Category</label>
+        <select id="bugCategorySelect" class="saas-select">
+          <option value="General Bug / App Error">🐞 General Bug / App Error</option>
+          <option value="Scanning / Barcode Issue">📦 Scanning / Barcode Issue</option>
+          <option value="Database Correction">🗄️ Database / Item Info Correction</option>
+          <option value="Feature Request">✨ Feature Request / Suggestion</option>
+          <option value="Other">❓ Other / Not Sure</option>
+        </select>
+      </div>
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;">Issue Details</label>
+        <textarea id="bugDescInput" rows="4" class="saas-input" style="resize:vertical;" placeholder="What were you doing when the issue occurred?"></textarea>
+      </div>
     </div>
+
+    <div class="saas-modal-footer">
+      <button class="btn-saas-secondary" style="flex:1; padding:11px;" onclick="document.getElementById('bugReportModal').style.display='none'">Cancel</button>
+      <button id="btnSubmitBug" class="btn-saas-primary" style="flex:2; margin-top:0; padding:11px; background:#c62828;" onclick="UIManager.submitBugPayload()">Submit Report</button>
+    </div>
+
   </div>
 </div>

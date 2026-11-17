@@ -1,3 +1,208 @@
+<div id="screenSetup" class="saas-dashboard-container">
+  
+  <!-- 1. Command Center Header -->
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2>ASP Command Center</h2>
+      <span id="userRoleBadge" class="saas-badge verified">Verified</span>
+    </div>
+    <div class="header-actions">
+      <span id="syncIndicator" class="sync-pill" style="display:none;" title="Pending offline data">
+        <i data-lucide="circle-alert" style="width:14px; height:14px;"></i> Sync Pending
+      </span>
+      <button class="btn-saas-secondary" onclick="masterSystemSync(event)" title="Download latest cloud database">
+        <i data-lucide="refresh-cw" style="width:15px; height:15px;"></i> Sync System
+      </button>
+      <label class="advanced-toggle" title="Reveal enterprise tools">
+        <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> Advanced
+      </label>
+    </div>
+  </div>
+
+  <!-- 2. Pre-Load / QBO Feed Wrapper -->
+  <div id="devFeedWrapper" style="display:none;">
+    <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 12px; display: none;">
+      <label class="preload-checkbox-label">
+        <input type="checkbox" id="chkPreloadManifest" onchange="UIManager.togglePreloadFeed()"> Pre-Load Order Information from QBO
+      </label>
+    </div>
+
+    <div id="panelStagedFeed" class="saas-widget-subcard" style="display: none;">
+      <div class="flex-between" style="margin-bottom: 8px;">
+        <span class="subcard-title"><i data-lucide="cloud" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Open Invoices Feed</span>
+        <button class="btn-saas-sub" onclick="QboManager.triggerQboSync(event)">
+          <i data-lucide="cloud-download" style="width:13px; height:13px; vertical-align:middle; margin-right:4px;"></i>Fetch Orders
+        </button>
+      </div>
+      <select id="stagedOrdersSelect" class="saas-select" onchange="QboManager.loadSelectedStagedOrder(this.value)">
+        <option value="">-- Select Staged Order --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 3. Primary Workflow Selector (Segmented Control Cards) -->
+  <div class="saas-card primary-action-card">
+    <div class="card-section-title">Select Workflow Mode</div>
+    
+    <!-- Segmented Control Tabs -->
+    <div class="session-type-segmented-control">
+      <label class="segment-option active" id="segShipment">
+        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()">
+        <i data-lucide="package" style="width:18px; height:18px;"></i>
+        <span>Shipment (Incoming)</span>
+      </label>
+      <label class="segment-option" id="segOrder">
+        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()">
+        <i data-lucide="shopping-cart" style="width:18px; height:18px;"></i>
+        <span>Order (Outgoing)</span>
+      </label>
+    </div>
+
+    <!-- Expected Inbound Shipments Hub (Dynamic) -->
+    <div id="inboundTaskHub" class="inbound-task-hub" style="display:none;">
+      <div class="flex-between" style="margin-bottom: 6px; border-bottom: 1px solid rgba(230, 81, 0, 0.25); padding-bottom: 6px;">
+        <span class="hub-title" style="font-size:0.8rem; font-weight:700; color:#ff9800;">
+          <i data-lucide="truck" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Expected Inbound Shipments (Click PO to Load)
+        </span>
+        <button class="btn-saas-sub-orange" onclick="ShippingManager.loadInboundTaskList()">🔄 Refresh</button>
+      </div>
+      <div id="inboundTaskCardsContainer" class="inbound-cards-scroll">
+        <div style="text-align:center; color:#777; font-style:italic; padding:8px;">Loading expected inbound shipments...</div>
+      </div>
+    </div>
+
+    <!-- Partner / Supplier Inputs -->
+    <div class="form-row-saas" id="rowSupplier">
+      <label class="saas-label">Supplier / Vendor</label>
+      <select id="supplierSelect" class="saas-select" onchange="handlePartnerSelect(this.value, 'supplier')"></select>
+    </div>
+
+    <div class="form-row-saas" id="rowCustomer" style="display: none;">
+      <label class="saas-label">Customer Account</label>
+      <select id="customerSelect" class="saas-select" onchange="handlePartnerSelect(this.value, 'customer')"></select>
+    </div>
+
+    <div class="form-row-saas">
+      <label class="saas-label">Order / PO Details</label>
+      <input type="text" id="orderDetailsInput" class="saas-input" placeholder="e.g. PO# 795037269 or Invoice#">
+    </div>
+    
+    <div class="form-row-saas">
+      <label class="saas-label">Operator Name</label>
+      <div style="flex: 1; display: flex;">
+        <input type="text" id="userNameInput" class="saas-input" placeholder="Enter Operator Name">
+        <select id="userNameSelect" class="saas-select" style="display:none;">
+          <option value="">-- Select Your Name --</option>
+          <option value="Thomas">Thomas</option>
+          <option value="Jessica">Jessica</option>
+          <option value="Operator">Warehouse Operator</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row-saas" id="rowProcess" style="display: none;">
+      <label class="saas-label">Fulfillment Process</label>
+      <select id="workflowTypeSelect" class="saas-select">
+        <option value="Reserving">Picking & Reserving</option>
+        <option value="Picking & Packing">Picking & Packing</option>
+      </select>
+    </div>
+
+    <!-- Prominent SaaS Start CTA Button -->
+    <button class="btn-saas-primary btn-start" onclick="startSession()">
+      <i data-lucide="play-circle" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i> Start Scanning Session
+    </button>
+
+  <!-- 4. Enterprise Data Hub Widget -->
+  <div id="panelEnterpriseHub" class="saas-card enterprise-hub-card" style="display: none;">
+    <div class="card-section-title"><i data-lucide="layout-grid" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Enterprise Data Hub</div>
+    <div class="enterprise-grid">
+      <button class="btn-saas-grid" onclick="UIManager.openReportsHub()">
+        <i data-lucide="bar-chart-3" style="width:18px; height:18px; margin-bottom:4px;"></i>
+        <span>Reports & Analytics</span>
+      </button>
+      <button id="btnTraceability" class="btn-saas-grid" onclick="openAuditHub()">
+        <i data-lucide="package-search" style="width:18px; height:18px; margin-bottom:4px;"></i>
+        <span>Traceability Hub</span>
+      </button>
+      <button id="btnStocktake" class="btn-saas-grid" onclick="UIManager.openStocktakeModal()">
+        <i data-lucide="clipboard-list" style="width:18px; height:18px; margin-bottom:4px;"></i>
+        <span>Physical Stocktake</span>
+      </button>
+      <button class="btn-saas-grid" onclick="UIManager.openDbEditor()">
+        <i data-lucide="database" style="width:18px; height:18px; margin-bottom:4px;"></i>
+        <span>Database Editor</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. Minimalist Utility Footer -->
+  <div class="dashboard-footer">
+    <button id="btnSessionArchive" class="btn-saas-footer-amber" onclick="SessionManager.openArchive()">
+      <i data-lucide="archive" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i> Session Archive
+    </button>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-saas-footer-icon" onclick="UIManager.sendBugReport()" title="Report an Issue">
+        <i data-lucide="bug" style="width:16px; height:16px;"></i>
+      </button>
+      <button class="btn-saas-footer-icon" onclick="SessionManager.openSettings()" title="Settings & Preferences">
+        <i data-lucide="settings" style="width:16px; height:16px;"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Developer Tools / Cheat Code Block -->
+  <div id="devToolsContainer" style="display: none; justify-content: center; margin-top: 15px;">
+    <input type="text" id="cheatCodeInput" style="width: 100%; max-width: 400px; padding: 10px; background: transparent; border: none; color: transparent; outline: none; caret-color: transparent; text-align: center;" oninput="UIManager.processCheatCode(this)" autocomplete="off">
+    <button id="btnDevTools" class="btn-action btn-auto" style="display: none; background-color: #c62828; color: #ffffff; width: 100%; max-width: 400px; padding: 10px;" onclick="UIManager.openDevTools()">Developer Tools</button>
+  </div>
+</div>
+
+<!-- Supporting Modals remain intact below -->
+<div id="stocktakeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+  <div style="background:var(--card-bg, #fff); border-radius:12px; width:100%; max-width:400px; padding:24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <h3 style="margin-top:0; color:var(--heading-color, #7b1fa2); border-bottom:2px solid var(--border-color, #eee); padding-bottom:10px;"><i data-lucide="clipboard-list" style="width:18px; height:18px; vertical-align:middle; margin-right:6px;"></i>Select Stocktake Mode</h3>
+    <p style="font-size:0.85rem; color:var(--text-main, #555); line-height: 1.4;"><strong>Full Stocktake:</strong> Document and overwrite all current inventory quantities.<br><br><strong>Selection Stocktake:</strong> Gather a list or update specific REFs without clearing the database.</p>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+      <button class="btn-saas-primary" style="background:#7b1fa2;" onclick="SessionManager.startStocktakeSession('Full')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Start Full Stocktake</button>
+      <button class="btn-saas-secondary" style="border-color:#0277bd; color:#0277bd;" onclick="SessionManager.startStocktakeSession('Selection')"><i data-lucide="target" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Start Selection Stocktake</button>
+      <button class="btn-saas-sub" style="margin-top:6px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalUnreserve" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999999; align-items: center; justify-content: center;">
+  <div class="modal-content" style="background: var(--card-bg, #fff); color: var(--text-main, #333); padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <div style="display:flex; justify-content:space-between; border-bottom: 2px solid #e65100; padding-bottom: 10px; margin-bottom: 15px;">
+      <h3 style="margin: 0; color: #e65100;">Un-Reserve Items</h3>
+      <button style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-main);" onclick="document.getElementById('modalUnreserve').style.display='none'">✕</button>
+    </div>
+    <p style="font-size: 0.9rem; margin-bottom: 5px;">Customer: <strong id="unreserveCustomerName"></strong></p>
+    <p style="font-size: 0.85rem; color: #777; margin-bottom: 15px;">Select the items you wish to return to inventory:</p>
+    <div id="unreserveChecklistContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color, #ccc); border-radius: 6px; padding: 10px; margin-bottom: 15px; background: var(--raw-bg, #f9f9f9);"></div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="btn-saas-sub" onclick="document.getElementById('modalUnreserve').style.display='none'">Cancel</button>
+      <button class="btn-saas-primary" style="background-color: #e65100;" onclick="SessionManager.processUnreserve(event)">Process Un-Reserve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateSegmentUI() {
+    let shipmentRadio = document.querySelector('input[name="sessionType"][value="Shipment"]');
+    let segShip = document.getElementById('segShipment');
+    let segOrd = document.getElementById('segOrder');
+    if (shipmentRadio && segShip && segOrd) {
+      if (shipmentRadio.checked) {
+        segShip.classList.add('active');
+        segOrd.classList.remove('active');
+      } else {
+        segOrd.classList.add('active');
+        segShip.classList.remove('active');
+      }
+    }
+  }
+</script>
 <!-- =======================================================================
  * Allied Surgical Products - Inventory Management System
  * File: screens/setup.html
@@ -18,187 +223,7 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
-<!-- SESSION SETUP PHASE -->
-<div id="screenSetup" class="card">
-  
-  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 8px; margin-top: 4px; margin-bottom: 12px;">
-    <!-- 11a: Changed title to ASP Inventory Management System -->
-    <h2 style="border:none; margin:0; padding:0; display:flex; align-items:center; gap:8px;">
-      ASP Inventory Management System <span id="userRoleBadge" class="badge-info" style="background-color: #2e7d32; color: #fff; font-size: 0.75rem;">Verified</span>
-    </h2>
-    <div style="display: flex; gap: 10px; align-items: center;">
-      <span id="syncIndicator" style="display:none; color:#c62828; font-weight:bold; font-size:0.85rem;" title="You have pending offline data. Click Sync System to upload."><i data-lucide="circle-alert" style="width:14px; height:14px; vertical-align:text-bottom; color:red; margin-right:4px;"></i>Updates Pending</span>
-      
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 4px 10px;" onclick="masterSystemSync(event)" title="Download the latest cloud database and upload local history."><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Sync System</button>
-      <label style="font-size: 0.85rem; font-weight: bold; color: #555; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="Reveal enterprise tools and order pre-loading options.">
-        <input type="checkbox" id="chkAdvancedMode" onchange="UIManager.toggleAdvancedMode()"> Advanced
-      </label>
-    </div>
-  </div>
-
-  <div id="devFeedWrapper" style="display:none;">
-    <!-- Pre-Load Checkbox -->
-    <div id="rowPreloadToggle" style="text-align: center; margin-bottom: 10px; display: none;">
-      <label style="font-size: 0.85rem; font-weight: bold; color: #0277bd; cursor: pointer;" title="Automatically pull expected items from a QuickBooks order.">
-        <input type="checkbox" id="chkPreloadManifest" onchange="UIManager.togglePreloadFeed()"> Pre-Load Order Information
-      </label>
-    </div>
-
-    <!-- Staged Feed Panel -->
-    <div id="panelStagedFeed" style="background-color: #e3f2fd; border: 1px solid #0277bd; border-radius: 6px; padding: 10px 12px; margin-bottom: 15px; text-align: center; display: none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-        <span style="font-size: 0.85rem; font-weight: bold; color: #0277bd;"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shipments & Orders Feed</span>
-      <button class="btn-small btn-auto" style="background-color: #1565c0; color: #fff; padding: 3px 8px; font-size: 0.75rem;" onclick="QboManager.triggerQboSync(event)" title="Pull the latest open invoices from QuickBooks Online."><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Fetch Orders</button>
-      </div>
-      <select id="stagedOrdersSelect" style="width: 100%; font-size: 0.85rem;" onchange="QboManager.loadSelectedStagedOrder(this.value)" title="Select an order to pre-load its items into a manifest.">
-        <option value="">-- Select Staged Order --</option>
-      </select>
-    </div>
-  </div>
-  
-  <div class="form-row">
-    <div class="form-label">Session Type:</div>
-    <div class="input-wrapper" style="justify-content: space-around;">
-      <label style="cursor:pointer; font-weight:bold;" title="Use for items arriving at the warehouse.">
-        <input type="radio" name="sessionType" value="Shipment" checked onchange="toggleSessionType()"> <i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Shipment (Incoming)
-      </label>
-      <label style="cursor:pointer; font-weight:bold;" title="Use for items leaving the warehouse or being set aside.">
-        <input type="radio" name="sessionType" value="Order" onchange="toggleSessionType()"> <i data-lucide="shopping-cart" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Order (Outgoing)
-      </label>
-    </div>
-  </div>
-
-  <!-- DYNAMIC INBOUND TASK LIST -->
-<div id="inboundTaskHub" style="background: var(--input-bg, #fcf8f5); border: 1px solid #ffe0b2; border-radius: 6px; padding: 8px 10px; margin: 0 auto 12px auto; max-width: 520px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display:none;">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; border-bottom:1px solid #ffe0b2; padding-bottom:4px;">
-    <span style="font-size:0.75rem; font-weight:bold; color:#e65100;">
-      <i data-lucide="truck" style="width:13px; height:13px; vertical-align:middle; margin-right:4px;"></i> Expected Inbound Shipments (Click PO to Load)
-    </span>
-    <button class="btn-small btn-auto" style="background:#e65100; color:#fff; padding:1px 6px; font-size:0.65rem; border-radius:3px;" onclick="ShippingManager.loadInboundTaskList()">🔄 Refresh</button>
-  </div>
-  <div id="inboundTaskCardsContainer" style="max-height:110px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; font-size:0.75rem;">
-    <div style="text-align:center; color:#777; font-style:italic; padding:6px;">Loading expected inbound shipments...</div>
-  </div>
-</div>
-
-  <div class="form-row" id="rowSupplier">
-    <div class="form-label">Supplier / Vendor:</div>
-    <div class="input-wrapper">
-      <select id="supplierSelect" onchange="handlePartnerSelect(this.value, 'supplier')" title="Select where the shipment is coming from."></select>
-    </div>
-  </div>
-
-  <div class="form-row" id="rowCustomer" style="display: none;">
-    <div class="form-label">Customer:</div>
-    <div class="input-wrapper">
-      <select id="customerSelect" onchange="handlePartnerSelect(this.value, 'customer')" title="Select who the order is going to."></select>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="form-label">Order Details:</div>
-    <div class="input-wrapper">
-      <input type="text" id="orderDetailsInput" placeholder="e.g. PO# 795037269 or Invoice#" title="Optional: Enter a PO, Invoice, or Tracking number.">
-    </div>
-  </div>
-  
-  <div class="form-row">
-    <div class="form-label">User Name:</div>
-    <div class="input-wrapper">
-      <input type="text" id="userNameInput" placeholder="e.g. User" title="Enter your name for the audit log.">
-      
-      <!-- Workstation Dropdown (Hidden by Default) -->
-      <select id="userNameSelect" style="display:none;" title="Select your name for the audit log.">
-        <option value="">-- Select Your Name --</option>
-        <option value="Thomas">Thomas</option>
-        <option value="Jessica">Jessica</option>
-        <option value="Operator">Warehouse Operator</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-row" id="rowProcess" style="display: none;">
-    <div class="form-label">Process:</div>
-    <div class="input-wrapper">
-      <select id="workflowTypeSelect" title="Select whether to reserve items or physically pack them for shipping.">
-        <option value="Reserving"><i data-lucide="flag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Picking & Reserving</option>
-        <option value="Picking & Packing"><i data-lucide="hand" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Picking & Packing</option>
-        <!-- ✨ NEW: Un-Reserve Feature Option -->
-        <!-- <option value="Un-Reserve"><i data-lucide="rotate-ccw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Un-Reserve (Return to Inventory)</option> -->        
-      </select>
-    </div>
-  </div>
-
-  <!-- Start Button -->
-   <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px auto; width: 100%; max-width: 420px;">
-    <button class="btn-action btn-start btn-auto" style="padding: 10px 20px !important; margin: 0; flex: 1;" onclick="startSession()" title="Begin scanning items for this session.">Start Scanning Session</button>
-  </div>
-
-  <!-- Enterprise Data Hub -->
-  <div id="panelEnterpriseHub" class="card" style="background-color: #f5f5f5; border: 1px solid #dcdcdc; margin-bottom: 20px; padding: 15px; display: none;">
-    <h3 style="margin-top: 0; color: #7b1fa2; font-size: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 6px;"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Enterprise Data Hub</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openReportsHub()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Reports & Analytics</button>
-      <button id="btnTraceability" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="openAuditHub()"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Traceability</button>
-      <button id="btnStocktake" class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin: 0;" onclick="UIManager.openStocktakeModal()"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Stocktake</button>
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #ffffff; margin:0;" onclick="UIManager.openDbEditor()"><i data-lucide="database" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Database Editor</button>
-    </div>
-  </div>
-
-  <!-- Bottom Navigation & Utility Footer Grid (Cleaned Up) -->
-  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 10px; gap: 10px;">
-    <button id="btnSessionArchive" class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openArchive()" title="View, restore, or upload past scanning sessions.">Session Archive</button>
-    <div style="display: flex; gap: 8px;">
-      <!-- Replaced anchor tag with a standard button calling our JS function -->
-      <button class="btn-action btn-auto" style="background-color: #c62828; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="UIManager.sendBugReport()" title="Submit a bug report directly to IT Operations."><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle;"></i></button>
-      <button class="btn-action btn-auto" style="background-color: #555555; color: #ffffff; margin: 0; padding: 8px 12px !important; font-size: 0.85rem;" onclick="SessionManager.openSettings()" title="Adjust app preferences, theme, and Developer Tools."><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Settings</button>
-    </div>
-  </div>
-  
-<!-- Developer Tools / Cheat Code Block -->
-  <div id="devToolsContainer" style="display: none; justify-content: center; margin-top: 15px;">
-    <!-- 
-      This input is completely invisible by default but remains focusable. 
-      The user must know exactly where to click (right below the footer buttons) to type the code.
-    -->
-    <input type="text" id="cheatCodeInput" style="width: 100%; max-width: 400px; padding: 10px; background: transparent; border: none; color: transparent; outline: none; caret-color: transparent; text-align: center; text-transform: uppercase;" oninput="UIManager.processCheatCode(this)" autocomplete="off">
-    
-    <button id="btnDevTools" class="btn-action btn-auto" style="display: none; background-color: #c62828; color: #ffffff; width: 100%; max-width: 400px; padding: 10px; font-size: 0.85rem;" onclick="UIManager.openDevTools()" title="Access restricted administrative and debugging utilities."><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</button>
-  </div>
-  
-</div>
-
-<!-- STOCKTAKE MODAL -->
-<div id="stocktakeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:8px; width:100%; max-width:400px; padding:20px;">
-    <h3 style="margin-top:0; color:#7b1fa2; border-bottom:2px solid #7b1fa2; padding-bottom:8px;"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Select Stocktake Mode</h3>
-    <p style="font-size:0.85rem; color:#555;"><strong>Full Stocktake:</strong> A formal session to document and overwrite all current inventory quantities.<br><br><strong>Selection Stocktake:</strong> A lightweight session to gather a list of items or update specific REFs without clearing the rest of the database.</p>
-    <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-      <button class="btn-action btn-auto" style="background-color:#7b1fa2; color:#fff;" onclick="SessionManager.startStocktakeSession('Full')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Start Full Stocktake</button>
-      <button class="btn-action btn-auto" style="background-color:#0277bd; color:#fff; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="SessionManager.startStocktakeSession('Selection')"><i data-lucide="target" style="width:16px; height:16px;"></i> Start Selection Stocktake</button>
-      <button class="btn-action btn-cancel btn-auto" style="margin-top:10px;" onclick="UIManager.closeStocktakeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- ✨ NEW: Un-Reserve Checklist Modal -->
-<div id="modalUnreserve" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999999; align-items: center; justify-content: center;">
-  <div class="modal-content" style="background: #fff; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%;">
-    <div style="display:flex; justify-content:space-between; border-bottom: 2px solid #e65100; padding-bottom: 10px; margin-bottom: 15px;">
-      <h3 style="margin: 0; color: #e65100;">Un-Reserve Items</h3>
-      <button style="background:none; border:none; font-size:1.2rem; cursor:pointer;" onclick="document.getElementById('modalUnreserve').style.display='none'">✕</button>
-    </div>
-    
-    <p style="font-size: 0.9rem; color: #555; margin-bottom: 5px;">Customer: <strong id="unreserveCustomerName"></strong></p>
-    <p style="font-size: 0.85rem; color: #777; margin-bottom: 15px;">Select the items you wish to return to inventory:</p>
-    
-    <div id="unreserveChecklistContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; padding: 10px; margin-bottom: 15px;">
-       <!-- Checkboxes dynamically inject here -->
-    </div>
-
-    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-      <button class="btn-small" style="background-color: #777; color: #fff;" onclick="document.getElementById('modalUnreserve').style.display='none'">Cancel</button>
-      <button class="btn-small" style="background-color: #e65100; color: #fff;" onclick="SessionManager.processUnreserve(event)">Process Un-Reserve</button>
-    </div>
-  </div>
-</div>
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/setup.html (Modern SaaS Redesign)
+ * ======================================================================= -->

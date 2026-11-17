@@ -18,202 +18,218 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
-<!-- ACTIVE SCANNING & ENTRY PHASE -->
-<div id="screenScanning" style="display: none;">
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/scanning.html (Single-Column Enterprise SaaS Layout)
+ * ======================================================================= -->
+<div id="screenScanning" style="display: none;" class="saas-scanning-container">
   
-  <div class="header-banner">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div style="text-align: left; font-size: 0.85rem; width: 25%;"><strong>User:</strong><br><span id="hdrUser">--</span></div>
-      <div style="text-align: center; width: 50%;">
-        <h3 id="hdrTitle" style="margin: 0; font-size: 1.1rem; color: #0277bd;">Customer (Order)</h3>
-        <div id="hdrWorkflow" style="font-size: 0.85rem; font-weight: bold; color: #555; margin-top: 4px;">Workflow</div>
+  <!-- 1. Active Session Command Header -->
+  <div class="scanning-header-card">
+    <div class="scanning-meta-group">
+      <div class="session-badge-wrapper">
+        <span id="hdrWorkflow" class="saas-workflow-pill">Workflow</span>
+        <span class="operator-tag"><i data-lucide="user" style="width:13px; height:13px; vertical-align:text-bottom;"></i> <span id="hdrUser">--</span></span>
       </div>
-      <div style="text-align: right; font-size: 0.85rem; width: 25%;">
-        <strong>Date:</strong> <span id="hdrDate">--</span><br><strong>Start:</strong> <span id="hdrTime">--</span>
-      </div>
+      <h3 id="hdrTitle" class="scanning-session-title">Customer (Order)</h3>
     </div>
-    <div style="text-align: center; margin-top: 10px;">
-      <button class="btn-action btn-stop btn-auto" style="padding: 6px 12px !important; margin: 0;" onclick="goToSummaryScreen()" title="Finish scanning and proceed to the session summary.">Review Session</button>
+    <div class="scanning-header-right">
+      <div class="session-time-block">
+        <span><strong>Date:</strong> <span id="hdrDate">--</span></span>
+        <span><strong>Start:</strong> <span id="hdrTime">--</span></span>
+      </div>
+      <button class="btn-saas-review" onclick="goToSummaryScreen()" title="Finish scanning and proceed to session summary">
+        <i data-lucide="clipboard-check" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i> Review Session
+      </button>
     </div>
   </div>
 
-  <div id="manifestProgressBanner" class="progress-banner" style="display:none;">
-    Progress: <span id="manifestScannedQty">0</span> / <span id="manifestTotalQty">0</span> Expected 
-    <span id="manifestUnexpectedStats"></span>
+  <!-- 2. Manifest Progress Banner (When Pre-Load is Active) -->
+  <div id="manifestProgressBanner" class="saas-progress-banner" style="display:none;">
+    <div class="progress-info-text">
+      <span>Order Progress: <strong id="manifestScannedQty">0</strong> / <strong id="manifestTotalQty">0</strong> Expected</span>
+      <span id="manifestUnexpectedStats"></span>
+    </div>
+    <div class="progress-track-bar">
+      <div id="manifestBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+    </div>
   </div>
 
-  <!-- RAW BARCODES SECTION -->
-  <div class="card">
-    <div class="raw-section">
-      <div class="flex-between" style="margin-bottom: 8px;">
-        <button class="btn-small btn-clear btn-auto" onclick="resetScanLinesAndFields()" title="Clear all raw barcode inputs below."><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Clear Fields</button>
-        <button class="btn-small btn-cam btn-auto" id="btnToggleCam" onclick="toggleCameraScanner()" title="Launch device camera to scan barcodes."><i data-lucide="camera" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Open Camera</button>
-        <!-- UPLOAD COMMENTED OUT <button class="btn-small btn-upload" onclick="..."><i data-lucide="folder" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Upload Image</button> -->
+  <!-- 3. Barcode Capture & Camera Viewfinder Card (Full Width) -->
+  <div class="saas-card scanner-capture-card">
+    <div class="flex-between" style="margin-bottom: 12px;">
+      <div class="card-section-title" style="margin:0;">
+        <i data-lucide="scan-barcode" style="width:18px; height:18px; vertical-align:middle; margin-right:8px;"></i>Barcode Capture
       </div>
-      <h2 style="margin-top: 10px;">Raw Barcode Scans</h2>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-saas-secondary" onclick="resetScanLinesAndFields()" title="Clear all raw barcode inputs">
+          <i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Clear Fields
+        </button>
+        <button class="btn-saas-cam-toggle" id="btnToggleCam" onclick="toggleCameraScanner()" title="Launch device camera">
+          <i data-lucide="camera" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Open Camera
+        </button>
+      </div>
+    </div>
 
-      <div id="cameraContainer">
-        <div class="cam-status-overlay">
-          <span id="tagGtin" class="status-tag">GTIN</span>
-          <span id="tagLot" class="status-tag">LOT</span>
-          <span id="tagExp" class="status-tag">EXP</span>
-          <button class="btn-small" style="background-color: #f57f17; color: #fff; margin-left: auto; padding: 2px 8px;" onclick="ScannerManager.captureViewfinderFrame()" title="Force a manual snapshot if auto-focus is struggling."><i data-lucide="camera" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Snap</button>
-        </div>
-        <div id="cameraViewfinder"></div>
+    <!-- Camera Viewfinder Box -->
+    <div id="cameraContainer" class="camera-container-box">
+      <div class="cam-status-overlay">
+        <span id="tagGtin" class="status-tag">GTIN</span>
+        <span id="tagLot" class="status-tag">LOT</span>
+        <span id="tagExp" class="status-tag">EXP</span>
+        <button class="btn-saas-snap" onclick="ScannerManager.captureViewfinderFrame()">
+          <i data-lucide="camera" style="width:13px; height:13px;"></i> Snap
+        </button>
       </div>
+      <div id="cameraViewfinder"></div>
+    </div>
 
-      <div class="form-row" id="rowScan1">
-        <div class="form-label">Barcode Line 1:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan1" placeholder="Scan Primary Barcode" oninput="processAllScans()" title="Scan your primary 1D or 2D barcode here."></div>
+    <!-- Raw Barcode Input Lines -->
+    <div class="raw-lines-wrapper">
+      <div class="form-row-saas" id="rowScan1" style="margin-bottom: 10px;">
+        <label class="saas-label">Barcode Line 1</label>
+        <input type="text" id="rawScan1" class="saas-input font-mono" placeholder="Scan Primary 1D or 2D Barcode" oninput="processAllScans()">
       </div>
-      <div class="form-row" id="rowScan2" style="display: none;">
-        <div class="form-label">Barcode Line 2:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan2" placeholder="Scan Secondary Barcode" oninput="processAllScans()" title="Scan additional barcodes if required."></div>
+      <div class="form-row-saas" id="rowScan2" style="display: none; margin-bottom: 10px;">
+        <label class="saas-label">Barcode Line 2</label>
+        <input type="text" id="rawScan2" class="saas-input font-mono" placeholder="Scan Secondary Barcode" oninput="processAllScans()">
       </div>
-      <div class="form-row" id="rowScan3" style="display: none;">
-        <div class="form-label">Barcode Line 3:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan3" placeholder="Scan Tertiary Barcode" oninput="processAllScans()" title="Scan additional barcodes if required."></div>
+      <div class="form-row-saas" id="rowScan3" style="display: none; margin-bottom: 10px;">
+        <label class="saas-label">Barcode Line 3</label>
+        <input type="text" id="rawScan3" class="saas-input font-mono" placeholder="Scan Tertiary Barcode" oninput="processAllScans()">
       </div>
-      <div class="form-row" id="rowScan4" style="display: none;">
-        <div class="form-label">Barcode Line 4:</div>
-        <div class="input-wrapper"><input type="text" id="rawScan4" placeholder="Scan 4th Barcode" oninput="processAllScans()" title="Scan additional barcodes if required."></div>
+      <div class="form-row-saas" id="rowScan4" style="display: none; margin-bottom: 10px;">
+        <label class="saas-label">Barcode Line 4</label>
+        <input type="text" id="rawScan4" class="saas-input font-mono" placeholder="Scan 4th Barcode" oninput="processAllScans()">
       </div>
-
+      
       <div style="text-align: center; margin-top: 8px;">
-        <button class="btn-small btn-auto" id="btnAddLine" onclick="addScanLine()" title="Add another raw barcode input field."><i data-lucide="plus" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Add Barcode Line</button>
+        <button class="btn-saas-sub" id="btnAddLine" onclick="addScanLine()">
+          <i data-lucide="plus" style="width:13px; height:13px; vertical-align:middle; margin-right:4px;"></i>Add Barcode Line
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- REF / SKU LOOKUP SECTION -->
-  <div class="card" style="text-align: center;">
-    <div class="form-label" style="color: #000000; font-size: 0.95rem; width: 100%; margin-bottom: 6px;">REF / SKU Lookup:</div>
-    <input list="dbRefs" type="text" id="refInput" class="input-center" style="width: 50%;" placeholder="Scan or Type REF" oninput="this.value = this.value.toUpperCase(); runMasterLookup();" title="Type or scan a REF/SKU to manually search the database.">
-    <datalist id="dbRefs"></datalist>
-  </div>
-
-  <!-- PARSED DETAILS SECTION -->
-  <div class="card">
-    <h2>Parsed & Captured Item Details</h2>
-
-    <div id="liveMatchPreview" class="match-preview-box" style="display: none;">
-      <div style="font-weight: bold; color: #2e7d32;">✓ Database Match Found</div>
-      <div id="prevDescText" style="margin-top: 2px;">--</div>
+  <!-- 4. Parsed & Captured Item Details Card (Full Width) -->
+  <div class="saas-card parsed-details-card">
+    <div class="card-section-title">
+      <i data-lucide="file-text" style="width:18px; height:18px; vertical-align:middle; margin-right:8px;"></i>Parsed & Captured Item Details
     </div>
 
-    <!-- Destination -->
-    <div class="form-row" id="rowItemDestination" style="display: none;">
-      <div class="form-label">Item Destination:</div>
-      <div class="input-wrapper">
-        <div class="action-selector" style="justify-content: flex-start;">
-          <div id="actBtnInv" class="action-btn selected-inv btn-auto" onclick="setItemAction('Inventory')" title="Send this item to general warehouse inventory.">Inventory</div>
-          <div id="actBtnRes" class="action-btn btn-auto" onclick="setItemAction('Reserved')" title="Reserve this item for a specific customer.">Reserved</div>
-        </div>
+    <!-- Manual REF / SKU Lookup Box -->
+    <div class="lookup-box-saas">
+      <label class="saas-label" style="display:block; margin-bottom:6px; text-align:center;">REF / SKU Manual Lookup</label>
+      <input list="dbRefs" type="text" id="refInput" class="saas-input input-highlight" style="text-align:center; font-size:1.05rem;" placeholder="Scan or Type REF / SKU" oninput="this.value = this.value.toUpperCase(); runMasterLookup();">
+      <datalist id="dbRefs"></datalist>
+    </div>
+
+    <!-- Live Database Match Banner -->
+    <div id="liveMatchPreview" class="match-preview-box-saas" style="display: none;">
+      <div class="match-success-title"><i data-lucide="check-circle-2" style="width:15px; height:15px; vertical-align:text-bottom;"></i> Database Match Found</div>
+      <div id="prevDescText" class="match-desc-text">--</div>
+    </div>
+
+    <!-- Item Destination Selector -->
+    <div class="form-row-saas" id="rowItemDestination" style="display: none;">
+      <label class="saas-label">Item Destination</label>
+      <div class="action-selector-saas">
+        <div id="actBtnInv" class="action-btn selected-inv" onclick="setItemAction('Inventory')">Inventory</div>
+        <div id="actBtnRes" class="action-btn" onclick="setItemAction('Reserved')">Reserved</div>
       </div>
     </div>
 
-    <!-- Customer Tag -->
-    <div class="form-row" id="rowCustomerTag" style="display: none; background-color: #e3f2fd; padding: 6px; border: 1px dashed #0277bd;">
-      <div class="form-label" style="color: #0277bd;">Customer Tag:</div>
-      <div class="input-wrapper" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
-        <div style="display: flex; gap: 6px; width: 100%;">
-          <select id="itemCustomerSelect" style="flex: 1;" onchange="handleItemCustomerSelect(this.value); SessionManager.populateCustomerOrdersDropdown(this.value)" title="Select the customer to reserve this item for."></select>
-          <input type="text" id="itemOrderNumInput" placeholder="PO / Order #" style="flex: 1;" title="Optional: Enter a specific PO or Order number.">
+    <!-- Customer Allocation Tag Container -->
+    <div class="form-row-saas" id="rowCustomerTag" style="display: none; background: rgba(2, 119, 189, 0.08); padding: 12px; border-radius: 8px; border: 1px dashed #0277bd;">
+      <label class="saas-label" style="color: var(--heading-color, #0277bd);">Customer Allocation Tag</label>
+      <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+        <div class="saas-field-pair">
+          <select id="itemCustomerSelect" class="saas-select" onchange="handleItemCustomerSelect(this.value); SessionManager.populateCustomerOrdersDropdown(this.value)"></select>
+          <input type="text" id="itemOrderNumInput" class="saas-input" placeholder="PO / Order #">
         </div>
-        <!-- ✨ NEW: Smart Order Dropdown -->
-        <select id="itemKnownOrdersSelect" style="display:none; width: 100%; padding: 6px; font-size: 0.85rem; border: 1px solid #0277bd; border-radius: 4px; background: #fff;" onchange="if(this.value) document.getElementById('itemOrderNumInput').value = this.value;">
-            <option value="">-- Known Orders (Select to Auto-Fill) --</option>
+        <select id="itemKnownOrdersSelect" class="saas-select" style="display:none;" onchange="if(this.value) document.getElementById('itemOrderNumInput').value = this.value;">
+          <option value="">-- Known Orders (Select to Auto-Fill) --</option>
         </select>
       </div>
     </div>
 
-    <!-- Quantity -->
-    <div class="form-row">
-      <div class="form-label">Quantity Scanned:</div>
-      <div class="input-wrapper">
-        <input type="number" id="qtyInput" value="1" min="0" class="input-micro" title="Enter the total number of identical units.">
+    <!-- Paired Row 1: Quantity Scanned & Manufacturer -->
+    <div class="saas-field-grid-2col">
+      <div class="form-row-saas" style="margin-bottom:0;">
+        <label class="saas-label">Quantity Scanned</label>
+        <input type="number" id="qtyInput" value="1" min="0" class="saas-input" style="text-align: center; font-weight: 700;">
+      </div>
+      <div class="form-row-saas" style="margin-bottom:0;">
+        <label class="saas-label">Manufacturer / Vendor</label>
+        <select id="vendorSelect" class="saas-select needs-attention" onchange="handleVendorSelect(this.value); evaluateFieldAttention();"></select>
       </div>
     </div>
 
-    <!-- All Inputs Uniform Width -->
-    <div class="form-row">
-      <div class="form-label">Manufacturer:</div>
-      <div class="input-wrapper">
-        <select id="vendorSelect" class="needs-attention input-short" onchange="handleVendorSelect(this.value); evaluateFieldAttention();" title="Select the manufacturer of this item."></select>
+    <!-- Paired Row 2: GTIN Barcode & Lot Number -->
+    <div class="saas-field-grid-2col">
+      <div class="form-row-saas" style="margin-bottom:0;">
+        <label class="saas-label">GTIN Barcode</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="gtinInput" class="saas-input needs-attention font-mono" placeholder="14-Digit GTIN" oninput="runMasterLookup(); evaluateFieldAttention();">
+          <label class="checkbox-na-label"><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
+        </div>
+      </div>
+      <div class="form-row-saas" style="margin-bottom:0;">
+        <label class="saas-label">Lot Number</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="lotInput" class="saas-input needs-attention font-mono" placeholder="Lot / Batch #" oninput="evaluateFieldAttention();">
+          <label class="checkbox-na-label"><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
+        </div>
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="form-label">GTIN Barcode:</div>
-      <div class="input-wrapper">
-        <input type="text" id="gtinInput" class="needs-attention input-short" placeholder="GTIN" oninput="runMasterLookup(); evaluateFieldAttention();" title="14-digit Global Trade Item Number.">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not have a GTIN."><input type="checkbox" id="chkNaGtin" onchange="toggleNA('gtinInput', 'chkNaGtin')"> N/A</label>
+    <!-- Paired Row 3: Expiration Date & Version / Shelf -->
+    <div class="saas-field-grid-2col">
+      <div class="form-row-saas" style="margin-bottom:0;">
+        <label class="saas-label">Expiration Date</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="expInput" class="saas-input needs-attention font-mono" placeholder="YYYY-MM-DD" onchange="formatExpDate(this)" oninput="evaluateFieldAttention();">
+          <label class="checkbox-na-label"><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
+        </div>
+        <span id="expDateWarningBadge" style="display:none; margin-top:4px;"></span>
+      </div>
+      <div class="saas-field-grid-2col" style="margin-bottom:0; gap: 10px;">
+        <div class="form-row-saas" style="margin-bottom:0;">
+          <label class="saas-label">Version</label>
+          <input type="text" id="verInput" class="saas-input font-mono" placeholder="e.g. 01">
+        </div>
+        <div class="form-row-saas" style="margin-bottom:0;">
+          <label class="saas-label">Shelf Loc</label>
+          <input type="text" id="shelfInput" class="saas-input font-mono" placeholder="e.g. A-14" style="text-transform:uppercase;">
+        </div>
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="form-label">Lot Number:</div>
-      <div class="input-wrapper">
-        <input type="text" id="lotInput" class="needs-attention input-short" placeholder="Lot" oninput="evaluateFieldAttention();" title="Alphanumeric manufacturing Lot/Batch number.">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not have a Lot number."><input type="checkbox" id="chkNaLot" onchange="toggleNA('lotInput', 'chkNaLot')"> N/A</label>
-      </div>
-    </div>
-
-    <!-- ✨ NEW: Version Field added right below Lot Number -->
-    <div class="form-row">
-      <div class="form-label">Version / Variant:</div>
-      <div class="input-wrapper">
-        <input type="text" id="verInput" class="input-short" placeholder="e.g. 01" title="Optional: Manufacturing Version or Variant code.">
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-label">Expiration Date:</div>
-      <div class="input-wrapper">
-        <input type="text" id="expInput" class="needs-attention input-short" placeholder="YYYY-MM-DD" onchange="formatExpDate(this)" oninput="evaluateFieldAttention();" title="Item expiration date in YYYY-MM-DD format.">
-        <label style="font-size:0.75rem; white-space:nowrap; cursor:pointer;" title="Check if this item does not expire."><input type="checkbox" id="chkNaExp" onchange="toggleNA('expInput', 'chkNaExp')"> N/A</label>
-        
-        <!-- ✨ PHASE 2: Dynamic Warning Badge -->
-        <span id="expDateWarningBadge" style="display:none;"></span>
-      </div>
-    </div>
-
-    <!-- ✨ NEW SHELF LOCATION FIELD -->
-    <div class="form-row">
-      <div class="form-label">Shelf Location:</div>
-      <div class="input-wrapper">
-        <input type="text" id="shelfInput" class="input-short" placeholder="e.g. A-14" style="text-transform:uppercase;" title="Optional: Record or update the physical shelf location of this item.">
-      </div>
-    </div>
-
-    <!-- Item Note Checkbox moved to bottom -->
-    <div style="text-align: left; width: 100%; margin-bottom: 10px; margin-top: 10px;">
-      <label style="font-size:0.85rem; font-weight:bold; color:#d32f2f; cursor:pointer;" title="Attach a specific note or flag damage for this item.">
-        <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()"> <i data-lucide="triangle-alert" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Add Item Issue / Note
+    <!-- Item Issue / Note Toggle -->
+    <div style="margin: 14px 0 6px 0;">
+      <label style="font-size:0.82rem; font-weight:700; color:#ef5350; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="chkItemNote" onchange="toggleItemNote()">
+        <i data-lucide="triangle-alert" style="width:14px; height:14px;"></i> Add Item Issue / Damage Note
       </label>
     </div>
-    <div class="form-row" id="rowItemNote" style="display:none;">
-      <div class="form-label" style="color:#d32f2f;">Item Note:</div>
-      <div class="input-wrapper">
-        <input type="text" id="itemNoteInput" placeholder="e.g. Box damaged...">
-      </div>
+    <div class="form-row-saas" id="rowItemNote" style="display:none;">
+      <label class="saas-label" style="color:#ef5350;">Item Note</label>
+      <input type="text" id="itemNoteInput" class="saas-input" placeholder="e.g. Box damaged...">
     </div>
 
-    <!-- Bottom Buttons Layout -->
-    <div class="flex-between" style="margin-top: 15px;">
-      <button class="btn-action btn-clear btn-auto" onclick="resetScanLinesAndFields()" title="Clear all fields below to start a fresh scan.">Clear Fields</button>
-      <button class="btn-action btn-continue btn-auto" onclick="goToReviewStage()" title="Proceed to the verification step.">Continue</button>
+    <!-- Bottom Action Buttons -->
+    <div class="scanning-actions-footer">
+      <button class="btn-saas-secondary" style="padding: 12px 18px;" onclick="resetScanLinesAndFields()">Clear Fields</button>
+      <button class="btn-saas-primary" style="margin-top:0; flex:1;" onclick="goToReviewStage()">Continue to Verify ➔</button>
     </div>
   </div>
 
-  <!-- PINNED MANIFEST TRACKER -->
-  <div id="liveManifestTracker" class="card" style="display:none; margin-top: 12px; background-color: #f8f9fa; border-color: #0277bd;">
-    <div style="font-size: 0.9rem; font-weight: bold; color: #0277bd; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px;" title="Items expected to be scanned in this session.">
-      <i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Expected Items Tracker
+  <!-- 5. Pinned Expected Items Tracker (Bottom Full Width) -->
+  <div id="liveManifestTracker" class="saas-card manifest-tracker-card" style="display:none;">
+    <div class="tracker-header">
+      <span><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Expected Items Tracker</span>
     </div>
-    <div id="liveManifestList" style="max-height: 180px; overflow-y: auto; font-size: 0.85rem;">
-      <!-- Populated via JS -->
-    </div>
+    <div id="liveManifestList" class="tracker-list-scroll"></div>
   </div>
 
 </div>

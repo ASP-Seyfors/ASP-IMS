@@ -1,13 +1,30 @@
-<div id="systemRestoreModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:8px; width:100%; max-width:450px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-    <h3 style="margin:0 0 10px 0; color:#c62828; border-bottom:2px solid #c62828; padding-bottom:8px;">☁️ Cloud System Restore</h3>
-    <p style="font-size:0.85rem; color:#555;">Select a historical stocktake below. The system will download the required payloads from the Cloud Vault and mathematically replay all subsequent sessions to rebuild your inventory.</p>
-    <select id="restoreBaselineSelect" style="width:100%; padding:10px; font-weight:bold; margin-bottom:20px; border:2px solid #c62828;">
-      <!-- Options injected via JS -->
-    </select>
-    <div style="display:flex; justify-content:space-between; gap:10px;">
-      <button onclick="document.getElementById('systemRestoreModal').style.display='none'" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
-      <button onclick="AuditManager.executeCloudEventReplay(); document.getElementById('systemRestoreModal').style.display='none';" style="flex:1; background:#c62828; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">⚠️ Execute Replay</button>
+<div id="systemRestoreModal" class="saas-modal-backdrop" style="display:none;">
+  <div class="saas-modal-card" style="max-width:460px;">
+    
+    <div class="saas-modal-header" style="border-bottom-color:#c62828;">
+      <h3 style="margin:0; color:#ef5350; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="rewind" style="width:18px; height:18px;"></i> Cloud System Restore
+      </h3>
+      <button class="saas-modal-close" onclick="document.getElementById('systemRestoreModal').style.display='none'">×</button>
     </div>
+
+    <p style="font-size:0.85rem; color:var(--text-main); opacity:0.85; line-height:1.45; margin:0 0 14px 0;">
+      Select a verified Full Stocktake baseline below. The system will download all subsequent Cloud Vault payloads and replay them chronologically to rebuild your inventory.
+    </p>
+
+    <div style="margin-bottom:18px;">
+      <label class="saas-label" style="display:block; margin-bottom:6px;">Select Stocktake Baseline</label>
+      <select id="restoreBaselineSelect" class="saas-select" style="font-weight:700; border-color:#ef5350;">
+        <!-- Options injected via JS -->
+      </select>
+    </div>
+
+    <div class="saas-modal-footer">
+      <button class="btn-saas-secondary" style="flex:1; padding:11px;" onclick="document.getElementById('systemRestoreModal').style.display='none'">Cancel</button>
+      <button class="btn-saas-primary" style="flex:1.5; margin-top:0; padding:11px; background:#c62828;" onclick="AuditManager.executeCloudEventReplay(); document.getElementById('systemRestoreModal').style.display='none';">
+        ⚠️ Execute Replay
+      </button>
+    </div>
+
   </div>
 </div>

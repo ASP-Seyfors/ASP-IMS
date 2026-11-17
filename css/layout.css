@@ -1,16 +1,16 @@
 /* =========================================
-   1. ASP Classic (Light Theme - Matches Website)
+   1. ASP Classic (Light Theme - Warm Enterprise Ivory & Gold Accent)
    ========================================= */
 body, body.theme-gold {
-  --bg-color: #ecea7a; 
-  --desktop-bg: #e9ecef;
-  --card-bg: #c7a925;
-  --raw-bg: #f8f9fa;
-  --border-color: #e0e0e0;
+  --bg-color: #f3f0e6;
+  --desktop-bg: #ebe7dc;
+  --card-bg: #ffffff;
+  --raw-bg: #f8f6f0;
+  --border-color: #dcd6c6;
   --input-bg: #ffffff;
-  --input-color: #212529;
-  --input-border: #ced4da;
-  --text-main: #333333;
+  --input-color: #1e293b;
+  --input-border: #cbd5e1;
+  --text-main: #1e293b;
   --heading-color: #0071ce;
 }
 
@@ -21,12 +21,12 @@ body.theme-slate {
   --bg-color: #121212;
   --desktop-bg: #0a0a0a;
   --card-bg: #1e1e1e;
-  --raw-bg: #2c2c2c;
-  --border-color: #333333;
-  --input-bg: #2c2c2c;
-  --input-color: #ffffff;
-  --input-border: #444444;
-  --text-main: #e0e0e0;
+  --raw-bg: #27272a;
+  --border-color: #38383d;
+  --input-bg: #2c2c30;
+  --input-color: #f8fafc;
+  --input-border: #4b5563;
+  --text-main: #e2e8f0;
   --heading-color: #64b5f6;
 }
 
@@ -41,7 +41,7 @@ body.theme-sage {
   --border-color: #3a506b;
   --input-bg: #2e4359;
   --input-color: #ffffff;
-  --input-border: #455a64;
+  --input-border: #4d657d;
   --text-main: #eceff1;
   --heading-color: #ffca28;
 }
@@ -53,7 +53,7 @@ body {
   color: var(--text-main);
   margin: 12px;
   padding: 0;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .form-row {
@@ -65,7 +65,7 @@ body {
 /* DESKTOP / WORKSTATION MEDIA QUERY */
 @media (min-width: 800px) {
   body {
-    max-width: 850px;
+    max-width: 860px;
     margin: 30px auto !important;
     background-color: var(--desktop-bg);
   }
@@ -101,4 +101,3 @@ body {
   align-items: center;
   width: 100%;
 }
-

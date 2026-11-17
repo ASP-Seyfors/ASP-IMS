@@ -17,49 +17,78 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/settings.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- SETTINGS PAGE -->
-<div id="screenSettings" style="display: none;" class="card">
-  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
-    <h2 style="border:none; margin:0; padding:0;">ASP IMS - Settings</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="SessionManager.closeSettings()" title="Return to the Home Screen."><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
-  </div>
-
-  <div class="form-row">
-    <div class="form-label">App Theme:</div>
-    <div class="input-wrapper">
-      <select id="themeSelect" onchange="UIManager.changeAppTheme(this.value)">
-        <option value="gold">Classic (Light)</option>
-        <option value="slate">Midnight (Dark)</option>
-        <option value="sage">Twilight (Hybrid)</option>
-      </select>
+<div id="screenSettings" style="display: none;" class="saas-dashboard-container">
+  
+  <!-- 1. Header -->
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2><i data-lucide="settings" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i>Workspace Settings & Preferences</h2>
+    </div>
+    <div class="header-actions">
+      <button class="btn-saas-secondary" onclick="SessionManager.closeSettings()" title="Return to the Home Screen.">
+        <i data-lucide="arrow-left" style="width:15px; height:15px; vertical-align:middle; margin-right:4px;"></i>Return
+      </button>
     </div>
   </div>
 
-  <div class="form-row">
-    <div class="form-label">Font Size:</div>
-    <div class="input-wrapper">
-      <select id="fontSizeSelect" onchange="UIManager.changeFontSize(this.value)">
-        <option value="small">Small (85%)</option>
-        <option value="medium" selected>Medium (100% - Default)</option>
-        <option value="large">Large (115%)</option>
-      </select>
+  <!-- 2. Visual Experience Card -->
+  <div class="saas-card saas-hub-section accent-blue">
+    <div class="card-section-title">
+      <i data-lucide="palette" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Display & Appearance
     </div>
-  </div>
-
-  <div class="form-row" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-    <div class="form-label">User Manual:</div>
-    <div class="input-wrapper">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; width: 100%; padding: 8px;" onclick="UIManager.openHelpScreen()"><i data-lucide="book-open" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Operations Guide</button>
-    </div>
-  </div>
-
-  <div class="form-row" style="margin-top: 20px;">
-    <div class="form-label" id="appVersionDisplay">App Version: Loading...</div>    
-    <div class="input-wrapper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
-      <div>
-        <button class="btn-small btn-auto" style="background-color: #0277bd; color: #ffffff; margin-left: 10px;" onclick="checkAppUpdates()"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Check for Updates</button>
+    <div class="saas-field-grid-2col" style="margin-bottom: 0;">
+      <div class="form-row-saas" style="margin-bottom: 0;">
+        <label class="saas-label">Color Theme</label>
+        <select id="themeSelect" class="saas-select" onchange="UIManager.changeAppTheme(this.value)">
+          <option value="gold">Classic (Light)</option>
+          <option value="slate">Midnight (Dark)</option>
+          <option value="sage">Twilight (Hybrid)</option>
+        </select>
       </div>
-      <button class="btn-small btn-cancel btn-auto" onclick="AuthManager.logout()"><i data-lucide="log-out" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Log Out</button>
+      <div class="form-row-saas" style="margin-bottom: 0;">
+        <label class="saas-label">Interface Font Scaling</label>
+        <select id="fontSizeSelect" class="saas-select" onchange="UIManager.changeFontSize(this.value)">
+          <option value="small">Small (85%)</option>
+          <option value="medium" selected>Medium (100% - Default)</option>
+          <option value="large">Large (115%)</option>
+        </select>
+      </div>
     </div>
   </div>
+
+  <!-- 3. Documentation & Reference Card -->
+  <div class="saas-card saas-hub-section accent-purple">
+    <div class="flex-between" style="flex-wrap: wrap; gap: 12px;">
+      <div>
+        <div class="card-section-title" style="margin-bottom: 4px;">
+          <i data-lucide="book-open" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Standard Operating Procedures
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-main); opacity: 0.8; margin: 0;">
+          Browse the interactive warehouse Operations Guide and workflow documentation.
+        </p>
+      </div>
+      <button class="btn-saas-primary" style="width: auto; margin-top: 0; padding: 10px 20px;" onclick="UIManager.openHelpScreen()">
+        <i data-lucide="book-open" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Open Operations Guide
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. System Version & Session Security Footer -->
+  <div class="dashboard-footer" style="flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <span id="appVersionDisplay" class="saas-kpi-pill" style="font-weight: 700;">App Version: Loading...</span>
+      <button class="btn-saas-secondary" onclick="checkAppUpdates()">
+        <i data-lucide="refresh-cw" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Check for Updates
+      </button>
+    </div>
+    <button class="btn-saas-secondary" style="background-color: #c62828; color: #fff; border: none; padding: 8px 16px; font-weight: 700;" onclick="AuthManager.logout()">
+      <i data-lucide="log-out" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Log Out
+    </button>
+  </div>
+
 </div>

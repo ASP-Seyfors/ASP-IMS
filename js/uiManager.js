@@ -762,11 +762,21 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   toggleSessionType() {
-    const type = document.querySelector('input[name="sessionType"]:checked').value;
+    const checkedRadio = document.querySelector('input[name="sessionType"]:checked');
+    const type = checkedRadio ? checkedRadio.value : 'Shipment';
+    
     document.getElementById('rowSupplier').style.display = type === 'Shipment' ? 'flex' : 'none';
     document.getElementById('rowCustomer').style.display = type === 'Order' ? 'flex' : 'none';
     document.getElementById('rowProcess').style.display = type === 'Order' ? 'flex' : 'none';
     
+    // ✨ Toggle active highlight on the Segmented Control buttons
+    let segShip = document.getElementById('segShipment');
+    let segOrd = document.getElementById('segOrder');
+    if (segShip && segOrd) {
+      segShip.classList.toggle('active', type === 'Shipment');
+      segOrd.classList.toggle('active', type === 'Order');
+    }
+
     // Reset order details and partner fields when switching modes
     let orderInput = document.getElementById('orderDetailsInput');
     if (orderInput) orderInput.value = "";

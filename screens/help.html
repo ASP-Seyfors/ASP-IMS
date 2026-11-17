@@ -16,59 +16,58 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/help.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- HELP & DOCUMENTATION PAGE -->
-<div id="screenHelp" style="display: none;" class="card">
-  <div class="flex-between" style="border-bottom: 2px solid #8b8589; padding-bottom: 6px; margin-bottom: 15px;">
-    <h2 style="border:none; margin:0; padding:0;"><i data-lucide="book-open" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Operations Guide</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeHelpScreen()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
+<div id="screenHelp" style="display: none;" class="saas-dashboard-container">
+  
+  <!-- 1. Header -->
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2><i data-lucide="book-open" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i>Warehouse Operations Guide</h2>
+    </div>
+    <div class="header-actions">
+      <button class="btn-saas-secondary" onclick="UIManager.closeHelpScreen()">
+        <i data-lucide="arrow-left" style="width:15px; height:15px; vertical-align:middle; margin-right:4px;"></i>Return to Settings
+      </button>
+    </div>
   </div>
 
-  <!-- Help Search Bar -->
-  <div style="margin-bottom: 15px; position: sticky; top: 0; background: #fff; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-    <input type="text" id="helpSearchInput" placeholder="Search the guide for a keyword..." style="width: 100%; padding: 10px; border: 2px solid #0277bd; border-radius: 4px; font-size: 1rem;" onkeyup="searchHelpText()">
+  <!-- 2. Sticky Keyword Search Bar -->
+  <div class="lookup-box-saas" style="position: sticky; top: 0; z-index: 10; margin-bottom: 16px;">
+    <label class="saas-label" style="display: block; margin-bottom: 6px;">Search Documentation</label>
+    <input type="text" id="helpSearchInput" class="saas-input input-highlight" placeholder="Type a keyword to highlight and jump to section..." oninput="
+      (function(inputEl){
+        var query = inputEl.value.toLowerCase().trim();
+        var container = document.getElementById('helpContentContainer');
+        if (!container) return;
+        var orig = container.getAttribute('data-original-html');
+        if (!orig) { orig = container.innerHTML; container.setAttribute('data-original-html', orig); }
+        else { container.innerHTML = orig; }
+        if (!query) return;
+        var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+        var nodes = [];
+        while (walker.nextNode()) {
+          var n = walker.currentNode;
+          if (n.nodeValue.toLowerCase().includes(query) && n.parentNode.nodeName !== 'SCRIPT' && n.parentNode.nodeName !== 'STYLE') nodes.push(n);
+        }
+        nodes.forEach(function(node){
+          var span = document.createElement('span');
+          span.innerHTML = node.nodeValue.replace(new RegExp('(' + escaped + ')', 'gi'), '<mark style=\'background:#ffca28; color:#111; padding:1px 4px; border-radius:3px; font-weight:700;\'>$1</mark>');
+          node.parentNode.replaceChild(span, node);
+        });
+        var first = container.querySelector('mark');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      })(this)
+    ">
   </div>
 
-  <div id="helpContentContainer" style="font-size: 0.9rem; line-height: 1.5; color: #333; max-height: 65vh; overflow-y: auto; padding-right: 10px;">
+  <!-- 3. Markdown Content Reader Well -->
+  <div id="helpContentContainer" class="saas-help-reader">
     <!-- Markdown content loaded here -->
   </div>
+
 </div>
-
-<script>
-// Simple Highlight Search for the Help Document
-function searchHelpText() {
-  let input = document.getElementById('helpSearchInput').value.toLowerCase();
-  let container = document.getElementById('helpContentContainer');
-  
-  // Reset previous highlights
-  let originalHtml = container.getAttribute('data-original-html');
-  if (!originalHtml) {
-    originalHtml = container.innerHTML;
-    container.setAttribute('data-original-html', originalHtml);
-  } else {
-    container.innerHTML = originalHtml;
-  }
-
-  if (!input) return;
-
-  // Use a TreeWalker to safely highlight text nodes without breaking HTML tags
-  let walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-  let nodesToWrap = [];
-  while (walker.nextNode()) {
-    let node = walker.currentNode;
-    if (node.nodeValue.toLowerCase().includes(input) && node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
-      nodesToWrap.push(node);
-    }
-  }
-
-  nodesToWrap.forEach(node => {
-    let regex = new RegExp(`(${input})`, 'gi');
-    let spanWrapper = document.createElement('span');
-    spanWrapper.innerHTML = node.nodeValue.replace(regex, `<mark style="background-color: #ffeb3b; padding: 0 2px;">$1</mark>`);
-    node.parentNode.replaceChild(spanWrapper, node);
-  });
-  
-  // Scroll to the first match
-  let firstMark = container.querySelector('mark');
-  if (firstMark) firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-</script>

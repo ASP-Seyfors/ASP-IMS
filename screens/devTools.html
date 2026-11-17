@@ -19,191 +19,240 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/devTools.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- DEVELOPER TOOLS -->
-<div id="screenDevTools" style="display: none;" class="card">
-  <div class="flex-between" style="border-bottom: 2px solid #c62828; padding-bottom: 6px; margin-bottom: 15px;">
-    <h2 style="border:none; margin:0; padding:0; color: #c62828;"><i data-lucide="wrench" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Developer Tools</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeDevTools()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
-  </div>
-
-  <!-- E-Commerce & Master Data Exports -->
-  <div style="background: #e8eaf6; border: 1px solid #0288d1; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #01579b;"><i data-lucide="shopping-cart" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>E-Commerce & Master Exports</h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #7b1fa2; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.exportUpdatedDatabaseJSON()"><i data-lucide="save" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Updated Database.json</button>
-      
-      <!-- Live Shopify API Seed Test (3 Items) -->
-      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff; grid-column: 1 / -1;" onclick="AuditManager.executeShopifySeedTest()">
-        <i data-lucide="zap" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Live Shopify API Seed Test (3 Items)
-      </button>
-
-      <!-- Full Shopify Warehouse Sync -->
-      <button id="btnShopifySync" class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff; grid-column: 1 / -1; margin-top: 6px;" onclick="AuditManager.executeShopifySandboxSync()">
-        <i data-lucide="cloud-upload" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Full Shopify Warehouse Sync
-      </button>
-      
-      <!-- Progress Bar for Full Sync -->
-      <div id="shopifySyncProgressContainer" style="grid-column: 1 / -1; display: none; margin-top: 10px; background: #ddd; border-radius: 4px; height: 20px; overflow: hidden; position: relative;">
-          <div id="shopifySyncProgressBar" style="height: 100%; width: 0%; background-color: #2e7d32; transition: width 0.3s ease;"></div>
-          <span id="shopifySyncStatusText" style="position: absolute; width: 100%; text-align: center; font-size: 0.75rem; color: #fff; line-height: 20px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Initializing...</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Traceability Generation -->
-  <div style="background: var(--raw-bg, #e8f5e9); border: 1px solid var(--border-color, #2e7d32); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #4caf50;"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Generate Traceability Report</h4>
-    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Select a timeframe to pull a comprehensive lifecycle audit from the live Cloud Ledger.</p>
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <label style="font-weight:bold; font-size:0.85rem; color: var(--text-main, #333);">Timeframe:</label>
-      <select id="traceTimeframe" style="flex:1; padding:6px; border:1px solid #2e7d32; border-radius:4px;">
-        <option value="24h">Last 24 Hours</option>
-        <option value="7d" selected>Last 7 Days (End of Week)</option>
-        <option value="30d">Last 30 Days (Monthly)</option>
-        <option value="90d">Last 90 Days (Quarterly)</option>
-        <option value="all">Year-to-Date / All Time</option>
-      </select>
-      <button id="btnGenerateTrace" class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; margin:0; padding: 6px 12px;" onclick="AuditManager.fetchAndCompileTraceability()"><i data-lucide="map-pin" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Generate</button>
-    </div>
-  </div>
-
-  <!-- End of Week Rollup -->
-  <div style="background: var(--raw-bg, #e3f2fd); border: 1px solid var(--border-color, #90caf9); padding: 12px; border-radius: 4px; margin-bottom: 15px; text-align: center;">
-    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #0277bd); text-align: left;"><i data-lucide="calendar-check" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>End of Week Rollup Report</h4>
-    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; text-align: left;">Automatically pull the live Cloud Ledger to generate a master KPI summary for the last 7 days.</p>
-    <button id="btnEndOfWeek" class="btn-action btn-start btn-auto" style="margin:0; width:100%; max-width: 350px; padding: 8px;" onclick="ReportsManager.generateEndOfWeekReport()"><i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Week Summary Report</button>
-  </div>  
-
-  <!-- Admin Utilities (Moved from Settings) -->
-  <div style="background: #e3f2fd; border: 1px solid #0277bd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #0277bd;"><i data-lucide="settings" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Admin Utilities</h4>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="UIManager.openQboModal()"><i data-lucide="cloud" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>QuickBooks Online Sync</button>
-      
-      <!-- NEW BACKUP BUTTON -->
-       <!-- ✨ NEW: Payload Simulator Button -->
-      <button class="btn-action btn-auto" style="background-color: #00796b; color: #fff; margin:0; padding: 10px;" onclick="AuditManager.openSimulatorModal()"><i data-lucide="flask-conical" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Payload Simulator</button>
-      <button class="btn-action btn-auto" style="background-color: #7b1fa2; color: #fff; margin:0; padding: 10px;" onclick="exportAppsScriptFiles(event)"><i data-lucide="download" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Backup Apps Script Files</button><button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; padding: 10px;" onclick="ReportsManager.generateInventoryReport('pricing')"><i data-lucide="tag" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Export Missing Price/Cost Report</button>
-      <button class="btn-action btn-auto" style="background-color: #f57f17; color: #fff; margin:0; padding: 10px;" onclick="offloadAndPurgeHistory(event)"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Offload & Purge Local History</button>
-      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #fff; margin:0; padding: 10px;" onclick="forceAppUpdate()"><i data-lucide="trash-2" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Force Update / Clear Cache</button>
-      <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; margin:0; padding: 10px;" onclick="AuditManager.fetchBugReports(event)"><i data-lucide="bug" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>View Bug Reports</button>
-    </div>
-  </div>
-
-  <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px;">Restricted administrative and debugging utilities. Do not run without supervision.</p>
-
-  <!-- Deployment Communication Panel -->
-  <div style="background: var(--surface-color, #2a2d32); border: 1px solid var(--border-color, #444); border-radius: 6px; padding: 15px; margin-bottom: 15px;">
-    
-    <!-- Post-Deployment Live Update -->
-    <h4 style="margin: 0 0 15px 0; color: #ba68c8; border-bottom: 1px dashed #555; padding-bottom: 5px; display: flex; align-items: center; gap: 8px;">
-      <i data-lucide="send" style="width:16px; height:16px;"></i> Send Post-Deployment Update
-    </h4>
-    
-    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-      <div style="flex: 1;">
-        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Previous Version</label>
-        <input type="text" id="blastOldVer" class="form-input" placeholder="e.g. v5.5.0">
-      </div>
-      <div style="flex: 1;">
-        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">New Version</label>
-        <input type="text" id="blastNewVer" class="form-input" placeholder="e.g. v5.5.1">
-      </div>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-      <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Release Notes</label>
-      <textarea id="blastNotes" class="form-input" style="width: 100%; box-sizing: border-box; height: 80px; resize: vertical;" placeholder="Bullet points of what changed..."></textarea>
-    </div>
-
-    <button id="btnSendBlast" onclick="sendDeploymentBlast()" style="background: #7b1fa2; color: #fff; width: 100%; font-size: 1rem; font-weight: bold; padding: 10px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 30px;">
-      <i data-lucide="mail" style="width:18px; height:18px;"></i> Broadcast Update to Team
-    </button>
-
-    <!-- Pre-Deployment Warning -->
-    <h4 style="margin: 0 0 15px 0; color: #e65100; border-bottom: 1px dashed #555; padding-bottom: 5px; display: flex; align-items: center; gap: 8px;">
-      <i data-lucide="alert-triangle" style="width:16px; height:16px;"></i> Send Pre-Deployment Warning
-    </h4>
-    
-    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-      <div style="flex: 1;">
-        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Target Date</label>
-        <input type="date" id="preDeployDate" class="form-input">
-      </div>
-      <div style="flex: 1;">
-        <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-main);">Target Time</label>
-        <input type="time" id="preDeployTime" class="form-input">
-      </div>
-    </div>
-
-    <button id="btnSendPreDeploy" onclick="sendPreDeploymentBlast()" style="background: #e65100; color: #fff; width: 100%; font-size: 1rem; font-weight: bold; padding: 10px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <i data-lucide="clock" style="width:18px; height:18px;"></i> Broadcast Warning to Team
-    </button>
-  </div>
-
-  <!-- Sandbox Toggle -->
-   <!-- 
-  <div style="background: #ffebee; border: 1px dashed #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <label for="chkSandboxMode" style="color: #c62828; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1rem;">
-      <input type="checkbox" id="chkSandboxMode" name="chkSandboxMode" onchange="handleSandboxToggle(this)" style="transform: scale(1.2);">
-      Enable Testing Sandbox Mode
-    </label>
-    <div style="font-size: 0.8rem; color: #c62828; margin-top: 6px;">Routes all saves, databases, and syncs to the TEST DATABASE.</div>
-  </div>
-  -->
-
-  <!-- Session Reversal Tool -->
-  <div style="background: var(--raw-bg, #fce4ec); border: 1px solid var(--border-color, #d81b60); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #d81b60);"><i data-lucide="refresh-cw" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Undo / Reverse Session</h4>
-    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Select a recent Receiving or Reserving session (from the last 24 hours) to safely reverse its math.</p>
-    <div style="display: flex; gap: 8px;">
-      <select id="reversalSessionSelect" style="flex: 2; padding: 8px; border: 1px solid #d81b60; border-radius: 4px; font-weight: bold;"></select>
-      <button class="btn-action btn-auto" style="flex: 1; background-color: #d81b60; color: #fff; margin: 0; padding: 8px;" onclick="SessionManager.executeSessionReversal()">Reverse Math</button>
-    </div>
-  </div>
-
-  <!-- System Restore -->
-  <div style="background: var(--raw-bg, #fff3e0); border: 1px solid var(--border-color, #e65100); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #e65100);"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Event Replay & Restore</h4>
-    <button class="btn-action btn-auto" style="background-color: #c62828; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="AuditManager.openRestoreModal()"><i data-lucide="rewind" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Execute System Restore</button>
-  </div>  
+<div id="screenDevTools" style="display: none;" class="saas-dashboard-container">
   
-  <!-- Floating Debug Console Toggle -->
-  <div style="background: var(--raw-bg, #e8f5e9); border: 1px solid var(--border-color, #2e7d32); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #2e7d32);"><i data-lucide="bug" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i>Live Debug Console</h4>
-    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-top: 0; margin-bottom: 10px;">Open a floating console window to monitor background execution while using the app.</p>
-    <button class="btn-action btn-auto" style="background-color: #2e7d32; color: #fff; width: 100%; padding: 10px; font-weight: bold;" onclick="UIManager.toggleDebugConsole()">Toggle Floating Console</button>
+  <!-- 1. Header -->
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2 style="color: #ef5350;"><i data-lucide="wrench" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i>Developer & System Administration</h2>
+      <span class="saas-badge" style="background:#c62828; color:#fff;">Restricted</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-saas-secondary" onclick="UIManager.closeDevTools()">
+        <i data-lucide="arrow-left" style="width:15px; height:15px; vertical-align:middle; margin-right:4px;"></i>Return
+      </button>
+    </div>
   </div>
+
+  <!-- 2. E-Commerce & Master Data Exports -->
+  <div class="saas-card saas-hub-section accent-blue">
+    <div class="card-section-title">
+      <i data-lucide="shopping-bag" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>E-Commerce & Master Catalog Sync
+    </div>
+    <div class="saas-field-grid-2col" style="margin-bottom: 10px;">
+      <button class="btn-saas-secondary" style="padding: 11px; font-weight: 700; border-color: #7b1fa2; color: #ba68c8;" onclick="AuditManager.exportUpdatedDatabaseJSON()">
+        <i data-lucide="save" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Export Updated Database.json
+      </button>
+      <button class="btn-saas-secondary" style="padding: 11px; font-weight: 700; border-color: #f57f17; color: #ffa726;" onclick="AuditManager.executeShopifySeedTest()">
+        <i data-lucide="zap" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Live Shopify Seed Test (3 Items)
+      </button>
+    </div>
+
+    <button id="btnShopifySync" class="btn-saas-primary" style="margin-top: 0; background-color: #2e7d32; padding: 12px;" onclick="AuditManager.executeShopifySandboxSync()">
+      <i data-lucide="cloud-upload" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Full Shopify Warehouse Sync
+    </button>
+    
+    <div id="shopifySyncProgressContainer" style="display: none; margin-top: 10px; background: var(--raw-bg); border: 1px solid var(--border-color); border-radius: 6px; height: 22px; overflow: hidden; position: relative;">
+      <div id="shopifySyncProgressBar" style="height: 100%; width: 0%; background-color: #2e7d32; transition: width 0.3s ease;"></div>
+      <span id="shopifySyncStatusText" style="position: absolute; width: 100%; text-align: center; font-size: 0.75rem; color: #fff; line-height: 22px; font-weight: 700;">Initializing...</span>
+    </div>
+  </div>
+
+  <!-- 3. Executive Audits: Traceability & End of Week Rollup -->
+  <div class="saas-field-grid-2col">
+    
+    <!-- Traceability Generation -->
+    <div class="saas-card saas-hub-section accent-green" style="margin-bottom: 0;">
+      <div class="card-section-title">
+        <i data-lucide="map-pin" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Lifecycle Traceability Report
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-main); opacity: 0.8; margin: 0 0 10px 0;">
+        Compile a chronological lifecycle audit directly from the live Cloud Ledger.
+      </p>
+      <div style="display: flex; gap: 8px;">
+        <select id="traceTimeframe" class="saas-select" style="flex: 1.5;">
+          <option value="24h">Last 24 Hours</option>
+          <option value="7d" selected>Last 7 Days (Weekly)</option>
+          <option value="30d">Last 30 Days (Monthly)</option>
+          <option value="90d">Last 90 Days (Quarterly)</option>
+          <option value="all">Year-to-Date / All Time</option>
+        </select>
+        <button id="btnGenerateTrace" class="btn-saas-primary" style="flex: 1; margin-top: 0; background-color: #2e7d32; padding: 10px;" onclick="AuditManager.fetchAndCompileTraceability()">
+          Generate
+        </button>
+      </div>
+    </div>
+
+    <!-- End of Week Rollup -->
+    <div class="saas-card saas-hub-section accent-blue" style="margin-bottom: 0;">
+      <div class="card-section-title">
+        <i data-lucide="calendar-check" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>End of Week Rollup Report
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-main); opacity: 0.8; margin: 0 0 10px 0;">
+        Generate a 7-day master KPI & revenue summary from the live Cloud Ledger.
+      </p>
+      <button id="btnEndOfWeek" class="btn-saas-primary" style="margin-top: 0; padding: 10px;" onclick="ReportsManager.generateEndOfWeekReport()">
+        <i data-lucide="bar-chart-3" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Export Week Summary Report
+      </button>
+    </div>
+
+  </div>
+
+  <!-- 4. Admin Utilities Bento Grid -->
+  <div class="saas-card saas-hub-section accent-indigo">
+    <div class="card-section-title">
+      <i data-lucide="sliders" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Administrative & Diagnostic Utilities
+    </div>
+    <div class="enterprise-grid" style="margin-bottom: 10px;">
+      <button class="btn-saas-grid" onclick="UIManager.openQboModal()">
+        <i data-lucide="cloud" style="width:18px; height:18px; color:#29b6f6;"></i>
+        <span>QuickBooks Online Sync</span>
+      </button>
+      <button class="btn-saas-grid" onclick="AuditManager.openSimulatorModal()">
+        <i data-lucide="flask-conical" style="width:18px; height:18px; color:#26a69a;"></i>
+        <span>Payload Sandbox Simulator</span>
+      </button>
+      <button class="btn-saas-grid" onclick="exportAppsScriptFiles(event)">
+        <i data-lucide="download" style="width:18px; height:18px; color:#ab47bc;"></i>
+        <span>Backup Apps Script Code</span>
+      </button>
+      <button class="btn-saas-grid" onclick="ReportsManager.generateInventoryReport('pricing')">
+        <i data-lucide="tag" style="width:18px; height:18px; color:#42a5f5;"></i>
+        <span>Missing Price / Cost Report</span>
+      </button>
+      <button class="btn-saas-grid" onclick="offloadAndPurgeHistory(event)">
+        <i data-lucide="eraser" style="width:18px; height:18px; color:#ffa726;"></i>
+        <span>Offload & Purge Local History</span>
+      </button>
+      <button class="btn-saas-grid" onclick="AuditManager.fetchBugReports(event)">
+        <i data-lucide="bug" style="width:18px; height:18px; color:#ef5350;"></i>
+        <span>View System Bug Reports</span>
+      </button>
+    </div>
+    <div class="saas-field-grid-2col" style="margin-bottom: 0;">
+      <button class="btn-saas-secondary" style="padding: 10px; border-color: #2e7d32; color: #66bb6a; font-weight: 700;" onclick="UIManager.toggleDebugConsole()">
+        <i data-lucide="terminal" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Toggle Live Debug Console
+      </button>
+      <button class="btn-saas-secondary" style="padding: 10px; border-color: #d32f2f; color: #ef5350; font-weight: 700;" onclick="forceAppUpdate()">
+        <i data-lucide="trash-2" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Force App Update / Clear Cache
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. Team Deployment Broadcast Center -->
+  <div class="saas-card saas-hub-section accent-purple">
+    <div class="card-section-title">
+      <i data-lucide="megaphone" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Team Deployment Broadcasts
+    </div>
+
+    <div class="saas-meta-well" style="margin-bottom: 14px;">
+      <div class="saas-label" style="color: #ba68c8; margin-bottom: 8px;">
+        <i data-lucide="send" style="width:14px; height:14px; vertical-align:text-bottom; margin-right:4px;"></i>Post-Deployment Release Blast
+      </div>
+      <div class="saas-field-grid-2col" style="margin-bottom: 10px;">
+        <div>
+          <label class="saas-label">Previous Version</label>
+          <input type="text" id="blastOldVer" class="saas-input font-mono" placeholder="e.g. v7.1.2">
+        </div>
+        <div>
+          <label class="saas-label">New Version</label>
+          <input type="text" id="blastNewVer" class="saas-input font-mono" placeholder="e.g. v7.1.3">
+        </div>
+      </div>
+      <div class="form-row-saas" style="margin-bottom: 10px;">
+        <label class="saas-label">Release Notes</label>
+        <textarea id="blastNotes" class="saas-input" style="height: 75px; resize: vertical;" placeholder="Bullet points of what changed..."></textarea>
+      </div>
+      <button id="btnSendBlast" class="btn-saas-primary" style="margin-top: 0; background: #7b1fa2; padding: 11px;" onclick="sendDeploymentBlast()">
+        <i data-lucide="mail" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Broadcast Release Update to Team
+      </button>
+    </div>
+
+    <div class="saas-meta-well" style="margin-bottom: 0;">
+      <div class="saas-label" style="color: #ffa726; margin-bottom: 8px;">
+        <i data-lucide="alert-triangle" style="width:14px; height:14px; vertical-align:text-bottom; margin-right:4px;"></i>Pre-Deployment Maintenance Warning
+      </div>
+      <div class="saas-field-grid-2col" style="margin-bottom: 10px;">
+        <div>
+          <label class="saas-label">Target Date</label>
+          <input type="date" id="preDeployDate" class="saas-input">
+        </div>
+        <div>
+          <label class="saas-label">Target Time</label>
+          <input type="time" id="preDeployTime" class="saas-input">
+        </div>
+      </div>
+      <button id="btnSendPreDeploy" class="btn-saas-primary" style="margin-top: 0; background: #e65100; padding: 11px;" onclick="sendPreDeploymentBlast()">
+        <i data-lucide="clock" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Broadcast Maintenance Warning
+      </button>
+    </div>
+  </div>
+
+  <!-- 6. Critical Ledger Recovery & Reversal Tools -->
+  <div class="saas-card saas-hub-section accent-red" style="margin-bottom: 0;">
+    <div class="card-section-title" style="color: #ef5350;">
+      <i data-lucide="shield-alert" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Ledger Recovery & Session Reversal
+    </div>
+    
+    <div class="saas-meta-well" style="margin-bottom: 12px;">
+      <label class="saas-label" style="display: block; margin-bottom: 4px;">Undo / Reverse Recent Session (Last 24 Hours)</label>
+      <p style="font-size: 0.78rem; color: var(--text-main); opacity: 0.8; margin: 0 0 8px 0;">
+        Select a recent Receiving or Reserving session to mathematically reverse its inventory impact.
+      </p>
+      <div style="display: flex; gap: 8px;">
+        <select id="reversalSessionSelect" class="saas-select" style="flex: 2; font-weight: 700;"></select>
+        <button class="btn-saas-primary" style="flex: 1; margin-top: 0; background-color: #d81b60; padding: 10px; width: auto;" onclick="SessionManager.executeSessionReversal()">
+          Reverse Math
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-between" style="flex-wrap: wrap; gap: 10px; padding-top: 4px;">
+      <div>
+        <strong style="font-size: 0.85rem; color: var(--text-main);">Cloud Event Replay & Full Restore</strong>
+        <div style="font-size: 0.78rem; color: var(--text-main); opacity: 0.75;">Rebuild all inventory counts chronologically from a verified Full Stocktake baseline.</div>
+      </div>
+      <button class="btn-saas-secondary" style="background-color: #c62828; color: #fff; border: none; padding: 10px 18px; font-weight: 700;" onclick="AuditManager.openRestoreModal()">
+        <i data-lucide="rewind" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Execute System Restore
+      </button>
+    </div>
+  </div>
+
 </div>
 
-<!-- ✨ NEW: PAYLOAD SIMULATOR MODAL -->
+<!-- PAYLOAD SANDBOX SIMULATOR MODAL -->
 <div id="simulatorModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:var(--card-bg, #fff); border-radius:8px; width:100%; max-width:800px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+  <div style="background:var(--card-bg, #fff); color:var(--text-main); border:1px solid var(--border-color); border-radius:12px; width:100%; max-width:840px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 12px 36px rgba(0,0,0,0.6);">
     
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #00796b; padding:15px 20px; flex-shrink:0;">
-      <h2 style="margin:0; color:#00796b; display:flex; align-items:center; gap:8px;">
-        <i data-lucide="flask-conical" style="width:24px; height:24px;"></i> Payload Sandbox Simulator
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #26a69a; padding:16px 20px; flex-shrink:0;">
+      <h2 style="margin:0; color:#26a69a; border:none; padding:0; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="flask-conical" style="width:22px; height:22px;"></i> Payload Sandbox Simulator
       </h2>
-      <button onclick="document.getElementById('simulatorModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main, #333);">×</button>
+      <button onclick="document.getElementById('simulatorModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main);">×</button>
     </div>
 
     <div style="padding:20px; flex-grow:1; display:flex; flex-direction:column; gap:15px; overflow:hidden;">
-      <div style="display:flex; gap:15px; height:100%;">
+      <div class="saas-field-grid-2col" style="height:100%; margin-bottom:0; align-items:stretch;">
         
         <!-- Left: Input Area -->
-        <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
-          <label style="font-size:0.85rem; font-weight:bold; color:var(--text-main, #333);">Paste JSON Session Payload:</label>
-          <textarea id="simPayloadInput" style="flex:1; padding:10px; font-family:monospace; font-size:0.8rem; border:1px solid #ccc; border-radius:4px; resize:none;" placeholder='{"sessionName": "Test", "workflowType": "Receiving", "scannedObjects": [...]}'></textarea>
-          <button class="btn-action" style="background:#00796b; color:#fff; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer; border:none;" onclick="AuditManager.runSimulatedPayload()">▶ Run Payload</button>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <label class="saas-label">Paste JSON Session Payload</label>
+          <textarea id="simPayloadInput" class="saas-input font-mono" style="flex:1; min-height:240px; font-size:0.8rem; resize:none;" placeholder='{"sessionName": "Test", "workflowType": "Receiving", "scannedObjects": [...]}'></textarea>
+          <button class="btn-saas-primary" style="margin-top:0; background:#00796b; padding:12px;" onclick="AuditManager.runSimulatedPayload()">▶ Run Simulated Payload</button>
         </div>
 
         <!-- Right: Results Console -->
-        <div style="flex:1.5; display:flex; flex-direction:column; gap:10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-             <label style="font-size:0.85rem; font-weight:bold; color:var(--text-main, #333);">Simulation Results:</label>
-             <button class="btn-small" style="background:#c62828; color:#fff; padding:4px 10px; border-radius:4px; border:none; cursor:pointer; font-size:0.75rem;" onclick="AuditManager.resetSimulator()">🔄 Restart Simulation</button>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="flex-between">
+            <label class="saas-label">Virtual Ledger Output</label>
+            <button class="btn-saas-sub" style="background:#c62828; color:#fff; border:none;" onclick="AuditManager.resetSimulator()">🔄 Reset Virtual State</button>
           </div>
-          <div id="simResultsConsole" style="flex:1; background:#1e1e1e; color:#a5d6a7; font-family:monospace; font-size:0.8rem; padding:12px; border-radius:4px; overflow-y:auto; border:2px solid #000; box-shadow:inset 0 2px 6px rgba(0,0,0,0.5);">
+          <div id="simResultsConsole" class="font-mono" style="flex:1; min-height:240px; background:#11161d; color:#a5d6a7; font-size:0.8rem; padding:12px; border-radius:8px; overflow-y:auto; border:1px solid var(--border-color); box-shadow:inset 0 2px 6px rgba(0,0,0,0.5);">
             <!-- Logs injected here -->
           </div>
         </div>

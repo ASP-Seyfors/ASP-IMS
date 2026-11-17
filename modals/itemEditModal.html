@@ -1,70 +1,80 @@
-<div id="itemEditModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:8px; width:100%; max-width:500px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #00796b; padding-bottom:8px; margin-bottom:15px;">
-      <h3 style="margin:0; color:#00796b;">✏️ Edit Item Details</h3>
-      <button onclick="document.getElementById('itemEditModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555); display:flex; justify-content:space-between;">
-        <span>REF / SKU</span>
-        <!-- ✨ PHASE 3: Admin Rename Tool -->
-        <button id="btnAdminRenameRef" onclick="DatabaseManager.promptRenameRef()" style="display:none; background:none; border:none; color:#c62828; font-size:0.75rem; font-weight:bold; cursor:pointer; text-decoration:underline;" title="Globally rename this REF across the entire system.">[ Admin Rename ]</button>
-      </label>
-      <input type="text" id="modalRef" readonly style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background:#f0f0f0; font-weight:bold; color:#00796b;">
-    </div>
+<div id="itemEditModal" class="saas-modal-backdrop" style="display:none; z-index:999999;">
+  <div class="saas-modal-card" style="max-width:520px;">
     
-    <!-- ✨ PHASE 3: Display Alias -->
-    <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);" title="Optional: An alternative name shown on customer-facing reports (e.g. '48360B (BX)'). Internal math will still use the strict REF.">Display Alias (Reports Only)</label>
-      <input type="text" id="modalDisplayAlias" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; color:#0277bd; font-weight:bold;">
+    <div class="saas-modal-header" style="border-bottom-color:#26a69a;">
+      <h3 style="margin:0; color:var(--heading-color); display:flex; align-items:center; gap:8px;">
+        <i data-lucide="pencil" style="width:18px; height:18px; color:#26a69a;"></i> Edit Catalog Item Details
+      </h3>
+      <button class="saas-modal-close" onclick="document.getElementById('itemEditModal').style.display='none'">×</button>
     </div>
-    <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Manufacturer</label>
-      <input type="text" id="modalMfr" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Description</label>
-      <textarea id="modalDesc" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; resize:vertical; min-height:60px;"></textarea>
-    </div>
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-      <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Category</label>
-        <input type="text" id="modalCat" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+
+    <div class="saas-modal-body" style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <div class="flex-between" style="margin-bottom:4px;">
+          <label class="saas-label">REF / SKU (Primary Key)</label>
+          <button id="btnAdminRenameRef" onclick="DatabaseManager.promptRenameRef()" style="display:none; background:none; border:none; color:#ef5350; font-size:0.75rem; font-weight:700; cursor:pointer; text-decoration:underline;" title="Globally rename this REF across the entire system.">[ Admin Global Rename ]</button>
+        </div>
+        <input type="text" id="modalRef" class="saas-input font-mono" readonly style="opacity:0.75; font-weight:700;">
       </div>
-      <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Shelf Location</label>
-        <input type="text" id="modalShelf" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; text-transform:uppercase;" placeholder="e.g. A-14">
+      
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;" title="Optional: An alternative name shown on customer-facing reports (e.g. '48360B (BX)'). Internal math will still use the strict REF.">Display Alias (Reports Only)</label>
+        <input type="text" id="modalDisplayAlias" class="saas-input font-mono" style="font-weight:700;" placeholder="Optional report alias...">
       </div>
-    </div>
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-      <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Status</label>
-        <select id="modalStatus" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-weight:bold;">
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="INACTIVE">INACTIVE</option>
-        </select>
+
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;">Manufacturer</label>
+        <input type="text" id="modalMfr" class="saas-input">
       </div>
-      <div style="flex:1;">
-        <label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Min Stock Level</label>
-        <input type="number" id="modalMinStock" min="0" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;" title="When available inventory falls to or below this number, the automated Restock Report is triggered.">
+
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;">Catalog Description</label>
+        <textarea id="modalDesc" class="saas-input" style="resize:vertical; min-height:64px;"></textarea>
       </div>
-    </div>
-    
-    <!-- ✨ NEW: Bundle / Box Only Toggle -->
-    <div id="modalBundleRow" style="display:none; margin-bottom:10px; padding:10px; background:#fff3e0; border:1px dashed #e65100; border-radius:4px;">
-        <label style="font-weight:bold; font-size:0.85rem; color:#e65100; display:flex; align-items:center; gap:6px; cursor:pointer;" title="If checked, the individual 'Each' unit will be hidden from all inventory reports.">
-            <input type="checkbox" id="modalSellAsBoxOnly">
-            Sell As Box Only (Hide individual 'Each' units from reports)
+
+      <div class="saas-field-grid-2col" style="margin-bottom:0;">
+        <div>
+          <label class="saas-label" style="display:block; margin-bottom:4px;">Category</label>
+          <input type="text" id="modalCat" class="saas-input">
+        </div>
+        <div>
+          <label class="saas-label" style="display:block; margin-bottom:4px;">Shelf Location</label>
+          <input type="text" id="modalShelf" class="saas-input font-mono" style="text-transform:uppercase;" placeholder="e.g. A-14">
+        </div>
+      </div>
+
+      <div class="saas-field-grid-2col" style="margin-bottom:0;">
+        <div>
+          <label class="saas-label" style="display:block; margin-bottom:4px;">Catalog Status</label>
+          <select id="modalStatus" class="saas-select" style="font-weight:700;">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </div>
+        <div>
+          <label class="saas-label" style="display:block; margin-bottom:4px;">Min Stock Alert Level</label>
+          <input type="number" id="modalMinStock" min="0" class="saas-input" title="When available inventory falls to or below this number, the automated Restock Report is triggered.">
+        </div>
+      </div>
+      
+      <div id="modalBundleRow" class="saas-callout-row warning" style="display:none;">
+        <label style="font-weight:700; font-size:0.83rem; color:#ffa726; display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="modalSellAsBoxOnly">
+          Sell As Box Only (Hide individual 'Each' units from customer reports)
         </label>
+      </div>
+
+      <div id="modalPricingBlock" class="saas-meta-well" style="margin-bottom:0;">
+        <!-- Pricing injected via JS -->
+      </div>
     </div>
-    <div style="display:flex; gap:10px; margin-bottom:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;" id="modalPricingBlock">
-      <!-- Pricing injected via JS -->
-    </div>
-    <div style="display:flex; justify-content:space-between; gap:10px;">
-      <button onclick="document.getElementById('itemEditModal').style.display='none'" style="flex:1; background:#757575; color:#fff; border:none; padding:10px; border-radius:4px; cursor:pointer;">Cancel</button>
-      <button onclick="DatabaseManager.saveModalEdits(); document.getElementById('itemEditModal').style.display='none'" style="flex:1; background:#00796b; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:6px;">
-        <i data-lucide="save" style="width:16px; height:16px;"></i> Apply Changes
+
+    <div class="saas-modal-footer">
+      <button class="btn-saas-secondary" style="flex:1; padding:11px;" onclick="document.getElementById('itemEditModal').style.display='none'">Cancel</button>
+      <button class="btn-saas-primary" style="flex:2; margin-top:0; padding:11px; background:#00796b;" onclick="DatabaseManager.saveModalEdits(); document.getElementById('itemEditModal').style.display='none'">
+        <i data-lucide="save" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Apply Changes
       </button>
     </div>
+
   </div>
 </div>

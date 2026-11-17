@@ -16,34 +16,68 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/manifestEntry.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- MANIFEST PRE-LOAD ENTRY -->
-<div id="screenManifestEntry" style="display: none;" class="card">
-  <h2>Pre-Load Shipment or Order Details</h2>
+<div id="screenManifestEntry" style="display: none;" class="saas-dashboard-container">
   
-  <!-- AI VISION COMMENTED OUT 
-  <div style="margin-bottom: 15px; background-color: #f3e5f5; border: 1px solid #7b1fa2; padding: 10px; border-radius: 4px;">...</div>
-  -->
-
-  <div style="margin-bottom: 15px; border-bottom: 1px dashed #8b8589; padding-bottom: 15px; text-align: center;">
-    <textarea id="pasteManifestArea" rows="4" placeholder="Copy & Paste the item details, including the header row, from your spreadsheet to here..." style="width: 100%; font-size: 0.85rem; padding: 8px; resize: vertical; margin-bottom:6px;"></textarea>
-    <button class="btn-action btn-auto" style="background-color: #1976d2; color: #ffffff;" onclick="processPastedSpreadsheet()">Parse Source Data</button>
+  <!-- 1. Header -->
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2><i data-lucide="clipboard-Signature" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i>Pre-Load Expected Manifest</h2>
+    </div>
+    <div class="header-actions">
+      <button class="btn-saas-secondary" onclick="cancelManifestEntry()">
+        <i data-lucide="x" style="width:15px; height:15px; vertical-align:middle; margin-right:4px;"></i>Cancel
+      </button>
+    </div>
   </div>
 
-  <!-- Clear List button moved above first item, left aligned -->
-  <div style="margin-bottom: 8px; text-align: left;">
-    <button class="btn-small btn-clear btn-auto" onclick="clearManifestList()"><i data-lucide="eraser" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Clear List</button>
+  <!-- 2. Spreadsheet Copy/Paste Parser Well -->
+  <div class="saas-card saas-hub-section accent-blue" style="margin-bottom: 18px;">
+    <div class="card-section-title" style="margin-bottom: 8px;">
+      <i data-lucide="file-spreadsheet" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Quick Spreadsheet Paste Parser
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-main); opacity: 0.8; margin: 0 0 10px 0;">
+      Copy and paste rows (including headers) directly from Excel or Google Sheets to automatically populate expected SKUs and customer allocations.
+    </p>
+    <textarea id="pasteManifestArea" class="saas-input font-mono" rows="4" placeholder="Paste spreadsheet rows here (Customer, PO, SKU/REF, Qty)..." style="resize: vertical; margin-bottom: 10px;"></textarea>
+    <button class="btn-saas-primary" style="margin-top: 0; padding: 10px;" onclick="processPastedSpreadsheet()">
+      <i data-lucide="wand-sparkles" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Parse Source Data
+    </button>
   </div>
 
-  <div id="manifestRowsContainer">
-    <!-- Dynamic Manifest Rows Injected via JS -->
+  <!-- 3. Expected Items List Card -->
+  <div class="saas-card">
+    <div class="flex-between" style="margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+      <div class="card-section-title" style="margin: 0;">
+        <i data-lucide="list-checks" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Expected Items & Allocations
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-saas-sub" onclick="clearManifestList()">
+          <i data-lucide="eraser" style="width:13px; height:13px; vertical-align:middle; margin-right:4px;"></i>Clear List
+        </button>
+        <button class="btn-saas-secondary" style="border-color: var(--heading-color); color: var(--heading-color); padding: 5px 12px;" onclick="addManifestRow()">
+          <i data-lucide="plus" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Add Item
+        </button>
+      </div>
+    </div>
+
+    <div id="manifestRowsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+      <!-- Dynamic Manifest Rows Injected via JS -->
+    </div>
+
+    <div style="text-align: center; margin-top: 12px;">
+      <button class="btn-saas-sub" onclick="addManifestRow()">+ Add Another Expected Item</button>
+    </div>
+
+    <!-- 4. Footer Navigation -->
+    <div class="scanning-actions-footer">
+      <button class="btn-saas-secondary" style="flex: 1; padding: 12px;" onclick="cancelManifestEntry()">Cancel</button>
+      <button class="btn-saas-primary" style="flex: 2; margin-top: 0;" onclick="goToManifestReview()">Review Expected Items ➔</button>
+    </div>
   </div>
 
-  <div style="text-align: center; margin-top: 10px;">
-    <button class="btn-small btn-auto" onclick="addManifestRow()"><i data-lucide="plus" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Add an Item</button>
-  </div>
-
-  <div class="flex-between" style="margin-top: 20px;">
-    <button class="btn-action btn-cancel btn-auto" onclick="cancelManifestEntry()">Cancel</button>
-    <button class="btn-action btn-continue btn-auto" onclick="goToManifestReview()">Review Expected Items</button>
-  </div>
 </div>

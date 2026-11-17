@@ -1,12 +1,23 @@
-<div id="qboModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; display:none; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
-  <div style="background:#fff; border-radius:8px; width:100%; max-width:480px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1565c0; padding-bottom:8px; margin-bottom:15px;">
-      <h3 style="margin:0; color:#1565c0;">☁️ QuickBooks Online Sync</h3>
-      <button onclick="document.getElementById('qboModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+<div id="qboModal" class="saas-modal-backdrop" style="display:none;">
+  <div class="saas-modal-card" style="max-width:460px;">
+    
+    <div class="saas-modal-header" style="border-bottom-color:#0277bd;">
+      <h3 style="margin:0; color:var(--heading-color); display:flex; align-items:center; gap:8px;">
+        <i data-lucide="cloud-download" style="width:18px; height:18px;"></i> QuickBooks Online Sync
+      </h3>
+      <button class="saas-modal-close" onclick="document.getElementById('qboModal').style.display='none'">×</button>
     </div>
-    <p style="font-size:0.85rem; color:#555; margin-bottom:20px;">Fetch open invoices from QuickBooks Online.</p>
-    <div style="text-align:center; margin-bottom: 20px;">
-      <button class="btn-action btn-auto" style="background-color: #1565c0; color: #fff; width: 100%; padding: 12px; font-size: 1rem;" onclick="triggerQboSync(event); document.getElementById('qboModal').style.display='none';">Fetch QBO Orders</button>
+
+    <p style="font-size:0.88rem; color:var(--text-main); opacity:0.85; line-height:1.45; margin:0 0 18px 0;">
+      Pull the latest open invoices from QuickBooks Online into the staged fulfillment feed.
+    </p>
+
+    <div class="saas-modal-footer">
+      <button class="btn-saas-secondary" style="flex:1; padding:11px;" onclick="document.getElementById('qboModal').style.display='none'">Cancel</button>
+      <button class="btn-saas-primary" style="flex:2; margin-top:0; padding:11px;" onclick="triggerQboSync(event); document.getElementById('qboModal').style.display='none';">
+        Fetch QBO Orders
+      </button>
     </div>
+
   </div>
 </div>

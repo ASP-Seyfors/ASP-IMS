@@ -16,221 +16,290 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/reports.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- REPORTS & ANALYTICS HUB -->
-<div id="screenReports" style="display: none;" class="card">
-  <div class="flex-between" style="border-bottom: 2px solid #7b1fa2; padding-bottom: 6px; margin-bottom: 15px;">
-    <h2 style="border:none; margin:0; padding:0; color: #7b1fa2;">Reports & Analytics</h2>
-    <button class="btn-small btn-cancel btn-auto" onclick="UIManager.closeReportsHub()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return</button>
-  </div>
-
-  <!-- Warehouse Inventory Reports -->
-  <div id="panelInventoryReports" style="background: var(--raw-bg, #f3e5f5); border: 1px solid var(--border-color, #ce93d8); padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: var(--heading-color, #4a148c);">Warehouse Inventory Reports</h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-action btn-auto" style="background-color: #0277bd; color: #fff; margin:0; width:100%;" onclick="ReportsManager.openInventoryReportOptions('in_stock')"><i data-lucide="package" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Report</button>
-      <button class="btn-action btn-auto" style="background-color: #e65100; color: #fff; margin:0; width:100%;" onclick="ReportsManager.generateUnifiedExpirationReport()"><i data-lucide="triangle-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Expiration Report</button>
-      <button class="btn-action btn-auto" style="background-color: #8e24aa; color: #fff; margin:0; width:100%;" onclick="ReportsManager.openAddressBookEditor()"><i data-lucide="book-open" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Manage Address Book</button>
-      <button class="btn-action btn-auto" style="background-color: #d32f2f; color: #ffffff; margin: 0; width:100%;" onclick="window.openEthiconMonitorModal()">
-        <i data-lucide="shield-alert" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Ethicon Monitor
-      </button>
+<div id="screenReports" style="display: none;" class="saas-dashboard-container">
+  
+  <!-- 1. Hub Header -->
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2><i data-lucide="bar-chart-3" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i>Reports & Analytics</h2>
     </div>
-    <!-- Single full-width row for the CSV Export button below -->
-    <div style="margin-top: 8px;">
-      <button class="btn-action" style="background-color: #2e7d32; color: #ffffff; margin:0; width:100%;" onclick="ReportsManager.triggerOnHandCsv()">
-        <i data-lucide="file-spreadsheet" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i> Export On-Hand Stock CSV
+    <div class="header-actions">
+      <button class="btn-saas-secondary" onclick="UIManager.closeReportsHub()">
+        <i data-lucide="arrow-left" style="width:15px; height:15px; vertical-align:middle; margin-right:4px;"></i>Return
       </button>
     </div>
   </div>
 
-  <!-- ✨ EXTERNAL STOREFRONT & MARKETPLACE EXPORTS SECTION
-<div class="report-section-card" style="background:var(--input-bg); border:1px solid var(--border-color); padding:15px; border-radius:6px; margin-bottom:20px;">
-  <h3 style="margin-top:0; color:var(--heading-color, #0277bd); font-size:1rem;">🛒 External Storefront & Marketplace Exports</h3>
-  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-top:10px;">
-    
-    <button class="btn-action" style="background:#2e7d32; color:#fff;" onclick="ReportsManager.triggerVetcoveVariance()">📦 Export Vetcove Variance CSV</button>
-    <button class="btn-action" style="background:#1b5e20; color:#fff;" onclick="ReportsManager.triggerVetcoveFull()">📦 Export Vetcove Full CSV</button>
-    
-    <button class="btn-action" style="background:#0277bd; color:#fff;" onclick="ReportsManager.triggerDotMedVariance()">🏥 Export DotMed Variance CSV</button>
-    <button class="btn-action" style="background:#01579b; color:#fff;" onclick="ReportsManager.triggerDotMedFull()">🏥 Export DotMed Full CSV</button>
-    
-    <button class="btn-action" style="background:#f57f17; color:#fff;" onclick="ReportsManager.triggerRevMedExport()">💊 Export RevMed CSV</button>
-    
+  <!-- 2. Warehouse Inventory Reports Card -->
+  <div id="panelInventoryReports" class="saas-card saas-hub-section accent-blue">
+    <div class="card-section-title">
+      <i data-lucide="warehouse" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Warehouse Inventory Reports
+    </div>
+    <div class="enterprise-grid" style="margin-top: 8px;">
+      <button class="btn-saas-grid" onclick="ReportsManager.openInventoryReportOptions('in_stock')">
+        <i data-lucide="package" style="width:18px; height:18px; color:#29b6f6;"></i>
+        <span>On-Hand Stock Report</span>
+      </button>
+      <button class="btn-saas-grid" onclick="ReportsManager.generateUnifiedExpirationReport()">
+        <i data-lucide="triangle-alert" style="width:18px; height:18px; color:#ffa726;"></i>
+        <span>Expiration Report (FEFO)</span>
+      </button>
+      <button class="btn-saas-grid" onclick="ReportsManager.openAddressBookEditor()">
+        <i data-lucide="book-open" style="width:18px; height:18px; color:#ab47bc;"></i>
+        <span>Manage Address Book</span>
+      </button>
+      <button class="btn-saas-grid" onclick="window.openEthiconMonitorModal()">
+        <i data-lucide="shield-alert" style="width:18px; height:18px; color:#ef5350;"></i>
+        <span>Ethicon Monitor</span>
+      </button>
+    </div>
+    <div style="margin-top: 10px;">
+      <button class="btn-saas-primary" style="margin-top:0; background-color: #2e7d32; padding: 11px;" onclick="ReportsManager.triggerOnHandCsv()">
+        <i data-lucide="file-spreadsheet" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Export On-Hand Stock CSV
+      </button>
+    </div>
   </div>
-</div> -->
 
-  <!-- Customer Specific Reports -->
-  <div id="panelCustomerReports" style="background: #fafafa; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #333;">Customer-Specific Reports</h4>
-    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-      <select id="customerReportSelect" style="flex: 1; padding: 6px;"></select>
+  <!-- 3. Customer-Specific Reports Card -->
+  <div id="panelCustomerReports" class="saas-card saas-hub-section accent-purple">
+    <div class="card-section-title">
+      <i data-lucide="users" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Customer-Specific Reports
     </div>
-
-    <div style="margin-bottom: 12px; background: var(--raw-bg, #e8f5e9); border: 1px solid var(--border-color, #c8e6c9); padding: 8px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
-      <strong style="color: #2e7d32;">Sales Report Scope:</strong>
-      <div style="display: flex; gap: 12px;">
-        <label style="cursor:pointer; color:var(--text-main, #333);"><input type="radio" name="internalReportScope" value="10" checked> Top 10</label>
-        <label style="cursor:pointer; color:var(--text-main, #333);"><input type="radio" name="internalReportScope" value="all"> All</label>
+    
+    <div class="saas-field-grid-2col" style="align-items: center; margin-bottom: 12px;">
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;">Target Customer Account</label>
+        <select id="customerReportSelect" class="saas-select"></select>
       </div>
-    </div>
-
-    <div id="customerReportControls" style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openInternalSalesReportOptions()"><i data-lucide="trending-up" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Internal Sales Report</button>
-      <button class="btn-small btn-auto" style="background-color: #0277bd; color: #fff;" onclick="AuditManager.openCustomerStockReportEditor()"><i data-lucide="file-text" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Flyer</button>
-      <button class="btn-small btn-auto" style="background-color: #f57f17; color: #fff;" onclick="AuditManager.openCustomSalesFlyer()"><i data-lucide="sparkles" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Custom Sales Flyer</button>
-    </div>
-
-  <!-- Automated Stock Report Distribution List -->
-  <div id="panelSubscribers" style="background: #e1f5fe; border: 1px solid #03a9f4; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #01579b;">Automated Stock Report Distribution List</h4>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom: 10px; padding: 10px; background: #fff; border: 1px dashed #03a9f4; border-radius: 4px;">
-      <!-- ✨ NEW: Added Linked Customer Account Dropdown -->
-      <div style="display:flex; gap:6px;">
-        <input type="text" id="subName" placeholder="Contact Name (e.g. Mike)" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" />
-        <select id="subCustomerId" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" title="Link this subscriber to a Master Customer Account to track purchase history.">
-          <option value="">-- Link to Customer Account --</option>
-        </select>
-      </div>
-      <input type="email" id="subEmail" placeholder="Email Address" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" />
-      
-      <div style="display:flex; gap:6px;">
-        <select id="subFreq" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;" onchange="ReportsManager.toggleSubSendDay()">
-          <option value="Quarterly">Quarterly</option>
-          <option value="Monthly">Monthly</option>
-          <option value="Weekly">Weekly</option>
-          <option value="Daily">Daily</option>
-        </select>
-        <!-- ✨ NEW: Dynamic Day Selector -->
-        <select id="subSendDay" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px; display:none;">
-          <option value="Monday">Monday</option>
-        </select>
-        <select id="subStatus" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;">
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-      </div>
-      <!-- ✨ NEW: Promo REFs Input -->
-      <input type="text" id="subPromoRefs" placeholder="Highlighted Promo REFs (e.g. Y427H, 4350)" style="padding:6px; font-size:0.85rem; border:1px solid var(--input-border); border-radius:3px; background:var(--input-bg); color:var(--text-main);" title="Force these specific REFs to appear at the top of the email if they are in stock." />
-
-      <!-- ✨ FIX: Added Manage Lists Button next to Fallback, and the new Custom Message Box -->
-      <div style="display:flex; gap:6px;">
-        <select id="subFormat" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="Choose the email layout design.">
-          <option value="SMART">Smart Intro + PDF (STAT Style)</option>
-          <option value="LEGACY">Full Catalog in Email Body</option>
-        </select>
-        <div style="flex:1; display:flex; gap:4px;">
-          <select id="subFallback" style="flex:1; padding:6px; font-size:0.85rem; border:1px solid var(--border-color, #ccc); border-radius:3px; background-color:var(--input-bg, #fff); color:var(--text-main, #333); font-weight:normal;" title="If they have no purchase history, what should we show them?">
-            <option value="SELLERS">Fallback: Top Sellers</option>
-            <option value="VALUE">Fallback: High Value</option>
-            <option value="NONE">Fallback: None (PDF Only)</option>
-            <!-- Custom lists will be injected here automatically by JS -->
-          </select>
-          <button class="btn-small" style="background:#0277bd; color:#fff; padding:0 10px; border:none; border-radius:3px; cursor:pointer;" onclick="ReportsManager.openCustomListsModal()" title="Manage Custom Lists">📝</button>
+      <div>
+        <label class="saas-label" style="display:block; margin-bottom:4px;">Sales Report Scope</label>
+        <div class="saas-radio-pill-group">
+          <label class="saas-radio-pill">
+            <input type="radio" name="internalReportScope" value="10" checked> Top 10 Items
+          </label>
+          <label class="saas-radio-pill">
+            <input type="radio" name="internalReportScope" value="all"> All Historical
+          </label>
         </div>
       </div>
-      
-      <!-- ✨ NEW: Advanced Fallback Toggles -->
-      <div style="display:flex; gap:15px; margin-top:6px; font-size:0.85rem; color:#555; align-items:center;">
-        <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
-          <input type="checkbox" id="subIgnoreHistory"> Force Fallback (Ignore History)
-        </label>
-        <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
-          <input type="checkbox" id="subIncludeBoth"> Include Both (History & Fallback)
-        </label>
-        <!-- ✨ NEW -->
-        <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
-          <input type="checkbox" id="subIgnoreFallback"> Ignore Fallback
-        </label>
+    </div>
+
+    <div id="customerReportControls" class="saas-btn-row-3col">
+      <button class="btn-saas-secondary" style="padding:10px; font-weight:700;" onclick="AuditManager.openInternalSalesReportOptions()">
+        <i data-lucide="trending-up" style="width:15px; height:15px; vertical-align:middle; margin-right:4px; color:#29b6f6;"></i>Internal Sales Report
+      </button>
+      <button class="btn-saas-secondary" style="padding:10px; font-weight:700;" onclick="AuditManager.openCustomerStockReportEditor()">
+        <i data-lucide="file-text" style="width:15px; height:15px; vertical-align:middle; margin-right:4px; color:#66bb6a;"></i>On-Hand Stock Flyer
+      </button>
+      <button class="btn-saas-secondary" style="padding:10px; font-weight:700; border-color:#f57f17; color:#ffa726;" onclick="AuditManager.openCustomSalesFlyer()">
+        <i data-lucide="sparkles" style="width:15px; height:15px; vertical-align:middle; margin-right:4px;"></i>Custom Sales Flyer
+      </button>
+    </div>
+
+    <!-- 4. Automated Stock Report Distribution List -->
+    <div id="panelSubscribers" class="saas-subpanel" style="margin-top: 18px;">
+      <div class="card-section-title" style="font-size: 0.88rem; margin-bottom: 10px;">
+        <i data-lucide="mail-check" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Automated Stock Report Distribution List
       </div>
       
-      <input type="text" id="subCategories" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="padding:6px; font-size:0.85rem; cursor:pointer; background-color:var(--input-bg); color: var(--text-main) !important; border:1px solid var(--border-color); border-radius:3px;" title="Click to select specific categories" />
-      
-      <div style="display:flex; gap:10px; margin-top:8px;">
-        <button class="btn-small" style="background-color: #757575; color: #fff; flex: 1; padding:8px; border:none; border-radius:3px; cursor:pointer;" onclick="ReportsManager.clearSubscriberFields()">Clear Fields</button>
-        <button class="btn-small" style="background-color: #0277bd; color: #fff; flex: 2; padding:8px; border:none; border-radius:3px; cursor:pointer;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+      <div class="saas-meta-well" style="margin-bottom: 12px;">
+        <div class="saas-field-grid-2col" style="margin-bottom: 10px;">
+          <div>
+            <label class="saas-label">Contact Name</label>
+            <input type="text" id="subName" class="saas-input" placeholder="e.g. Mike">
+          </div>
+          <div>
+            <label class="saas-label">Linked Master Account</label>
+            <select id="subCustomerId" class="saas-select" title="Link this subscriber to a Master Customer Account to track purchase history.">
+              <option value="">-- Link to Customer Account --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-saas" style="margin-bottom: 10px;">
+          <label class="saas-label">Recipient Email Address</label>
+          <input type="email" id="subEmail" class="saas-input" placeholder="recipient@company.com">
+        </div>
+
+        <div class="saas-btn-row-3col" style="margin-bottom: 10px;">
+          <div>
+            <label class="saas-label">Frequency</label>
+            <select id="subFreq" class="saas-select" onchange="ReportsManager.toggleSubSendDay()">
+              <option value="Quarterly">Quarterly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Daily">Daily</option>
+            </select>
+          </div>
+          <div>
+            <label class="saas-label">Send Day</label>
+            <select id="subSendDay" class="saas-select" style="display:none;">
+              <option value="Monday">Monday</option>
+            </select>
+          </div>
+          <div>
+            <label class="saas-label">Status</label>
+            <select id="subStatus" class="saas-select">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-saas" style="margin-bottom: 10px;">
+          <label class="saas-label">Highlighted Promo REFs (Optional)</label>
+          <input type="text" id="subPromoRefs" class="saas-input font-mono" placeholder="e.g. Y427H, 4350" title="Force these specific REFs to appear at the top of the email if they are in stock.">
+        </div>
+
+        <div class="saas-field-grid-2col" style="margin-bottom: 10px;">
+          <div>
+            <label class="saas-label">Email Layout Format</label>
+            <select id="subFormat" class="saas-select" title="Choose the email layout design.">
+              <option value="SMART">Smart Intro + PDF (STAT Style)</option>
+              <option value="LEGACY">Full Catalog in Email Body</option>
+            </select>
+          </div>
+          <div>
+            <label class="saas-label">Fallback Rule</label>
+            <div style="display:flex; gap:6px;">
+              <select id="subFallback" class="saas-select" style="flex:1;" title="If they have no purchase history, what should we show them?">
+                <option value="SELLERS">Fallback: Top Sellers</option>
+                <option value="VALUE">Fallback: High Value</option>
+                <option value="NONE">Fallback: None (PDF Only)</option>
+              </select>
+              <button class="btn-saas-secondary" style="padding:0 12px;" onclick="ReportsManager.openCustomListsModal()" title="Manage Custom Lists">📝</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="saas-checkbox-bar" style="margin-bottom: 10px;">
+          <label><input type="checkbox" id="subIgnoreHistory"> Force Fallback (Ignore History)</label>
+          <label><input type="checkbox" id="subIncludeBoth"> Include Both (History & Fallback)</label>
+          <label><input type="checkbox" id="subIgnoreFallback"> Ignore Fallback</label>
+        </div>
+
+        <div class="form-row-saas" style="margin-bottom: 12px;">
+          <label class="saas-label">Category Filter (Click to Select)</label>
+          <input type="text" id="subCategories" class="saas-input" placeholder="Categories (Default: All)" readonly onclick="ReportsManager.openCategoryModal()" style="cursor:pointer;" title="Click to select specific categories">
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button class="btn-saas-secondary" style="flex: 1; padding:10px;" onclick="ReportsManager.clearSubscriberFields()">Clear Fields</button>
+          <button class="btn-saas-primary" style="flex: 2; margin-top:0; padding:10px;" onclick="ReportsManager.saveSubscriber(event)">Save Subscriber</button>
+        </div>
+      </div>
+
+      <!-- Active Subscribers Table Container -->
+      <div id="subListContainer" class="saas-table-scroll" style="max-height: 180px; padding: 8px;">
+        <p style="text-align:center; color:var(--text-main); opacity:0.7; margin:0;">Click 'Refresh' to view Active Subscribers.</p>
+      </div>
+      <button class="btn-saas-secondary" style="width: 100%; margin-top:8px; padding:8px;" onclick="ReportsManager.loadSubscribers()">
+        🔄 Refresh Subscribers List
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. RevMed Reports & Cloud Session Export Grid -->
+  <div class="saas-field-grid-2col" style="margin-bottom: 0;">
+    
+    <!-- RevMed Reports -->
+    <div id="panelRevMedReports" class="saas-card saas-hub-section accent-green" style="margin-bottom:0;">
+      <div class="card-section-title">
+        <i data-lucide="clipboard-check" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>RevMed Reports
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-main); opacity: 0.8; margin: 0 0 12px 0;">
+        Generate PDF catalogs comparing live warehouse availability against active RevMed listings.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn-saas-secondary" style="padding: 10px; font-weight: 700; border-color: #2e7d32; color: #66bb6a;" onclick="ReportsManager.generateRevMedPDF('current')">
+          <i data-lucide="clipboard-list" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Current RevMed Catalog
+        </button>
+        <button class="btn-saas-secondary" style="padding: 10px; font-weight: 700;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')">
+          <i data-lucide="file-Search" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>On-Hand Stock Not on RevMed
+        </button>
       </div>
     </div>
-    <!-- ✨ FIX: Changed hardcoded #fff background to CSS variables so text stays readable in Dark Mode -->
-    <div id="subListContainer" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #ccc); padding: 6px; border-radius: 4px; max-height: 150px; overflow-y: auto; font-size: 0.8rem;">
-      <p style="text-align:center; color:var(--text-main, #777); margin:0;">Click 'Refresh' to view Active Subscribers.</p>
-    </div>
-    <button class="btn-small" style="background-color: #555; color: #fff; width: 100%; margin-top:6px; padding:8px;" onclick="ReportsManager.loadSubscribers()">Refresh</button>
-  </div>
 
-  <!-- RevMed Reports -->
-  <div id="panelRevMedReports" style="background: #e8f5e9; border: 1px solid #81c784; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">RevMed Reports</h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('current')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Current RevMed Catalog</button>
-      <button class="btn-small btn-auto" style="background-color: #2e7d32; color: #fff;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')"><i data-lucide="clipboard-list" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>On-Hand Stock Not on RevMed</button>
-    </div>
-  </div>
-
-  <!-- Cloud Session Generator (Moved to Bottom) -->
-  <div id="panelArchiveExport" style="background: #e8eaf6; border: 1px solid #9fa8da; padding: 12px; border-radius: 4px;">
-    <h4 style="margin: 0 0 5px 0; color: #283593;">Session Reports</h4>
-    <p style="font-size: 0.8rem; color: var(--text-main, #555); margin-bottom: 10px;">Select a previously archived session to generate a report from a previous session.</p>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <select id="archiveExportSelect" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
-        <option value="">-- Select an Archived Session --</option>
-      </select>
-      <div style="display: flex; gap: 8px;">
-        <select id="archiveExportFormat" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
-          <option value="pdf">PDF Report</option>
-          <option value="csv">CSV Report</option>
+    <!-- Cloud Session Reports -->
+    <div id="panelArchiveExport" class="saas-card saas-hub-section accent-indigo" style="margin-bottom:0;">
+      <div class="card-section-title">
+        <i data-lucide="folder-clock" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>Archived Session Reports
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-main); opacity: 0.8; margin: 0 0 10px 0;">
+        Select a previously archived session to generate a historical PDF or CSV report.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <select id="archiveExportSelect" class="saas-select">
+          <option value="">-- Select an Archived Session --</option>
         </select>
-        <button class="btn-small btn-auto" style="flex: 2; background-color: #3f51b5; color: #fff;" onclick="AuditManager.exportArchivedSession()">Generate Export</button>
+        <div style="display: flex; gap: 8px;">
+          <select id="archiveExportFormat" class="saas-select" style="flex: 1;">
+            <option value="pdf">PDF Report</option>
+            <option value="csv">CSV Report</option>
+          </select>
+          <button class="btn-saas-primary" style="flex: 1.5; margin-top: 0; padding: 10px;" onclick="AuditManager.exportArchivedSession()">
+            Generate Export
+          </button>
+        </div>
       </div>
     </div>
+
   </div>
 
-  <!-- ✨ NEW: Category Selection Modal -->
-  <div id="modalSubCategories" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:20px; border-radius:8px; width:90%; max-width:400px; max-height:80vh; display:flex; flex-direction:column;">
-      <h3 style="margin:0 0 10px 0; color:#01579b;">Select Categories</h3>
-      <p style="font-size:0.8rem; color:var(--text-main); margin-top:0;">Leave all unchecked to send the full inventory list.</p>
-      <div id="subCategoryChecklist" style="overflow-y:auto; flex:1; border:1px solid #ccc; padding:10px; border-radius:4px; margin-bottom:15px; display:flex; flex-direction:column; gap:8px;">
+  <!-- Embedded Modal 1: Category Selection -->
+  <div id="modalSubCategories" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border-color); padding:22px; border-radius:12px; width:90%; max-width:420px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
+      <h3 style="margin:0 0 6px 0; color:var(--heading-color);">Select Categories</h3>
+      <p style="font-size:0.8rem; color:var(--text-main); opacity:0.8; margin-top:0;">Leave all unchecked to send the full inventory list.</p>
+      <div id="subCategoryChecklist" style="overflow-y:auto; flex:1; background:var(--raw-bg); border:1px solid var(--border-color); padding:12px; border-radius:8px; margin-bottom:15px; display:flex; flex-direction:column; gap:8px;">
         <!-- Checkboxes injected here -->
       </div>
       <div style="display:flex; justify-content:space-between; gap:10px;">
-        <button class="btn-small" style="background:#777; color:#fff; flex:1;" onclick="document.getElementById('modalSubCategories').style.display='none'">Cancel</button>
-        <button class="btn-small" style="background:#0277bd; color:#fff; flex:1;" onclick="ReportsManager.confirmCategorySelection()">Apply Filters</button>
+        <button class="btn-saas-secondary" style="flex:1; padding:10px;" onclick="document.getElementById('modalSubCategories').style.display='none'">Cancel</button>
+        <button class="btn-saas-primary" style="flex:1; margin-top:0; padding:10px;" onclick="ReportsManager.confirmCategorySelection()">Apply Filters</button>
       </div>
     </div>
   </div>
 
-  <!-- ✨ NEW: Custom Lists Manager Modal -->
-  <div id="customListsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:20px; border-radius:8px; width:90%; max-width:500px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0277bd; padding-bottom:8px; margin-bottom:15px;">
-        <h3 style="margin:0; color:#0277bd;">📝 Manage Custom Lists</h3>
-        <button onclick="document.getElementById('customListsModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#333;">×</button>
+  <!-- Embedded Modal 2: Custom Lists Manager -->
+  <div id="customListsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border-color); padding:22px; border-radius:12px; width:90%; max-width:520px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:15px;">
+        <h3 style="margin:0; color:var(--heading-color);">📝 Manage Custom Lists</h3>
+        <button onclick="document.getElementById('customListsModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main);">×</button>
       </div>
       
-      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; background:var(--raw-bg, #f4f4f4); padding:12px; border-radius:4px; border:1px solid var(--border-color, #ccc);">
-        <strong style="color:#0277bd; font-size:0.9rem;">Create New List</strong>
-        <input type="text" id="listNameInput" placeholder="List Name (e.g., Popular Sutures)" style="padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;" />
-        <input type="text" id="listRefsInput" placeholder="Comma-separated REFs (e.g., VCP316H, 4350, DNX12)" style="padding:6px; font-size:0.85rem; border:1px solid #ccc; border-radius:3px;" />
-        <button id="btnSaveCustomList" class="btn-small" style="background:#00796b; color:#fff; padding:8px; border:none; border-radius:3px; cursor:pointer; font-weight:bold;" onclick="ReportsManager.saveCustomList()">Save to Cloud</button>
+      <div class="saas-meta-well" style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+        <strong style="color:var(--heading-color); font-size:0.85rem; text-transform:uppercase;">Create New List</strong>
+        <input type="text" id="listNameInput" class="saas-input" placeholder="List Name (e.g., Popular Sutures)">
+        <input type="text" id="listRefsInput" class="saas-input font-mono" placeholder="Comma-separated REFs (e.g., VCP316H, 4350, DNX12)">
+        <button id="btnSaveCustomList" class="btn-saas-primary" style="margin-top:4px; padding:10px; background:#00796b;" onclick="ReportsManager.saveCustomList()">Save to Cloud</button>
       </div>
 
       <div id="customListsGrid" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:8px; padding-right:4px;">
-        <div style="text-align:center; padding:20px; color:#777; font-style:italic;">Loading saved lists...</div>
+        <div style="text-align:center; padding:20px; color:var(--text-main); opacity:0.7; font-style:italic;">Loading saved lists...</div>
       </div>
     </div>
   </div>
 
-  <!-- ✨ NEW: Live Email Preview Modal -->
-  <div id="emailPreviewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center;">
-    <div style="background:#fff; border-radius:8px; width:95%; max-width:800px; height:90vh; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0277bd; padding:12px 20px;">
-        <h3 style="margin:0; color:#0277bd;">👁️ Live Email Preview</h3>
-        <button onclick="document.getElementById('emailPreviewModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+  <!-- Embedded Modal 3: Live Email Preview -->
+  <div id="emailPreviewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; width:95%; max-width:800px; height:90vh; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding:14px 20px;">
+        <h3 style="margin:0; color:var(--heading-color);">👁️ Live Email Preview</h3>
+        <button onclick="document.getElementById('emailPreviewModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-main);">×</button>
       </div>
-      <div style="flex:1; padding:20px; overflow-y:auto; background:#f4f4f4;">
-         <div id="emailPreviewContent" style="background:#fff; border:1px solid #ccc; padding:30px; min-height:100%; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-            <!-- Rendered HTML goes here -->
+      <div style="flex:1; padding:20px; overflow-y:auto; background:var(--raw-bg);">
+         <div id="emailPreviewContent" style="background:#fff; color:#333; border:1px solid #ccc; border-radius:6px; padding:30px; min-height:100%; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <!-- Rendered HTML email preview stays on white paper canvas -->
          </div>
       </div>
     </div>
   </div>
+
 </div>

@@ -16,16 +16,30 @@
  * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
  * All Rights Reserved.
  * ======================================================================= -->
+<!-- =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: screens/manifestReview.html (Modern Enterprise SaaS Layout)
+ * ======================================================================= -->
 <!-- MANIFEST REVIEW & VERIFICATION -->
-<div id="screenManifestReview" style="display: none;" class="card">
-  <h2>Verify Expected Order</h2>
+<div id="screenManifestReview" style="display: none;" class="saas-dashboard-container">
   
-  <div id="manifestReviewSummaryContainer">
+  <div class="dashboard-header">
+    <div class="brand-group">
+      <h2><i data-lucide="clipboard-check" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"></i>Verify Expected Order Manifest</h2>
+    </div>
+  </div>
+  
+  <div id="manifestReviewSummaryContainer" class="saas-manifest-review-list">
     <!-- Summary Injected via JS -->
   </div>
 
-  <div class="flex-between" style="margin-top: 16px;">
-    <button class="btn-action btn-auto" style="background-color: #f57f17; color: #ffffff; margin:0;" onclick="returnToManifestEdit()"><i data-lucide="arrow-left" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Return to Pre-Loading</button>
-    <button class="btn-action btn-save btn-auto" style="margin:0;" onclick="confirmManifestAndStart()"><i data-lucide="check-circle" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;"></i>Confirm & Begin Scanning</button>
+  <div class="scanning-actions-footer">
+    <button class="btn-saas-secondary" style="flex: 1; padding: 12px; border-color: #f57f17; color: #ff9800; font-weight: 700;" onclick="returnToManifestEdit()">
+      <i data-lucide="arrow-left" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Return to Pre-Loading
+    </button>
+    <button class="btn-saas-primary" style="flex: 2; margin-top: 0; background-color: #2e7d32;" onclick="confirmManifestAndStart()">
+      <i data-lucide="check-circle" style="width:17px; height:17px; vertical-align:middle; margin-right:6px;"></i>Confirm & Begin Scanning
+    </button>
   </div>
+
 </div>
