@@ -13,14 +13,16 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
-      "category": "General",
+      "category": "Surgical Solution",
       "status": "ACTIVE",
       "shelf": "",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "22438-19",
@@ -42,7 +44,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-2324BCC",
@@ -64,7 +68,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-7200",
@@ -86,7 +92,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-7202",
@@ -108,7 +116,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-7211",
@@ -130,7 +140,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-7505",
@@ -152,7 +164,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-7535",
@@ -174,7 +188,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-7535T",
@@ -196,7 +212,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-9811",
@@ -218,7 +236,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AR-9821",
@@ -240,7 +260,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1200710",
@@ -262,7 +284,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "5950007",
@@ -284,7 +308,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "5950008",
@@ -306,7 +332,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "5950009",
@@ -328,7 +356,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "5954450",
@@ -350,7 +380,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SM0002-USA",
@@ -367,12 +399,14 @@
       "syncedShopify": "TRUE",
       "category": "Absorbable Hemostat",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SM0007-USA",
@@ -381,20 +415,22 @@
       "gtin": "00801741044144",
       "price": "$185.00",
       "cost": "$85.00",
-      "onHand": 4,
+      "onHand": 1,
       "reservedQty": 0,
-      "availableQty": 4,
+      "availableQty": 1,
       "onRevMed": "FALSE",
       "revMedPrice": "$220.00",
       "syncedShopify": "TRUE",
       "category": "Absorbable Hemostat",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "4301-02",
@@ -416,7 +452,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "5086-02",
@@ -438,7 +476,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "4406",
@@ -460,7 +500,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "309647",
@@ -482,7 +524,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "383512",
@@ -504,7 +548,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "AA00",
@@ -526,7 +572,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "2030",
@@ -548,7 +596,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "3311-8G",
@@ -570,7 +620,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "3350-8G",
@@ -592,7 +644,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MX140",
@@ -614,7 +668,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "134051",
@@ -636,7 +692,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "EGIA45AMT",
@@ -658,7 +716,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "EGIA45AV",
@@ -680,7 +740,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "EGIA45AVM",
@@ -702,7 +764,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "EGIA60AMT",
@@ -724,7 +788,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "EGIA60AVM",
@@ -746,7 +812,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "EL-23-LN",
@@ -763,12 +831,14 @@
       "syncedShopify": "TRUE",
       "category": "Ligating Loop",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1212A",
@@ -790,7 +860,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1837",
@@ -807,12 +879,14 @@
       "syncedShopify": "TRUE",
       "category": "Sealer-Divider",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1923",
@@ -829,12 +903,14 @@
       "syncedShopify": "TRUE",
       "category": "Sealer",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1937",
@@ -851,12 +927,14 @@
       "syncedShopify": "TRUE",
       "category": "Instrument",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF2019",
@@ -865,20 +943,22 @@
       "gtin": "10884521741096",
       "price": "$300.00",
       "cost": "$200.00",
-      "onHand": 18,
+      "onHand": 12,
       "reservedQty": 0,
-      "availableQty": 18,
+      "availableQty": 12,
       "onRevMed": "FALSE",
       "revMedPrice": "$400.00",
       "syncedShopify": "TRUE",
       "category": "Dissector",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF4418",
@@ -895,12 +975,14 @@
       "syncedShopify": "TRUE",
       "category": "Sealer",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF5637",
@@ -909,9 +991,9 @@
       "gtin": "10884521521735",
       "price": "$475.00",
       "cost": "$350.00",
-      "onHand": 18,
+      "onHand": 12,
       "reservedQty": 0,
-      "availableQty": 18,
+      "availableQty": 12,
       "onRevMed": "TRUE",
       "revMedPrice": "$485.00",
       "syncedShopify": "TRUE",
@@ -922,7 +1004,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LS1020",
@@ -939,12 +1023,14 @@
       "syncedShopify": "TRUE",
       "category": "Ligasure",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG45AMT",
@@ -961,12 +1047,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG45AVM",
@@ -983,12 +1071,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG45AXT",
@@ -1005,12 +1095,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG45CTAMT",
@@ -1027,12 +1119,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG45CTAVM",
@@ -1049,12 +1143,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG60AMT",
@@ -1071,12 +1167,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG60AVM",
@@ -1093,12 +1191,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG60AXT",
@@ -1115,12 +1215,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG60CTAMT",
@@ -1137,12 +1239,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG60CTAVM",
@@ -1159,12 +1263,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "TA30V3L",
@@ -1186,7 +1292,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "TA9048L",
@@ -1208,7 +1316,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VLOCL0306",
@@ -1230,7 +1340,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1962",
@@ -1252,7 +1364,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1963",
@@ -1274,7 +1388,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1972",
@@ -1296,7 +1412,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1973",
@@ -1318,7 +1436,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1974",
@@ -1340,7 +1460,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1603G",
@@ -1362,7 +1484,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1611G",
@@ -1384,7 +1508,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1629H",
@@ -1406,7 +1532,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1647G",
@@ -1428,7 +1556,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1661G",
@@ -1450,7 +1580,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1665G",
@@ -1472,7 +1604,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1666G",
@@ -1494,7 +1628,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1667G",
@@ -1516,7 +1652,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1669H",
@@ -1538,7 +1676,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1698G",
@@ -1560,7 +1700,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1740G",
@@ -1582,7 +1724,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1761G",
@@ -1604,7 +1748,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1780G",
@@ -1626,7 +1772,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1791G",
@@ -1648,7 +1796,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1797G",
@@ -1670,7 +1820,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1856G",
@@ -1692,7 +1844,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1893G",
@@ -1714,7 +1868,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1915G",
@@ -1736,7 +1892,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1951S",
@@ -1758,7 +1916,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1952S",
@@ -1780,7 +1940,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1953S",
@@ -1802,7 +1964,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "1955S",
@@ -1824,7 +1988,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "2808G",
@@ -1846,7 +2012,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "2815G",
@@ -1868,7 +2036,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "3846T",
@@ -1890,7 +2060,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "424H",
@@ -1912,7 +2084,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "4350",
@@ -1934,7 +2108,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "4350XL",
@@ -1951,12 +2127,14 @@
       "syncedShopify": "TRUE",
       "category": "Adhesion, Barrier, 4350",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "460T",
@@ -1978,7 +2156,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "585H",
@@ -2000,7 +2180,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "627H",
@@ -2022,7 +2204,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "628H",
@@ -2044,7 +2228,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "632G",
@@ -2066,7 +2252,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "635H",
@@ -2088,7 +2276,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "640G",
@@ -2110,7 +2300,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "662G",
@@ -2132,7 +2324,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "662H",
@@ -2154,7 +2348,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "663G",
@@ -2176,7 +2372,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "663H",
@@ -2198,7 +2396,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "664H",
@@ -2220,7 +2420,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "669H",
@@ -2242,7 +2444,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "678G",
@@ -2264,7 +2468,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "680H",
@@ -2286,7 +2492,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "682G",
@@ -2308,7 +2516,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "684G",
@@ -2330,7 +2540,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "685G",
@@ -2352,7 +2564,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "686G",
@@ -2374,7 +2588,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "687G",
@@ -2396,7 +2612,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "689G",
@@ -2418,7 +2636,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "697G",
@@ -2440,7 +2660,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "698G",
@@ -2462,7 +2684,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "698H",
@@ -2484,7 +2708,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "699G",
@@ -2506,7 +2732,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "699H",
@@ -2528,7 +2756,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "736G",
@@ -2550,7 +2780,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "749G",
@@ -2572,7 +2804,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "770G",
@@ -2594,7 +2828,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7731G",
@@ -2616,7 +2852,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "774G",
@@ -2638,7 +2876,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "783G",
@@ -2660,7 +2900,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "790G",
@@ -2682,7 +2924,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "792G",
@@ -2704,7 +2948,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "794G",
@@ -2726,7 +2972,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "796G",
@@ -2748,7 +2996,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "810H",
@@ -2770,7 +3020,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "811H",
@@ -2792,7 +3044,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "813H",
@@ -2814,7 +3068,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "825G",
@@ -2836,7 +3092,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "830H",
@@ -2858,7 +3116,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8418H",
@@ -2880,7 +3140,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8422H",
@@ -2902,7 +3164,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8424H",
@@ -2924,7 +3188,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8434H",
@@ -2946,7 +3212,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "843H",
@@ -2968,7 +3236,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8521H",
@@ -2990,7 +3260,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8526H",
@@ -3012,7 +3284,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8556H",
@@ -3034,7 +3308,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8557H",
@@ -3056,7 +3332,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8559H",
@@ -3078,7 +3356,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8581H",
@@ -3100,7 +3380,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8623H",
@@ -3122,7 +3404,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8661G",
@@ -3144,7 +3428,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8661H",
@@ -3166,7 +3452,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8665G",
@@ -3188,7 +3476,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8681G",
@@ -3210,7 +3500,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8682G",
@@ -3232,7 +3524,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8683G",
@@ -3254,7 +3548,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8684G",
@@ -3276,7 +3572,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8685H",
@@ -3298,7 +3596,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8689H",
@@ -3320,7 +3620,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8690H",
@@ -3342,7 +3644,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8695G",
@@ -3364,7 +3668,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8696G",
@@ -3386,7 +3692,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8697G",
@@ -3408,7 +3716,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8698G",
@@ -3430,7 +3740,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8699G",
@@ -3452,7 +3764,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8706H",
@@ -3474,7 +3788,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8726G",
@@ -3496,7 +3812,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8776H",
@@ -3518,7 +3836,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8825G",
@@ -3540,7 +3860,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "882H",
@@ -3562,7 +3884,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8832H",
@@ -3584,7 +3908,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8833H",
@@ -3606,7 +3932,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "883H",
@@ -3628,7 +3956,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "884H",
@@ -3650,7 +3980,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "8871H",
@@ -3672,7 +4004,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "9038G",
@@ -3694,7 +4028,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "A185H",
@@ -3716,7 +4052,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "A187H",
@@ -3738,7 +4076,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "A306H",
@@ -3760,7 +4100,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "C521D",
@@ -3782,7 +4124,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "CB5LT",
@@ -3799,12 +4143,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "CX22D",
@@ -3826,7 +4172,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "CX45D",
@@ -3848,7 +4196,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "DHVM12",
@@ -3870,7 +4220,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "DNX12",
@@ -3887,12 +4239,14 @@
       "syncedShopify": "TRUE",
       "category": "Sealant",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "DNX12 (EACH)",
@@ -3914,7 +4268,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "ECH60R",
@@ -3936,7 +4292,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "ECR45M",
@@ -3958,7 +4316,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "ECR60M",
@@ -3980,7 +4340,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G121H",
@@ -4002,7 +4364,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G122H",
@@ -4024,7 +4388,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G123H",
@@ -4046,7 +4412,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G181H",
@@ -4068,7 +4436,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G697G",
@@ -4090,7 +4460,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST45B",
@@ -4107,12 +4479,14 @@
       "syncedShopify": "TRUE",
       "category": "GST, Reload, Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST45D",
@@ -4129,12 +4503,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST45G",
@@ -4151,12 +4527,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST45T",
@@ -4173,12 +4551,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST60B",
@@ -4195,12 +4575,14 @@
       "syncedShopify": "TRUE",
       "category": "Surgical Stapling",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST60W",
@@ -4217,12 +4599,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "HAR736",
@@ -4244,7 +4628,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "HAR9F",
@@ -4266,7 +4652,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J195H",
@@ -4288,7 +4676,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J205G",
@@ -4310,7 +4700,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J206G",
@@ -4332,7 +4724,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J212H",
@@ -4354,7 +4748,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J214H",
@@ -4376,7 +4772,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J219H",
@@ -4398,7 +4796,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J258H",
@@ -4420,7 +4820,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J259H",
@@ -4442,7 +4844,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J269H",
@@ -4464,7 +4868,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J304H",
@@ -4486,7 +4892,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J315H",
@@ -4508,7 +4916,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J316H",
@@ -4530,7 +4940,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J327H",
@@ -4552,7 +4964,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J328H",
@@ -4574,7 +4988,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J333H",
@@ -4596,7 +5012,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J338H",
@@ -4618,7 +5036,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J339H",
@@ -4640,7 +5060,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J340H",
@@ -4662,7 +5084,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J341H",
@@ -4684,7 +5108,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J344H",
@@ -4706,7 +5132,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J345H",
@@ -4728,7 +5156,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J346H",
@@ -4750,7 +5180,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J347H",
@@ -4772,7 +5204,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J359H",
@@ -4794,7 +5228,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J371H",
@@ -4816,7 +5252,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J385H",
@@ -4838,7 +5276,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J415H",
@@ -4860,7 +5300,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J417H",
@@ -4882,7 +5324,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J418H",
@@ -4904,7 +5348,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J433H",
@@ -4926,7 +5372,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J463G",
@@ -4948,7 +5396,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J464G",
@@ -4970,7 +5420,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J471H",
@@ -4992,7 +5444,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J488G",
@@ -5014,7 +5468,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J489G",
@@ -5036,7 +5492,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J490G",
@@ -5058,7 +5516,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J492G",
@@ -5080,7 +5540,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J492H",
@@ -5102,7 +5564,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J493G",
@@ -5124,7 +5588,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J493H",
@@ -5146,7 +5612,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J494G",
@@ -5168,7 +5636,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J495G",
@@ -5190,7 +5660,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J496G",
@@ -5212,7 +5684,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J496H",
@@ -5234,7 +5708,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J497G",
@@ -5256,7 +5732,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J497H",
@@ -5278,7 +5756,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J499G",
@@ -5300,7 +5780,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J504G",
@@ -5322,7 +5804,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J506G",
@@ -5344,7 +5828,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J510G",
@@ -5366,7 +5852,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J544G",
@@ -5388,7 +5876,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J546G",
@@ -5410,7 +5900,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J547G",
@@ -5432,7 +5924,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J548G",
@@ -5454,7 +5948,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J551G",
@@ -5476,7 +5972,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J555G",
@@ -5498,7 +5996,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J562G",
@@ -5520,7 +6020,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J566G",
@@ -5542,7 +6044,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J570G",
@@ -5564,7 +6068,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J571G",
@@ -5586,7 +6092,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J574G",
@@ -5608,7 +6116,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J576G",
@@ -5630,7 +6140,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J578G",
@@ -5652,7 +6164,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J599G",
@@ -5674,7 +6188,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J670G",
@@ -5696,7 +6212,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J770G",
@@ -5718,7 +6236,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J808T",
@@ -5740,7 +6260,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J833G",
@@ -5762,7 +6284,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J839D",
@@ -5784,7 +6308,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J844G",
@@ -5806,7 +6332,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J868H",
@@ -5828,7 +6356,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J906G",
@@ -5850,7 +6380,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J944H",
@@ -5872,7 +6404,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J945H",
@@ -5894,7 +6428,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J946G",
@@ -5916,7 +6452,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J946H",
@@ -5938,7 +6476,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J947H",
@@ -5960,7 +6500,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "J975G",
@@ -5982,7 +6524,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "K802H",
@@ -6004,7 +6548,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "K832H",
@@ -6026,7 +6572,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "K833H",
@@ -6048,7 +6596,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "K834H",
@@ -6070,7 +6620,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "K891H",
@@ -6092,7 +6644,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "L880G",
@@ -6114,7 +6668,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "M8702",
@@ -6136,7 +6692,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MB66G",
@@ -6158,7 +6716,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCM20",
@@ -6175,12 +6735,14 @@
       "syncedShopify": "TRUE",
       "category": "Clip Applier",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "3",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP213H",
@@ -6202,7 +6764,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP315H",
@@ -6224,7 +6788,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP316H",
@@ -6246,7 +6812,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP317H",
@@ -6268,7 +6836,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP427H",
@@ -6290,7 +6860,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP493G",
@@ -6312,7 +6884,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP493H",
@@ -6334,7 +6908,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP494G",
@@ -6356,7 +6932,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP494H",
@@ -6378,7 +6956,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP496G",
@@ -6400,7 +6980,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP496H",
@@ -6422,7 +7004,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP523H",
@@ -6444,7 +7028,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCP936H",
@@ -6466,7 +7052,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCS20",
@@ -6483,12 +7071,14 @@
       "syncedShopify": "TRUE",
       "category": "Clip Applier",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "3",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MX69G",
@@ -6510,7 +7100,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "NSLX120L",
@@ -6532,7 +7124,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP311H",
@@ -6554,7 +7148,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP316H",
@@ -6576,7 +7172,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP317H",
@@ -6598,7 +7196,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP334H",
@@ -6620,7 +7220,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP338H",
@@ -6642,7 +7244,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP340H",
@@ -6664,7 +7268,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDP467H",
@@ -6686,7 +7292,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PDPB991G",
@@ -6708,7 +7316,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PHSE",
@@ -6725,12 +7335,14 @@
       "syncedShopify": "TRUE",
       "category": "Hernia System",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PHSM",
@@ -6745,14 +7357,16 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
-      "category": "General",
+      "category": "Hernia System",
       "status": "ACTIVE",
       "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PMW35",
@@ -6769,12 +7383,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PRW35",
@@ -6789,14 +7405,16 @@
       "onRevMed": "FALSE",
       "revMedPrice": "$35.00",
       "syncedShopify": "TRUE",
-      "category": "General",
+      "category": "Stapler",
       "status": "ACTIVE",
       "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PXW35",
@@ -6818,7 +7436,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PXX22N",
@@ -6840,7 +7460,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PXX82N",
@@ -6862,7 +7484,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "R647H",
@@ -6884,7 +7508,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "S115H",
@@ -6906,7 +7532,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SA6H",
@@ -6928,7 +7556,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "TLC75",
@@ -6945,12 +7575,14 @@
       "syncedShopify": "TRUE",
       "category": "Linear Cutters",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "V448G",
@@ -6972,7 +7604,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "V549G",
@@ -6994,7 +7628,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP213H",
@@ -7016,7 +7652,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP214H",
@@ -7038,7 +7676,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP232H",
@@ -7060,7 +7700,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP266H",
@@ -7082,7 +7724,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP267H",
@@ -7104,7 +7748,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP269H",
@@ -7126,7 +7772,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP284G",
@@ -7148,7 +7796,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP304H",
@@ -7170,7 +7820,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP305H",
@@ -7192,7 +7844,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP310H",
@@ -7214,7 +7868,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP311H",
@@ -7236,7 +7892,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP315H",
@@ -7258,7 +7916,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP316H",
@@ -7280,7 +7940,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP317H",
@@ -7302,7 +7964,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP327H",
@@ -7324,7 +7988,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP329H",
@@ -7346,7 +8012,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP332H",
@@ -7368,7 +8036,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP334H",
@@ -7390,7 +8060,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP340H",
@@ -7412,7 +8084,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP341H",
@@ -7434,7 +8108,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP347H",
@@ -7456,7 +8132,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP351H",
@@ -7478,7 +8156,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP356H",
@@ -7500,7 +8180,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP357H",
@@ -7522,7 +8204,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP415H",
@@ -7544,7 +8228,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP417H",
@@ -7566,7 +8252,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP421H",
@@ -7588,7 +8276,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP422H",
@@ -7610,7 +8300,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP423H",
@@ -7632,7 +8324,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP433H",
@@ -7654,7 +8348,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP441H",
@@ -7676,7 +8372,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP442H",
@@ -7698,7 +8396,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP443H",
@@ -7720,7 +8420,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP451H",
@@ -7742,7 +8444,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP463G",
@@ -7764,7 +8468,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP490G",
@@ -7786,7 +8492,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP493G",
@@ -7808,7 +8516,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP494G",
@@ -7830,7 +8540,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP495G",
@@ -7852,7 +8564,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP496ZG",
@@ -7874,7 +8588,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP500G",
@@ -7896,7 +8612,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP503G",
@@ -7918,7 +8636,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP504G",
@@ -7940,7 +8660,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP596H",
@@ -7962,7 +8684,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP603H",
@@ -7984,7 +8708,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP880T",
@@ -8006,7 +8732,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VCP957H",
@@ -8028,7 +8756,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR416",
@@ -8045,12 +8775,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR416",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR490",
@@ -8067,12 +8799,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR490",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR493",
@@ -8089,12 +8823,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR493",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR494",
@@ -8111,12 +8847,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR494",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR834",
@@ -8133,12 +8871,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR834",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR845",
@@ -8155,12 +8895,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR845",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "VR945",
@@ -8177,12 +8919,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, VR945",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "W31G",
@@ -8199,12 +8943,14 @@
       "syncedShopify": "TRUE",
       "category": "Bone Wax, W31",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "X692G",
@@ -8221,12 +8967,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, X692",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "3",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "X872H",
@@ -8248,7 +8996,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "X916H",
@@ -8265,12 +9015,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, X916",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "3",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y213H",
@@ -8292,7 +9044,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y215H",
@@ -8314,7 +9068,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y266H",
@@ -8336,7 +9092,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y303H",
@@ -8358,7 +9116,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y304H",
@@ -8380,7 +9140,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y305H",
@@ -8402,7 +9164,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y315H",
@@ -8424,7 +9188,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y316H",
@@ -8446,7 +9212,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y317H",
@@ -8468,7 +9236,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y318H",
@@ -8490,7 +9260,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y333H",
@@ -8512,7 +9284,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y334H",
@@ -8534,7 +9308,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y335H",
@@ -8556,7 +9332,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y344H",
@@ -8578,7 +9356,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y345H",
@@ -8600,7 +9380,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y346H",
@@ -8622,7 +9404,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y359H",
@@ -8644,7 +9428,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y415H",
@@ -8666,7 +9452,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y415N",
@@ -8688,7 +9476,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y416H",
@@ -8710,7 +9500,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y417H",
@@ -8732,7 +9524,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y427H",
@@ -8754,7 +9548,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y433H",
@@ -8776,7 +9572,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y463G",
@@ -8798,7 +9596,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y464G",
@@ -8820,7 +9620,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y489G",
@@ -8842,7 +9644,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y489H",
@@ -8864,7 +9668,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y490H",
@@ -8886,7 +9692,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y492G",
@@ -8908,7 +9716,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y492H",
@@ -8930,7 +9740,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y493G",
@@ -8952,7 +9764,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y494G",
@@ -8974,7 +9788,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y496G",
@@ -8996,7 +9812,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y496H",
@@ -9018,7 +9836,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y497G",
@@ -9040,7 +9860,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y497H",
@@ -9062,7 +9884,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y513G",
@@ -9084,7 +9908,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y527H",
@@ -9106,7 +9932,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y682H",
@@ -9128,7 +9956,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y732H",
@@ -9150,7 +9980,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y762H",
@@ -9172,7 +10004,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y833G",
@@ -9194,7 +10028,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y834G",
@@ -9216,7 +10052,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y936H",
@@ -9238,7 +10076,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "YY31G",
@@ -9260,7 +10100,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z195T",
@@ -9277,12 +10119,14 @@
       "syncedShopify": "TRUE",
       "category": "Z195, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z304H",
@@ -9299,12 +10143,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z304",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z305H",
@@ -9321,12 +10167,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z305",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z311H",
@@ -9343,12 +10191,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z311",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z316H",
@@ -9365,12 +10215,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z316",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z317H",
@@ -9387,12 +10239,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z317",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z320H",
@@ -9409,12 +10263,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z320H",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z332H",
@@ -9431,12 +10287,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z332",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z333H",
@@ -9453,12 +10311,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z333",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z334H",
@@ -9475,12 +10335,14 @@
       "syncedShopify": "TRUE",
       "category": "Z334, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z338H",
@@ -9497,12 +10359,14 @@
       "syncedShopify": "TRUE",
       "category": "Z338, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z339H",
@@ -9519,12 +10383,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z339",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z339H (PLUS)",
@@ -9541,12 +10407,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z339",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z340H",
@@ -9563,12 +10431,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z340",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z341H",
@@ -9585,12 +10455,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z341",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z346H",
@@ -9607,12 +10479,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z346",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z357H",
@@ -9629,12 +10503,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z357",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z358T",
@@ -9651,12 +10527,14 @@
       "syncedShopify": "TRUE",
       "category": "Z358, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z371T",
@@ -9673,12 +10551,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z371",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z423H",
@@ -9695,12 +10575,14 @@
       "syncedShopify": "TRUE",
       "category": "Z423, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z432H",
@@ -9717,12 +10599,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z432",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z442H",
@@ -9744,7 +10628,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z443H",
@@ -9761,12 +10647,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z443",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z463G",
@@ -9783,12 +10671,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z463",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z466H",
@@ -9805,12 +10695,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z466",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z487G",
@@ -9827,12 +10719,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z487",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z493G",
@@ -9849,12 +10743,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z493",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z494G",
@@ -9871,12 +10767,14 @@
       "syncedShopify": "TRUE",
       "category": "Z494, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z496G",
@@ -9893,12 +10791,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z496",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z497G",
@@ -9915,12 +10815,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z497",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z513G",
@@ -9937,12 +10839,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z513",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z968H",
@@ -9959,12 +10863,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, Z968",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Z970H",
@@ -9981,12 +10887,14 @@
       "syncedShopify": "TRUE",
       "category": "Z970, Suture",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "2",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "202050",
@@ -10003,12 +10911,14 @@
       "syncedShopify": "TRUE",
       "category": "Sealant",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "3",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "206520",
@@ -10030,7 +10940,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "33-31",
@@ -10047,12 +10959,14 @@
       "syncedShopify": "TRUE",
       "category": "Biopsy",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "470007",
@@ -10069,12 +10983,14 @@
       "syncedShopify": "TRUE",
       "category": "Scissors",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "470179",
@@ -10091,12 +11007,14 @@
       "syncedShopify": "TRUE",
       "category": "Scissors",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "470194",
@@ -10113,12 +11031,14 @@
       "syncedShopify": "TRUE",
       "category": "Needle Driver",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "470230",
@@ -10135,12 +11055,14 @@
       "syncedShopify": "TRUE",
       "category": "Instrument Introducer",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "471344",
@@ -10157,12 +11079,14 @@
       "syncedShopify": "TRUE",
       "category": "Dissector",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "480422",
@@ -10179,12 +11103,14 @@
       "syncedShopify": "TRUE",
       "category": "Sealer",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "480455",
@@ -10201,12 +11127,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "470500",
@@ -10223,12 +11151,14 @@
       "syncedShopify": "TRUE",
       "category": "General",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "471006",
@@ -10245,12 +11175,14 @@
       "syncedShopify": "TRUE",
       "category": "Needle Driver",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "471049",
@@ -10265,14 +11197,16 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
-      "category": "General",
+      "category": "Forceps",
       "status": "ACTIVE",
       "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "471093",
@@ -10289,12 +11223,14 @@
       "syncedShopify": "TRUE",
       "category": "Forceps",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "471172",
@@ -10303,31 +11239,9 @@
       "gtin": "00886874119792",
       "price": "$0.00",
       "cost": "$0.00",
-      "onHand": 1,
+      "onHand": 0,
       "reservedQty": 0,
-      "availableQty": 1,
-      "onRevMed": "FALSE",
-      "revMedPrice": "",
-      "syncedShopify": "TRUE",
-      "category": "General",
-      "status": "ACTIVE",
-      "shelf": "4",
-      "shopifyCategory": "Medical Supplies",
-      "weight": "0",
-      "dimL": "0",
-      "dimW": "0",
-      "dimH": "0"
-    },
-    {
-      "ref": "471205",
-      "mfr": "INTUITIVE",
-      "desc": "INTUITIVE Surgical da Vinci Xi Fenestrated Bipolar Forceps 471205",
-      "gtin": "00886874119808",
-      "price": "$0.00",
-      "cost": "$0.00",
-      "onHand": 1,
-      "reservedQty": 0,
-      "availableQty": 1,
+      "availableQty": 0,
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
@@ -10338,7 +11252,33 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
+    },
+    {
+      "ref": "471205",
+      "mfr": "INTUITIVE",
+      "desc": "INTUITIVE Surgical da Vinci Xi Fenestrated Bipolar Forceps 471205",
+      "gtin": "00886874119808",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "onHand": 0,
+      "reservedQty": 0,
+      "availableQty": 0,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "TRUE",
+      "category": "Forceps",
+      "status": "ACTIVE",
+      "shelf": "4",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48230B",
@@ -10355,12 +11295,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48230W",
@@ -10370,19 +11312,21 @@
       "price": "$0.00",
       "cost": "$0.00",
       "onHand": 1,
-      "reservedQty": 0,
-      "availableQty": 1,
+      "reservedQty": 1,
+      "availableQty": 0,
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345B",
@@ -10404,7 +11348,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345G",
@@ -10426,7 +11372,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345M",
@@ -10443,12 +11391,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345T",
@@ -10470,7 +11420,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345W",
@@ -10492,7 +11444,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360B",
@@ -10502,8 +11456,8 @@
       "price": "$120.00",
       "cost": "$0.00",
       "onHand": 1,
-      "reservedQty": 0,
-      "availableQty": 1,
+      "reservedQty": 1,
+      "availableQty": 0,
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
@@ -10514,7 +11468,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360G",
@@ -10536,7 +11492,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360M",
@@ -10553,12 +11511,14 @@
       "syncedShopify": "TRUE",
       "category": "Stapler",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360T",
@@ -10575,12 +11535,14 @@
       "syncedShopify": "TRUE",
       "category": "Surgical Stapling, 48360",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360W",
@@ -10602,7 +11564,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7510100",
@@ -10624,7 +11588,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7510200",
@@ -10646,7 +11612,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7510400",
@@ -10668,7 +11636,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7510600",
@@ -10685,12 +11655,14 @@
       "syncedShopify": "TRUE",
       "category": "Graft",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7510800",
@@ -10707,12 +11679,14 @@
       "syncedShopify": "TRUE",
       "category": "Graft",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "7510050",
@@ -10734,7 +11708,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MR8-10MH17",
@@ -10751,12 +11727,14 @@
       "syncedShopify": "TRUE",
       "category": "Surgical Tool, MR8",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MR8-10MH30",
@@ -10773,12 +11751,14 @@
       "syncedShopify": "TRUE",
       "category": "Surgical Tool, MR8",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MR8-14MH30",
@@ -10795,12 +11775,14 @@
       "syncedShopify": "TRUE",
       "category": "Surgical Tool, MR8",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "50011",
@@ -10817,12 +11799,14 @@
       "syncedShopify": "TRUE",
       "category": "Intersect ENT",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "60011",
@@ -10839,12 +11823,14 @@
       "syncedShopify": "TRUE",
       "category": "Intersect ENT",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "70011",
@@ -10861,12 +11847,14 @@
       "syncedShopify": "TRUE",
       "category": "Intersect ENT",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "A1667N",
@@ -10883,12 +11871,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, A1667",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "B1915N",
@@ -10905,12 +11895,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, B1915",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G316N",
@@ -10927,12 +11919,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, G316",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "G346N",
@@ -10949,12 +11943,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, G346",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "R340N",
@@ -10971,12 +11967,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture, R340",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y303D",
@@ -10998,7 +11996,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "Y493N",
@@ -11020,7 +12020,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "71111579",
@@ -11037,12 +12039,14 @@
       "syncedShopify": "TRUE",
       "category": "Suture Retriever",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "RR750",
@@ -11059,12 +12063,14 @@
       "syncedShopify": "TRUE",
       "category": "Nasal Packing",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "84000611",
@@ -11081,12 +12087,14 @@
       "syncedShopify": "TRUE",
       "category": "Graft",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "0375-628-000",
@@ -11103,12 +12111,14 @@
       "syncedShopify": "TRUE",
       "category": "Blade Cutter",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "279-351-100",
@@ -11130,7 +12140,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "279-401-100",
@@ -11145,14 +12157,16 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "TRUE",
-      "category": "General",
+      "category": "Suction Probe",
       "status": "ACTIVE",
       "shelf": "4",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "E1035",
@@ -11169,12 +12183,14 @@
       "syncedShopify": "TRUE",
       "category": "Microdissection Needle",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "E1036",
@@ -11191,12 +12207,14 @@
       "syncedShopify": "TRUE",
       "category": "Microdissection Needle",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "N110A",
@@ -11213,12 +12231,14 @@
       "syncedShopify": "TRUE",
       "category": "Microdissection Needle",
       "status": "ACTIVE",
-      "shelf": "",
+      "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "523335",
@@ -11235,12 +12255,62 @@
       "syncedShopify": "TRUE",
       "category": "Hemoclip",
       "status": "ACTIVE",
+      "shelf": "1",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
+    },
+    {
+      "ref": "BG3510-5-US",
+      "mfr": "ARTIVION",
+      "desc": "ARTIVION Single Syringe, 10 mL, (1) 10 mL Syringe and Syringe Plunger, (4) Standard Syringe Tips and (3) 12 mm Spreader Tips BG3510-5-US",
+      "gtin": "10877234001298",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "onHand": 2,
+      "reservedQty": 2,
+      "availableQty": 0,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "TRUE",
+      "category": "Syringe",
+      "status": "ACTIVE",
       "shelf": "",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
+    },
+    {
+      "ref": "BG3515-5-US",
+      "mfr": "ARTIVION",
+      "desc": "ARTIVION Single Syringe, 5 mL, (1) 5 mL Syringe and Syringe Plunger and (4) Standard Syringe Tips BG3515-5-US",
+      "gtin": "10877234001304",
+      "price": "$0.00",
+      "cost": "$0.00",
+      "onHand": 0,
+      "reservedQty": 0,
+      "availableQty": 0,
+      "onRevMed": "FALSE",
+      "revMedPrice": "",
+      "syncedShopify": "TRUE",
+      "category": "Syringe",
+      "status": "ACTIVE",
+      "shelf": "",
+      "shopifyCategory": "Medical Supplies",
+      "weight": "0",
+      "dimL": "0",
+      "dimW": "0",
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SM0002-USA (BX)",
@@ -11255,7 +12325,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Absorbable Hemostat",
       "status": "ACTIVE",
       "parentRef": "SM0002-USA",
       "uomMult": 5,
@@ -11264,7 +12334,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "4301-02 (BX)",
@@ -11279,7 +12351,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Adhesion Barrier",
       "status": "ACTIVE",
       "parentRef": "4301-02",
       "uomMult": 10,
@@ -11288,7 +12360,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "309647 (BX)",
@@ -11312,7 +12386,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1212A (BX/6)",
@@ -11327,7 +12403,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Ligasure",
       "status": "ACTIVE",
       "parentRef": "LF1212A",
       "uomMult": 6,
@@ -11336,7 +12412,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1837 (BX/6)",
@@ -11351,7 +12429,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Ligasure",
       "status": "ACTIVE",
       "parentRef": "LF1837",
       "uomMult": 6,
@@ -11360,7 +12438,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF1937 (BX/6)",
@@ -11375,7 +12455,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Ligasure",
       "status": "ACTIVE",
       "parentRef": "LF1937",
       "uomMult": 6,
@@ -11384,7 +12464,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "LF2019 (BX)",
@@ -11399,7 +12481,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Dissector",
       "status": "ACTIVE",
       "parentRef": "LF2019",
       "uomMult": 6,
@@ -11408,7 +12490,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "SIG60AMT (BX)",
@@ -11423,7 +12507,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Stapler Reload",
       "status": "ACTIVE",
       "parentRef": "SIG60AMT",
       "uomMult": 6,
@@ -11432,7 +12516,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "TA30V3L (BX/6)",
@@ -11456,7 +12542,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "TA9048L (BX/6)",
@@ -11480,7 +12568,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "4350 (BX/10)",
@@ -11504,7 +12594,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST60B-25",
@@ -11528,7 +12620,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "GST60W-22",
@@ -11552,7 +12646,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCM20-53",
@@ -11576,7 +12672,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "MCS20 (BX)",
@@ -11600,7 +12698,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PHSE (BX/3)",
@@ -11624,7 +12724,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PHSM (BX/3)",
@@ -11639,7 +12741,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "General",
+      "category": "Hernia System",
       "status": "ACTIVE",
       "parentRef": "PHSM",
       "uomMult": 3,
@@ -11648,7 +12750,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "PXW35-43",
@@ -11672,7 +12776,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "480422-03",
@@ -11696,7 +12802,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48230W-06",
@@ -11720,7 +12828,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345B-03",
@@ -11735,7 +12845,7 @@
       "onRevMed": "FALSE",
       "revMedPrice": "",
       "syncedShopify": "FALSE",
-      "category": "Stapler",
+      "category": "Surgical Stapling, 48345",
       "status": "ACTIVE",
       "parentRef": "48345B",
       "uomMult": 12,
@@ -11744,7 +12854,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345G-03",
@@ -11768,7 +12880,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48345W-03",
@@ -11787,36 +12901,14 @@
       "status": "ACTIVE",
       "parentRef": "48345W",
       "uomMult": 12,
-      "shelf": "",
-      "shopifyCategory": "Medical Supplies",
-      "weight": "0",
-      "dimL": "0",
-      "dimW": "0",
-      "dimH": "0"
-    },
-    {
-      "ref": "48345W-03",
-      "mfr": "INTUITIVE",
-      "desc": "INTUITIVE Surgical 48345W Da Vinci Sureform 45 Reload, 2.5 mm, 6-Row, White (BX/12) 48345W-03",
-      "gtin": "",
-      "price": "$0.00",
-      "cost": "$0.00",
-      "onHand": 0,
-      "reservedQty": 0,
-      "availableQty": 0,
-      "onRevMed": "FALSE",
-      "revMedPrice": "",
-      "syncedShopify": "FALSE",
-      "category": "Surgical Stapling, 48345",
-      "status": "INACTIVE",
-      "parentRef": "48345W",
-      "uomMult": 12,
       "shelf": "1",
       "shopifyCategory": "Medical Supplies",
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360B-10",
@@ -11840,7 +12932,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360G-10",
@@ -11864,7 +12958,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360T-10",
@@ -11888,7 +12984,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "48360W-10",
@@ -11912,7 +13010,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     },
     {
       "ref": "523335 (BX/24)",
@@ -11936,7 +13036,9 @@
       "weight": "0",
       "dimL": "0",
       "dimW": "0",
-      "dimH": "0"
+      "dimH": "0",
+      "minStock": 0,
+      "displayAlias": ""
     }
   ],
   "customers": [
@@ -11947,6 +13049,7 @@
     "ASP System Admin",
     "ASP Tester",
     "Associated Surgical Center",
+    "Biogenetic",
     "Bulk Legends",
     "Cascade Medical Team",
     "CenMed",
@@ -12057,6 +13160,7 @@
     "ASSOCIATED SURG-SAM": "Associated Surgical Center",
     "ASSOCIATED SURGICAL": "Associated Surgical Center",
     "ASSOCIATED SURGICAL CENTER": "Associated Surgical Center",
+    "BIOGENETIC": "Biogenetic",
     "BL": "Bulk Legends",
     "BULK LEGENDS": "Bulk Legends",
     "CASCADE": "Cascade Medical Team",
