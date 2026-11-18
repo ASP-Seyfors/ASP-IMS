@@ -1,25 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/uiManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   User interface interaction manager handling theme toggling, dynamic font 
- *   scaling, field validation highlighting, dynamic modals, and native 
- *   file download triggers.
- *
- * Affected Features:
- *   - Customer Bin & Damaged Bin Viewers
- *   - Quick Item Lookup Modal
- *   - Alert & Confirmation Modals
- *   - Sandbox Environment Toggles
- *   - Live Debug Console Floating UI
- *   - Native Blob / PDF File Downloader
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 const UIManager = {// GLOBAL CONFIGURATIONS
   printTimeout: 1600,
 
@@ -154,9 +132,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     }
   },
 
-  // ==========================================
   // CUSTOMER BIN VIEWER MODAL
-  // ==========================================
   openBinViewerModal() {
     let modal = document.getElementById('binViewerModal');
     
@@ -735,7 +711,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     this.transmitUserPrefsToCloud(); // ✨ NEW
   },
 
-  // ✨ NEW: Silently syncs preferences to the DB without interrupting the user
+  // Silently syncs preferences to the DB without interrupting the user
   transmitUserPrefsToCloud() {
     let email = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.email : null;
     if (!email) return;
@@ -879,15 +855,20 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     this.lockCheatCodes(); 
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenReports').style.display = 'block';
+
+    // Reveal Internal Cost Valuation button exclusively for ADMIN and SYS_ADMIN
+    let isAdmin = (typeof AuthManager !== 'undefined' && AuthManager.currentUser && (AuthManager.currentUser.isAdmin || AuthManager.currentUser.role === 'ADMIN' || AuthManager.currentUser.role === 'SYS_ADMIN'));
+    let btnCost = document.getElementById('btnAdminCostReport');
+    if (btnCost) btnCost.style.display = isAdmin ? 'block' : 'none';
     
     if (typeof UIManager.populateCustomerDropdown === 'function') UIManager.populateCustomerDropdown();
     if (typeof AuditManager.loadCloudSessionsForExport === 'function') AuditManager.loadCloudSessionsForExport();
     
-    // ✨ NEW: Automatically pull the latest Subscribers and Custom Lists from the cloud!
     if (typeof ReportsManager !== 'undefined') {
         if (typeof ReportsManager.loadSubscribers === 'function') ReportsManager.loadSubscribers();
         if (typeof ReportsManager.refreshCustomListsUI === 'function') ReportsManager.refreshCustomListsUI();
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   closeReportsHub() {
@@ -1300,3 +1281,25 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     }
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/uiManager.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   User interface interaction manager handling theme toggling, dynamic font 
+ *   scaling, field validation highlighting, dynamic modals, and native 
+ *   file download triggers.
+ *
+ * Affected Features:
+ *   - Customer Bin & Damaged Bin Viewers
+ *   - Quick Item Lookup Modal
+ *   - Alert & Confirmation Modals
+ *   - Sandbox Environment Toggles
+ *   - Live Debug Console Floating UI
+ *   - Native Blob / PDF File Downloader
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */

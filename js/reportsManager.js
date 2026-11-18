@@ -1,25 +1,6 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/reportsManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Enterprise analytics and reporting generator. Compiles live data into 
- *   standalone business intelligence reports without requiring Excel.
- *
- * Affected Features:
- *   - Full On-Hand Stock Reports
- *   - Expiration Warning Reports
- *   - Stocktake Variance & Financial Impact Reports
- *   - End of Week Shipping & Revenue Summaries
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 const ReportsManager = {
 
-  // ✨ EXTERNAL STOREFRONT & MARKETPLACE EXPORT TRIGGERS
+  // EXTERNAL STOREFRONT & MARKETPLACE EXPORT TRIGGERS
   async triggerVetcoveVariance() {
       await this._fetchAndDownloadCsv('EXPORT_VETCOVE_VARIANCE', 'Vetcove_Variance_Export.csv');
   },
@@ -115,7 +96,7 @@ const ReportsManager = {
     document.getElementById('modalSubCategories').style.display = 'none';
   },
 
-  // ✨ NEW: Centralized Report Math Engine
+  // Centralized Report Math Engine
   getTrueAvailability(item) {
       if (!item) return 0;
       let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
@@ -322,6 +303,424 @@ const ReportsManager = {
       return;
     }
     document.getElementById('inventoryReportOptionsModal').style.display = 'flex';
+  },
+
+  // ADMIN INTERNAL INVENTORY COST & VALUATION ENGINE
+  _calculateInventoryValuation() {
+    if (typeof AuthManager === 'undefined' || !AuthManager.currentUser || !AuthManager.currentUser.isAdmin) {
+      throw new Error("Access Denied: Administrator privileges required.");
+    }
+
+    let db = (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db)) ? DatabaseManager.db : [];
+    const parseMoney = (val) => parseFloat(String(val || '').replace(/[^0-9.-]+/g, '')) || 0;
+
+    // Map child bundles by clean Parent REF so we can resolve per-each cost if needed
+    let bundleCostMap = {};
+    db.forEach(item => {
+      let uom = parseInt(item.uomMult, 10) || 1;
+      if (item.parentRef && uom > 1) {
+        let cleanParent = DatabaseManager.getCleanParentRef(item).toUpperCase();
+        let bCost = parseMoney(item.cost);
+        let bPrice = parseMoney(item.price);
+        if (cleanParent && (bCost > 0 || bPrice > 0)) {
+          bundleCostMap[cleanParent] = { cost: bCost, price: bPrice, uom: uom, bundleRef: item.ref || item.sku };
+        }
+      }
+    });
+
+    let rows = [];
+    let summary = {
+      totalSkusInStock: 0,
+      skusWithCost: 0,
+      skusMissingCost: 0,
+      unitsMissingCost: 0,
+      totalPhysicalUnits: 0,
+      totalAvailUnits: 0,
+      totalResUnits: 0,
+      totalPhysicalCost: 0,
+      totalAvailCost: 0,
+      totalResCost: 0,
+      totalPhysicalRetail: 0,
+      totalAvailRetail: 0,
+      totalResRetail: 0
+    };
+
+    // Iterate strictly over physical base items (exclude virtual bundle rows so stock is never double-counted)
+    db.forEach(item => {
+      let uom = parseInt(item.uomMult, 10) || 1;
+      if (item.parentRef && uom > 1) return;
+
+      let ref = String(item.ref || item.sku || '').toUpperCase().trim();
+      if (!ref) return;
+
+      let totalQty = Math.max(0, parseInt(item.onHand, 10) || 0);
+      let resQty = Math.max(0, parseInt(item.reservedQty, 10) || 0);
+      let availQty = Math.max(0, totalQty - resQty);
+
+      if (totalQty <= 0 && resQty <= 0) return;
+
+      let unitCost = parseMoney(item.cost);
+      let unitPrice = parseMoney(item.price);
+      let costNote = "";
+
+      // Smart Bundle Cost Resolution:
+      // 1) If Each cost is $0 but its Bundle has a cost (e.g., 309647), derive per-each cost = bundleCost / uom
+      // 2) If Each cost equals the full Box cost (e.g., GST60B / PHSE), divide by uom to get true per-each cost
+      if (bundleCostMap[ref]) {
+        let bInfo = bundleCostMap[ref];
+        if (unitCost === 0 && bInfo.cost > 0) {
+          unitCost = bInfo.cost / bInfo.uom;
+          costNote = `Derived from ${bInfo.bundleRef} ($${bInfo.cost.toFixed(2)} / ${bInfo.uom})`;
+        } else if (unitCost > 0 && Math.abs(unitCost - bInfo.cost) < 0.01 && bInfo.uom > 1) {
+          unitCost = bInfo.cost / bInfo.uom;
+          costNote = `Box Cost ($${bInfo.cost.toFixed(2)} / ${bInfo.uom})`;
+        }
+        if (unitPrice > 0 && Math.abs(unitPrice - bInfo.price) < 0.01 && bInfo.uom > 1) {
+          unitPrice = bInfo.price / bInfo.uom;
+        }
+      }
+
+      let hasCost = unitCost > 0;
+      let availCost = availQty * unitCost;
+      let resCost = resQty * unitCost;
+      let totalCost = totalQty * unitCost;
+
+      let availRetail = availQty * unitPrice;
+      let resRetail = resQty * unitPrice;
+      let totalRetail = totalQty * unitPrice;
+
+      summary.totalSkusInStock++;
+      if (hasCost) {
+        summary.skusWithCost++;
+      } else {
+        summary.skusMissingCost++;
+        summary.unitsMissingCost += totalQty;
+      }
+
+      summary.totalPhysicalUnits += totalQty;
+      summary.totalAvailUnits += availQty;
+      summary.totalResUnits += resQty;
+
+      summary.totalPhysicalCost += totalCost;
+      summary.totalAvailCost += availCost;
+      summary.totalResCost += resCost;
+
+      summary.totalPhysicalRetail += totalRetail;
+      summary.totalAvailRetail += availRetail;
+      summary.totalResRetail += resRetail;
+
+      rows.push({
+        mfr: item.mfr || 'UNKNOWN',
+        ref: ref,
+        displayAlias: item.displayAlias || '',
+        desc: item.desc || '',
+        shelf: item.shelf || '',
+        availQty: availQty,
+        resQty: resQty,
+        totalQty: totalQty,
+        unitCost: unitCost,
+        hasCost: hasCost,
+        costNote: costNote,
+        availCost: availCost,
+        resCost: resCost,
+        totalCost: totalCost,
+        unitPrice: unitPrice,
+        availRetail: availRetail,
+        resRetail: resRetail,
+        totalRetail: totalRetail
+      });
+    });
+
+    rows.sort((a, b) => a.mfr.localeCompare(b.mfr) || a.ref.localeCompare(b.ref));
+    return { rows, summary };
+  },
+
+  openInternalCostReportModal() {
+    if (typeof AuthManager === 'undefined' || !AuthManager.currentUser || !AuthManager.currentUser.isAdmin) {
+      alert("Access Denied: Only Administrators can view internal cost valuations.");
+      return;
+    }
+    this.updateCostModalPreview();
+    document.getElementById('internalCostReportModal').style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  updateCostModalPreview() {
+    let banner = document.getElementById('costModalSummaryBanner');
+    if (!banner) return;
+
+    try {
+      let { summary } = this._calculateInventoryValuation();
+      const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      banner.innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; text-align:center;">
+          <div style="background:var(--card-bg); border:1px solid var(--border-color); border-top:3px solid #1565c0; border-radius:6px; padding:8px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; opacity:0.8;">Total Physical Cost</div>
+            <div style="font-size:1.1rem; font-weight:800; color:var(--heading-color); margin:3px 0;">${fmt(summary.totalPhysicalCost)}</div>
+            <div style="font-size:0.72rem; opacity:0.75;">${summary.totalPhysicalUnits.toLocaleString()} Units (${summary.totalSkusInStock} SKUs)</div>
+          </div>
+          <div style="background:var(--card-bg); border:1px solid var(--border-color); border-top:3px solid #2e7d32; border-radius:6px; padding:8px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; opacity:0.8;">Available Stock Cost</div>
+            <div style="font-size:1.1rem; font-weight:800; color:#66bb6a; margin:3px 0;">${fmt(summary.totalAvailCost)}</div>
+            <div style="font-size:0.72rem; opacity:0.75;">${summary.totalAvailUnits.toLocaleString()} Unreserved Units</div>
+          </div>
+          <div style="background:var(--card-bg); border:1px solid var(--border-color); border-top:3px solid #f57f17; border-radius:6px; padding:8px;">
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; opacity:0.8;">Reserved (Cart) Cost</div>
+            <div style="font-size:1.1rem; font-weight:800; color:#ffa726; margin:3px 0;">${fmt(summary.totalResCost)}</div>
+            <div style="font-size:0.72rem; opacity:0.75;">${summary.totalResUnits.toLocaleString()} Reserved Units</div>
+          </div>
+        </div>
+        ${summary.skusMissingCost > 0 ? `
+          <div style="margin-top:8px; padding:6px 10px; background:rgba(245, 127, 23, 0.12); border:1px dashed #ffa726; border-radius:6px; font-size:0.76rem; color:#ffa726; text-align:center;">
+            ⚠️ <strong>Note:</strong> ${summary.skusMissingCost} in-stock SKU(s) (${summary.unitsMissingCost} units) currently have a <strong>$0.00</strong> cost in the database.
+          </div>
+        ` : ''}
+      `;
+    } catch (err) {
+      banner.innerHTML = `<div style="color:#ef5350; text-align:center;">${err.message}</div>`;
+    }
+  },
+
+  _getFilteredCostRows() {
+    let { rows, summary } = this._calculateInventoryValuation();
+    let scope = document.getElementById('costReportScope') ? document.getElementById('costReportScope').value : 'all_stock';
+    let incMissing = document.getElementById('chkCostIncludeMissing') ? document.getElementById('chkCostIncludeMissing').checked : true;
+
+    let filtered = rows.filter(r => {
+      if (scope === 'missing_cost') return !r.hasCost;
+      if (!incMissing && !r.hasCost) return false;
+      if (scope === 'available_only') return r.availQty > 0;
+      if (scope === 'reserved_only') return r.resQty > 0;
+      return true;
+    });
+
+    return { filtered, summary, scope };
+  },
+
+  generateInternalCostReportPDF() {
+    try {
+      let { filtered, summary, scope } = this._getFilteredCostRows();
+      if (filtered.length === 0) {
+        alert("No inventory items match the selected filter criteria.");
+        return;
+      }
+
+      let incMfr = document.getElementById('chkCostMfr') ? document.getElementById('chkCostMfr').checked : true;
+      let incDesc = document.getElementById('chkCostDesc') ? document.getElementById('chkCostDesc').checked : true;
+      let incBreakdown = document.getElementById('chkCostBreakdown') ? document.getElementById('chkCostBreakdown').checked : true;
+      let incRetail = document.getElementById('chkCostRetail') ? document.getElementById('chkCostRetail').checked : false;
+
+      const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      let scopeLabel = {
+        'all_stock': 'All Physical Stock (Available + Reserved)',
+        'available_only': 'Available Stock Only (Unreserved)',
+        'reserved_only': 'Reserved Customer Bins Only',
+        'missing_cost': 'In-Stock Items Missing Cost ($0.00)'
+      }[scope] || 'All Physical Stock';
+
+      let dateStr = new Date().toLocaleDateString();
+      let safeDate = dateStr.replace(/\//g, '.');
+      let filename = `ASP_Internal_Inventory_Cost_Report_(${safeDate})`;
+
+      let html = `<!DOCTYPE html><html><head><title>${filename}</title>
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 28px; color: #333; font-size: 11px; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0d47a1; padding-bottom: 10px; margin-bottom: 14px; }
+        .brand-section { display: flex; align-items: center; gap: 12px; }
+        .logo-img { height: 42px; object-fit: contain; }
+        .company-name { font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        h2 { color: #0d47a1; margin: 2px 0 0 0; font-size: 18px; text-transform: uppercase; }
+        .meta-right { text-align: right; font-size: 11px; color: #555; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+        .kpi-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; text-align: center; }
+        .kpi-card.total { border-top: 4px solid #0d47a1; background: #f0f7ff; }
+        .kpi-card.avail { border-top: 4px solid #2e7d32; background: #f1f8f1; }
+        .kpi-card.res { border-top: 4px solid #e65100; background: #fff8f0; }
+        .kpi-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #555; }
+        .kpi-val { font-size: 18px; font-weight: 800; margin: 4px 0; }
+        .kpi-sub { font-size: 10px; color: #666; }
+        .missing-banner { background: #fff3e0; border-left: 4px solid #e65100; padding: 8px 12px; margin-bottom: 14px; font-size: 11px; color: #bf360c; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 10.5px; }
+        th { background: #e2e8f0; border: 1px solid #cbd5e1; padding: 6px 6px; text-align: left; font-size: 10px; text-transform: uppercase; color: #1e293b; }
+        td { border: 1px solid #e2e8f0; padding: 5px 6px; vertical-align: middle; }
+        .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .ctr { text-align: center; }
+        .total-row { background: #f1f5f9; font-weight: bold; border-top: 2px solid #0d47a1; font-size: 11px; }
+        @media print { body { margin: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      </style></head><body>
+
+      <div class="header-container">
+        <div class="brand-section">
+          <img src="${ENV_CONFIG.LOGO_URL}" class="logo-img" alt="ASP Logo">
+          <div>
+            <div class="company-name">Allied Surgical Products — Confidential Financial Report</div>
+            <h2>Internal Inventory Cost Valuation</h2>
+          </div>
+        </div>
+        <div class="meta-right">
+          <div><strong>Date:</strong> ${dateStr}</div>
+          <div><strong>Scope:</strong> ${scopeLabel}</div>
+          <div><strong>SKUs Shown:</strong> ${filtered.length}</div>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card total">
+          <div class="kpi-title">Total Physical Inventory Cost</div>
+          <div class="kpi-val" style="color:#0d47a1;">${fmt(summary.totalPhysicalCost)}</div>
+          <div class="kpi-sub">${summary.totalPhysicalUnits.toLocaleString()} Total Units (${summary.totalSkusInStock} SKUs)</div>
+          ${incRetail ? `<div class="kpi-sub" style="margin-top:2px; color:#0d47a1;"><strong>Est. Retail Value:</strong> ${fmt(summary.totalPhysicalRetail)}</div>` : ''}
+        </div>
+        <div class="kpi-card avail">
+          <div class="kpi-title">Available Inventory Cost (Unreserved)</div>
+          <div class="kpi-val" style="color:#2e7d32;">${fmt(summary.totalAvailCost)}</div>
+          <div class="kpi-sub">${summary.totalAvailUnits.toLocaleString()} Available Units Ready to Sell</div>
+          ${incRetail ? `<div class="kpi-sub" style="margin-top:2px; color:#2e7d32;"><strong>Available Retail:</strong> ${fmt(summary.totalAvailRetail)}</div>` : ''}
+        </div>
+        <div class="kpi-card res">
+          <div class="kpi-title">Reserved Inventory Cost (Customer Bins)</div>
+          <div class="kpi-val" style="color:#e65100;">${fmt(summary.totalResCost)}</div>
+          <div class="kpi-sub">${summary.totalResUnits.toLocaleString()} Units Staged in Customer Bins</div>
+          ${incRetail ? `<div class="kpi-sub" style="margin-top:2px; color:#e65100;"><strong>Reserved Retail:</strong> ${fmt(summary.totalResRetail)}</div>` : ''}
+        </div>
+      </div>
+
+      ${summary.skusMissingCost > 0 ? `
+        <div class="missing-banner">
+          <strong>⚠️ Missing Cost Notice:</strong> ${summary.skusMissingCost} in-stock SKU(s) (${summary.unitsMissingCost} physical units) do not have a Unit Cost recorded yet ($0.00) and are flagged as <strong>COST NEEDED</strong> below.
+        </div>
+      ` : ''}
+
+      <table>
+        <thead>
+          <tr>
+            ${incMfr ? '<th>MFR</th>' : ''}
+            <th>REF / SKU</th>
+            ${incDesc ? '<th>Description</th>' : ''}
+            ${incBreakdown ? '<th class="ctr">Avail Qty</th><th class="ctr">Res Qty</th>' : ''}
+            <th class="ctr">Total Qty</th>
+            <th class="num">Unit Cost</th>
+            ${incBreakdown ? '<th class="num">Available Cost</th><th class="num">Reserved Cost</th>' : ''}
+            <th class="num">Total Cost</th>
+            ${incRetail ? '<th class="num">Unit Price</th><th class="num">Total Retail</th>' : ''}
+          </tr>
+        </thead>
+        <tbody>`;
+
+      let tableAvailQty = 0, tableResQty = 0, tableTotQty = 0;
+      let tableAvailCost = 0, tableResCost = 0, tableTotCost = 0, tableTotRetail = 0;
+
+      filtered.forEach(r => {
+        tableAvailQty += r.availQty;
+        tableResQty += r.resQty;
+        tableTotQty += r.totalQty;
+        tableAvailCost += r.availCost;
+        tableResCost += r.resCost;
+        tableTotCost += r.totalCost;
+        tableTotRetail += r.totalRetail;
+
+        let unitCostDisplay = r.hasCost
+          ? fmt(r.unitCost) + (r.costNote ? `<br><span style="font-size:8.5px; color:#666;">(${r.costNote})</span>` : '')
+          : '<span style="color:#c62828; font-weight:bold;">COST NEEDED</span>';
+
+        html += `<tr>
+          ${incMfr ? `<td>${r.mfr}</td>` : ''}
+          <td style="font-weight:bold; color:#0d47a1;">${r.ref}</td>
+          ${incDesc ? `<td style="font-size:9.5px; color:#555;">${r.desc}</td>` : ''}
+          ${incBreakdown ? `<td class="ctr" style="color:#2e7d32; font-weight:bold;">${r.availQty}</td><td class="ctr" style="color:${r.resQty > 0 ? '#e65100' : '#888'}; font-weight:${r.resQty > 0 ? 'bold' : 'normal'};">${r.resQty}</td>` : ''}
+          <td class="ctr" style="font-weight:bold;">${r.totalQty}</td>
+          <td class="num">${unitCostDisplay}</td>
+          ${incBreakdown ? `<td class="num" style="color:#2e7d32;">${fmt(r.availCost)}</td><td class="num" style="color:${r.resCost > 0 ? '#e65100' : '#888'};">${fmt(r.resCost)}</td>` : ''}
+          <td class="num" style="font-weight:bold; color:#0d47a1;">${fmt(r.totalCost)}</td>
+          ${incRetail ? `<td class="num">${r.unitPrice > 0 ? fmt(r.unitPrice) : '--'}</td><td class="num" style="font-weight:bold;">${fmt(r.totalRetail)}</td>` : ''}
+        </tr>`;
+      });
+
+      let leadCols = 1 + (incMfr ? 1 : 0) + (incDesc ? 1 : 0);
+      html += `
+          <tr class="total-row">
+            <td colspan="${leadCols}" style="text-align:right;">REPORT TOTALS (${filtered.length} SKUs):</td>
+            ${incBreakdown ? `<td class="ctr" style="color:#2e7d32;">${tableAvailQty.toLocaleString()}</td><td class="ctr" style="color:#e65100;">${tableResQty.toLocaleString()}</td>` : ''}
+            <td class="ctr">${tableTotQty.toLocaleString()}</td>
+            <td class="num">--</td>
+            ${incBreakdown ? `<td class="num" style="color:#2e7d32;">${fmt(tableAvailCost)}</td><td class="num" style="color:#e65100;">${fmt(tableResCost)}</td>` : ''}
+            <td class="num" style="color:#0d47a1;">${fmt(tableTotCost)}</td>
+            ${incRetail ? `<td class="num">--</td><td class="num">${fmt(tableTotRetail)}</td>` : ''}
+          </tr>
+        </tbody>
+      </table>
+      </body></html>`;
+
+      let safeTitle = filename.replace(/\./g, '\u2024');
+      let win = window.open('', '_blank');
+      if (win) {
+        win.document.write(html);
+        win.document.title = safeTitle;
+        win.focus();
+        setTimeout(() => win.print(), UIManager.printTimeout);
+      }
+
+      document.getElementById('internalCostReportModal').style.display = 'none';
+    } catch (err) {
+      alert("Error generating Cost Valuation PDF: " + err.message);
+    }
+  },
+
+  exportInternalCostReportCSV() {
+    try {
+      let { filtered, summary, scope } = this._getFilteredCostRows();
+      if (filtered.length === 0) {
+        alert("No inventory items match the selected filter criteria.");
+        return;
+      }
+
+      let incRetail = document.getElementById('chkCostRetail') ? document.getElementById('chkCostRetail').checked : false;
+
+      let csvRows = [];
+      // Top Summary Block in CSV so Jessica sees the grand totals immediately in Excel
+      csvRows.push(`"ASP INTERNAL INVENTORY COST VALUATION","Generated: ${new Date().toLocaleDateString()}"`);
+      csvRows.push(`"Total Physical Cost (Available + Reserved)","$${summary.totalPhysicalCost.toFixed(2)}","Total Physical Units",${summary.totalPhysicalUnits}`);
+      csvRows.push(`"Available Inventory Cost (Unreserved)","$${summary.totalAvailCost.toFixed(2)}","Available Units",${summary.totalAvailUnits}`);
+      csvRows.push(`"Reserved Inventory Cost (Customer Bins)","$${summary.totalResCost.toFixed(2)}","Reserved Units",${summary.totalResUnits}`);
+      csvRows.push(`"In-Stock SKUs Missing Cost ($0.00)",${summary.skusMissingCost},"Units Missing Cost",${summary.unitsMissingCost}`);
+      csvRows.push(""); // Blank separator row
+
+      let headers = [
+        "Manufacturer", "REF / SKU", "Description", "Shelf",
+        "Available Qty", "Reserved Qty", "Total Physical Qty",
+        "Unit Cost", "Available Cost ($)", "Reserved Cost ($)", "Total Physical Cost ($)", "Cost Status"
+      ];
+      if (incRetail) {
+        headers.push("Selling Price", "Total Retail Value ($)");
+      }
+      csvRows.push(headers.join(","));
+
+      filtered.forEach(r => {
+        let mfr = String(r.mfr || '').replace(/"/g, '""');
+        let ref = String(r.ref || '').replace(/"/g, '""');
+        let desc = String(r.desc || '').replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
+        let shelf = String(r.shelf || '').replace(/"/g, '""');
+        let statusStr = r.hasCost ? (r.costNote || "OK") : "COST NEEDED";
+
+        let rowArr = [
+          `"${mfr}"`, `"${ref}"`, `"${desc}"`, `"${shelf}"`,
+          r.availQty, r.resQty, r.totalQty,
+          r.unitCost.toFixed(2), r.availCost.toFixed(2), r.resCost.toFixed(2), r.totalCost.toFixed(2),
+          `"${statusStr.replace(/"/g, '""')}"`
+        ];
+        if (incRetail) {
+          rowArr.push(r.unitPrice.toFixed(2), r.totalRetail.toFixed(2));
+        }
+        csvRows.push(rowArr.join(","));
+      });
+
+      let dateStr = new Date().toLocaleDateString().replace(/\//g, '.');
+      UIManager.triggerShareOrDownload(csvRows.join("\r\n"), `ASP_Internal_Inventory_Cost_Valuation_${dateStr}.csv`, 'text/csv');
+      document.getElementById('internalCostReportModal').style.display = 'none';
+    } catch (err) {
+      alert("Error exporting Cost Valuation CSV: " + err.message);
+    }
   },
 
   generateInventoryReport(type) {
@@ -1001,7 +1400,7 @@ const ReportsManager = {
     }
   },
 
-  // ✨ NEW: Toggle Day Selector based on Frequency
+  // Toggle Day Selector based on Frequency
   toggleSubSendDay() {
       let freq = document.getElementById('subFreq').value;
       let daySel = document.getElementById('subSendDay');
@@ -1057,7 +1456,7 @@ const ReportsManager = {
       }
   },
 
-  // ✨ NEW: Clean edit function that pulls directly from memory
+  // Clean edit function that pulls directly from memory
   editSubscriber(email) {
       if (!this.currentSubs) return;
       let sub = this.currentSubs.find(s => s.email === email);
@@ -1090,7 +1489,7 @@ const ReportsManager = {
       window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the form
   },
 
-  // ✨ NEW: Master reset for the Subscriber entry form
+  // Master reset for the Subscriber entry form
   clearSubscriberFields() {
       if (document.getElementById('subName')) document.getElementById('subName').value = "";
       if (document.getElementById('subEmail')) document.getElementById('subEmail').value = "";
@@ -1221,9 +1620,7 @@ const ReportsManager = {
     container.insertAdjacentHTML('afterbegin', html); 
   },
 
-  // ==========================================
-  // ✨ NEW: CUSTOM LISTS ENGINE
-  // ==========================================
+  // CUSTOM LISTS ENGINE
   async openCustomListsModal() {
       document.getElementById('listNameInput').value = '';
       document.getElementById('listRefsInput').value = '';
@@ -1535,3 +1932,22 @@ async function subscribeToEthiconMonitor() {
         btn.innerText = orig; btn.disabled = false;
     }
 }
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/reportsManager.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   Enterprise analytics and reporting generator. Compiles live data into 
+ *   standalone business intelligence reports without requiring Excel.
+ *
+ * Affected Features:
+ *   - Full On-Hand Stock Reports
+ *   - Expiration Warning Reports
+ *   - Stocktake Variance & Financial Impact Reports
+ *   - End of Week Shipping & Revenue Summaries
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */

@@ -1,8 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/manifestManager.js
- * Description: Pre-load manifest compilation and discrepancy tracker.
- * ======================================================================= */
 const ManifestManager = {
   addManifestRow(refVal = '', qtyVal = 1, isRes = false, tagVal = '', resQtyVal = 1) {
     const container = document.getElementById('manifestRowsContainer');
@@ -353,3 +348,8 @@ const ManifestManager = {
     SessionManager.goToSummaryScreen();
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/manifestManager.js
+ * Description: Pre-load manifest compilation and discrepancy tracker.
+ * ======================================================================= */

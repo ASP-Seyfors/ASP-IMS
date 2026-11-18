@@ -1,9 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/shippingManager.js
- * Description: Calculates Suture Box math (Weight/Dimensions) and 
- *              manages the final FedEx/UPS shipping intercept.
- * ======================================================================= */
 const ShippingManager = {
     currentLoadedAddressState: "", 
 
@@ -15,7 +9,6 @@ const ShippingManager = {
         document.getElementById('shipmentManagerModal').style.display = 'flex';
     },
     
-    // ✨ PASTE THESE 4 NEW FUNCTIONS HERE:
     captureAddressState() {
         let state = [
             document.getElementById('shipAddressCompany').value.trim(),
@@ -198,7 +191,7 @@ const ShippingManager = {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     },
 
-    // ✨ NEW: Resets the UI so the user is forced to click "Calculate" again if they change a setting
+    // Resets the UI so the user is forced to click "Calculate" again if they change a setting
     resetQuoteUI() {
         let calcBtn = document.getElementById('btnCalculateRate');
         let priceBox = document.getElementById('shipPriceDisplay');
@@ -234,7 +227,7 @@ const ShippingManager = {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     },
 
-    // ✨ NEW: The Master Rate Calculator Function (With Soft Validation Warnings)
+    // The Master Rate Calculator Function (With Soft Validation Warnings)
     async calculateShippingRate() {
         let btn = document.getElementById('btnCalculateRate');
         let priceBox = document.getElementById('shipPriceDisplay');
@@ -939,9 +932,7 @@ const ShippingManager = {
         btn.innerText = orig; btn.disabled = false;
         
         SessionManager.completeSession(true, true, true);
-    },
-
-    // (Add this right before the final closing brace } of the ShippingManager object)
+    },    
     
     formatStateUI(inputId) {
         let el = document.getElementById(inputId);
@@ -1056,3 +1047,9 @@ const ShippingManager = {
         }
     }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/shippingManager.js
+ * Description: Calculates Suture Box math (Weight/Dimensions) and 
+ *              manages the final FedEx/UPS shipping intercept.
+ * ======================================================================= */

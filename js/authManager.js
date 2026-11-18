@@ -1,23 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/authManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Security and authentication gatekeeper. Manages Google Workspace 
- *   OAuth 2.0 sign-in, session storage tokens, and Role-Based Access Control 
- *   (RBAC) for Admin functionality.
- *
- * Affected Features:
- *   - Google Account Sign-In
- *   - Guest Mode Restrictions
- *   - UI Locking & Element Visibility
- *   - Developer Tools Access
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 const AuthManager = {
   currentUser: null,
   isGuest: false,
@@ -87,10 +67,20 @@ const AuthManager = {
         return;
     }
 
+    let medallionSrc = `3D_ASP_Logo${typeof envSuffix !== 'undefined' ? envSuffix : ''}.png`;
     let overlay = document.createElement('div');
     overlay.id = 'authOverlay';
-    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; display:flex; justify-content:center; align-items:center; color:#fff; flex-direction:column;';
-    overlay.innerHTML = `<div style="font-size:1.5rem; font-weight:bold;">🔐 Authenticating Profile...</div>`;
+    overlay.className = 'saas-auth-medallion-overlay';
+    overlay.innerHTML = `
+      <div class="medallion-stage">
+        <div class="medallion-glow-ring"></div>
+        <div class="medallion-3d-coin">
+          <img src="${medallionSrc}" alt="ASP 3D Medallion" class="medallion-img" />
+        </div>
+      </div>
+      <div class="medallion-auth-title">Authenticating Profile...</div>
+      <div class="medallion-auth-sub">Verifying Corporate Workspace Credentials</div>
+    `;
     document.body.appendChild(overlay);
 
     try {
@@ -136,7 +126,7 @@ const AuthManager = {
     }
   },
 
-  // ✨ NEW: Workstation Profile Gateway Functions
+  // Workstation Profile Gateway Functions
   promptWorkstationUser() {
     let modal = document.createElement('div');
     modal.id = 'workstationUserModal';
@@ -349,9 +339,7 @@ const AuthManager = {
     this.transmitUserStatus('Active'); // ✨ INJECTED HERE
   },
 
-  /**
-   * Initializes the idle auto-logout timer and attaches event listeners.
-   */
+  // Initializes the idle auto-logout timer and attaches event listeners.  
   startIdleTimer() {
     this.stopIdleTimer(); // Clear any existing timer/listeners
 
@@ -367,9 +355,7 @@ const AuthManager = {
     this.resetIdleTimer();
   },
 
-  /**
-   * Resets the inactivity timer whenever user action is detected.
-   */
+  // Resets the inactivity timer whenever user action is detected.
   resetIdleTimer() {
     if (this.idleTimeout) {
       clearTimeout(this.idleTimeout);
@@ -380,9 +366,7 @@ const AuthManager = {
     }, this.idleDuration);
   },
 
-  /**
-   * Removes event listeners and clears the active timer.
-   */
+  // Removes event listeners and clears the active timer.
   stopIdleTimer() {
     if (this.idleTimeout) {
       clearTimeout(this.idleTimeout);
@@ -397,9 +381,7 @@ const AuthManager = {
     }
   },
 
-  /**
-   * Triggered when 60 minutes of inactivity elapse.
-   */
+  // Triggered when 60 minutes of inactivity elapse.
   handleIdleTimeout() {
     this.stopIdleTimer();
     console.warn('Session expired due to 1 hour of inactivity.');
@@ -409,7 +391,7 @@ const AuthManager = {
     this.logout(true); 
   },
 
-  // ✨ FIX: Made function async, awaited the transmission, and moved it BEFORE the memory wipe
+  // Made function async, awaited the transmission, and moved it BEFORE the memory wipe
   async logout(force = false) {
     if (!force && !confirm("Are you sure you want to log out?")) return;
     
@@ -462,3 +444,23 @@ const AuthManager = {
     return JSON.parse(jsonPayload);
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/authManager.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   Security and authentication gatekeeper. Manages Google Workspace 
+ *   OAuth 2.0 sign-in, session storage tokens, and Role-Based Access Control 
+ *   (RBAC) for Admin functionality.
+ *
+ * Affected Features:
+ *   - Google Account Sign-In
+ *   - Guest Mode Restrictions
+ *   - UI Locking & Element Visibility
+ *   - Developer Tools Access
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */

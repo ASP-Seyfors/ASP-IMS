@@ -1,24 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/auditManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Audit, report generation, and traceability engine. Constructs TXT and
- *   printable HTML/PDF session summaries, calculates live session metrics,
- *   parses multi-log uploads, and executes the Event Replay System Restore.
- *
- * Affected Features:
- *   - Session Summary Output (PDF & TXT)
- *   - End of Week & Daily Internal Sales Reports
- *   - Thrive & Shopify CSV Exports
- *   - Cloud Traceability & FEFO Lot Tracking
- *   - Cloud Event Replay (System Restore Tool)
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 const AuditManager = {
   parsedAuditSessions: [],
 
@@ -54,25 +33,35 @@ const AuditManager = {
   },
 
   loadCloudSessionsForExport() {
-    // ✨ THE FIX: Match the exact ID used in screens/reports.html
     let select = document.getElementById('archiveExportSelect');
     if (!select) return;
 
     let archive = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
-    let completed = archive.filter(s => s.status === 'Completed').sort((a,b) => parseInt(b.id) - parseInt(a.id));
+    // Hide Part 2+ from the dropdown since selecting Part 1 automatically stitches all parts!
+    let completed = archive.filter(s => {
+      if (s.status !== 'Completed') return false;
+      let isSubsequentPart = s.sessionName.match(/\(Part (?:[2-9]|\d{2,}) of \d+\)/i);
+      return !isSubsequentPart;
+    }).sort((a,b) => parseInt(b.id) - parseInt(a.id));
 
     select.innerHTML = '<option value="">-- Select an Archived Session --</option>';
     completed.forEach(s => {
         let opt = document.createElement('option');
         opt.value = s.id;
-        opt.textContent = `${s.dateStr} | ${s.sessionName} (${s.workflowType})`;
+        let cleanTitle = s.sessionName.replace(/\s*\(Part 1 of \d+\)/i, ' (Full Multi-Part Session)');
+        opt.textContent = `${s.dateStr} | ${cleanTitle}`;
         select.appendChild(opt);
     });
   },
 
+  async exportArchivedSession() {
+    return this.exportCloudSessionData();
+  },
+
   async exportCloudSessionData() {
-    let select = document.getElementById('cloudExportSessionSelect');
-    let format = document.getElementById('cloudExportFormat').value;
+    let select = document.getElementById('archiveExportSelect') || document.getElementById('cloudExportSessionSelect');
+    let formatEl = document.getElementById('archiveExportFormat') || document.getElementById('cloudExportFormat');
+    let format = formatEl ? formatEl.value : 'pdf';
     let sessionId = select ? select.value : "";
     
     if (!sessionId) {
@@ -80,28 +69,41 @@ const AuditManager = {
       return;
     }
 
-    let btn = document.getElementById('btnExportCloudSession');
-    let origText = btn.textContent;
-    btn.textContent = "⏳ Fetching...";
-    btn.disabled = true;
-
     try {
-      // ✨ FIX: encodeURIComponent safely packages special characters (like # or spaces) for web travel
-      let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${encodeURIComponent(sessionId)}`);
-      let rawText = await res.text();
-      
-      // ✨ FIX: Intercept HTML error pages before JSON.parse crashes
-      if (rawText.trim().startsWith('<')) {
-          throw new Error("Google returned an HTML error page. The session ID may be malformed or the payload is too large.");
-      }
-      
-      let sessionData = JSON.parse(rawText);
+      let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+      let targetLite = dir.find(s => String(s.id) === String(sessionId));
+      let partsToFetch = targetLite ? [targetLite] : [{ id: sessionId, sessionName: "Archived Session", dateStr: "" }];
+      let baseName = targetLite ? targetLite.sessionName : "Archived Session";
 
-      if (!sessionData || sessionData.status === "error") {
-        throw new Error(sessionData.message || "Could not download session payload from the cloud.");
+      if (targetLite) {
+        let match = targetLite.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)/i);
+        if (match) {
+          baseName = match[1].trim();
+          partsToFetch = dir.filter(s => {
+            let smatch = s.sessionName.match(/(.*?)\s*\(Part \d+ of \d+\)/i);
+            let sBase = smatch ? smatch[1].trim() : s.sessionName;
+            return sBase === baseName && s.dateStr === targetLite.dateStr;
+          }).sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+        }
       }
 
-      // Temporarily mock SessionManager state
+      let combinedScans = [];
+      let sessionData = null;
+
+      for (let i = 0; i < partsToFetch.length; i++) {
+        let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${encodeURIComponent(partsToFetch[i].id)}`);
+        let rawText = await res.text();
+        if (rawText.trim().startsWith('<')) {
+          throw new Error("Google returned an HTML error page. Please try again in a moment.");
+        }
+        let partData = JSON.parse(rawText);
+        if (!partData || partData.status === "error") {
+          throw new Error(partData ? partData.message : "Could not download session payload from the cloud.");
+        }
+        if (i === 0) sessionData = partData;
+        combinedScans = combinedScans.concat(partData.scannedObjects || []);
+      }
+
       let tempState = {
         scannedObjects: SessionManager.scannedObjects,
         currentSessionName: SessionManager.currentSessionName,
@@ -116,9 +118,8 @@ const AuditManager = {
         pendingFieldUpdates: SessionManager.pendingFieldUpdates
       };
 
-      // Override with cloud data
-      SessionManager.scannedObjects = sessionData.scannedObjects || [];
-      SessionManager.currentSessionName = sessionData.sessionName || "Archived Session";
+      SessionManager.scannedObjects = combinedScans;
+      SessionManager.currentSessionName = baseName || sessionData.sessionName || "Archived Session";
       SessionManager.currentOrderNum = sessionData.orderNum || "";
       SessionManager.currentWorkflowType = sessionData.workflowType || "General";
       SessionManager.sessionDateStr = sessionData.dateStr || "";
@@ -129,17 +130,20 @@ const AuditManager = {
       SessionManager.pendingNewItems = sessionData.pendingNewItems || [];
       SessionManager.pendingFieldUpdates = sessionData.pendingUpdates || [];
 
-      // Run the export generator
-      await this.exportSessionData(format);
+      if (format === 'csv') {
+        let csv = "REF / SKU,Manufacturer,Lot,Exp Date,Version,Qty,Destination,Customer Tag,Notes\r\n";
+        combinedScans.forEach(s => {
+          csv += `"${s.ref || ''}","${s.mfr || ''}","${s.lot || ''}","${s.exp || ''}","${s.version || ''}",${s.qty || 0},"${s.actionTag || ''}","${s.customerTag || ''}","${String(s.itemNote || '').replace(/"/g, '""')}"\r\n`;
+        });
+        UIManager.triggerShareOrDownload(csv, `${SessionManager.sessionDateStr}_${baseName.replace(/[^a-zA-Z0-9]/g, '_')}.csv`, 'text/csv');
+      } else {
+        await this.exportSessionData(format);
+      }
 
-      // Restore the local state immediately
       Object.assign(SessionManager, tempState);
 
     } catch(err) {
       alert("Export failed: " + err.message);
-    } finally {
-      btn.textContent = origText;
-      btn.disabled = false;
     }
   },
 
@@ -156,7 +160,7 @@ const AuditManager = {
     }
 
     let totalQty = 0; let uniqueRefs = new Set();
-    let isTagWorkflow = !SessionManager.currentWorkflowType.includes('Stocktake') && !SessionManager.currentWorkflowType.includes('Packing');
+    let isTagWorkflow = !SessionManager.currentWorkflowType.includes('Packing');
 
     let grouped = {};
     SessionManager.scannedObjects.forEach((item, index) => {
@@ -437,10 +441,7 @@ const AuditManager = {
     setTimeout(() => { document.getElementById('exportDropdown').value = "continue"; }, UIManager.printTimeout);
   },
 
-  // ==========================================================================
   // SINGLE SESSION REPORT BUILDERS (TXT & PDF)
-  // ==========================================================================
-
   buildTXTReportString() {
     let mfrMap = {};
     let custMap = {};
@@ -836,9 +837,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     return html;
   },
 
-  // ==========================================================================
   // CUSTOMER INTERNAL SALES REPORT ENGINE
-  // ==========================================================================
   openInternalSalesReportOptions() {
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
@@ -959,9 +958,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   },
 
-  // ==========================================================================
   // CUSTOMER INVENTORY STOCK REPORT EDITOR (CUSTOMER-FACING)
-  // ==========================================================================
   async openCustomerStockReportEditor() {
     let cust = document.getElementById('customerReportSelect').value;
     if (!cust) { alert("Please select a customer first."); return; }
@@ -1405,10 +1402,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     await UIManager.triggerShareOrDownload(fileContent, filename, mime);
   },
 
-  // ==========================================================================
   // MULTI-SESSION AUDIT & TRACEABILITY ENGINE
-  // ==========================================================================
-
   async processAuditFiles(event) {
     try {
       const files = event.target.files;
@@ -2554,11 +2548,20 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
           if (sess.workflowType === 'Full Stocktake') {
             logMsg(`  - Executing Full Stocktake wipe & overwrite...`, '#fff');
             DatabaseManager.db.forEach(dbItem => { dbItem.onHand = 0; dbItem.reservedQty = 0; });
+            activeAllocations = {}; // ✨ Wipe prior allocations on Full Stocktake baseline
           } else {
-             logMsg(`  - Executing Targeted Selection Stocktake overwrite...`, '#fff');
+            logMsg(`  - Executing Targeted Selection Stocktake overwrite...`, '#fff');
             Object.keys(scannedTotals).forEach(ref => {
               let dbItem = DatabaseManager.db.find(i => String(i.sku || i.ref || '').toUpperCase().trim() === ref);
-              if (dbItem) dbItem.onHand = 0;
+              if (dbItem) {
+                dbItem.onHand = 0;
+                dbItem.reservedQty = 0; // ✨ Reset reservedQty for targeted REFs before rebuilding
+              }
+              for (let cust in activeAllocations) {
+                if (activeAllocations[cust] && activeAllocations[cust][ref]) {
+                  delete activeAllocations[cust][ref];
+                }
+              }
             });
           }
 
@@ -2706,7 +2709,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   },
 
-  // ✨ NEW: Connects to the new App Script SEARCH_DEEP_ARCHIVE endpoint
+  // Connects to the new App Script SEARCH_DEEP_ARCHIVE endpoint
   async traceDeepArchiveLotNumber(targetLot) {
     let resultsContainer = document.getElementById('lotTraceResults');
     if (!resultsContainer) return;
@@ -2750,9 +2753,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     } catch(err) {
       resultsContainer.innerHTML = `<div style="padding:15px; color:#c62828; background:#ffebee; border-radius:4px; text-align:center;">Error fetching Deep Archive data: ${err.message}</div>`;
     }
-  }, // <-- THIS IS LINE 348
+  }, 
 
-  // ✨ NEW: Multi-variable Historical Ledger Search
+  // Multi-variable Historical Ledger Search
   async searchLedgerHistory() {
     let inputEl = document.getElementById('ledgerSearchInput');
     let resultsContainer = document.getElementById('ledgerSearchResults');
@@ -2880,7 +2883,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   },
 
-  // ✨ PHASE 2: Deep Archive Cross-Reference Search
+  // Deep Archive Cross-Reference Search
   async searchDeepArchiveLedgerHistory() {
     let inputEl = document.getElementById('ledgerSearchInput');
     let resultsContainer = document.getElementById('ledgerSearchResults');
@@ -3191,7 +3194,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       UIManager.showCustomAlert("Success", "Full Shopify Database Sync finished!");
   },
 
-  // ✨ NEW: Reusable Network Function with Loading Overlay
+  // Reusable Network Function with Loading Overlay
   async fireShopifyApiPayload(actionTarget, payloadData, overlayTitle) {
     let overlay = document.createElement('div');
     overlay.id = 'shopifySyncOverlay';
@@ -3229,9 +3232,9 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       if (document.getElementById('shopifySyncOverlay')) document.body.removeChild(overlay);
       alert("Network Error: " + err.message);
     }
-  }, // Comma to separate from the previous function
+  }, 
 
-  // ✨ NEW: Dedicated math engine just for System Restores!
+  // Dedicated math engine just for System Restores
   _replayLedgerMath(scannedObjects, currentDb, currentAllocations, workflowType) {
     let onHandChanges = {}; 
     let reservedChanges = {}; 
@@ -3429,3 +3432,24 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       }
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/auditManager.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   Audit, report generation, and traceability engine. Constructs TXT and
+ *   printable HTML/PDF session summaries, calculates live session metrics,
+ *   parses multi-log uploads, and executes the Event Replay System Restore.
+ *
+ * Affected Features:
+ *   - Session Summary Output (PDF & TXT)
+ *   - End of Week & Daily Internal Sales Reports
+ *   - Thrive & Shopify CSV Exports
+ *   - Cloud Traceability & FEFO Lot Tracking
+ *   - Cloud Event Replay (System Restore Tool)
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */

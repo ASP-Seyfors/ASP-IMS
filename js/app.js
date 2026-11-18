@@ -1,24 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/app.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Main application entry point and global event binding layer. Handles
- *   DOM load initialization, window-level function bridges, and Service
- *   Worker lifecycle registration.
- *
- * Affected Features:
- *   - Application Load & Screen Initialization
- *   - Service Worker / PWA Offline Caching
- *   - PWA Version Updating (Force Clear Cache)
- *   - Global Javascript Window Bridging
- *   - Master Auto-Sync
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 async function checkAppUpdates() {
   // Show an immediate visual feedback loading indicator
   const btn = event ? event.target : null;
@@ -243,14 +222,17 @@ async function exportAppsScriptFiles(event) {
 }
 
 window.onload = async () => { 
-  // 1. Fetch and inject all HTML components FIRST
+  // Fetch and inject all HTML components FIRST
   if (typeof ComponentManager !== 'undefined') {
     await ComponentManager.loadAllScreens();
   }
 
-  // 2. Now it is safe to interact with the DOM elements
+  // Now it is safe to interact with the DOM elements
   let loginLogo = document.getElementById('loginLogo');
-  if (loginLogo) loginLogo.src = ENV_CONFIG.LOGO_URL;
+  if (loginLogo) {
+    loginLogo.src = `3D_ASP_Logo${typeof envSuffix !== 'undefined' ? envSuffix : ''}.png`;
+    loginLogo.className = 'medallion-login-hero';
+  }
 
   let versionDisplay = document.getElementById('appVersionDisplay');
   if (versionDisplay) versionDisplay.textContent = "App Version: " + ENV_CONFIG.APP_VERSION;
@@ -260,7 +242,7 @@ window.onload = async () => {
       blastNew.value = ENV_CONFIG.APP_VERSION;
   }
 
-  // 3. Initialize remaining systems
+  // Initialize remaining systems
   UIManager.loadSavedTheme(); 
   DatabaseManager.init(); 
   SessionManager.init();
@@ -361,28 +343,7 @@ window.masterSystemSync = async (event) => {
   }
 };
 
-window.ReportsManager = {
-    triggerVetcoveVariance() {
-        window.open('?action=EXPORT_VETCOVE_VARIANCE', '_blank');
-    },
-    triggerVetcoveFull() {
-        window.open('?action=EXPORT_VETCOVE_FULL', '_blank');
-    },
-    triggerDotMedVariance() {
-        window.open('?action=EXPORT_DOTMED_VARIANCE', '_blank');
-    },
-    triggerDotMedFull() {
-        window.open('?action=EXPORT_DOTMED_FULL', '_blank');
-    },
-    triggerRevMedExport() {
-        window.open('?action=EXPORT_REVMED', '_blank');
-    },
-    generateRevMedPDF(mode) {
-        if (typeof window.generateRevMedPDF === 'function') {
-            window.generateRevMedPDF(mode);
-        }
-    }
-};
+window.ReportsManager = ReportsManager;
 
 window.changeAppTheme = (val) => UIManager.changeAppTheme(val);
 window.toggleSessionType = () => UIManager.toggleSessionType();
@@ -403,7 +364,7 @@ window.closeDbEditor = () => UIManager.closeDbEditor();
 window.openHelpScreen = () => UIManager.openHelpScreen();
 window.closeHelpScreen = () => UIManager.closeHelpScreen();
 window.openQboModal = () => UIManager.openQboModal();
-window.openBinViewerModal = () => UIManager.openBinViewerModal(); // NEW LINE
+window.openBinViewerModal = () => UIManager.openBinViewerModal();
 window.handleSandboxToggle = (el) => UIManager.handleSandboxToggle(el);
 window.openDevTools = () => UIManager.openDevTools();
 window.closeDevTools = () => UIManager.closeDevTools();
@@ -472,7 +433,8 @@ window.exportAppsScriptFiles = exportAppsScriptFiles;
 
 // Address Book Editor
 window.openAddressBookEditor = () => ReportsManager.openAddressBookEditor();
-// ✨ THE FIX: Expose the Custom Flyer and Sales Reports functions globally
+
+// Expose the Custom Flyer and Sales Reports functions globally
 window.openCustomSalesFlyer = () => AuditManager.openCustomSalesFlyer();
 window.openCustomerStockReportEditor = () => AuditManager.openCustomerStockReportEditor();
 window.openInternalSalesReportOptions = () => AuditManager.openInternalSalesReportOptions();
@@ -501,3 +463,24 @@ window.addEventListener('visibilitychange', () => {
         }
     }
 });
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/app.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   Main application entry point and global event binding layer. Handles
+ *   DOM load initialization, window-level function bridges, and Service
+ *   Worker lifecycle registration.
+ *
+ * Affected Features:
+ *   - Application Load & Screen Initialization
+ *   - Service Worker / PWA Offline Caching
+ *   - PWA Version Updating (Force Clear Cache)
+ *   - Global Javascript Window Bridging
+ *   - Master Auto-Sync
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */

@@ -1,6 +1,4 @@
-/* =========================================================
-   GLOBAL FONT SIZE SCALING
-========================================================= */
+/* GLOBAL FONT SIZE SCALING */
 body.font-small { font-size: 13px !important; }
 body.font-medium { font-size: 16px !important; }
 body.font-large { font-size: 20px !important; }
@@ -28,9 +26,7 @@ textarea {
   border: none !important;
 }
 
-/* =========================================================
-   STANDARDIZED SaaS MODAL SYSTEM
-========================================================= */
+/* STANDARDIZED SaaS MODAL SYSTEM */
 .saas-modal-backdrop {
   position: fixed;
   top: 0;
@@ -109,9 +105,7 @@ textarea {
   color: var(--text-main);
 }
 
-/* =========================================================
-   CAMERA OVERLAY & BANNERS
-========================================================= */
+/* CAMERA OVERLAY & BANNERS */
 .gtin-diff-banner {
   font-size: 0.85rem;
   font-weight: 700;
@@ -155,12 +149,10 @@ textarea {
   font-weight: 800;
 }
 
-/* =========================================================
-   3-THEME CONTRAST ENGINE FOR DYNAMIC JS-INJECTED CARDS
-   (Safely styles HTML strings generated inside js/*.js)
-========================================================= */
+/* 3-THEME CONTRAST ENGINE FOR DYNAMIC JS-INJECTED CARDS
+   (Safely styles HTML strings generated inside js/*.js) */
 
-/* 1. Override index.html inline <style> defaults */
+/* Override index.html inline <style> defaults */
 .manifest-row,
 .audit-card {
   background-color: var(--raw-bg) !important;
@@ -168,7 +160,7 @@ textarea {
   color: var(--text-main) !important;
 }
 
-/* 2. Dynamically created JS Modals (Damaged Bin, Workstation Login, Sync Progress, Ethicon Monitor) */
+/* Dynamically created JS Modals (Damaged Bin, Workstation Login, Sync Progress, Ethicon Monitor) */
 #damagedBinViewerModal > div,
 #workstationUserModal > div,
 #syncProgressModal > div,
@@ -189,7 +181,7 @@ textarea {
   border-color: var(--border-color) !important;
 }
 
-/* 3. Customer Bin Viewer Accordion Cards (js/uiManager.js) */
+/* Customer Bin Viewer Accordion Cards (js/uiManager.js) */
 #binViewerContent details {
   background-color: var(--raw-bg) !important;
   border: 1px solid var(--border-color) !important;
@@ -206,7 +198,7 @@ textarea {
   color: var(--text-main) !important;
 }
 
-/* 4. Address Book Saved Contact Cards (js/reportsManager.js) */
+/* Address Book Saved Contact Cards (js/reportsManager.js) */
 #addressBookGrid > div {
   background-color: var(--raw-bg) !important;
   border: 1px solid var(--border-color) !important;
@@ -223,7 +215,7 @@ textarea {
   color: var(--heading-color) !important;
 }
 
-/* 5. Active Shipments Hub Cards (js/shipmentTracker.js) */
+/* Active Shipments Hub Cards (js/shipmentTracker.js) */
 #trackIncomingList > div,
 #trackOutgoingList > div {
   background-color: var(--card-bg) !important;
@@ -252,7 +244,7 @@ textarea {
   opacity: 0.75;
 }
 
-/* 6. Expected Inbound Shipments Task Cards on Home Screen (js/shippingManager.js) */
+/* Expected Inbound Shipments Task Cards on Home Screen (js/shippingManager.js) */
 #inboundTaskCardsContainer > div[onclick] {
   background-color: var(--card-bg) !important;
   border: 1px solid var(--border-color) !important;
@@ -266,7 +258,7 @@ textarea {
   color: var(--text-main) !important;
 }
 
-/* 7. Custom Flyer Builder Rows (js/auditManager.js) */
+/* Custom Flyer Builder Rows (js/auditManager.js) */
 .flyer-item-row {
   background-color: var(--raw-bg) !important;
   border-color: var(--border-color) !important;
@@ -287,7 +279,7 @@ textarea {
   opacity: 0.9;
 }
 
-/* 8. Un-Reserve Modal Checklist Rows (js/sessionManager.js) */
+/* Un-Reserve Modal Checklist Rows (js/sessionManager.js) */
 .unreserve-item-row {
   border-bottom-color: var(--border-color) !important;
   color: var(--text-main) !important;

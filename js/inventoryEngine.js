@@ -1,9 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/inventoryEngine.js
- * Description: Client-Side gatekeeper. Handles read-only validations, 
- * UOM multipliers, and prevents over-packing before cloud transmission.
- * ======================================================================= */
 const InventoryEngine = {
 
   lookupAndNormalize(ref, gtin, currentDb) {
@@ -36,7 +30,7 @@ const InventoryEngine = {
     return { trueRef: finalRef, trueQty: finalQty };
   },
 
-  // ✨ PHASE 3: Universal Packaging Display Helper
+  // Universal Packaging Display Helper
   getPackagingDisplay(item, currentDb, availableEaches) {
     let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
     let uom = parseInt(item.uomMult, 10) || 1;
@@ -213,3 +207,9 @@ const InventoryEngine = {
     return true;
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/inventoryEngine.js
+ * Description: Client-Side gatekeeper. Handles read-only validations, 
+ * UOM multipliers, and prevents over-packing before cloud transmission.
+ * ======================================================================= */

@@ -1,8 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/qboManager.js
- * Description: QuickBooks Online integration and staged order polling.
- * ======================================================================= */
 const QboManager = {
   fetchedStagedData: {},
 
@@ -185,3 +180,8 @@ const QboManager = {
     }
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/qboManager.js
+ * Description: QuickBooks Online integration and staged order polling.
+ * ======================================================================= */

@@ -1,24 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/databaseManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Local database controller for warehouse inventory catalog lookup, 
- *   GTIN/SKU cross-referencing, Manufacturer mapping, and cloud 
- *   synchronization of the Master Item Catalog.
- *
- * Affected Features:
- *   - Barcode Database Matching & Fallbacks
- *   - GTIN Auto-Linking
- *   - Database Editor UI Grid
- *   - Partner/Vendor Dropdown Population
- *   - Master JSON Sync (Downloads & Uploads)
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 const defaultVendors = [
   "ARTHREX", "BARD", "BAXTER", "BD", "COOPER SURGICAL", "COOPERSURG", "COVIDIEN", 
   "ETHICON", "INTEGRA", "INTUITIVE", "MEDTRONIC", "SHARPOINT", "SMITH & NEPHEW", "STRYKER",   
@@ -43,7 +22,7 @@ const DatabaseManager = {
   customerAliases: JSON.parse(localStorage.getItem('asp_wh_cust_aliases')) || {},
   supplierAliases: JSON.parse(localStorage.getItem('asp_wh_sup_aliases')) || {},
 
-  // ✨ NEW: Box Only Signal Helpers
+  // Box Only Signal Helpers
   isBoxOnly(item) {
       return item && item.parentRef && String(item.parentRef).startsWith('*');
   },
@@ -51,7 +30,7 @@ const DatabaseManager = {
       return item && item.parentRef ? String(item.parentRef).replace(/^\*/, '').trim() : '';
   },
 
-  // ✨ NEW: Strict Box Math for the UI
+  // Strict Box Math for the UI
   getStrictBoxInventory(parentRef, uomMult) {
       if (!this.expTrack || this.expTrack.length === 0) return { totalBoxes: 0, rowsHtml: "" };
       let lotBuckets = {};
@@ -305,7 +284,7 @@ const DatabaseManager = {
     }
   },
 
-  // ✨ NEW: Handles the + Add Customer prompt explicitly for the Subscriber Form
+  // Handles the + Add Customer prompt explicitly for the Subscriber Form
   handleSubscriberCustomerSelect(val) {
     if (val === "+ Add Customer") {
       let newC = prompt("Enter new Customer name:");
@@ -581,7 +560,7 @@ const DatabaseManager = {
     document.getElementById('modalDesc').value = dbItem.desc || '';
     document.getElementById('modalCat').value = dbItem.category || '';
     document.getElementById('modalShelf').value = dbItem.shelf || '';
-    document.getElementById('modalMinStock').value = dbItem.minStock || 0; // ✨ NEW
+    document.getElementById('modalMinStock').value = (dbItem.minStock !== "" && dbItem.minStock !== null && dbItem.minStock !== undefined) ? dbItem.minStock : "";
     
     let statusEl = document.getElementById('modalStatus');
     statusEl.value = dbItem.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
@@ -623,7 +602,8 @@ const DatabaseManager = {
     let desc = document.getElementById('modalDesc').value.trim();
     let cat = document.getElementById('modalCat').value.trim();
     let shelf = document.getElementById('modalShelf').value.trim().toUpperCase();
-    let minStock = parseInt(document.getElementById('modalMinStock').value, 10) || 0;
+    let rawMinInput = document.getElementById('modalMinStock').value.trim();
+    let minStock = (rawMinInput !== "" && !isNaN(parseInt(rawMinInput, 10))) ? parseInt(rawMinInput, 10) : "";
     let displayAlias = document.getElementById('modalDisplayAlias') ? document.getElementById('modalDisplayAlias').value.trim() : ""; // ✨ NEW
     let status = document.getElementById('modalStatus').value;
     
@@ -654,7 +634,7 @@ const DatabaseManager = {
 
       let changed = (
       dbItem.mfr !== mfr || dbItem.desc !== desc || dbItem.category !== cat || dbItem.status !== status || 
-      (parseInt(dbItem.minStock, 10) || 0) !== minStock || 
+      String(dbItem.minStock ?? "") !== String(minStock) ||
       (dbItem.displayAlias || '') !== displayAlias ||
       (dbItem.parentRef && uomMultNum > 1 && isBoxOnly !== currentIsBoxOnly) ||
       (isAdmin && dbItem.price !== price) || 
@@ -669,11 +649,11 @@ const DatabaseManager = {
         if (dbItem.desc !== desc) changeNotes.push(`Desc Updated`);
         if (dbItem.category !== cat) changeNotes.push(`Cat: ${dbItem.category} -> ${cat}`);
         if (dbItem.shelf !== shelf) changeNotes.push(`Shelf: ${dbItem.shelf} -> ${shelf}`);
-        if ((parseInt(dbItem.minStock, 10) || 0) !== minStock) changeNotes.push(`Min Stock Updated to ${minStock}`); 
+        if (String(dbItem.minStock ?? "") !== String(minStock)) changeNotes.push(`Min Stock Updated to ${minStock}`); 
         if (dbItem.status !== status) changeNotes.push(`Status: ${dbItem.status} -> ${status}`);
         
-        // ✨ THE FIX: Remove the uomMult > 1 requirement so it saves for ANY item
-        if (isBoxOnly !== currentIsBoxOnly) {
+        // ✨ FIX: Only log Box Only changes if the item is actually a Bundle/Box variant
+        if (dbItem.parentRef && uomMultNum > 1 && isBoxOnly !== currentIsBoxOnly) {
             changeNotes.push(`Box Only: ${isBoxOnly ? 'YES' : 'NO'}`);
             let cleanParent = this.getCleanParentRef(dbItem);
             dbItem.parentRef = isBoxOnly ? `*${cleanParent}` : cleanParent;
@@ -708,6 +688,21 @@ const DatabaseManager = {
 
         localStorage.setItem('asp_wh_db', JSON.stringify(this.db));
         
+        // ✨ AUTO-PUSH METADATA DELTA IMMEDIATELY TO GOOGLE SHEETS
+        fetch(ApiManager.getActiveArchiveUrl(), {
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                action: "DELTA_UPDATE_METADATA",
+                payload: { updates: [dbItem] }
+            })
+        }).then(() => {
+            // Clear this REF from pending updates since it was pushed live
+            let currentPending = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
+            currentPending = currentPending.filter(u => u.ref !== ref);
+            localStorage.setItem('asp_pending_updates', JSON.stringify(currentPending));
+            if (typeof UIManager !== 'undefined' && UIManager.evaluateSyncIndicator) UIManager.evaluateSyncIndicator();
+        }).catch(e => console.warn("Immediate delta push failed, retained in pending queue:", e));
+
         let shopifyUpdatePayload = this.buildShopifyPayload([ref]);
 
         if (shopifyUpdatePayload.length > 0) {
@@ -751,7 +746,7 @@ const DatabaseManager = {
     document.getElementById('itemEditModal').style.display = 'none';
   },
 
-  // ✨ PHASE 3: Admin Global Rename Tool
+  // Admin Global Rename Tool
   promptRenameRef() {
     let oldRef = document.getElementById('modalRef').value.trim();
     if (!oldRef) return;
@@ -953,7 +948,7 @@ const DatabaseManager = {
             onRevMed: row[21], 
             onDotMed: row[22], 
             shopifyCategory: row[23] || "Medical Supplies",
-            minStock: parseInt(row[24], 10) || 0, // ✨ NEW: Captures Column Y
+            minStock: (row[24] !== "" && row[24] !== null && row[24] !== undefined && !isNaN(parseInt(row[24], 10))) ? parseInt(row[24], 10) : "",
             displayAlias: String(row[25] || "").trim() // ✨ PHASE 3: Captures Column Z
           }));
           
@@ -1113,7 +1108,7 @@ const DatabaseManager = {
     );
   },
 
-  // ✨ CENTRALIZED SHOPIFY PAYLOAD BUILDER (WITH GID SANITIZER & TYPE/TAGS)
+  // CENTRALIZED SHOPIFY PAYLOAD BUILDER (WITH GID SANITIZER & TYPE/TAGS)
   buildShopifyPayload(itemRefsArray) {
     let payload = [];
     let processedHandles = new Set(); // Prevents duplicating the same parent family
@@ -1269,3 +1264,24 @@ const DatabaseManager = {
     }
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/databaseManager.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   Local database controller for warehouse inventory catalog lookup, 
+ *   GTIN/SKU cross-referencing, Manufacturer mapping, and cloud 
+ *   synchronization of the Master Item Catalog.
+ *
+ * Affected Features:
+ *   - Barcode Database Matching & Fallbacks
+ *   - GTIN Auto-Linking
+ *   - Database Editor UI Grid
+ *   - Partner/Vendor Dropdown Population
+ *   - Master JSON Sync (Downloads & Uploads)
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */

@@ -1,19 +1,19 @@
 {
-  "name": "ASP IMS v7.1.5",
-  "short_name": "ASP IMS",
-  "description": "Allied Surgical Products Scanner & Inventory Management System",
+  "name": "ASP IMS (DEV) v7.2.0",
+  "short_name": "ASP DEV",
+  "description": "Allied Surgical Products Development",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0277bd",
-  "theme_color": "#0277bd",
+  "background_color": "#cf0452",
+  "theme_color": "#cf0452",
   "icons": [
     {
-      "src": "ASP_Icon_192.png",
+      "src": "3D_ASP_192_Icon_DEV.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "ASP_Icon_512.png",
+      "src": "3D_ASP_512_Icon_DEV.png",
       "sizes": "512x512",
       "type": "image/png"
     }

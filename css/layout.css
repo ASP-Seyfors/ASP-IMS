@@ -1,6 +1,4 @@
-/* =========================================
-   1. ASP Classic (Light Theme - Warm Enterprise Ivory & Gold Accent)
-   ========================================= */
+/* ASP Classic (Light Theme - Warm Enterprise Ivory & Gold Accent) */
 body, body.theme-gold {
   --bg-color: #f3f0e6;
   --desktop-bg: #ebe7dc;
@@ -14,9 +12,7 @@ body, body.theme-gold {
   --heading-color: #0071ce;
 }
 
-/* =========================================
-   2. ASP Midnight (True Dark Theme)
-   ========================================= */
+/* ASP Midnight (True Dark Theme) */
 body.theme-slate {
   --bg-color: #121212;
   --desktop-bg: #0a0a0a;
@@ -30,9 +26,7 @@ body.theme-slate {
   --heading-color: #64b5f6;
 }
 
-/* =========================================
-   3. ASP Twilight (Hybrid Navy Blue)
-   ========================================= */
+/* ASP Twilight (Hybrid Navy Blue) */
 body.theme-sage {
   --bg-color: #1a2634;
   --desktop-bg: #111a24;

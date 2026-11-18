@@ -58,9 +58,13 @@
         <span>Ethicon Monitor</span>
       </button>
     </div>
-    <div style="margin-top: 10px;">
+    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
       <button class="btn-saas-primary" style="margin-top:0; background-color: #2e7d32; padding: 11px;" onclick="ReportsManager.triggerOnHandCsv()">
         <i data-lucide="file-spreadsheet" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Export On-Hand Stock CSV
+      </button>
+      <!-- ✨ ADMIN / SYS_ADMIN ONLY: Internal Inventory Cost & Valuation Report -->
+      <button id="btnAdminCostReport" class="btn-saas-primary" style="display:none; margin-top:0; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border: 1px solid #ffca28; padding: 11px;" onclick="ReportsManager.openInternalCostReportModal()">
+        <i data-lucide="dollar-sign" style="width:16px; height:16px; vertical-align:middle; margin-right:6px; color:#ffca28;"></i>Internal Inventory Cost Valuation (Admin)
       </button>
     </div>
   </div>
@@ -302,4 +306,68 @@
     </div>
   </div>
 
+  <!-- Embedded Modal 4: Internal Inventory Cost Valuation (Admin Only) -->
+  <div id="internalCostReportModal" class="saas-modal-backdrop" style="display:none;">
+    <div class="saas-modal-card" style="max-width:560px; max-height:92vh;">
+      
+      <div class="saas-modal-header" style="border-bottom-color:#ffca28;">
+        <h3 style="margin:0; color:var(--heading-color); display:flex; align-items:center; gap:8px;">
+          <i data-lucide="dollar-sign" style="width:19px; height:19px; color:#ffca28;"></i> Internal Inventory Cost Valuation
+        </h3>
+        <button class="saas-modal-close" onclick="document.getElementById('internalCostReportModal').style.display='none'">×</button>
+      </div>
+
+      <div class="saas-modal-body" style="display:flex; flex-direction:column; gap:12px;">
+        
+        <!-- Live 3-Part Financial Summary Preview -->
+        <div id="costModalSummaryBanner" class="saas-meta-well" style="margin-bottom:0; padding:12px;">
+          <!-- Injected dynamically via JS when opened -->
+        </div>
+
+        <!-- Scope Selector -->
+        <div>
+          <label class="saas-label" style="display:block; margin-bottom:4px;">Inventory Valuation Scope</label>
+          <select id="costReportScope" class="saas-select" style="font-weight:700;" onchange="ReportsManager.updateCostModalPreview()">
+            <option value="all_stock" selected>All Physical Stock in Warehouse (Available + Reserved)</option>
+            <option value="available_only">Available Stock Only (Unreserved / Ready to Sell)</option>
+            <option value="reserved_only">Reserved Stock Only (In Customer Bins / Shopping Carts)</option>
+            <option value="missing_cost">In-Stock Items Missing Cost ($0.00) Only</option>
+          </select>
+        </div>
+
+        <!-- Column & Detail Checkboxes -->
+        <div class="saas-meta-well" style="display:flex; flex-direction:column; gap:9px; margin-bottom:0;">
+          <div class="saas-label" style="color:var(--heading-color); margin-bottom:2px;">Columns & Details to Include</div>
+          <label style="cursor:pointer; font-weight:600; font-size:0.86rem; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkCostMfr" checked> Manufacturer
+          </label>
+          <label style="cursor:pointer; font-weight:600; font-size:0.86rem; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkCostDesc" checked> Catalog Description
+          </label>
+          <label style="cursor:pointer; font-weight:700; font-size:0.86rem; color:var(--heading-color); display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkCostBreakdown" checked> Distinguish Available vs. Reserved (Qty & Cost Breakdown)
+          </label>
+          <label style="cursor:pointer; font-weight:600; font-size:0.86rem; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkCostRetail"> Include Selling Price & Est. Retail Value Comparison
+          </label>
+          <div style="border-top:1px dashed var(--border-color); margin:2px 0;"></div>
+          <label style="cursor:pointer; font-weight:600; font-size:0.84rem; color:#ffa726; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkCostIncludeMissing" checked onchange="ReportsManager.updateCostModalPreview()"> Include In-Stock Items Missing Cost ($0.00 — Flagged in Report)
+          </label>
+        </div>
+
+      </div>
+
+      <div class="saas-modal-footer">
+        <button class="btn-saas-secondary" style="padding:10px 14px;" onclick="document.getElementById('internalCostReportModal').style.display='none'">Cancel</button>
+        <button class="btn-saas-primary" style="flex:1; margin-top:0; padding:10px; background:#2e7d32;" onclick="ReportsManager.exportInternalCostReportCSV()">
+          <i data-lucide="file-spreadsheet" style="width:15px; height:15px; vertical-align:middle; margin-right:5px;"></i>Export CSV
+        </button>
+        <button class="btn-saas-primary" style="flex:1.2; margin-top:0; padding:10px; background:#1565c0;" onclick="ReportsManager.generateInternalCostReportPDF()">
+          <i data-lucide="printer" style="width:15px; height:15px; vertical-align:middle; margin-right:5px;"></i>Generate PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

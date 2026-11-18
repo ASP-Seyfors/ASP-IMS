@@ -1,22 +1,3 @@
-/* =======================================================================
- * Allied Surgical Products - Inventory Management System
- * File: js/scannerManager.js
- * Author: Thomas Seyfors
- * Date Created: August 2026
- * 
- * Description:
- *   Hardware and camera barcode engine integrating HTML5-QRCode viewfinder, 
- *   GS1 2D DataMatrix parsing, and real-time GTIN/LOT/EXP extraction.
- *
- * Affected Features:
- *   - Device Camera Initialization & Focus Controls
- *   - GS1 String Decryption (01, 10, 17 parsing)
- *   - Scan Field Auto-Population
- *   - AI Vision OCR Bridging
- *
- * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
- * All Rights Reserved.
- * ======================================================================= */
 const ScannerManager = {
   html5QrCode: null,
   isCameraActive: false,
@@ -186,6 +167,14 @@ const ScannerManager = {
 
     let ordInp = document.getElementById('itemOrderNumInput');
     if (ordInp) ordInp.value = '';
+
+    let knownOrdSel = document.getElementById('itemKnownOrdersSelect');
+    if (knownOrdSel) knownOrdSel.style.display = 'none';
+
+    // ✨ FIX: Always reset Item Destination back to "Inventory" for the next scan in Receiving or Stocktake
+    if (typeof SessionManager !== 'undefined' && (SessionManager.currentWorkflowType.includes('Receiving & Reserving') || SessionManager.currentWorkflowType.includes('Stocktake'))) {
+      if (typeof UIManager !== 'undefined' && UIManager.setItemAction) UIManager.setItemAction('Inventory');
+    }
 
     let noteInp = document.getElementById('itemNoteInput');
     if (noteInp) noteInp.value = '';
@@ -376,3 +365,22 @@ const ScannerManager = {
     }).catch(err => { alert("OCR Error: " + err.message); event.target.value = ''; });
   }
 };
+/* =======================================================================
+ * Allied Surgical Products - Inventory Management System
+ * File: js/scannerManager.js
+ * Author: Thomas Seyfors
+ * Date Created: August 2026
+ * 
+ * Description:
+ *   Hardware and camera barcode engine integrating HTML5-QRCode viewfinder, 
+ *   GS1 2D DataMatrix parsing, and real-time GTIN/LOT/EXP extraction.
+ *
+ * Affected Features:
+ *   - Device Camera Initialization & Focus Controls
+ *   - GS1 String Decryption (01, 10, 17 parsing)
+ *   - Scan Field Auto-Population
+ *   - AI Vision OCR Bridging
+ *
+ * Copyright (c) 2026 Thomas Seyfors / Allied Surgical Products.
+ * All Rights Reserved.
+ * ======================================================================= */
