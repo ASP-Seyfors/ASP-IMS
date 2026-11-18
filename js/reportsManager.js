@@ -1845,6 +1845,16 @@ const ReportsManager = {
       }
   },
 
+  openSubscribersModal() {
+      let modal = document.getElementById('subscribersModal');
+      if (modal) modal.style.display = 'flex';
+      if (typeof UIManager !== 'undefined' && typeof UIManager.populateCustomerDropdown === 'function') {
+          UIManager.populateCustomerDropdown();
+      }
+      this.loadSubscribers();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
   async loadSubscribers() {
       const container = document.getElementById('subListContainer');
       container.innerHTML = '<p style="text-align:center; color:#0277bd;">Loading...</p>';
@@ -1911,7 +1921,8 @@ const ReportsManager = {
       let dSel = document.getElementById('subSendDay');
       if(dSel && sub.sendDay) dSel.value = sub.sendDay;
       
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the form
+      let modalBody = document.querySelector('#subscribersModal .saas-modal-body');
+      if (modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
   // Master reset for the Subscriber entry form
