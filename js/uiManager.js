@@ -444,6 +444,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
               <div style="display:flex; justify-content:space-between; padding-top: 6px; border-top: 1px dashed var(--border-color, #eee);">
                 <span style="color:var(--text-main, #555);">RM Price: <strong>${famItem.revMedPrice || ''}</strong></span>
                 <span style="color:var(--text-main, #555);">DM Price: <strong>${famItem.dotMedPrice || ''}</strong></span>
+                <span style="color:var(--text-main, #555);">VC Price: <strong>${famItem.vetcovePrice || ''}</strong></span>
               </div>
             </div>
 

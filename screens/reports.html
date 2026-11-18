@@ -211,21 +211,26 @@
   <!-- 5. RevMed Reports & Cloud Session Export Grid -->
   <div class="saas-field-grid-2col" style="margin-bottom: 0;">
     
-    <!-- RevMed Reports -->
+    <!-- External Marketplace Sync Hub (RevMed / DotMed / Vetcove) -->
     <div id="panelRevMedReports" class="saas-card saas-hub-section accent-green" style="margin-bottom:0;">
       <div class="card-section-title">
-        <i data-lucide="clipboard-check" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>RevMed Reports
+        <i data-lucide="globe" style="width:17px; height:17px; vertical-align:middle; margin-right:8px;"></i>External Marketplaces (RevMed / DotMed / Vetcove)
       </div>
-      <p style="font-size: 0.8rem; color: var(--text-main); opacity: 0.8; margin: 0 0 12px 0;">
-        Generate PDF catalogs comparing live warehouse availability against active RevMed listings.
+      <p class="hub-helper-text">
+        Track un-uploaded stock, quantity changes from sales/reservations, price updates, and active Lot/Exp dates across RevMed, DotMed, and Vetcove.
       </p>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn-saas-secondary" style="padding: 10px; font-weight: 700; border-color: #2e7d32; color: #66bb6a;" onclick="ReportsManager.generateRevMedPDF('current')">
-          <i data-lucide="clipboard-list" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>Current RevMed Catalog
+        <button class="btn-saas-primary" style="margin-top:0; padding: 11px; background: linear-gradient(135deg, #00897b 0%, #00695c 100%); font-weight: 700;" onclick="ReportsManager.openMarketplacePortal('REVMED', 'needs_listing')">
+          <i data-lucide="layers" style="width:16px; height:16px; vertical-align:middle; margin-right:6px;"></i>Open Marketplace Sync Portal (Trey)
         </button>
-        <button class="btn-saas-secondary" style="padding: 10px; font-weight: 700;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')">
-          <i data-lucide="file-Search" style="width:15px; height:15px; vertical-align:middle; margin-right:6px;"></i>On-Hand Stock Not on RevMed
-        </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="btn-saas-secondary" style="padding: 9px; font-weight: 700; border-color: #2e7d32; color: #66bb6a;" onclick="ReportsManager.generateRevMedPDF('current')">
+            <i data-lucide="clipboard-list" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>RevMed Catalog PDF
+          </button>
+          <button class="btn-saas-secondary" style="padding: 9px; font-weight: 700;" onclick="ReportsManager.generateRevMedPDF('not_on_revmed')">
+            <i data-lucide="file-search" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>Not on RevMed PDF
+          </button>
+        </div>
       </div>
     </div>
 
@@ -365,6 +370,67 @@
         </button>
         <button class="btn-saas-primary" style="flex:1.2; margin-top:0; padding:10px; background:#1565c0;" onclick="ReportsManager.generateInternalCostReportPDF()">
           <i data-lucide="printer" style="width:15px; height:15px; vertical-align:middle; margin-right:5px;"></i>Generate PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Embedded Modal 5: External Marketplace Sync Portal (RevMed / DotMed / Vetcove) -->
+  <div id="marketplaceSyncModal" class="saas-modal-backdrop" style="display:none;">
+    <div class="saas-modal-card" style="max-width:920px; width:96%; max-height:92vh; display:flex; flex-direction:column;">
+      
+      <div class="saas-modal-header" style="border-bottom-color:#26a69a;">
+        <h3 style="margin:0; color:var(--heading-color); display:flex; align-items:center; gap:8px;">
+          <i data-lucide="globe" style="width:19px; height:19px; color:#26a69a;"></i> External Marketplace Sync Portal
+        </h3>
+        <button class="saas-modal-close" onclick="document.getElementById('marketplaceSyncModal').style.display='none'">×</button>
+      </div>
+
+      <div class="saas-modal-body" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; flex:1;">
+        
+        <!-- 1. Platform Selector Bar -->
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+          <button id="mpTab_REVMED" class="btn-saas-secondary" style="padding:10px; font-weight:800;" onclick="ReportsManager.switchMarketplacePlatform('REVMED')">
+            🏥 RevMed
+          </button>
+          <button id="mpTab_DOTMED" class="btn-saas-secondary" style="padding:10px; font-weight:800;" onclick="ReportsManager.switchMarketplacePlatform('DOTMED')">
+            🩺 DotMed
+          </button>
+          <button id="mpTab_VETCOVE" class="btn-saas-secondary" style="padding:10px; font-weight:800;" onclick="ReportsManager.switchMarketplacePlatform('VETCOVE')">
+            🐾 Vetcove
+          </button>
+        </div>
+
+        <!-- 2. Action Queue Filter Tabs (With Live Counts) -->
+        <div id="mpQueueTabs" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;">
+          <!-- Injected dynamically via JS -->
+        </div>
+
+        <!-- 3. Search & Bulk Action Toolbar -->
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <input type="text" id="mpSearchInput" class="saas-input" style="flex:1; min-width:200px;" placeholder="Filter by REF, Manufacturer, Description, or Lot..." oninput="ReportsManager.renderMarketplaceTable()">
+          <button id="btnMpBulkSync" class="btn-saas-primary" style="margin-top:0; width:auto; padding:9px 14px; background:#00796b; font-size:0.82rem;" onclick="ReportsManager.bulkMarkMarketplaceSynced()">
+            ✓ Mark All Shown as Synced
+          </button>
+        </div>
+
+        <!-- 4. Scrollable Action Table -->
+        <div style="border:1px solid var(--border-color); border-radius:8px; overflow-x:auto; max-height:52vh; overflow-y:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+            <thead id="mpTableHead" style="position:sticky; top:0; background:var(--card-bg); z-index:2; border-bottom:2px solid var(--border-color);">
+            </thead>
+            <tbody id="mpTableBody">
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="saas-modal-footer">
+        <button class="btn-saas-secondary" style="padding:10px 14px;" onclick="document.getElementById('marketplaceSyncModal').style.display='none'">Close</button>
+        <button class="btn-saas-primary" style="flex:1; margin-top:0; padding:10px; background:#1565c0;" onclick="ReportsManager.printMarketplaceWorksheetPDF()">
+          <i data-lucide="printer" style="width:15px; height:15px; vertical-align:middle; margin-right:5px;"></i>Print Action Worksheet (PDF)
         </button>
       </div>
 

@@ -723,6 +723,431 @@ const ReportsManager = {
     }
   },
 
+  // =======================================================================
+  // EXTERNAL MARKETPLACE SYNC PORTAL (REVMED / DOTMED / VETCOVE)
+  // =======================================================================
+  activeMpPlatform: 'REVMED',
+  activeMpQueue: 'needs_listing',
+
+  _parseMpStamp(rawVal) {
+    let str = String(rawVal ?? '').trim();
+    let upper = str.toUpperCase();
+    if (!str || upper === 'FALSE' || upper === '0' || upper === 'NO' || upper === 'BLANK') {
+      return { listed: false, syncedQty: null, syncedPrice: null };
+    }
+    if (upper === 'TRUE' || upper === '1' || upper === 'YES') {
+      return { listed: true, syncedQty: null, syncedPrice: null };
+    }
+    if (upper.startsWith('TRUE|')) {
+      let parts = str.split('|');
+      let q = null, p = null;
+      parts.forEach(pt => {
+        if (pt.startsWith('QTY:')) q = parseInt(pt.substring(4), 10);
+        if (pt.startsWith('PRICE:')) p = parseFloat(pt.substring(6));
+      });
+      return { listed: true, syncedQty: isNaN(q) ? null : q, syncedPrice: isNaN(p) ? null : p };
+    }
+    return { listed: false, syncedQty: null, syncedPrice: null };
+  },
+
+  _buildMpStamp(qty, priceNum) {
+    let cleanQty = Math.max(0, parseInt(qty, 10) || 0);
+    let cleanPrice = (parseFloat(priceNum) || 0).toFixed(2);
+    return `TRUE|QTY:${cleanQty}|PRICE:${cleanPrice}`;
+  },
+
+  _getLotExpSummaryForItem(item) {
+    let expTrack = (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.expTrack)) ? DatabaseManager.expTrack : [];
+    let isBundle = item.parentRef && (parseInt(item.uomMult, 10) || 1) > 1;
+    let lookupRef = isBundle ? DatabaseManager.getCleanParentRef(item).toUpperCase() : String(item.ref || item.sku || '').toUpperCase().trim();
+    let uom = parseInt(item.uomMult, 10) || 1;
+
+    let buckets = {};
+    expTrack.forEach(r => {
+      if (String(r[0] || '').toUpperCase().trim() === lookupRef) {
+        let lot = r[1] || 'N/A';
+        let exp = r[2] || 'N/A';
+        let q = parseInt(r[3], 10) || 0;
+        if (q > 0) {
+          let key = `${lot}|${exp}`;
+          if (!buckets[key]) buckets[key] = { lot, exp, qty: 0 };
+          buckets[key].qty += q;
+        }
+      }
+    });
+
+    let list = [];
+    Object.values(buckets).forEach(b => {
+      if (isBundle) {
+        let boxes = Math.floor(b.qty / uom);
+        if (boxes > 0) list.push(`Lot: ${b.lot} (Exp: ${b.exp}) — ${boxes} Box(es)`);
+      } else {
+        list.push(`Lot: ${b.lot} (Exp: ${b.exp}) — ${b.qty} ea`);
+      }
+    });
+    return list.length > 0 ? list.join('<br>') : '<span style="opacity:0.6;">No active lot breakdown</span>';
+  },
+
+  _getMarketplaceDataset(platform) {
+    let db = (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db)) ? DatabaseManager.db : [];
+    let hiddenParents = DatabaseManager.getHiddenParentRefs();
+    const parseMoney = (v) => parseFloat(String(v || '').replace(/[^0-9.-]+/g, '')) || 0;
+
+    let flagProp = platform === 'REVMED' ? 'onRevMed' : (platform === 'DOTMED' ? 'onDotMed' : 'onVetcove');
+    let priceProp = platform === 'REVMED' ? 'revMedPrice' : (platform === 'DOTMED' ? 'dotMedPrice' : 'vetcovePrice');
+
+    let needsListing = [];
+    let qtyChanged = [];
+    let priceChanged = [];
+    let activeCatalog = [];
+
+    db.forEach(item => {
+      if (item.status === 'INACTIVE') return;
+      let ref = String(item.ref || item.sku || '').toUpperCase().trim();
+      if (!ref) return;
+
+      let isBundle = item.parentRef && (parseInt(item.uomMult, 10) || 1) > 1;
+      // Skip base Each row if its Box variant is flagged "Sell As Box Only"
+      if (!isBundle && hiddenParents.has(ref)) return;
+
+      let liveAvail = DatabaseManager.getTrueAvailability(item);
+      let platformPriceNum = parseMoney(item[priceProp]);
+      let fallbackPriceNum = parseMoney(item.price);
+      let effectivePriceNum = platformPriceNum > 0 ? platformPriceNum : fallbackPriceNum;
+      let hasDedicatedPlatformPrice = platformPriceNum > 0;
+
+      let state = this._parseMpStamp(item[flagProp]);
+      let lotHtml = this._getLotExpSummaryForItem(item);
+
+      let rowObj = {
+        item: item,
+        ref: ref,
+        displayAlias: item.displayAlias || '',
+        mfr: item.mfr || 'UNKNOWN',
+        desc: item.desc || '',
+        gtin: item.gtin || '',
+        isBundle: isBundle,
+        uomMult: parseInt(item.uomMult, 10) || 1,
+        liveAvail: liveAvail,
+        effectivePriceNum: effectivePriceNum,
+        hasDedicatedPlatformPrice: hasDedicatedPlatformPrice,
+        listed: state.listed,
+        syncedQty: state.syncedQty,
+        syncedPrice: state.syncedPrice,
+        lotHtml: lotHtml
+      };
+
+      if (!state.listed) {
+        if (liveAvail > 0) needsListing.push(rowObj);
+      } else {
+        activeCatalog.push(rowObj);
+        // Flag Qty Changed if:
+        // 1) Item is Listed on the site AND liveAvail is now 0 (Sold out / needs removal!), OR
+        // 2) A syncedQty stamp exists and differs from liveAvail
+        if ((liveAvail === 0 && (state.syncedQty === null || state.syncedQty > 0)) ||
+            (state.syncedQty !== null && state.syncedQty !== liveAvail)) {
+          qtyChanged.push(rowObj);
+        }
+        // Flag Price Changed if a syncedPrice stamp exists and differs from effectivePriceNum
+        if (state.syncedPrice !== null && Math.abs(state.syncedPrice - effectivePriceNum) >= 0.01) {
+          priceChanged.push(rowObj);
+        }
+      }
+    });
+
+    const sortFn = (a, b) => a.mfr.localeCompare(b.mfr) || a.ref.localeCompare(b.ref);
+    needsListing.sort(sortFn);
+    qtyChanged.sort((a, b) => a.liveAvail - b.liveAvail || sortFn(a, b)); // Sold-out (0) items first!
+    priceChanged.sort(sortFn);
+    activeCatalog.sort(sortFn);
+
+    return { needsListing, qtyChanged, priceChanged, activeCatalog };
+  },
+
+  openMarketplacePortal(platform = 'REVMED', queue = 'needs_listing') {
+    this.activeMpPlatform = platform;
+    this.activeMpQueue = queue;
+    document.getElementById('marketplaceSyncModal').style.display = 'flex';
+    this.renderMarketplacePortal();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  switchMarketplacePlatform(platform) {
+    this.activeMpPlatform = platform;
+    this.renderMarketplacePortal();
+  },
+
+  switchMarketplaceQueue(queue) {
+    this.activeMpQueue = queue;
+    this.renderMarketplacePortal();
+  },
+
+  renderMarketplacePortal() {
+    let p = this.activeMpPlatform;
+    ['REVMED', 'DOTMED', 'VETCOVE'].forEach(tab => {
+      let btn = document.getElementById(`mpTab_${tab}`);
+      if (btn) {
+        let active = (tab === p);
+        btn.style.background = active ? '#00796b' : '';
+        btn.style.color = active ? '#ffffff' : '';
+        btn.style.borderColor = active ? '#26a69a' : '';
+      }
+    });
+
+    let data = this._getMarketplaceDataset(p);
+    let qTabs = document.getElementById('mpQueueTabs');
+    if (qTabs) {
+      const makeTab = (key, label, count, color) => {
+        let isAct = this.activeMpQueue === key;
+        return `<button class="btn-saas-secondary" style="padding:8px 6px; font-size:0.78rem; font-weight:700; border-color:${isAct ? color : 'var(--border-color)'}; background:${isAct ? 'rgba(38,166,154,0.16)' : 'transparent'};" onclick="ReportsManager.switchMarketplaceQueue('${key}')">
+          ${label} <span style="background:${color}; color:#fff; padding:1px 6px; border-radius:10px; font-size:0.72rem; margin-left:4px;">${count}</span>
+        </button>`;
+      };
+      qTabs.innerHTML =
+        makeTab('needs_listing', '🆕 Not Listed (In-Stock)', data.needsListing.length, '#0288d1') +
+        makeTab('qty_changed', '📉 Qty Changed / Sold', data.qtyChanged.length, data.qtyChanged.length > 0 ? '#e65100' : '#546e7a') +
+        makeTab('price_changed', '💲 Price Changed', data.priceChanged.length, data.priceChanged.length > 0 ? '#8e24aa' : '#546e7a') +
+        makeTab('active_catalog', '📋 Active on Site', data.activeCatalog.length, '#2e7d32');
+    }
+
+    this.renderMarketplaceTable();
+  },
+
+  renderMarketplaceTable() {
+    let p = this.activeMpPlatform;
+    let q = this.activeMpQueue;
+    let data = this._getMarketplaceDataset(p);
+    let list = q === 'needs_listing' ? data.needsListing : (q === 'qty_changed' ? data.qtyChanged : (q === 'price_changed' ? data.priceChanged : data.activeCatalog));
+
+    let searchVal = (document.getElementById('mpSearchInput') ? document.getElementById('mpSearchInput').value : '').toLowerCase().trim();
+    if (searchVal) {
+      list = list.filter(r =>
+        r.ref.toLowerCase().includes(searchVal) ||
+        r.mfr.toLowerCase().includes(searchVal) ||
+        r.desc.toLowerCase().includes(searchVal) ||
+        r.lotHtml.toLowerCase().includes(searchVal)
+      );
+    }
+
+    let thead = document.getElementById('mpTableHead');
+    let tbody = document.getElementById('mpTableBody');
+    if (!thead || !tbody) return;
+
+    let priceColTitle = p === 'REVMED' ? 'RM Price' : (p === 'DOTMED' ? 'DM Price' : 'VC Price');
+
+    thead.innerHTML = `
+      <tr>
+        <th style="padding:8px; text-align:left;">MFR / REF</th>
+        <th style="padding:8px; text-align:left;">Description & GTIN</th>
+        <th style="padding:8px; text-align:left;">Active Lots & Exp (FEFO)</th>
+        <th style="padding:8px; text-align:center;">${priceColTitle}</th>
+        <th style="padding:8px; text-align:center;">Warehouse Avail</th>
+        <th style="padding:8px; text-align:center;">Action</th>
+      </tr>
+    `;
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; opacity:0.7;">🎉 All caught up! No items in this queue for ${p}.</td></tr>`;
+      return;
+    }
+
+    const fmt = (n) => n > 0 ? '$' + n.toFixed(2) : '<span style="color:#ef5350;">$0.00</span>';
+    let html = '';
+
+    list.forEach(r => {
+      let safeRef = r.ref.replace(/'/g, "\\'");
+      let qtyBadge = '';
+      if (q === 'qty_changed') {
+        let prevStr = r.syncedQty !== null ? r.syncedQty : 'Listed';
+        let color = r.liveAvail === 0 ? '#ef5350' : '#ffa726';
+        let statusNote = r.liveAvail === 0 ? '<div style="font-size:0.7rem; color:#ef5350; font-weight:800;">SOLD OUT — ZERO ON SITE</div>' : '';
+        qtyBadge = `<div style="font-weight:800; color:${color};">${prevStr} ➔ ${r.liveAvail}</div>${statusNote}`;
+      } else {
+        qtyBadge = `<span style="font-weight:800; font-size:0.95rem; color:${r.liveAvail > 0 ? '#66bb6a' : '#ef5350'};">${r.liveAvail}</span> ${r.isBundle ? `<div style="font-size:0.7rem; opacity:0.75;">Box of ${r.uomMult}</div>` : ''}`;
+      }
+
+      let priceBadge = '';
+      if (q === 'price_changed' && r.syncedPrice !== null) {
+        priceBadge = `<div style="font-weight:800; color:#ce93d8;">$${r.syncedPrice.toFixed(2)} ➔ ${fmt(r.effectivePriceNum)}</div>`;
+      } else {
+        priceBadge = `<div style="font-weight:700;">${fmt(r.effectivePriceNum)}</div>` +
+          (!r.hasDedicatedPlatformPrice && r.effectivePriceNum > 0 ? `<div style="font-size:0.68rem; opacity:0.65;">(Base Price)</div>` : '');
+      }
+
+      let actionBtns = '';
+      if (q === 'needs_listing') {
+        actionBtns = `<button class="btn-saas-primary" style="margin:0; padding:6px 10px; font-size:0.75rem; background:#0288d1;" onclick="ReportsManager.markItemMarketplaceSynced('${safeRef}', true)">+ Mark Listed</button>`;
+      } else if (q === 'qty_changed' || q === 'price_changed') {
+        let btnLabel = r.liveAvail === 0 ? '✓ Delist / Zeroed' : '✓ Confirm Updated';
+        let shouldStayListed = r.liveAvail > 0;
+        actionBtns = `<button class="btn-saas-primary" style="margin:0; padding:6px 10px; font-size:0.75rem; background:${r.liveAvail === 0 ? '#c62828' : '#2e7d32'};" onclick="ReportsManager.markItemMarketplaceSynced('${safeRef}', ${shouldStayListed})">${btnLabel}</button>`;
+      } else {
+        let syncedInfo = r.syncedQty !== null ? `<div style="font-size:0.68rem; opacity:0.75; margin-bottom:4px;">Stamped: Qty ${r.syncedQty} @ $${(r.syncedPrice || 0).toFixed(2)}</div>` : `<div style="font-size:0.68rem; color:#ffa726; margin-bottom:4px;">Legacy TRUE (Unstamped)</div>`;
+        actionBtns = `
+          ${syncedInfo}
+          <div style="display:flex; gap:4px; justify-content:center;">
+            <button class="btn-saas-primary" style="margin:0; padding:4px 8px; font-size:0.72rem; background:#00796b;" onclick="ReportsManager.markItemMarketplaceSynced('${safeRef}', true)">✓ Stamp Current</button>
+            <button class="btn-saas-secondary" style="margin:0; padding:4px 8px; font-size:0.72rem; color:#ef5350; border-color:#ef5350;" onclick="ReportsManager.markItemMarketplaceSynced('${safeRef}', false)">Unlist</button>
+          </div>`;
+      }
+
+      html += `
+        <tr style="border-bottom:1px solid var(--border-color);">
+          <td style="padding:8px;">
+            <div style="font-weight:800; color:var(--heading-color);">${r.ref}</div>
+            <div style="font-size:0.72rem; opacity:0.75;">${r.mfr}</div>
+          </td>
+          <td style="padding:8px;">
+            <div style="font-size:0.78rem;">${r.desc}</div>
+            <div style="font-size:0.7rem; opacity:0.7; font-family:monospace;">GTIN: ${r.gtin || 'N/A'}</div>
+          </td>
+          <td style="padding:8px; font-size:0.75rem; line-height:1.35;">${r.lotHtml}</td>
+          <td style="padding:8px; text-align:center;">${priceBadge}</td>
+          <td style="padding:8px; text-align:center;">${qtyBadge}</td>
+          <td style="padding:8px; text-align:center;">${actionBtns}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+  },
+
+  markItemMarketplaceSynced(ref, setListed = true) {
+    let p = this.activeMpPlatform;
+    let flagProp = p === 'REVMED' ? 'onRevMed' : (p === 'DOTMED' ? 'onDotMed' : 'onVetcove');
+    let priceProp = p === 'REVMED' ? 'revMedPrice' : (p === 'DOTMED' ? 'dotMedPrice' : 'vetcovePrice');
+    const parseMoney = (v) => parseFloat(String(v || '').replace(/[^0-9.-]+/g, '')) || 0;
+
+    let dbItem = DatabaseManager.db.find(i => String(i.ref || i.sku || '').toUpperCase().trim() === ref.toUpperCase().trim());
+    if (!dbItem) return;
+
+    if (!setListed) {
+      dbItem[flagProp] = "FALSE";
+    } else {
+      let liveAvail = DatabaseManager.getTrueAvailability(dbItem);
+      let pPrice = parseMoney(dbItem[priceProp]);
+      let effPrice = pPrice > 0 ? pPrice : parseMoney(dbItem.price);
+      dbItem[flagProp] = this._buildMpStamp(liveAvail, effPrice);
+    }
+
+    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+
+    fetch(ApiManager.getActiveArchiveUrl(), {
+      method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: "DELTA_UPDATE_METADATA",
+        payload: { updates: [dbItem] }
+      })
+    }).catch(e => console.warn("Marketplace status push failed:", e));
+
+    this.renderMarketplacePortal();
+  },
+
+  bulkMarkMarketplaceSynced() {
+    let p = this.activeMpPlatform;
+    let q = this.activeMpQueue;
+    let data = this._getMarketplaceDataset(p);
+    let list = q === 'needs_listing' ? data.needsListing : (q === 'qty_changed' ? data.qtyChanged : (q === 'price_changed' ? data.priceChanged : data.activeCatalog));
+
+    if (list.length === 0) return;
+    if (!confirm(`Mark all ${list.length} item(s) in this ${p} queue as synced with their current warehouse quantities and prices?`)) return;
+
+    let flagProp = p === 'REVMED' ? 'onRevMed' : (p === 'DOTMED' ? 'onDotMed' : 'onVetcove');
+    let priceProp = p === 'REVMED' ? 'revMedPrice' : (p === 'DOTMED' ? 'dotMedPrice' : 'vetcovePrice');
+    const parseMoney = (v) => parseFloat(String(v || '').replace(/[^0-9.-]+/g, '')) || 0;
+
+    let updatedItems = [];
+    list.forEach(r => {
+      let dbItem = r.item;
+      if (r.liveAvail <= 0 && q === 'qty_changed') {
+        dbItem[flagProp] = "FALSE";
+      } else {
+        let pPrice = parseMoney(dbItem[priceProp]);
+        let effPrice = pPrice > 0 ? pPrice : parseMoney(dbItem.price);
+        dbItem[flagProp] = this._buildMpStamp(r.liveAvail, effPrice);
+      }
+      updatedItems.push(dbItem);
+    });
+
+    localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+
+    fetch(ApiManager.getActiveArchiveUrl(), {
+      method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: "DELTA_UPDATE_METADATA",
+        payload: { updates: updatedItems }
+      })
+    }).catch(e => console.warn("Bulk marketplace push failed:", e));
+
+    this.renderMarketplacePortal();
+  },
+
+  printMarketplaceWorksheetPDF() {
+    let p = this.activeMpPlatform;
+    let q = this.activeMpQueue;
+    let data = this._getMarketplaceDataset(p);
+    let list = q === 'needs_listing' ? data.needsListing : (q === 'qty_changed' ? data.qtyChanged : (q === 'price_changed' ? data.priceChanged : data.activeCatalog));
+
+    if (list.length === 0) {
+      alert("No items in the current queue to print.");
+      return;
+    }
+
+    let queueTitle = {
+      'needs_listing': 'New In-Stock Items Not Listed Yet',
+      'qty_changed': 'Quantity Changes & Sold Items To Adjust',
+      'price_changed': 'Price Updates Needed',
+      'active_catalog': 'All Active Marketplace Listings'
+    }[q];
+
+    let dateStr = new Date().toLocaleDateString();
+    let html = `<!DOCTYPE html><html><head><title>${p} Marketplace Worksheet (${dateStr})</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; color: #222; font-size: 11px; }
+      h2 { color: #00695c; margin: 0 0 4px 0; }
+      table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+      th { background: #e0f2f1; border: 1px solid #b2dfdb; padding: 6px; text-align: left; font-size: 10px; text-transform: uppercase; }
+      td { border: 1px solid #cfd8dc; padding: 6px; vertical-align: top; }
+      .ctr { text-align: center; }
+      @media print { body { margin: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <h2>${p} — ${queueTitle}</h2>
+    <div><strong>Date:</strong> ${dateStr} | <strong>Total Items:</strong> ${list.length}</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="ctr" style="width:28px;">Done</th>
+          <th>MFR / REF</th>
+          <th>Description & GTIN</th>
+          <th>Active Lots & Exp</th>
+          <th class="ctr">Site Price</th>
+          <th class="ctr">Target Qty</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    list.forEach(r => {
+      let qtyText = (q === 'qty_changed' && r.syncedQty !== null) ? `${r.syncedQty} ➔ <strong>${r.liveAvail}</strong>` : `<strong>${r.liveAvail}</strong>`;
+      let priceText = (q === 'price_changed' && r.syncedPrice !== null) ? `$${r.syncedPrice.toFixed(2)} ➔ <strong>$${r.effectivePriceNum.toFixed(2)}</strong>` : `$${r.effectivePriceNum.toFixed(2)}`;
+      html += `<tr>
+        <td class="ctr">☐</td>
+        <td><strong>${r.ref}</strong><br><span style="font-size:9.5px; color:#555;">${r.mfr}</span></td>
+        <td>${r.desc}<br><span style="font-size:9.5px; color:#666;">GTIN: ${r.gtin || 'N/A'}</span></td>
+        <td style="font-size:10px;">${r.lotHtml}</td>
+        <td class="ctr">${priceText}</td>
+        <td class="ctr">${qtyText}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></body></html>`;
+    let win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.focus();
+      setTimeout(() => win.print(), UIManager.printTimeout);
+    }
+  },
+
   generateInventoryReport(type) {
     let db = DatabaseManager.db.slice().sort((a,b) => (a.mfr || '').localeCompare(b.mfr) || (a.ref || '').localeCompare(b.ref));
     let filtered = [];
@@ -1346,14 +1771,14 @@ const ReportsManager = {
     if (mode === 'current') {
       title = "Current RevMed Catalog";
       fileSuffix = "Current_RevMed_Catalog";
-      filtered = db.filter(i => String(i.onRevMed).toUpperCase() === 'TRUE');
+      filtered = db.filter(i => this._parseMpStamp(i.onRevMed).listed);
     } else if (mode === 'not_on_revmed') {
       title = "On-Hand Stock Not on RevMed";
       fileSuffix = "Not_On_RevMed";
       filtered = db.filter(i => {
-        let isFalse = String(i.onRevMed).toUpperCase() !== 'TRUE';
+        let isListed = this._parseMpStamp(i.onRevMed).listed;
         let numPrice = parseFloat(String(i.price || '').replace(/[^0-9.-]+/g, '')) || 0;
-        return isFalse && DatabaseManager.getTrueAvailability(i) > 0 && numPrice > 0;
+        return !isListed && DatabaseManager.getTrueAvailability(i) > 0 && numPrice > 0;
       });
     }
 

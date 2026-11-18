@@ -548,6 +548,10 @@ const DatabaseManager = {
       ? `<input type="text" id="modalDmPrice" value="${dbItem.dotMedPrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="$0.00">` 
       : `<input type="text" id="modalDmPrice" value="${dbItem.dotMedPrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required.">`;
 
+    let vcPriceInputHtml = isAdmin 
+    ? `<input type="text" id="modalVcPrice" value="${dbItem.vetcovePrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="$0.00">` 
+    : `<input type="text" id="modalVcPrice" value="${dbItem.vetcovePrice || ''}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; background-color:#f5f5f5; color:#777;" readonly title="Admin approval required.">`;
+
     document.getElementById('modalRef').value = dbItem.ref || dbItem.sku;
     
     // ✨ NEW: Populate Alias and Show Admin Rename Button
@@ -587,11 +591,12 @@ const DatabaseManager = {
     pricingBlock.style.gap = '10px';
 
     pricingBlock.innerHTML = `
-      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Selling Price</label>${priceInputHtml}</div>
-      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Unit Cost</label>${costInputHtml}</div>
-      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">RM Price</label>${rmPriceInputHtml}</div>
-      <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">DM Price</label>${dmPriceInputHtml}</div>
-    `;
+    <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Selling Price</label>${priceInputHtml}</div>
+    <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">Unit Cost</label>${costInputHtml}</div>
+    <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">RM Price (RevMed)</label>${rmPriceInputHtml}</div>
+    <div><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">DM Price (DotMed)</label>${dmPriceInputHtml}</div>
+    <div style="grid-column: span 2;"><label style="font-weight:bold; font-size:0.85rem; color:var(--text-main, #555);">VC Price (Vetcove)</label>${vcPriceInputHtml}</div>
+  `;
 
     document.getElementById('itemEditModal').style.display = 'flex';
   },
@@ -611,11 +616,13 @@ const DatabaseManager = {
     let costEl = document.getElementById('modalCost');
     let rmPriceEl = document.getElementById('modalRmPrice');
     let dmPriceEl = document.getElementById('modalDmPrice');
+    let vcPriceEl = document.getElementById('modalVcPrice');
     
     let isAdmin = AuthManager.currentUser && AuthManager.currentUser.isAdmin;
     let cost = (isAdmin && costEl) ? costEl.value.trim() : null;
     let rmPrice = (isAdmin && rmPriceEl) ? rmPriceEl.value.trim() : null;
     let dmPrice = (isAdmin && dmPriceEl) ? dmPriceEl.value.trim() : null;
+    let vcPrice = (isAdmin && vcPriceEl) ? vcPriceEl.value.trim() : null;
 
     let dbItem = this.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase());
     if (dbItem) {
@@ -640,7 +647,8 @@ const DatabaseManager = {
       (isAdmin && dbItem.price !== price) || 
       (isAdmin && cost !== null && dbItem.cost !== cost) ||
       (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) ||
-      (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice)
+      (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice) ||
+      (isAdmin && vcPrice !== null && (dbItem.vetcovePrice || '') !== vcPrice)
     );
       
       if (changed || dbItem.shelf !== shelf) {
@@ -663,6 +671,7 @@ const DatabaseManager = {
         if (isAdmin && cost !== null && dbItem.cost !== cost) changeNotes.push(`Cost Updated`);
         if (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) changeNotes.push(`RM Price Updated`);
         if (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice) changeNotes.push(`DM Price Updated`);
+        if (isAdmin && vcPrice !== null && (dbItem.vetcovePrice || '') !== vcPrice) changeNotes.push(`VC Price Updated`);
 
         if (dbItem.displayAlias !== displayAlias) changeNotes.push(`Alias Updated`);
         
@@ -678,6 +687,7 @@ const DatabaseManager = {
           if (cost !== null) dbItem.cost = cost;
           if (rmPrice !== null) dbItem.revMedPrice = rmPrice;
           if (dmPrice !== null) dbItem.dotMedPrice = dmPrice;
+          if (vcPrice !== null) dbItem.vetcovePrice = vcPrice;
         }
 
         let pendingUpd = JSON.parse(localStorage.getItem('asp_pending_updates')) || [];
@@ -949,7 +959,9 @@ const DatabaseManager = {
             onDotMed: row[22], 
             shopifyCategory: row[23] || "Medical Supplies",
             minStock: (row[24] !== "" && row[24] !== null && row[24] !== undefined && !isNaN(parseInt(row[24], 10))) ? parseInt(row[24], 10) : "",
-            displayAlias: String(row[25] || "").trim() // ✨ PHASE 3: Captures Column Z
+            displayAlias: String(row[25] || "").trim(), // ✨ PHASE 3: Captures Column Z
+            onVetcove: row[26] || "FALSE",              // ✨ Captures Column AA (On Vetcove)
+            vetcovePrice: String(row[27] || "").trim()  // ✨ Captures Column AB (VC Price)
           }));
           
           fullDb.items = fullDb.items.concat(mappedItems);
