@@ -1,19 +1,19 @@
-const CACHE_NAME = 'asp-ims-dev-v7.2.0';
+const CACHE_NAME = 'asp-ims-v7.2.0';
 
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './database.json',
-  './ASP_Box_Web_RGB_DEV.png',
-  './ASP_Icon_192_DEV.png',
-  './ASP_Icon_512_DEV.png',
+  './ASP_Box_Web_RGB.png',
+  './ASP_Icon_192.png',
+  './ASP_Icon_512.png',
   './Gemini_3D_ASP_Logo.png',
-  './Gemini_3D_ASP_Logo_DEV.png',
-  './ASP_Signature_Logo_DEV.png',
-  './3D_ASP_Logo_DEV.png',
-  './3D_ASP_192_Icon_DEV.png',
-  './3D_ASP_512_Icon_DEV.png',
+  './Gemini_3D_ASP_Logo.png',
+  './ASP_Signature_Logo.png',
+  './3D_ASP_Logo.png',
+  './3D_ASP_192_Icon.png',
+  './3D_ASP_512_Icon.png',
   
   // CSS
   './css/layout.css',
