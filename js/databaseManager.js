@@ -668,10 +668,10 @@ const DatabaseManager = {
         }
 
         if (isAdmin && dbItem.price !== price) changeNotes.push(`Price: ${dbItem.price} -> ${price}`);
-        if (isAdmin && cost !== null && dbItem.cost !== cost) changeNotes.push(`Cost Updated`);
-        if (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) changeNotes.push(`RM Price Updated`);
-        if (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice) changeNotes.push(`DM Price Updated`);
-        if (isAdmin && vcPrice !== null && (dbItem.vetcovePrice || '') !== vcPrice) changeNotes.push(`VC Price Updated`);
+        if (isAdmin && cost !== null && dbItem.cost !== cost) changeNotes.push(`Cost: ${dbItem.cost || '$0.00'} -> ${cost}`);
+        if (isAdmin && rmPrice !== null && (dbItem.revMedPrice || '') !== rmPrice) changeNotes.push(`RM Price: ${dbItem.revMedPrice || 'Blank'} -> ${rmPrice}`);
+        if (isAdmin && dmPrice !== null && (dbItem.dotMedPrice || '') !== dmPrice) changeNotes.push(`DM Price: ${dbItem.dotMedPrice || 'Blank'} -> ${dmPrice}`);
+        if (isAdmin && vcPrice !== null && (dbItem.vetcovePrice || '') !== vcPrice) changeNotes.push(`VC Price: ${dbItem.vetcovePrice || 'Blank'} -> ${vcPrice}`);
 
         if (dbItem.displayAlias !== displayAlias) changeNotes.push(`Alias Updated`);
         
@@ -787,6 +787,188 @@ const DatabaseManager = {
             UIManager.showCustomAlert("Error", "Network error during rename: " + err.message, true);
         }
     });
+  },
+
+  // =======================================================================
+  // CONVERT ITEM REF -> BUNDLE REF (DEV TOOLS)
+  // =======================================================================
+  openConvertToBundleModal() {
+    let searchEl = document.getElementById('convSearchInput');
+    if (searchEl) searchEl.value = '';
+    document.getElementById('convNewBundleRef').value = '';
+    document.getElementById('convParentRef').value = '';
+    document.getElementById('convUomMult').value = '';
+    document.getElementById('convMultiplyQty').checked = true;
+    document.getElementById('convBoxOnly').checked = false;
+    document.getElementById('convParentPrice').value = '$0.00';
+    document.getElementById('convParentCost').value = '$0.00';
+    document.getElementById('convItemInfoWell').style.display = 'none';
+    document.getElementById('convPreviewBox').style.display = 'none';
+
+    this.filterConvertItemDropdown();
+    document.getElementById('convertItemToBundleModal').style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  filterConvertItemDropdown() {
+    let sel = document.getElementById('convOldRefSelect');
+    if (!sel) return;
+    let term = (document.getElementById('convSearchInput') ? document.getElementById('convSearchInput').value : '').toLowerCase().trim();
+
+    // Only list base Items (uomMult <= 1 / no parentRef)
+    let eligible = this.db.filter(item => {
+      let uom = parseInt(item.uomMult, 10) || 1;
+      if (item.parentRef && uom > 1) return false;
+      let ref = String(item.sku || item.ref || '').trim();
+      if (!ref) return false;
+      if (!term) return true;
+      return ref.toLowerCase().includes(term) ||
+             String(item.mfr || '').toLowerCase().includes(term) ||
+             String(item.desc || '').toLowerCase().includes(term);
+    }).sort((a, b) => String(a.sku || a.ref).localeCompare(String(b.sku || b.ref)));
+
+    let html = '<option value="">-- Select an Items REF to Convert --</option>';
+    eligible.forEach(item => {
+      let ref = String(item.sku || item.ref || '').trim();
+      let tot = parseInt(item.onHand, 10) || 0;
+      html += `<option value="${ref}">${ref} — ${item.mfr || 'Unknown'} (On-Hand: ${tot})</option>`;
+    });
+    sel.innerHTML = html;
+  },
+
+  onConvertItemSelected() {
+    let oldRef = document.getElementById('convOldRefSelect').value.trim();
+    let infoWell = document.getElementById('convItemInfoWell');
+    if (!oldRef) {
+      if (infoWell) infoWell.style.display = 'none';
+      this.updateConvertBundlePreview();
+      return;
+    }
+
+    let item = this.db.find(i => String(i.sku || i.ref || '').toUpperCase() === oldRef.toUpperCase());
+    if (!item) return;
+
+    let tot = parseInt(item.onHand, 10) || 0;
+    let res = parseInt(item.reservedQty, 10) || 0;
+    infoWell.innerHTML = `
+      <div><strong>${item.mfr || 'Unknown'} — ${oldRef}</strong></div>
+      <div style="opacity:0.85; margin:2px 0;">${item.desc || ''}</div>
+      <div style="font-family:monospace; font-size:0.76rem; margin-top:4px;">
+        <strong>On-Hand:</strong> ${tot} (${res} Reserved) | <strong>GTIN:</strong> ${item.gtin || 'None'} | <strong>Price:</strong> ${item.price || '$0.00'} | <strong>Cost:</strong> ${item.cost || '$0.00'}
+      </div>
+    `;
+    infoWell.style.display = 'block';
+
+    // Smart defaults: pre-fill Bundle REF as "<REF> (BX)" and Parent REF as "<REF>"
+    document.getElementById('convNewBundleRef').value = `${oldRef} (BX)`;
+    document.getElementById('convParentRef').value = oldRef;
+    this.updateConvertBundlePreview();
+  },
+
+  updateConvertBundlePreview() {
+    let preview = document.getElementById('convPreviewBox');
+    let oldRef = document.getElementById('convOldRefSelect').value.trim().toUpperCase();
+    let newBundleRef = document.getElementById('convNewBundleRef').value.trim().toUpperCase();
+    let parentRef = document.getElementById('convParentRef').value.trim().toUpperCase().replace(/^\*/, '');
+    let uom = parseInt(document.getElementById('convUomMult').value, 10) || 0;
+    let multQty = document.getElementById('convMultiplyQty').checked;
+    let boxOnly = document.getElementById('convBoxOnly').checked;
+
+    if (!oldRef || !newBundleRef || !parentRef || uom < 2) {
+      preview.style.display = 'none';
+      return;
+    }
+
+    let oldItem = this.db.find(i => String(i.sku || i.ref || '').toUpperCase() === oldRef);
+    let existingParent = (parentRef !== oldRef) ? this.db.find(i => String(i.sku || i.ref || '').toUpperCase() === parentRef && !(i.parentRef && (parseInt(i.uomMult, 10) || 1) > 1)) : null;
+
+    let oldTot = oldItem ? (parseInt(oldItem.onHand, 10) || 0) : 0;
+    let oldRes = oldItem ? (parseInt(oldItem.reservedQty, 10) || 0) : 0;
+    let newTot = multQty ? (oldTot * uom) : oldTot;
+    let newRes = multQty ? (oldRes * uom) : oldRes;
+
+    let parentAction = parentRef === oldRef
+      ? `Keeps <strong>${parentRef}</strong> on <code>Items</code> as the base Each parent (GTIN moved to Box).`
+      : (existingParent
+          ? `Merges converted stock into existing <code>Items</code> parent <strong>${parentRef}</strong> and removes <strong>${oldRef}</strong> from <code>Items</code>.`
+          : `Creates new <code>Items</code> parent <strong>${parentRef}</strong> (replacing <strong>${oldRef}</strong>).`);
+
+    preview.innerHTML = `
+      <div>
+        <strong>Conversion Preview:</strong><br>
+        • Creates Bundle <strong>${newBundleRef}</strong> on <code>Bundles</code> (<code>UOM: ${uom}</code>, <code>Parent: ${boxOnly ? '*' : ''}${parentRef}</code>) inheriting GTIN & Box pricing.<br>
+        • ${parentAction}<br>
+        • Stock Math: <strong>${oldTot}</strong> unit(s) ➔ <strong>${newTot}</strong> eaches (${newRes} reserved) across <code>Items</code>, <code>EXP_TRACK</code>, <code>Allocations</code>, and <code>Damaged</code>.
+      </div>
+    `;
+    preview.style.display = 'block';
+  },
+
+  async executeConvertItemToBundle() {
+    let oldRef = document.getElementById('convOldRefSelect').value.trim().toUpperCase();
+    let newBundleRef = document.getElementById('convNewBundleRef').value.trim().toUpperCase();
+    let parentRef = document.getElementById('convParentRef').value.trim().toUpperCase().replace(/^\*/, '');
+    let uomMult = parseInt(document.getElementById('convUomMult').value, 10) || 0;
+    let multiplyQty = document.getElementById('convMultiplyQty').checked;
+    let isBoxOnly = document.getElementById('convBoxOnly').checked;
+    let parentPrice = document.getElementById('convParentPrice').value.trim() || '$0.00';
+    let parentCost = document.getElementById('convParentCost').value.trim() || '$0.00';
+
+    if (!oldRef || !newBundleRef || !parentRef || uomMult < 2) {
+      alert("Please select an Item REF and enter a New Bundle REF, Parent REF, and UOM Multiplier (2 or greater).");
+      return;
+    }
+
+    if (!confirm(`⚠️ CONFIRM ITEM ➔ BUNDLE CONVERSION\n\nMove "${oldRef}" to Bundles as "${newBundleRef}" (UOM: ${uomMult})\nParent Each REF: "${parentRef}"${isBoxOnly ? ' (Box Only)' : ''}\nMultiply Stock by ${uomMult}: ${multiplyQty ? 'YES' : 'NO'}\n\nProceed?`)) {
+      return;
+    }
+
+    let btn = document.getElementById('btnExecuteConvertBundle');
+    let origHtml = btn.innerHTML;
+    btn.innerHTML = "⏳ Converting & Migrating Ledgers...";
+    btn.disabled = true;
+
+    try {
+      let res = await fetch(ApiManager.getActiveArchiveUrl(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: "CONVERT_ITEM_TO_BUNDLE",
+          payload: {
+            oldRef, newBundleRef, parentRef, uomMult, multiplyQty, isBoxOnly, parentPrice, parentCost,
+            userName: (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : "System Admin"
+          }
+        })
+      });
+
+      let result = await res.json();
+      if (result.status !== "success") {
+        throw new Error(result.message || "Conversion failed on server.");
+      }
+
+      // Immediately pull fresh DB from Google Sheets so local cache matches
+      await this.downloadCloudDatabase(null, true);
+      if (typeof SessionManager !== 'undefined' && typeof SessionManager.fetchAllocationsFromCloud === 'function') {
+        await SessionManager.fetchAllocationsFromCloud();
+      }
+
+      // Push updated Parent + new Bundle variant to Shopify
+      let shopifyPayload = this.buildShopifyPayload([parentRef, newBundleRef]);
+      if (shopifyPayload.length > 0) {
+        fetch(ApiManager.getActiveArchiveUrl(), {
+          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifyPayload })
+        }).catch(e => console.warn("Post-conversion Shopify sync failed:", e));
+      }
+
+      document.getElementById('convertItemToBundleModal').style.display = 'none';
+      UIManager.showCustomAlert("Conversion Complete", `✅ ${result.message}\n\nLocal database refreshed and Shopify sync queued.`);
+    } catch (err) {
+      UIManager.showCustomAlert("Conversion Error", err.message, true);
+    } finally {
+      btn.innerHTML = origHtml;
+      btn.disabled = false;
+    }
   },
 
   backupFullDatabase() {

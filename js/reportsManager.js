@@ -1605,11 +1605,13 @@ const ReportsManager = {
       let activeLots = responseData.data || [];
 
       let groups = {
+        noExp: [],
         expired: [],
         six: [],
         twelve: [],
         twentyFour: []
       };
+      let expQtyByRef = {};
 
       // ✨ FIX: Map to the exact ALL-CAPS headers provided by the Google Sheets JSON
       activeLots.forEach(row => {
@@ -1624,6 +1626,8 @@ const ReportsManager = {
           let status = row['EXP STATUS']; 
           
           if (!rawRef || qty <= 0) return;
+
+          expQtyByRef[cleanRef] = (expQtyByRef[cleanRef] || 0) + qty;
           
           let dbMatch = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) 
             ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === cleanRef) 
@@ -1632,10 +1636,8 @@ const ReportsManager = {
           // Fallback just in case it is an older variant
           if (!dbMatch) dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === rawRef.toUpperCase());
 
-          // ✨ CRITICAL FIX 4: Cross-reference the live database. If it's completely out of stock globally, drop it from the report.
-          let trueAvail = dbMatch ? DatabaseManager.getTrueAvailability(dbMatch) : 0;
-          let reserved = dbMatch ? (parseInt(dbMatch.reservedQty, 10) || 0) : 0;
-          if (dbMatch && (trueAvail + reserved) <= 0) return;
+          // ✨ CRITICAL FIX 4: Cross-reference the live database. If it's completely out of stock globally, drop it from the report.          
+          if (dbMatch && (parseInt(dbMatch.onHand, 10) || 0) <= 0) return;
 
           let mfr = dbMatch ? (dbMatch.mfr || dbMatch.manufacturer || 'Unknown') : 'Unknown';
           let shelf = dbMatch ? (dbMatch.shelf || 'Standard') : 'Unknown';
@@ -1649,11 +1651,39 @@ const ReportsManager = {
           else if (status === "SHORT24") groups.twentyFour.push(itemObj);
       });
 
+      // Identify in-stock base items that have units without an Expiration Date recorded (e.g. Usage-Tracked / NO_EXP)
+      if (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db)) {
+        DatabaseManager.db.forEach(dbItem => {
+          let uom = parseInt(dbItem.uomMult, 10) || 1;
+          if (dbItem.parentRef && uom > 1) return; // Base physical items only
+          let refKey = String(dbItem.sku || dbItem.ref || '').toUpperCase().trim();
+          let totalOnHand = parseInt(dbItem.onHand, 10) || 0;
+          if (!refKey || totalOnHand <= 0) return;
+
+          let datedQty = expQtyByRef[refKey] || 0;
+          let undatedQty = totalOnHand - datedQty;
+          if (undatedQty > 0) {
+            groups.noExp.push({
+              ref: dbItem.sku || dbItem.ref,
+              lot: 'N/A (Undated / Usage-Tracked)',
+              exp: 'No Exp Date',
+              mfr: dbItem.mfr || 'Unknown',
+              shelf: dbItem.shelf || 'Standard',
+              qty: undatedQty
+            });
+          }
+        });
+      }
+
       // Helper function to build table sections
       const buildSection = (title, color, icon, items) => {
         if (items.length === 0) return '';
+
         // Sort chronologically by expiration date
-        items.sort((a, b) => new Date(a.exp) - new Date(b.exp));
+        items.sort((a, b) => {
+          if (a.exp === 'No Exp Date' || b.exp === 'No Exp Date') return a.ref.localeCompare(b.ref);
+          return new Date(a.exp) - new Date(b.exp);
+        });
         
         let sectionHtml = `
           <h3 style="color:${color}; border-bottom:2px solid ${color}; padding-bottom:6px; margin-top:20px;">${icon} ${title} (${items.length} Lots)</h3>
@@ -1689,6 +1719,7 @@ const ReportsManager = {
       `;
 
       let hasData = false;
+      if (groups.noExp.length > 0) { html += buildSection('No Expiration Date Recorded (Usage-Tracked / Missing Exp)', '#546e7a', '📋', groups.noExp); hasData = true; }
       if (groups.expired.length > 0) { html += buildSection('Already Expired', '#c62828', '❌', groups.expired); hasData = true; }
       if (groups.six.length > 0) { html += buildSection('Expiring within 6 Months', '#e65100', '🚨', groups.six); hasData = true; }
       if (groups.twelve.length > 0) { html += buildSection('Expiring within 12 Months', '#f57f17', '⚠️', groups.twelve); hasData = true; }

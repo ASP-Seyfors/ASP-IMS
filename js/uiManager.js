@@ -1101,14 +1101,32 @@ const UIManager = {// GLOBAL CONFIGURATIONS
   },
 
   openDevTools() {
-    this.lockCheatCodes(); // ✨ Added
+    this.lockCheatCodes();
     document.getElementById('screenSetup').style.display = 'none';
     document.getElementById('screenDevTools').style.display = 'block';
+    this.switchDevToolsView('home');
     
     // Load available sessions into the reversal dropdown
     if (typeof SessionManager !== 'undefined' && typeof SessionManager.loadReversibleSessions === 'function') {
       SessionManager.loadReversibleSessions();
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  switchDevToolsView(viewName) {
+    let home = document.getElementById('devViewHome');
+    let diag = document.getElementById('devViewDiagnostics');
+    let maint = document.getElementById('devViewMaintenance');
+
+    if (home) home.style.display = (viewName === 'home') ? 'block' : 'none';
+    if (diag) diag.style.display = (viewName === 'diagnostics') ? 'block' : 'none';
+    if (maint) maint.style.display = (viewName === 'maintenance') ? 'block' : 'none';
+
+    if (viewName === 'maintenance' && typeof SessionManager !== 'undefined' && typeof SessionManager.loadReversibleSessions === 'function') {
+      SessionManager.loadReversibleSessions();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   closeDevTools() {

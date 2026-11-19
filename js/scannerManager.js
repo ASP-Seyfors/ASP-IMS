@@ -244,77 +244,179 @@ const ScannerManager = {
       document.getElementById('rawScan3').value, document.getElementById('rawScan4').value
     ];
 
-    let gtin = "", lot = "", exp = "", variant = ""; // ✨ NEW: Added variant variable
-    
+    let gtin = "", lot = "", exp = "", variant = "";
+
+    // Helper: Validate YYMMDD dates so random digits inside lots aren't mistaken for dates
+    const isValidYYMMDD = (str, isProdDate = false) => {
+      if (!/^\d{6}$/.test(str)) return false;
+      let yy = parseInt(str.substring(0, 2), 10);
+      let mm = parseInt(str.substring(2, 4), 10);
+      let dd = parseInt(str.substring(4, 6), 10);
+      if (mm < 1 || mm > 12 || dd < 0 || dd > 31) return false;
+      return isProdDate ? (yy >= 18 && yy <= 35) : (yy >= 19 && yy <= 40);
+    };
+
+    // PASS 1: Clean lines & sniff GTIN early so we can identify Manufacturer & REF before parsing Lot
+    let cleanedLines = [];
     lines.forEach(rawLine => {
-      if (!rawLine.trim()) return;
-      
-      let clean = rawLine.replace(/\x1D/g, '|').replace(/^\][a-zA-Z0-9]{2}/, '').replace(/[\(\)]/g, '').replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
-      
+      if (!rawLine || !rawLine.trim()) return;
+      let clean = rawLine
+        .replace(/\x1D/g, '|')
+        .replace(/^\][a-zA-Z0-9]{2}/, '')
+        .replace(/[\(\)]/g, '')
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+        .trim()
+        .toUpperCase();
+      cleanedLines.push(clean);
+
+      if (!gtin) {
+        let gMatch = clean.match(/^01(\d{14})/);
+        if (gMatch) gtin = gMatch[1];
+        else if (/^\d{12,14}$/.test(clean)) gtin = clean;
+      }
+    });
+
+    // Resolve Manufacturer & REF from DB via GTIN (or fallback to current UI fields)
+    let knownMfr = document.getElementById('vendorSelect') ? document.getElementById('vendorSelect').value.toUpperCase().trim() : "";
+    let knownRef = document.getElementById('refInput') ? document.getElementById('refInput').value.toUpperCase().trim() : "";
+    if (typeof DatabaseManager !== 'undefined' && (gtin || knownRef)) {
+      let dbHit = DatabaseManager.findDatabaseMatch(gtin, knownRef);
+      if (dbHit) {
+        knownMfr = DatabaseManager.getItemVendor(dbHit).toUpperCase().trim() || knownMfr;
+        knownRef = DatabaseManager.getItemSku(dbHit).toUpperCase().trim() || knownRef;
+      }
+    }
+
+    // PASS 2: Structured GS1 Parsing with Manufacturer / REF Prediction Profiles
+    cleanedLines.forEach(clean => {
       let idx = 0;
       while (idx < clean.length) {
         if (clean[idx] === '|') {
-            idx++;
-            continue;
+          idx++;
+          continue;
         }
 
-        // ✨ FIX: Capture the Variant code instead of just skipping it
+        // AI 01: GTIN (14 digits)
+        if (clean.substring(idx, idx + 2) === "01" && clean.length - idx >= 16 && /^\d{14}$/.test(clean.substring(idx + 2, idx + 16))) {
+          if (!gtin) gtin = clean.substring(idx + 2, idx + 16);
+          idx += 16;
+          continue;
+        }
+
+        // AI 20: Product Variant (2 digits) — outside of lot strings (e.g. Ethicon 01...201417...)
         if (clean.substring(idx, idx + 2) === "20" && clean.length - idx >= 4 && /^\d{2}$/.test(clean.substring(idx + 2, idx + 4))) {
-            variant = clean.substring(idx + 2, idx + 4);
-            idx += 4; 
-            continue;
+          if (!variant) variant = clean.substring(idx + 2, idx + 4);
+          idx += 4;
+          continue;
         }
 
-        if (clean.substring(idx, idx + 2) === "17" && clean.length - idx >= 8 && /^\d{6}$/.test(clean.substring(idx + 2, idx + 8))) {
-          let testMm = parseInt(clean.substring(idx + 4, idx + 6), 10);
-          if (testMm >= 1 && testMm <= 12) {
+        // AI 11: Production Date (YYMMDD) — skip cleanly so '10' or '20' inside date never hijacks parser!
+        if (clean.substring(idx, idx + 2) === "11" && clean.length - idx >= 8 && isValidYYMMDD(clean.substring(idx + 2, idx + 8), true)) {
+          idx += 8;
+          continue;
+        }
+
+        // AI 17: Expiration Date (YYMMDD)
+        if (clean.substring(idx, idx + 2) === "17" && clean.length - idx >= 8 && isValidYYMMDD(clean.substring(idx + 2, idx + 8), false)) {
+          if (!exp) {
+            let rawExp = clean.substring(idx + 2, idx + 8);
+            let yy = parseInt(rawExp.substring(0, 2), 10);
+            let year = yy < 50 ? (2000 + yy) : (1900 + yy);
+            exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
+          }
+          idx += 8;
+          continue;
+        }
+
+        // AI 10: Lot / Batch Number
+        if (clean.substring(idx, idx + 2) === "10") {
+          let rem = clean.substring(idx + 2);
+
+          // 0. If hardware scanner emitted an explicit GS1 Group Separator '|', trust it 100%
+          let gsIdx = rem.indexOf('|');
+          if (gsIdx > -1) {
+            lot = rem.substring(0, gsIdx);
+            idx += 2 + gsIdx + 1;
+            continue;
+          }
+
+          // --- MANUFACTURER & REF LOT PROFILES ---
+          // Profile 1: INTUITIVE (470xxx, 471xxx, 480xxx, 482xxx, 483xxx)
+          // Format: 1 letter + 8 digits (e.g. K11260824), optionally followed by AI 91xxxx
+          if (knownMfr.includes('INTUITIVE') || /^(470|471|480|482|483)/.test(knownRef)) {
+            let mInt = rem.match(/^([A-Z]\d{8})(?:(91\d{4,})|(17\d{6})|(20\d{2}))?/);
+            if (mInt) {
+              lot = mInt[1];
+              idx += 2 + lot.length + (mInt[2] ? mInt[2].length : 0);
+              continue;
+            }
+          }
+
+          // Profile 2: STRYKER (279-xxx-xxx)
+          // Format: 8-char lot (e.g. 26152AE2) followed by AI 93 internal code (93 + 5+ digits)
+          if (knownMfr.includes('STRYKER') || knownRef.startsWith('279-')) {
+            let mStr = rem.match(/^(\d{5}[A-Z]{2}\d)(93\d{5,})$/);
+            if (mStr) {
+              lot = mStr[1];
+              break;
+            }
+          }
+
+          // Profile 3: BD (e.g. 309647)
+          // Format: 7-digit lot followed by AI 30 box count (e.g. 30125)
+          if (knownMfr === 'BD') {
+            let mBd = rem.match(/^(\d{7})(30\d{1,4})$/);
+            if (mBd) {
+              lot = mBd[1];
+              break;
+            }
+          }
+
+          // Profile 4: COVIDIEN / MEDTRONIC (SIG*, LF*, LS*, TA*, EL-*, EGIA*, MR8-*)
+          // Never split on '11', '20', or '21' INSIDE the lot — ONLY strip trailing AI 20XX at the very end!
+          if (knownMfr.includes('COVIDIEN') || knownMfr.includes('MEDTRONIC') || /^(SIG|LF|LS|TA|EL-|EGIA|MR8-)/.test(knownRef)) {
+            let mCov = rem.match(/^(.{6,}?)(20\d{2})$/);
+            if (mCov) {
+              lot = mCov[1];
+              if (!variant) variant = mCov[2].substring(2);
+              break;
+            } else {
+              lot = rem;
+              break;
+            }
+          }
+
+          // --- GENERAL SAFE FALLBACK RULES (All Other Manufacturers) ---
+          // A) Trailing AI 91 or AI 93 internal code after a 6+ char lot
+          let m9x = rem.match(/^([A-Z0-9]{6,}?)(9[13]\d{4,})$/);
+          if (m9x) {
+            lot = m9x[1];
+            break;
+          }
+
+          // B) Trailing AI 20XX (Product Variant) strictly at the VERY END of the string (after 5+ char lot)
+          let mEnd20 = rem.match(/^(.{5,}?)(20\d{2})$/);
+          if (mEnd20) {
+            lot = mEnd20[1];
+            if (!variant) variant = mEnd20[2].substring(2);
+            break;
+          }
+
+          // C) Valid AI 17 (Exp Date YYMMDD) appearing after a 4+ char lot (e.g. Cooper Surgical 10LOT17300310240...)
+          let m17 = rem.match(/^(.{4,}?)(17)([2-3]\d(?:0[1-9]|1[0-2])(?:0[0-9]|[1-2]\d|3[0-1]))(.*)$/);
+          if (m17) {
+            lot = m17[1];
+            let rawExp = m17[3];
             if (!exp) {
-              let rawExp = clean.substring(idx + 2, idx + 8);
               let yy = parseInt(rawExp.substring(0, 2), 10);
               let year = yy < 50 ? (2000 + yy) : (1900 + yy);
               exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
             }
-            idx += 8;
-          } else {
-            idx++;
+            break;
           }
-        } else if (clean.substring(idx, idx + 2) === "01" && clean.length - idx >= 16 && /^\d{14}$/.test(clean.substring(idx + 2, idx + 16))) {
-          if (!gtin) gtin = clean.substring(idx + 2, idx + 16);
-          idx += 16;
-        } else if (clean.substring(idx, idx + 2) === "10") {
-          let rem = clean.substring(idx + 2);
-          
-          let gsIdx = rem.indexOf('|');
-          if (gsIdx > -1) {
-             lot = rem.substring(0, gsIdx);
-             idx += 2 + gsIdx; 
-          } else {
-             // ✨ FIX: Look for standard GS1 AI boundaries (11 = Prod Date, 17 = Exp Date, 20 = Variant, 21 = Serial, 310x = Weight)
-             let breakMatch = rem.match(/(11\d{6}|17\d{6}|20\d{2}|21[a-zA-Z0-9]{4,}|310\d{5})/);
-             
-             if (breakMatch && breakMatch.index > 0) {
-               let breakIdx = breakMatch.index;
-               lot = rem.substring(0, breakIdx);
-               idx += 2 + breakIdx; 
-             } else {
-               let swallowed17Match = rem.match(/^(.*?)(17)([2-3]\d(?:0[1-9]|1[0-2])(?:0[0-9]|[1-2]\d|3[0-1]))(.*)$/);
-               
-               if (swallowed17Match) {
-                   lot = swallowed17Match[1]; 
-                   let rawExp = swallowed17Match[3]; 
-                   
-                   if (!exp) {
-                       let yy = parseInt(rawExp.substring(0, 2), 10);
-                       let year = yy < 50 ? (2000 + yy) : (1900 + yy);
-                       exp = `${year}-${rawExp.substring(2, 4)}-${rawExp.substring(4, 6)}`;
-                   }
-                   idx += 2 + lot.length + 8; 
-               } else {
-                   lot = rem;
-                   break;
-               }
-             }
-          }
+
+          lot = rem;
+          break;
         } else if (/^\d{12,14}$/.test(clean)) {
           if (!gtin) gtin = clean;
           break;
@@ -324,15 +426,9 @@ const ScannerManager = {
       }
     });
 
-    // ✨ FIX: Bind the variant to the lot string before populating the UI
-    // if (lot && variant) {
-     //    lot = `${lot} [v${variant}]`;
-    // }
-
-    // ✨ FIX: Isolate the variant into its own field instead of gluing it to the Lot
     let verInput = document.getElementById('verInput');
     if (verInput) {
-        verInput.value = variant ? variant : "";
+      verInput.value = variant ? variant : "";
     }
 
     if (gtin && !document.getElementById('chkNaGtin').checked) document.getElementById('gtinInput').value = gtin;
