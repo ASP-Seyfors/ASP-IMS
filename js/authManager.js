@@ -203,31 +203,32 @@ const AuthManager = {
     document.getElementById('screenSetup').style.display = 'block';
     document.body.style.borderTop = "12px solid " + (typeof ENV_CONFIG !== 'undefined' && ENV_CONFIG.THEME_COLOR ? ENV_CONFIG.THEME_COLOR : "#0277bd");
     
-    let advLabel = document.getElementById('chkAdvancedMode') ? document.getElementById('chkAdvancedMode').parentElement : null;
+    let advLabel = document.getElementById('chkAdvancedMode') ? document.getElementById('chkAdvancedMode').closest('label') : null;
     let advChk = document.getElementById('chkAdvancedMode');
     let archiveBtn = document.getElementById('btnSessionArchive');
     let lookupBtn = document.getElementById('btnItemLookup');
     let userNameInput = document.getElementById('userNameInput');
     let userNameSelect = document.getElementById('userNameSelect');
     
+    let workflowCard = document.getElementById('panelWorkflowSetup');
     let stagedFeed = document.getElementById('panelStagedFeed');
     let preloadToggle = document.getElementById('rowPreloadToggle');
     let btnStock = document.getElementById('btnStocktake');
     let btnTrace = document.getElementById('btnTraceability');
     let roleBadge = document.getElementById('userRoleBadge');
     
-    let reportsInv = document.getElementById('panelInventoryReports');
-    let reportsRevMed = document.getElementById('panelRevMedReports');
     let reportsCust = document.getElementById('panelCustomerReports');
     let panelArchiveExport = document.getElementById('panelArchiveExport');
-    let panelSubscribers = document.getElementById('panelSubscribers');
+    let btnMarketplace = document.getElementById('btnMarketplacePortal');
+    let btnSubscribers = document.getElementById('btnStockSubscriptions');
+    let btnAdminCost = document.getElementById('btnAdminCostReport');
     
     let devToolsContainer = document.getElementById('devToolsContainer');
     let rowQboSync = document.getElementById('rowQboSync');
     let rowQboSettings = document.getElementById('rowQboSettings');
-    let btnStart = document.querySelector('.btn-start');
 
     if (this.isGuest) {
+      if (workflowCard) workflowCard.style.display = 'block';
       if (advLabel) advLabel.style.display = 'none';
       if (archiveBtn) archiveBtn.style.display = 'none';
       if (lookupBtn) lookupBtn.style.display = 'none';
@@ -239,6 +240,7 @@ const AuthManager = {
       if (rowQboSettings) rowQboSettings.style.display = 'none';
       if (devToolsContainer) devToolsContainer.style.display = 'none';
       if (rowQboSync) rowQboSync.style.display = 'none';
+      if (btnAdminCost) btnAdminCost.style.display = 'none';
       
       if (roleBadge) { roleBadge.textContent = "Guest Mode"; roleBadge.style.backgroundColor = "#c62828"; }
       
@@ -254,40 +256,41 @@ const AuthManager = {
 
     let r = this.currentUser.role;
     
-    // Show standard authorized buttons first
+    // 1. CLEAN BASELINE: Reset all standard authorized panels & buttons first
+    if (workflowCard) workflowCard.style.display = 'block';
     if (advLabel) advLabel.style.display = 'flex';
     if (archiveBtn) archiveBtn.style.display = 'inline-block';
-    if (lookupBtn) lookupBtn.style.display = 'inline-block';
+    if (lookupBtn) lookupBtn.style.display = 'flex';
+    if (btnStock) btnStock.style.display = 'flex';
+    if (btnTrace) btnTrace.style.display = 'flex';
+    if (reportsCust) reportsCust.style.display = 'block';
+    if (panelArchiveExport) panelArchiveExport.style.display = 'block';
+    if (btnMarketplace) btnMarketplace.style.display = 'flex';
+    if (btnSubscribers) btnSubscribers.style.display = 'flex';
     
-    // 1. Force the UI to a clean baseline matching the current form inputs
     if (typeof UIManager !== 'undefined') {
         UIManager.toggleSessionType();
         UIManager.toggleAdvancedMode(); 
     }
 
-    // 1. SALES LOCKDOWN
+    // 2. SALES LOCKDOWN (Reports, Lookup, Traceability & DB Editor only — no warehouse scanning)
     if (r === 'SALES') {
-        // Force Advanced Mode open FIRST so it builds the UI, then we hide what we don't want
-        if (advChk) { advChk.checked = true; if(typeof UIManager !== 'undefined') UIManager.toggleAdvancedMode(true); }
+        if (advChk) { advChk.checked = true; if (typeof UIManager !== 'undefined') UIManager.toggleAdvancedMode(true); }
         if (advLabel) advLabel.style.display = 'none';
-
-        // STRICT SCOPE: Only hide form rows on the Setup Screen so we don't break the Settings page
-        document.querySelectorAll('#screenSetup .form-row').forEach(row => row.style.display = 'none');
-        
-        if (btnStart) btnStart.parentElement.style.display = 'none';
+        if (workflowCard) workflowCard.style.display = 'none';
         if (archiveBtn) archiveBtn.style.display = 'none';
         if (btnStock) btnStock.style.display = 'none';
         if (preloadToggle) preloadToggle.style.display = 'none';
         if (stagedFeed) stagedFeed.style.display = 'none';
-        if (panelArchiveExport) panelArchiveExport.style.display = 'none'; 
+        if (panelArchiveExport) panelArchiveExport.style.display = 'none';
     }
 
-    // 2. WORKSTATION / ADMIN / STANDARD LOGIC
+    // 3. WORKSTATION LOGIC (Shared scanning laptop — hides customer reports, subscriptions & stocktake)
     if (this.isWorkstation) {
         if (reportsCust) reportsCust.style.display = 'none';
-        if (panelSubscribers) panelSubscribers.style.display = 'none'; 
-        if (btnStock) btnStock.style.display = 'none'; 
-        
+        if (btnSubscribers) btnSubscribers.style.display = 'none';
+        if (btnStock) btnStock.style.display = 'none';
+
         if (userNameInput) userNameInput.style.display = 'none';
         if (userNameSelect) {
             userNameSelect.style.display = 'block';
@@ -300,12 +303,13 @@ const AuthManager = {
         if (userNameSelect) userNameSelect.style.display = 'none';
     }
 
-    // 3. ADMIN VISIBILITY
+    // 4. ADMIN & SYS_ADMIN VISIBILITY
     if (devToolsContainer) devToolsContainer.style.display = (r === 'SYS_ADMIN') ? 'flex' : 'none';
+    if (btnAdminCost) btnAdminCost.style.display = (r === 'SYS_ADMIN' || r === 'ADMIN') ? 'block' : 'none';
     if (rowQboSettings) rowQboSettings.style.display = (r === 'SYS_ADMIN' || r === 'ADMIN') ? 'flex' : 'none';
     if (rowQboSync) rowQboSync.style.display = (r === 'SYS_ADMIN' || r === 'ADMIN') ? 'flex' : 'none';
 
-    // 4. BADGE COLORS
+    // 5. BADGE COLORS
     if (roleBadge) {
         let badgeMap = { 
             'SYS_ADMIN': {t: 'Sys Admin', c: '#7b1fa2'}, 
@@ -336,7 +340,7 @@ const AuthManager = {
     }
     
     this.startIdleTimer();
-    this.transmitUserStatus('Active'); // ✨ INJECTED HERE
+    this.transmitUserStatus('Active');
   },
 
   // Initializes the idle auto-logout timer and attaches event listeners.  

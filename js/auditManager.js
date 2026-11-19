@@ -2638,6 +2638,326 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
   },
 
+  // AUDIT HUB MODAL OPENERS & HISTORICAL SESSION PREVIEW ENGINE
+  openLotTraceModal() {
+    let modal = document.getElementById('lotTraceModal');
+    if (modal) modal.style.display = 'flex';
+    let inp = document.getElementById('lotSearchInput');
+    if (inp) setTimeout(() => inp.focus(), 60);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  openLedgerSearchModal() {
+    let modal = document.getElementById('ledgerSearchModal');
+    if (modal) modal.style.display = 'flex';
+    let inp = document.getElementById('ledgerSearchInput');
+    if (inp) setTimeout(() => inp.focus(), 60);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  async openLedgerSessionPreview(evIdx, source = 'ledger') {
+    let poolList = (source === 'lot') ? this.lastLotTraceResults : this.lastLedgerSearchResults;
+    let rawEv = (poolList && poolList[evIdx]) ? poolList[evIdx] : null;
+    if (!rawEv) return;
+
+    let ev = {
+      sessionName: rawEv.sessionName || rawEv.session || rawEv['Session / Reason'] || 'Unknown Session',
+      workflow: rawEv.workflow || rawEv['Workflow'] || 'General',
+      date: rawEv.date || rawEv.timestamp || rawEv['Timestamp'] || '',
+      user: rawEv.user || rawEv['User'] || 'Operator',
+      qty: rawEv.qty ?? rawEv['Qty Moved'] ?? 0,
+      ref: rawEv.ref || rawEv['REF / SKU'] || '',
+      lot: rawEv.lot || rawEv['Lot'] || 'N/A',
+      exp: rawEv.exp || rawEv['Exp Date'] || 'N/A',
+      actionTag: rawEv.actionTag || rawEv.dest || rawEv['Destination / Action'] || '',
+      version: rawEv.version || rawEv['Version'] || ''
+    };
+
+    let modal = document.getElementById('ledgerSessionPreviewModal');
+    let titleEl = document.getElementById('ledgerSessionPreviewTitle');
+    let contentEl = document.getElementById('ledgerSessionPreviewContent');
+    if (!modal || !contentEl) return;
+
+    titleEl.textContent = `👁️ Session Summary: ${ev.sessionName}`;
+    contentEl.innerHTML = `<div style="text-align:center; padding:50px 20px; color:#0277bd; font-weight:bold; font-size:14px;">⏳ Loading full session summary from cloud archive...</div>`;
+    modal.style.display = 'flex';
+
+    // Helper: Extract normalized YYYY-MM-DD date string from any timestamp/dateStr
+    const toYMD = (dVal) => {
+      if (!dVal) return '';
+      let s = String(dVal).trim();
+      let dotMatch = s.match(/^(\d{4})\.(\d{2})\.(\d{2})/);
+      if (dotMatch) return `${dotMatch[1]}-${dotMatch[2]}-${dotMatch[3]}`;
+      let dashMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (dashMatch) return `${dashMatch[1]}-${dashMatch[2]}-${dashMatch[3]}`;
+      let d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        let yyyy = d.getFullYear();
+        let mm = String(d.getMonth() + 1).padStart(2, '0');
+        let dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return '';
+    };
+
+    let targetName = String(ev.sessionName || '').trim();
+    let targetNameUp = targetName.toUpperCase();
+    let targetYMD = toYMD(ev.date);
+
+    let sessionMeta = {
+      sessionName: targetName,
+      workflowType: ev.workflow || 'General',
+      userName: ev.user || 'Operator',
+      dateStr: targetYMD || String(ev.date || ''),
+      startStr: '',
+      orderNum: '',
+      sourceLabel: 'Cloud Audit Ledger',
+      scannedObjects: [],
+      pendingNewItems: []
+    };
+
+    try {
+      // TIER 1: Match against Cloud Directory (and stitch multi-part sessions automatically)
+      let dir = JSON.parse(localStorage.getItem('asp_cloud_directory')) || [];
+      let dirMatches = dir.filter(s => {
+        let rawSName = String(s.sessionName || '').trim();
+        let baseSName = rawSName.replace(/\s*\(Part \d+ of \d+\)/i, '').trim().toUpperCase();
+        return baseSName === targetNameUp;
+      });
+
+      // Narrow to same calendar date if multiple sessions share a generic name (e.g., "Full Stocktake" or "Database Editor Update")
+      let dateMatched = targetYMD ? dirMatches.filter(s => toYMD(s.dateStr) === targetYMD) : dirMatches;
+      let chosenMatches = dateMatched.length > 0 ? dateMatched : dirMatches;
+
+      // If multiple separate sessions share the same name on the same day (e.g., multiple DB Editor edits), pick the closest timestamp
+      if (chosenMatches.length > 1) {
+        let isMultiPart = chosenMatches.some(s => /\(Part \d+ of \d+\)/i.test(s.sessionName));
+        if (!isMultiPart) {
+          let evTime = new Date(ev.date).getTime();
+          chosenMatches.sort((a, b) => Math.abs((parseInt(a.id, 10) || 0) - evTime) - Math.abs((parseInt(b.id, 10) || 0) - evTime));
+          chosenMatches = [chosenMatches[0]];
+        } else {
+          // Keep all parts belonging to the matched multi-part session, sorted Part 1 -> Part N
+          chosenMatches.sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+        }
+      }
+
+      if (chosenMatches.length > 0) {
+        let stitchedScans = [];
+        let stitchedNew = [];
+        let firstPartData = null;
+
+        for (let i = 0; i < chosenMatches.length; i++) {
+          let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=GET_SESSION&id=${encodeURIComponent(chosenMatches[i].id)}`);
+          let rawText = await res.text();
+          if (rawText && !rawText.trim().startsWith('<')) {
+            let pData = JSON.parse(rawText);
+            if (pData && pData.status !== 'error') {
+              if (!firstPartData) firstPartData = pData;
+              if (Array.isArray(pData.scannedObjects)) stitchedScans = stitchedScans.concat(pData.scannedObjects);
+              if (Array.isArray(pData.pendingNewItems)) stitchedNew = stitchedNew.concat(pData.pendingNewItems);
+            }
+          }
+        }
+
+        if (firstPartData && stitchedScans.length > 0) {
+          sessionMeta = {
+            sessionName: targetName,
+            workflowType: firstPartData.workflowType || ev.workflow || 'General',
+            userName: firstPartData.userName || ev.user || 'Operator',
+            dateStr: firstPartData.dateStr || targetYMD,
+            startStr: firstPartData.startStr || '',
+            orderNum: firstPartData.orderNum || '',
+            sourceLabel: chosenMatches.length > 1 ? `Full Cloud Archive (${chosenMatches.length} Parts Stitched)` : 'Full Cloud Archive',
+            scannedObjects: stitchedScans,
+            pendingNewItems: stitchedNew
+          };
+        }
+      }
+
+      // TIER 2 FALLBACK: Reconstruct full session from all matching Audit_Log rows if Archive payload wasn't found
+      if (sessionMeta.scannedObjects.length === 0) {
+        let pool = Array.isArray(this._lastFetchedAuditLog) ? this._lastFetchedAuditLog : [];
+        let matchingRows = pool.filter(r => {
+          let rName = String(r['Session / Reason'] || '').trim().toUpperCase();
+          let rYMD = toYMD(r['Timestamp']);
+          return rName === targetNameUp && (!targetYMD || rYMD === targetYMD);
+        });
+
+        if (matchingRows.length === 0) {
+          matchingRows = [{
+            'REF / SKU': ev.ref,
+            'Lot': ev.lot,
+            'Exp Date': ev.exp,
+            'Version': ev.version,
+            'Qty Moved': ev.qty,
+            'Destination / Action': ev.actionTag,
+            'Workflow': ev.workflow
+          }];
+        }
+
+        sessionMeta.scannedObjects = matchingRows.map(r => {
+          let refStr = String(r['REF / SKU'] || '').trim();
+          let dbMatch = (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db))
+            ? DatabaseManager.db.find(i => String(i.sku || i.ref || '').toUpperCase() === refStr.toUpperCase())
+            : null;
+          return {
+            ref: refStr,
+            mfr: dbMatch ? (dbMatch.mfr || '') : '',
+            desc: dbMatch ? (dbMatch.desc || '') : '',
+            lot: r['Lot'] || 'N/A',
+            exp: r['Exp Date'] || 'N/A',
+            version: r['Version'] || '',
+            qty: parseInt(r['Qty Moved'], 10) || 0,
+            actionTag: r['Destination / Action'] || '',
+            customerTag: '',
+            itemNote: ''
+          };
+        });
+      }
+
+      // Build white-paper HTML preview document
+      let totalQty = 0;
+      let uniqueRefs = new Set();
+      sessionMeta.scannedObjects.forEach(s => {
+        totalQty += Math.abs(parseInt(s.qty, 10) || 0);
+        if (s.ref) uniqueRefs.add(String(s.ref).toUpperCase().trim());
+      });
+
+      let logoUrl = (typeof ENV_CONFIG !== 'undefined' && ENV_CONFIG.LOGO_URL) ? ENV_CONFIG.LOGO_URL : 'ASP_Box_Web_RGB.png';
+
+      let rowsHtml = '';
+      sessionMeta.scannedObjects.forEach((s, idx) => {
+        let destParts = [];
+        if (s.actionTag) destParts.push(s.actionTag);
+        if (s.customerTag && !String(s.actionTag || '').toUpperCase().includes(String(s.customerTag).toUpperCase())) {
+          destParts.push(s.customerTag);
+        }
+        let destStr = destParts.join(' — ') || '--';
+        let noteHtml = (s.itemNote && s.itemNote !== s.actionTag)
+          ? `<div style="font-size:10px; color:#c62828; margin-top:2px;"><em>Note: ${s.itemNote}</em></div>`
+          : '';
+
+        rowsHtml += `
+          <tr style="background:${idx % 2 === 0 ? '#ffffff' : '#fafafa'};">
+            <td style="padding:7px 8px; border:1px solid #e0e0e0; font-weight:bold; color:#0277bd; white-space:nowrap;">${s.ref || '--'}</td>
+            <td style="padding:7px 8px; border:1px solid #e0e0e0; font-size:11px;">
+              <strong>${s.mfr || ''}</strong>${s.desc ? `<div style="color:#555; font-size:10.5px; margin-top:2px;">${s.desc}</div>` : ''}
+            </td>
+            <td style="padding:7px 8px; border:1px solid #e0e0e0; font-family:monospace; font-size:11px;">${s.lot || 'N/A'}${s.version ? `<div style="color:#777; font-size:10px;">v${s.version}</div>` : ''}</td>
+            <td style="padding:7px 8px; border:1px solid #e0e0e0; text-align:center; white-space:nowrap; font-size:11px;">${s.exp || 'N/A'}</td>
+            <td style="padding:7px 8px; border:1px solid #e0e0e0; text-align:center; font-weight:bold; font-size:13px; color:#2e7d32;">${s.qty || 0}</td>
+            <td style="padding:7px 8px; border:1px solid #e0e0e0; font-size:11px;">${destStr}${noteHtml}</td>
+          </tr>`;
+      });
+
+      let newItemsHtml = '';
+      if (sessionMeta.pendingNewItems && sessionMeta.pendingNewItems.length > 0) {
+        let newList = sessionMeta.pendingNewItems.map(n => `<li><strong>${n.ref}</strong> (${n.mfr || 'Unknown'}) — ${n.desc || ''}</li>`).join('');
+        newItemsHtml = `
+          <div style="margin-top:16px; padding:10px 14px; background:#e8f5e9; border-left:4px solid #2e7d32; border-radius:4px;">
+            <strong style="color:#2e7d32; font-size:12px;">✨ New Catalog Items Created During Session (${sessionMeta.pendingNewItems.length})</strong>
+            <ul style="margin:6px 0 0 18px; padding:0; font-size:11px; color:#333;">${newList}</ul>
+          </div>`;
+      }
+
+      let previewDocHtml = `
+        <div style="font-family:'Helvetica Neue', Arial, sans-serif; color:#222; font-size:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #0277bd; padding-bottom:10px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img src="${logoUrl}" alt="ASP Logo" style="height:42px; object-fit:contain;">
+              <div>
+                <h2 style="margin:0; color:#0277bd; font-size:18px; text-transform:uppercase;">Session Audit Summary</h2>
+                <div style="font-size:12px; font-weight:bold; color:#555;">Allied Surgical Products</div>
+              </div>
+            </div>
+            <div style="text-align:right; font-size:11px; color:#555;">
+              <div><strong>Date:</strong> ${sessionMeta.dateStr}${sessionMeta.startStr ? ` (${sessionMeta.startStr})` : ''}</div>
+              <div><strong>Operator:</strong> ${sessionMeta.userName}</div>
+              <div style="color:#777; font-size:10px;">Source: ${sessionMeta.sourceLabel}</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:14px; text-align:center;">
+            <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px;">
+              <div style="font-size:10px; color:#555; text-transform:uppercase;">Session</div>
+              <div style="font-size:12px; font-weight:bold; color:#0277bd; margin-top:2px; word-break:break-word;">${sessionMeta.sessionName}</div>
+            </div>
+            <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px;">
+              <div style="font-size:10px; color:#555; text-transform:uppercase;">Workflow</div>
+              <div style="font-size:12px; font-weight:bold; color:#333; margin-top:2px;">${sessionMeta.workflowType}</div>
+            </div>
+            <div style="background:#f0f8ff; border:1px solid #bfe0fb; border-radius:4px; padding:8px;">
+              <div style="font-size:10px; color:#555; text-transform:uppercase;">Unique REFs</div>
+              <div style="font-size:16px; font-weight:bold; color:#0277bd; margin-top:2px;">${uniqueRefs.size}</div>
+            </div>
+            <div style="background:#e8f5e9; border:1px solid #c8e6c9; border-radius:4px; padding:8px;">
+              <div style="font-size:10px; color:#555; text-transform:uppercase;">Total Units</div>
+              <div style="font-size:16px; font-weight:bold; color:#2e7d32; margin-top:2px;">${totalQty}</div>
+            </div>
+          </div>
+
+          <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+            <thead>
+              <tr style="background:#f5f5f5;">
+                <th style="padding:7px 8px; border:1px solid #ccc; text-align:left; font-size:10.5px; text-transform:uppercase;">REF / SKU</th>
+                <th style="padding:7px 8px; border:1px solid #ccc; text-align:left; font-size:10.5px; text-transform:uppercase;">Manufacturer / Description</th>
+                <th style="padding:7px 8px; border:1px solid #ccc; text-align:left; font-size:10.5px; text-transform:uppercase;">Lot / Ver</th>
+                <th style="padding:7px 8px; border:1px solid #ccc; text-align:center; font-size:10.5px; text-transform:uppercase;">Exp Date</th>
+                <th style="padding:7px 8px; border:1px solid #ccc; text-align:center; font-size:10.5px; text-transform:uppercase;">Qty</th>
+                <th style="padding:7px 8px; border:1px solid #ccc; text-align:left; font-size:10.5px; text-transform:uppercase;">Destination / Notes</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+          ${newItemsHtml}
+        </div>
+      `;
+
+      this._lastPreviewedSessionMeta = sessionMeta;
+      this._lastPreviewedSessionHtml = previewDocHtml;
+      contentEl.innerHTML = previewDocHtml;
+
+    } catch (err) {
+      contentEl.innerHTML = `<div style="padding:20px; color:#c62828; text-align:center;">Failed to load session preview: ${err.message}</div>`;
+    }
+  },
+
+  printPreviewedSessionPDF() {
+    if (!this._lastPreviewedSessionHtml || !this._lastPreviewedSessionMeta) return;
+    let m = this._lastPreviewedSessionMeta;
+    let safeDate = String(m.dateStr || '').replace(/[\/]/g, '.');
+    let safeName = String(m.sessionName || 'Session').replace(/[^a-zA-Z0-9_-]/g, '_');
+    let filename = `ASP_Session_Summary_${safeDate}_${safeName}`;
+    let safeTitle = filename.replace(/\./g, '\u2024');
+
+    let fullHtml = `<!DOCTYPE html><html><head><title>${safeTitle}</title>
+      <style>
+        body { margin: 24px; background: #fff; color: #222; }
+        @media print { body { margin: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      </style></head><body>${this._lastPreviewedSessionHtml}</body></html>`;
+
+    let win = window.open('', '_blank');
+    if (win) {
+      win.document.write(fullHtml);
+      win.document.title = safeTitle;
+      win.focus();
+      setTimeout(() => win.print(), UIManager.printTimeout);
+    }
+  },
+
+  exportPreviewedSessionCSV() {
+    if (!this._lastPreviewedSessionMeta) return;
+    let m = this._lastPreviewedSessionMeta;
+    let csv = "REF / SKU,Manufacturer,Description,Lot,Exp Date,Version,Qty,Destination,Customer Tag,Notes\r\n";
+    (m.scannedObjects || []).forEach(s => {
+      csv += `"${s.ref || ''}","${s.mfr || ''}","${String(s.desc || '').replace(/"/g, '""')}","${s.lot || ''}","${s.exp || ''}","${s.version || ''}",${s.qty || 0},"${String(s.actionTag || '').replace(/"/g, '""')}","${String(s.customerTag || '').replace(/"/g, '""')}","${String(s.itemNote || '').replace(/"/g, '""')}"\r\n`;
+    });
+    let safeDate = String(m.dateStr || '').replace(/[\/]/g, '.');
+    let safeName = String(m.sessionName || 'Session').replace(/[^a-zA-Z0-9_-]/g, '_');
+    UIManager.triggerShareOrDownload(csv, `${safeDate}_${safeName}.csv`, 'text/csv');
+  },
+
   async traceLotNumber() {
     let inputEl = document.getElementById('lotSearchInput');
     let resultsContainer = document.getElementById('lotTraceResults');
@@ -2656,6 +2976,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
 
       let auditLog = responseData.data;
+      this._lastFetchedAuditLog = auditLog;
       let foundEvents = [];
 
       auditLog.forEach(row => {
@@ -2668,8 +2989,10 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
             user: row['User'] || "Operator",
             qty: row['Qty Moved'],
             ref: row['REF / SKU'],
+            lot: row['Lot'] || targetLot,
+            exp: row['Exp Date'] || "N/A",
             actionTag: row['Destination / Action'],
-            version: row['Version'] || "" // ✨ Phase 2
+            version: row['Version'] || ""
           });
         }
       });
@@ -2688,12 +3011,19 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return;
       }
 
+      this.lastLotTraceResults = foundEvents; // (use your exact results array variable name if different)
+
       let html = `<div style="margin-top:10px; padding:10px; background:var(--raw-bg, #e8f5e9); border:1px solid var(--border-color, #4caf50); border-radius:4px;">
                     <h4 style="margin:0 0 8px 0; color:var(--heading-color, #2e7d32);">🔍 Trace Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
-      foundEvents.forEach(ev => {
+      foundEvents.forEach((ev, evIdx) => {
         html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #0277bd); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                   <div><strong style="color:var(--heading-color, #0277bd);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #0277bd);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #0277bd);">Action:</strong> ${ev.actionTag}</div>
-                  <div style="margin: 4px 0;"><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                  <div style="margin:2px 0;">
+                    <strong>Session:</strong>
+                    <a href="javascript:void(0)" onclick="AuditManager.openLedgerSessionPreview(${evIdx}, 'lot')" style="color:#29b6f6; font-weight:700; text-decoration:underline; cursor:pointer;" title="Click to preview full session summary & export PDF">
+                      ${ev.sessionName} 👁️
+                    </a>
+                  </div>
                   <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user} | Ver: <strong>${ev.version || 'N/A'}</strong></div>
                 </div>`;
       });
@@ -2719,6 +3049,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     try {
       let res = await fetch(`${ApiManager.getActiveArchiveUrl()}?action=SEARCH_DEEP_ARCHIVE&lot=${encodeURIComponent(targetLot)}`);
       let responseData = await res.json();
+      this._lastFetchedAuditLog = responseData.data;
       
       if (responseData.status !== "success" || !responseData.data) throw new Error(responseData.message || "Failed to parse deep archive.");
       
@@ -2738,12 +3069,19 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
         return;
       }
 
+      this.lastLotTraceResults = foundEvents;
+
       let html = `<div style="margin-top:10px; padding:10px; background:var(--raw-bg, #f3e5f5); border:1px solid var(--border-color, #ce93d8); border-radius:4px;">
                     <h4 style="margin:0 0 8px 0; color:var(--heading-color, #7b1fa2);">🗄️ Deep Archive Results for Lot: ${targetLot} (${foundEvents.length} events found)</h4>`;
-      foundEvents.forEach(ev => {
+      foundEvents.forEach((ev, evIdx) => {
         html += `<div style="background:var(--input-bg, #fff); color:var(--text-main, #333); padding:8px; margin-bottom:6px; border-radius:3px; border-left:4px solid var(--heading-color, #0277bd); font-size:0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                  <div><strong style="color:var(--heading-color, #7b1fa2);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #7b1fa2);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #0277bd);">Action:</strong> ${ev.actionTag}</div>
-                  <div style="margin: 4px 0;"><strong>Session:</strong> ${ev.sessionName} (${ev.workflow})</div>
+                  <div><strong style="color:var(--heading-color, #0277bd);">REF:</strong> ${ev.ref} | <strong style="color:var(--heading-color, #0277bd);">Qty:</strong> ${ev.qty} | <strong style="color:var(--heading-color, #0277bd);">Action:</strong> ${ev.actionTag}</div>
+                  <div style="margin:2px 0;">
+                    <strong>Session:</strong>
+                    <a href="javascript:void(0)" onclick="AuditManager.openLedgerSessionPreview(${evIdx}, 'lot')" style="color:#29b6f6; font-weight:700; text-decoration:underline; cursor:pointer;" title="Click to preview full session summary & export PDF">
+                      ${ev.sessionName} 👁️
+                    </a>
+                  </div>
                   <div style="color:var(--text-main, #555);">Date: ${ev.date} | Operator: ${ev.user} | Ver: <strong>${ev.version || 'N/A'}</strong></div>
                 </div>`;
       });
@@ -2781,6 +3119,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       if (responseData.status !== "success" || !responseData.data) throw new Error("Failed to load audit log.");
 
       let auditLog = responseData.data;
+      this._lastFetchedAuditLog = auditLog;
 
       let cutoffDate = new Date();
       if (timeframe === '30d') cutoffDate.setDate(cutoffDate.getDate() - 30);
@@ -2847,7 +3186,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                     </div>
                     <div style="max-height: 350px; overflow-y: auto; padding-right:4px;">`;
                     
-      foundEvents.forEach(ev => {
+      foundEvents.forEach((ev, evIdx) => {
         let actColor = '#555';
         if (ev.workflow.includes('Receiving')) actColor = '#2e7d32'; // Green
         if (ev.workflow.includes('Packing') || ev.workflow.includes('Ship')) actColor = '#e65100'; // Orange
@@ -2861,7 +3200,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                   <div style="margin-bottom:4px; font-size:0.8rem; color:var(--text-main, #555);">
                     Lot: <strong>${ev.lot || 'N/A'}</strong> | Exp: <strong>${ev.exp || 'N/A'}</strong> | Ver: <strong>${ev.version || 'N/A'}</strong>
                   </div>
-                  <div style="margin-bottom:2px; color:var(--text-main, #333);"><strong>Session:</strong> ${ev.sessionName}</div>
+                  <div style="margin-bottom:2px; color:var(--text-main, #333);">
+                    <strong>Session:</strong>
+                    <a href="javascript:void(0)" onclick="AuditManager.openLedgerSessionPreview(${evIdx})" style="color:#29b6f6; font-weight:700; text-decoration:underline; cursor:pointer;" title="Click to preview full session summary & export PDF">
+                      ${ev.sessionName} 👁️
+                    </a>
+                  </div>
                   <div style="margin-bottom:4px; color:var(--text-main, #555);"><strong>Dest/Note:</strong> ${ev.actionTag}</div>
                   <div style="color:var(--text-main, #777); font-size:0.75rem; display:flex; justify-content:space-between; border-top:1px dashed var(--border-color, #eee); padding-top:4px; margin-top:4px;">
                       <span>${ev.date}</span>
@@ -2899,6 +3243,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
       let responseData = await res.json();
       
       if (responseData.status !== "success" || !responseData.data) throw new Error(responseData.message || "Failed to parse deep archive.");
+      this._lastFetchedAuditLog = responseData.data; // <-- ADD THIS LINE
       
       let cutoffDate = new Date();
       if (timeframe === '30d') cutoffDate.setDate(cutoffDate.getDate() - 30);
@@ -2943,7 +3288,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                     </div>
                     <div style="max-height: 350px; overflow-y: auto; padding-right:4px;">`;
                     
-      foundEvents.forEach(ev => {
+      foundEvents.forEach((ev, evIdx) => {
         let actColor = '#555';
         if (ev.workflow.includes('Receiving')) actColor = '#2e7d32'; 
         if (ev.workflow.includes('Packing') || ev.workflow.includes('Ship')) actColor = '#e65100'; 
@@ -2957,7 +3302,12 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
                   <div style="margin-bottom:4px; font-size:0.8rem; color:var(--text-main, #555);">
                       Lot: <strong>${ev.lot || 'N/A'}</strong> | Exp: <strong>${ev.exp || 'N/A'}</strong> | Ver: <strong>${ev.version || 'N/A'}</strong>
                   </div>
-                  <div style="margin-bottom:2px; color:var(--text-main, #333);"><strong>Session:</strong> ${ev.sessionName}</div>
+                  <div style="margin-bottom:2px; color:var(--text-main, #333);">
+                    <strong>Session:</strong>
+                    <a href="javascript:void(0)" onclick="AuditManager.openLedgerSessionPreview(${evIdx})" style="color:#29b6f6; font-weight:700; text-decoration:underline; cursor:pointer;" title="Click to preview full session summary & export PDF">
+                      ${ev.sessionName} 👁️
+                    </a>
+                  </div>
                   <div style="margin-bottom:4px; color:var(--text-main, #555);"><strong>Dest/Note:</strong> ${ev.actionTag}</div>
                   <div style="color:var(--text-main, #777); font-size:0.75rem; display:flex; justify-content:space-between; border-top:1px dashed var(--border-color, #eee); padding-top:4px; margin-top:4px;">
                       <span>${ev.date}</span>
