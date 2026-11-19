@@ -189,6 +189,98 @@ window.forceAppUpdate = async function() {
     }
 };
 
+window.checkFrontendAppVersion = async function() {
+    // Only run once per login session so it never annoys the user
+    if (sessionStorage.getItem('asp_version_checked_this_login') === 'true') return;
+    sessionStorage.setItem('asp_version_checked_this_login', 'true');
+
+    // Don't interrupt if a scanning session is already active or update is already in progress
+    if (sessionStorage.getItem('isUpdating') === 'true') return;
+    if (typeof SessionManager !== 'undefined' && SessionManager.isSessionActive) return;
+
+    const extractSemver = (str) => {
+        let m = String(str || '').match(/(\d+\.\d+\.\d+)/);
+        return m ? m[1] : '';
+    };
+
+    const isNewerVersion = (remote, local) => {
+        if (!remote || !local) return false;
+        let rParts = remote.split('.').map(Number);
+        let lParts = local.split('.').map(Number);
+        for (let i = 0; i < 3; i++) {
+            if ((rParts[i] || 0) > (lParts[i] || 0)) return true;
+            if ((rParts[i] || 0) < (lParts[i] || 0)) return false;
+        }
+        return false;
+    };
+
+    let localVer = extractSemver(typeof ENV_CONFIG !== 'undefined' ? ENV_CONFIG.APP_VERSION : '');
+    let remoteVer = '';
+    let swWaiting = false;
+
+    try {
+        // 1. Live check against manifest.json (cache-busted so it bypasses the Service Worker)
+        let res = await fetch(`./manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+            let manifestData = await res.json();
+            remoteVer = extractSemver(manifestData.name || '');
+        }
+    } catch (e) {
+        console.warn("Manifest version check skipped (offline or unreachable):", e);
+    }
+
+    try {
+        // 2. Also ask the Service Worker if a new build is waiting
+        if ('serviceWorker' in navigator) {
+            let reg = await navigator.serviceWorker.getRegistration();
+            if (reg) {
+                await reg.update();
+                if (reg.waiting) swWaiting = true;
+            }
+        }
+    } catch (e) {
+        console.warn("SW background update check skipped:", e);
+    }
+
+    if (isNewerVersion(remoteVer, localVer) || swWaiting) {
+        window.showAppUpdateModal(localVer || 'Current', remoteVer || 'Newer');
+    }
+};
+
+window.showAppUpdateModal = function(localVer, remoteVer) {
+    if (document.getElementById('appUpdateNoticeModal')) return;
+
+    let versionLine = (remoteVer && remoteVer !== 'Newer')
+        ? `A newer version of ASP IMS (<strong>v${remoteVer}</strong>) is available. You are currently running <strong>v${localVer}</strong>.`
+        : `A newer version of ASP IMS is available on the server.`;
+
+    let modal = document.createElement('div');
+    modal.id = 'appUpdateNoticeModal';
+    modal.className = 'saas-modal-backdrop';
+    modal.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.78); z-index:999999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;';
+
+    modal.innerHTML = `
+      <div class="saas-modal-card" style="max-width:460px; width:95%; background:var(--card-bg, #1b2430); color:var(--text-main, #f0f4f8); border:1px solid #29b6f6; border-radius:12px; overflow:hidden; box-shadow:0 12px 32px rgba(0,0,0,0.6);">
+        <div class="saas-modal-header" style="border-bottom:1px solid rgba(41, 182, 246, 0.35); padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0; color:#29b6f6; font-size:1.05rem;">🚀 App Update Available</h3>
+          <button class="saas-modal-close" onclick="document.getElementById('appUpdateNoticeModal').remove()" style="background:none; border:none; color:var(--text-main, #fff); font-size:1.4rem; cursor:pointer;">×</button>
+        </div>
+        <div class="saas-modal-body" style="padding:16px 18px; font-size:0.88rem; line-height:1.5;">
+          <p style="margin:0 0 12px 0;">${versionLine}</p>
+          <p style="margin:0 0 10px 0;">Click <strong>Update &amp; Refresh Now</strong> below to clear the old cached files and load the latest version automatically.</p>
+          <div style="background:rgba(255, 167, 38, 0.12); border:1px dashed #ffa726; border-radius:6px; padding:8px 10px; font-size:0.78rem; color:#ffa726;">
+            <strong>Tip:</strong> If you use the installed desktop app and still see the old version after reloading, refresh your browser cache (<strong>Ctrl + Shift + R</strong>) or uninstall and reinstall the desktop app from Chrome.
+          </div>
+        </div>
+        <div class="saas-modal-footer" style="padding:12px 18px; border-top:1px solid var(--border-color, #334e68); display:flex; gap:10px;">
+          <button class="btn-saas-secondary" style="flex:1; padding:10px;" onclick="document.getElementById('appUpdateNoticeModal').remove()">Later</button>
+          <button class="btn-saas-primary" style="flex:1.6; margin-top:0; padding:10px; background:#0277bd;" onclick="document.getElementById('appUpdateNoticeModal').remove(); window.forceAppUpdate();">Update &amp; Refresh Now</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+};
+
 async function exportAppsScriptFiles(event) {
     let btn = event ? event.target : document.activeElement;
     let origHtml = btn.innerHTML;
@@ -330,6 +422,10 @@ window.masterSystemSync = async (event) => {
         UIManager.evaluateSyncIndicator();
         let ind = document.getElementById('syncIndicator');
         if (ind) ind.style.display = 'none';
+      }
+      // Run one-time post-login app version check
+      if (typeof window.checkFrontendAppVersion === 'function') {
+        window.checkFrontendAppVersion();
       }
     }, UIManager.printTimeout);
 

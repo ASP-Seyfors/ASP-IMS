@@ -411,6 +411,7 @@ const AuthManager = {
     sessionStorage.removeItem('asp_auth_session');
     sessionStorage.removeItem('asp_allocations_verified');
     sessionStorage.removeItem('asp_has_auto_synced');
+    sessionStorage.removeItem('asp_version_checked_this_login');
     localStorage.removeItem('asp_allocations');
     localStorage.removeItem('asp_remote_analytics');
     

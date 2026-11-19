@@ -1085,12 +1085,11 @@ const SessionManager = {
         let isSuture = sutureChk && sutureChk.checked;
         let isAutoFetched = input.getAttribute('data-autofetched') === 'true';
         let catSelect = document.getElementById(`advCat_${index}`);
-        let selectedCat = catSelect ? catSelect.value : "Medical Supplies";
+        let selectedCat = (catSelect && catSelect.value && catSelect.value !== "Custom") ? catSelect.value.trim() : "Medical Supplies";
         
         let finalDesc = "";
         let finalCategory = selectedCat;
         let pendingMatch = this.pendingNewItems.find(i => i.ref === ref);
-        if (pendingMatch) finalCategory = pendingMatch.category || "Medical Supplies";
 
         if (isSuture) {
             let refBase = ref.slice(0, -1); 
