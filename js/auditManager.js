@@ -1567,7 +1567,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     this.parsedAuditSessions = [];
     document.getElementById('auditResultsContainer').style.display = 'none';
     document.getElementById('auditPreviewContent').innerHTML = '';
-    document.getElementById('auditFilesUpload').value = '';
+    if (document.getElementById('auditFilesUpload')) document.getElementById('auditFilesUpload').value = '';
     alert("Audit session cache cleared! Ready to upload new logs.");
   },
 

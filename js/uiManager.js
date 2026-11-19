@@ -911,12 +911,6 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     }
   },
 
-  hideAllConfirmButtons() {
-    if (document.getElementById('btnConfirmGtin')) document.getElementById('btnConfirmGtin').style.display = 'none';
-    if (document.getElementById('btnConfirmMfr')) document.getElementById('btnConfirmMfr').style.display = 'none';
-    if (document.getElementById('gtinDiffBanner')) document.getElementById('gtinDiffBanner').style.display = 'none';
-  },
-
   openAuditHub() {
     this.lockCheatCodes(); // ✨ Added
     document.getElementById('screenSetup').style.display = 'none';
