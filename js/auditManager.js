@@ -2466,7 +2466,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
            // UOM Bundle Conversion
            let dbMatch = DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === tRef);
            if (dbMatch && dbMatch.parentRef && dbMatch.uomMult > 1) {
-               tRef = dbMatch.parentRef.toUpperCase().trim();
+               tRef = DatabaseManager.getCleanParentRef(dbMatch).toUpperCase().trim();
                tQty = tQty * dbMatch.uomMult;
            }
 
@@ -2533,7 +2533,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
            if ((dest === "Reserved" || dest === "Pack & Ship" || dest === "Un-Reserved") && tItem.customerTag) {
                dest = dest + " - " + tItem.customerTag;
            }
-           allAuditRows.push([timeStr, sess.userName || "User", sess.sessionName, sess.workflowType || "General", tItem.ref || "UNKNOWN", cLot, cExp, tItem.qty || 0, dest]);
+           allAuditRows.push([timeStr, sess.userName || "User", sess.sessionName, sess.workflowType || "General", tItem.ref || "UNKNOWN", cLot, cExp, tItem.qty || 0, dest, tItem.version || ""]);
         });
         
         // USE THE TRANSFORMED DATA FOR THE MATH

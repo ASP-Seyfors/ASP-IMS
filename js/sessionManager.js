@@ -138,10 +138,23 @@ const SessionManager = {
           let cleanExp = typeof a.exp === 'string' && a.exp.includes('T') ? a.exp.split('T')[0] : (a.exp || 'NO_EXP');
           let safeQty = parseInt(a.qty, 10) || 0;
           allocMap[cleanCustName][a.ref].qty += safeQty;
-          allocMap[cleanCustName][a.ref].details.push({ lot: a.lot, exp: cleanExp, qty: safeQty, orderNum: a.orderNum, sessionId: a.sessionId });
+          allocMap[cleanCustName][a.ref].details.push({
+            lot: a.lot,
+            exp: cleanExp,
+            qty: safeQty,
+            orderNum: a.orderNum,
+            sessionId: a.sessionId,
+            pullStatus: String(a.pullStatus || 'PULLED').toUpperCase().trim(),
+            itemNotes: String(a.itemNotes || '').trim()
+          });
         });
+        
         localStorage.setItem('asp_allocations', JSON.stringify(allocMap));
         sessionStorage.setItem('asp_allocations_verified', 'true');
+        if (typeof UIManager !== 'undefined' && typeof UIManager.renderPendingBinPulls === 'function') {
+          UIManager.renderPendingBinPulls();
+        }
+        
       } else throw new Error("Invalid payload.");
     } catch (err) { sessionStorage.removeItem('asp_allocations_verified'); }
   },

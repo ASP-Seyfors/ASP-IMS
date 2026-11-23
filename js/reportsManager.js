@@ -99,27 +99,10 @@ const ReportsManager = {
   // Centralized Report Math Engine
   getTrueAvailability(item) {
       if (!item) return 0;
-      let isBundle = item.parentRef && parseInt(item.uomMult, 10) > 1;
-      
-      if (isBundle) {
-          let pSku = DatabaseManager.getCleanParentRef(item).toUpperCase();
-          let pItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === pSku);
-          if (pItem) {
-              let pAvail = (parseInt(pItem.onHand, 10) || 0) - (parseInt(pItem.reservedQty, 10) || 0);
-              return Math.floor(pAvail / parseInt(item.uomMult, 10));
-          }
-          return 0;
-      } else {
-          let avail = (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0);
-          let children = DatabaseManager.db.filter(c => DatabaseManager.getCleanParentRef(c).toUpperCase() === DatabaseManager.getItemSku(item) && parseInt(c.uomMult, 10) > 1);
-          if (children.length > 0) {
-              let hasBoxOnly = children.some(c => DatabaseManager.isBoxOnly(c));
-              if (hasBoxOnly) return 0; // Completely hide the 'Each' remainder if flagged as Box Only!
-              let largestBundle = children.reduce((max, c) => Math.max(max, parseInt(c.uomMult, 10)), 1);
-              if (largestBundle > 1) avail = avail % largestBundle;
-          }
-          return avail;
+      if (typeof DatabaseManager !== 'undefined' && typeof DatabaseManager.getTrueAvailability === 'function') {
+          return DatabaseManager.getTrueAvailability(item);
       }
+      return Math.max(0, (parseInt(item.onHand, 10) || 0) - (parseInt(item.reservedQty, 10) || 0));
   },
 
   openAddressBookEditor() {
@@ -1405,7 +1388,10 @@ const ReportsManager = {
         let dateStr = row['Timestamp'].split(' ')[0];
         let qty = parseInt(row['Qty Moved'], 10) || 0;
         let ref = row['REF / SKU'] || '';
-        let priceStr = String(row['Price'] || '').replace(/[^0-9.-]+/g, '');
+        let dbMatch = (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db))
+          ? DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === String(ref).toUpperCase().trim())
+          : null;
+        let priceStr = String(row['Price'] || (dbMatch ? dbMatch.price : '') || '').replace(/[^0-9.-]+/g, '');
         let price = parseFloat(priceStr) || 0;
 
         sessionsSet.add(sessionName);
@@ -1444,7 +1430,9 @@ const ReportsManager = {
             let totalCustItems = 0;
             let rowsHtml = '';
             Object.keys(items).sort().forEach(ref => {
-                let qty = items[ref];
+                let rawVal = items[ref];
+                let qty = (typeof rawVal === 'object' && rawVal !== null) ? (parseInt(rawVal.qty, 10) || 0) : (parseInt(rawVal, 10) || 0);
+                if (qty <= 0) return;
                 totalCustItems += qty;
                 rowsHtml += `<tr><td style="padding:4px 8px; border:1px solid #eee;">${ref}</td><td style="padding:4px 8px; border:1px solid #eee; text-align:center; font-weight:bold;">${qty}</td></tr>`;
             });
@@ -2269,7 +2257,7 @@ async function runEthiconUiScan(mode) {
         let tableHtml = `<table style="width:100%; border-collapse:collapse; text-align:left;">
             <tr style="background:#ffebee; border-bottom:2px solid #d32f2f;">
                 <th style="padding:6px; color:#d32f2f;">Discontinued REF</th>
-                <th style="padding:6px; color:#d32f2f;">Ethicon Replacement</th>
+                <th style="padding:6px; color:#d32f2f;">Date Flagged</th>
             </tr>`;
             
         data.data.forEach(hit => {

@@ -357,15 +357,19 @@ const DatabaseManager = {
       let newC = prompt("Enter new Customer name:");
       if (newC) {
         let resolvedName = this.resolveAlias(newC, 'customer');
+        if (resolvedName.toUpperCase() !== newC.trim().toUpperCase()) {
+           alert(`Alias Detected: Auto-correcting "${newC}" to primary account "${resolvedName}"`);
+           newC = resolvedName;
+        }
         let exactName = newC.trim();
         
         let upperList = this.customers.map(c => c.toUpperCase());
         if (!upperList.includes(exactName.toUpperCase())) {
            // Insert right before "+ Add Customer"
            this.customers.splice(this.customers.length - 1, 0, exactName);
-           localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
-           
-           // ✨ Push to Google Sheet immediately
+           if (typeof AuthManager !== 'undefined' && !AuthManager.isGuest) {
+             localStorage.setItem('asp_wh_customers', JSON.stringify(this.customers));
+           }
            let cleanCustomers = this.customers.filter(c => !c.startsWith("+") && c !== "#ERROR!");
            fetch(ApiManager.getActiveArchiveUrl(), {
              method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -375,9 +379,9 @@ const DatabaseManager = {
         
         this.populatePartners();
         this.populateItemCustomerSelect();
-        document.getElementById('itemCustomerSelect').value = exactName;
+        if (document.getElementById('customerSelect')) document.getElementById('customerSelect').value = exactName;
       } else {
-        document.getElementById('itemCustomerSelect').selectedIndex = 0;
+        if (document.getElementById('customerSelect')) document.getElementById('customerSelect').selectedIndex = 0;
       }
     }
   },
@@ -1152,6 +1156,7 @@ const DatabaseManager = {
             fullDb.customers = data.db.customers || [];
             fullDb.suppliers = data.db.suppliers || [];
             fullDb.vendors = data.db.vendors || [];
+            fullDb.users = data.db.users || [];
             
             fullDb.customerAliases = data.db.customerAliases || {}; 
             fullDb.supplierAliases = data.db.supplierAliases || {}; 
@@ -1356,11 +1361,12 @@ const DatabaseManager = {
             isBundle: false,
             uomMult: 1,
             weight: parseFloat(parentItem.weight) || 0.5,
+            cost: parseFloat(String(parentItem.cost || '').replace(/[^0-9.-]+/g, '')) || 0,
             images: [{ src: fullImageUrl }] // ✨ THE FIX
         });
 
         // 2. Push all associated Child Bundles
-        let childBundles = this.db.filter(i => String(i.parentRef || '').toUpperCase() === String(parentRef).toUpperCase() && parseInt(i.uomMult, 10) > 1);
+        let childBundles = this.db.filter(i => this.getCleanParentRef(i).toUpperCase() === String(parentRef).toUpperCase() && parseInt(i.uomMult, 10) > 1);
         childBundles.forEach(bundle => {
             let bCleanPrice = parseFloat(String(bundle.price || '').replace(/[^0-9.-]+/g, '')) || 0;
             
@@ -1387,6 +1393,7 @@ const DatabaseManager = {
                 isBundle: true,
                 uomMult: bundle.uomMult,
                 weight: parseFloat(bundle.weight) || (parseFloat(parentItem.weight || 0.5) * parseInt(bundle.uomMult, 10)),
+                cost: parseFloat(String(bundle.cost || '').replace(/[^0-9.-]+/g, '')) || 0,
                 images: [{ src: fullImageUrl }] // ✨ THE FIX
             });
         });

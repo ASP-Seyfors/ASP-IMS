@@ -1,15 +1,15 @@
-const CACHE_NAME = 'asp-ims-v7.2.7';
+const CACHE_NAME = 'asp-ims-dev-v7.2.8';
 
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './database.json',
-  './ASP_Box_Web_RGB.png',
-  './ASP_Signature_Logo.png',
-  './3D_ASP_Logo.png',
-  './3D_ASP_192_Icon.png',
-  './3D_ASP_512_Icon.png',
+  './ASP_Box_Web_RGB_DEV.png',
+  './ASP_Signature_Logo_DEV.png',
+  './3D_ASP_Logo_DEV.png',
+  './3D_ASP_192_Icon_DEV.png',
+  './3D_ASP_512_Icon_DEV.png',
   
   // CSS
   './css/layout.css',
@@ -98,6 +98,9 @@ self.addEventListener('activate', event => {
 
 // Fetch Event: Serve from cache, fallback to network
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET' || event.request.url.includes('script.google.com')) {
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);

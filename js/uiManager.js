@@ -165,14 +165,25 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                 if (qty <= 0) return;
                 totalItems += qty;
                 
-                // ✨ NEW: Lookup the item in the DB to find its UOM, then format the quantity
                 let dbItem = (typeof DatabaseManager !== 'undefined' && DatabaseManager.db) ? DatabaseManager.db.find(i => (i.sku || i.ref || '').toUpperCase() === ref.toUpperCase()) : null;
                 let uom = dbItem ? (parseInt(dbItem.uomMult, 10) || 1) : 1;
                 let displayQty = DatabaseManager.formatPackaging(qty, uom);
 
+                let pendingPullQty = 0;
+                if (typeof items[ref] === 'object' && Array.isArray(items[ref].details)) {
+                    items[ref].details.forEach(d => {
+                        if (String(d.pullStatus || '').toUpperCase().trim() === 'PENDING_PULL') {
+                            pendingPullQty += (parseInt(d.qty, 10) || 0);
+                        }
+                    });
+                }
+                let pendingBadge = pendingPullQty > 0
+                    ? `<span style="background:#fff3e0; color:#e65100; border:1px solid #ffcc80; font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:4px; margin-left:6px;">⏳ Pending Pull (${pendingPullQty})</span>`
+                    : '';
+
                 rowsHtml += `
-                    <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
-                        <span style="font-weight:bold; color:#0277bd;">${ref}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #ccc; font-size:0.85rem;">
+                        <span style="font-weight:bold; color:#0277bd;">${ref}${pendingBadge}</span>
                         <span style="font-weight:bold; color:#333;">Qty: ${displayQty}</span>
                     </div>
                 `;
@@ -184,7 +195,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                     <summary style="cursor:pointer; font-weight:bold; display:flex; justify-content:space-between; align-items:center; outline:none;">
                         <span style="color:#0277bd; display:flex; align-items:center; gap:6px;"><i data-lucide="folder" style="width:16px; height:16px;"></i> ${cust}</span>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge-info" style="background:#f57f17; color:#fff;">${totalItems} Units</span>${(AuthManager.currentUser && AuthManager.currentUser.role === 'SALES_USERS') ? '' : `<button class="btn-small" style="background-color:#d32f2f; color:#fff; padding:2px 8px;" onclick="SessionManager.openUnreserveModal('${cust}')">Un-Reserve</button>`}
+                            <span class="badge-info" style="background:#f57f17; color:#fff;">${totalItems} Units</span>${(AuthManager.currentUser && AuthManager.currentUser.role === 'SALES') ? '' : `<button class="btn-small" style="background-color:#d32f2f; color:#fff; padding:2px 8px;" onclick="SessionManager.openUnreserveModal('${cust}')">Un-Reserve</button>`}
                         </div>
                       </summary>
                     <div style="padding-top:8px; margin-top:6px; border-top:2px solid #0277bd;">
@@ -489,20 +500,39 @@ const UIManager = {// GLOBAL CONFIGURATIONS
 
              let lotRows = '';
              let shelf = famItem.shelf ? famItem.shelf : '--';
-             
              let targetRefForLots = isBundle ? DatabaseManager.getCleanParentRef(famItem).toUpperCase() : String(ref).trim().toUpperCase();
+             let canRemoteReserve = (typeof AuthManager !== 'undefined' && AuthManager.currentUser && !AuthManager.isGuest);
+
+             // Build live allocated-by-lot map across all customers + damaged so nobody can double-reserve a lot
+             let allocatedByLot = {};
+             let liveAllocs = JSON.parse(localStorage.getItem('asp_allocations') || '{}');
+             const normExp = (v) => {
+               let s = String(v || '').trim();
+               if (!s || s === 'N/A' || s === 'NA' || s === 'NO_EXP') return '';
+               return s.includes('T') ? s.split('T')[0] : s;
+             };
+             Object.keys(liveAllocs).forEach(cKey => {
+               let bucket = liveAllocs[cKey] && liveAllocs[cKey][targetRefForLots];
+               if (bucket && Array.isArray(bucket.details)) {
+                 bucket.details.forEach(det => {
+                   let dLot = String(det.lot || '').toUpperCase().trim();
+                   let dExp = normExp(det.exp);
+                   let dQty = parseInt(det.qty, 10) || 0;
+                   if (dQty > 0) {
+                     let k = `${dLot}|${dExp}`;
+                     allocatedByLot[k] = (allocatedByLot[k] || 0) + dQty;
+                   }
+                 });
+               }
+             });
              
-             // ✨ FIX: Bulletproof filter to drop 0, null, blank, and NaN quantities
+             // Filter out 0, null, blank, and NaN quantities
              let activeLots = responseData.data.filter(row => {
                  let rRef = String(row['REF / SKU'] || "").trim().toUpperCase();
                  if (rRef !== targetRefForLots) return false;
-                 
                  let qVal = parseInt(row['QTY'], 10);
                  if (isNaN(qVal) || qVal <= 0) return false;
-                 
-                 // For bundles, ensure this specific lot has enough to build at least 1 box
                  if (isBundle && qVal < uomMult) return false;
-                 
                  return true;
              });
              
@@ -518,39 +548,55 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                  }
              }
 
+             const esc = (v) => String(v || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
              activeLots.sort((a,b) => new Date(a['EXP DATE']) - new Date(b['EXP DATE'])).forEach(l => {
                let originalQty = parseInt(l['QTY'], 10);
                let displayQty = originalQty;
+
+               let lotStr = String(l['LOT'] || '').toUpperCase().trim();
+               let expStr = normExp(l['EXP DATE']);
+               let reservedOnLot = allocatedByLot[`${lotStr}|${expStr}`] || 0;
+               let unreservedUnits = Math.max(0, originalQty - reservedOnLot);
+               let unreservedDisplayQty = unreservedUnits;
                
                if (isBundle) {
                    displayQty = Math.floor(originalQty / uomMult);
                    totalBoxesBuilt += displayQty;
+                   unreservedDisplayQty = Math.floor(unreservedUnits / uomMult);
                } else {
                    if (boxUomForMath > 1) {
                        let boxesItCanBuild = Math.floor(originalQty / boxUomForMath);
                        displayQty = originalQty - (boxesItCanBuild * boxUomForMath);
                        totalEachesMovedToBoxes += (boxesItCanBuild * boxUomForMath);
+                       let unresBoxes = Math.floor(unreservedUnits / boxUomForMath);
+                       unreservedDisplayQty = unreservedUnits - (unresBoxes * boxUomForMath);
                    }
                }
                
                if (displayQty > 0) {
+                   let actionCell = '';
+                   if (canRemoteReserve && unreservedDisplayQty > 0) {
+                       let displayRefName = famItem.displayAlias ? famItem.displayAlias : ref;
+                       actionCell = `<button onclick="UIManager.openRemoteReserveModal('${esc(targetRefForLots)}', '${esc(displayRefName)}', '${esc(l['LOT'])}', '${esc(l['EXP DATE'])}', ${unreservedDisplayQty}, ${isBundle ? uomMult : 1}, ${isBundle ? 'true' : 'false'}, '${esc(shelf)}')" style="background:#f57f17; color:#fff; border:none; padding:3px 7px; border-radius:4px; font-size:0.72rem; font-weight:700; cursor:pointer; white-space:nowrap;">🚩 Reserve</button>`;
+                   } else if (canRemoteReserve) {
+                       actionCell = `<span style="font-size:0.7rem; color:#888; font-style:italic;">Reserved</span>`;
+                   }
+
                    lotRows += `
                      <tr style="border-bottom:1px solid var(--border-color, #eee);">
                        <td style="padding:4px; color:var(--text-main, #333);"><strong>${l['LOT']}</strong></td>
                        <td style="padding:4px; color:var(--text-main, #333);">${l['EXP DATE']}</td>
-                       <td style="padding:4px; text-align:center; font-weight:bold; color:var(--heading-color, #0277bd);">${displayQty}</td>
+                       <td style="padding:4px; text-align:center; font-weight:bold; color:var(--heading-color, #0277bd);">${unreservedDisplayQty}${reservedOnLot > 0 ? ` <span style="font-size:0.7rem; color:#888; font-weight:normal;">(${displayQty})</span>` : ''}</td>
                        <td style="padding:4px; text-align:right; font-size:0.75rem; color:var(--text-main, #555); font-weight:bold;">${shelf}</td>
+                       ${canRemoteReserve ? `<td style="padding:4px; text-align:right;">${actionCell}</td>` : ''}
                      </tr>`;
                }
              });
 
-             let emptyMessage = "";
-             if (isBundle) {
-                 // ✨ NEW: Strict Box Message dynamically shows if there isn't enough matching lot/exp
-                 emptyMessage = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Insufficient matching Lot/Exp combinations to formulate a complete sealed Box.</div>`;
-             } else {
-                 emptyMessage = `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
-             }
+             let emptyMessage = isBundle
+               ? `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Insufficient matching Lot/Exp combinations to formulate a complete sealed Box.</div>`
+               : `<div style="font-size:0.8rem; color:var(--text-main, #777); font-style:italic; padding:10px;">Physical inventory exists, but no lot tracking data was found.</div>`;
 
              let box = document.getElementById(`quickLookupLotBox_${ref}`);
              if (box) {
@@ -561,8 +607,9 @@ const UIManager = {// GLOBAL CONFIGURATIONS
                       <tr style="background:var(--raw-bg, #eee); text-align:left;">
                         <th style="padding:4px; color:var(--text-main, #333);">Lot</th>
                         <th style="padding:4px; color:var(--text-main, #333);">Exp</th>
-                        <th style="padding:4px; text-align:center; color:var(--text-main, #333);">Qty</th>
+                        <th style="padding:4px; text-align:center; color:var(--text-main, #333);">Avail</th>
                         <th style="padding:4px; text-align:right; color:var(--text-main, #333);">Shelf</th>
+                        ${canRemoteReserve ? `<th style="padding:4px; text-align:right; color:var(--text-main, #333);">Action</th>` : ''}
                       </tr>
                       ${lotRows}
                     </table>`
@@ -1075,8 +1122,10 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     
     if (typeof devToolsCheatCode !== 'undefined' && code === devToolsCheatCode.toUpperCase()) {
         inputEl.style.display = 'none';
-        document.getElementById('btnDevTools').style.display = 'block';
-        document.getElementById('devFeedWrapper').style.display = 'block'; // ✨ NEW
+        let devBtn = document.getElementById('btnDevTools');
+        if (devBtn) devBtn.style.display = 'block';
+        let feedWrap = document.getElementById('devFeedWrapper');
+        if (feedWrap) feedWrap.style.display = 'block';
         inputEl.value = ''; 
     } 
   },
@@ -1183,6 +1232,7 @@ const UIManager = {// GLOBAL CONFIGURATIONS
       this.showCustomAlert("Report Sent", "✅ Thank you! Your bug report and diagnostic data have been sent to IT Operations.");
     } catch (err) {
       alert("Failed to send bug report. Please check your internet connection.");
+    } finally {
       if (btn) { btn.textContent = "Submit Report"; btn.disabled = false; }
     }
   },
@@ -1291,6 +1341,286 @@ const UIManager = {// GLOBAL CONFIGURATIONS
     let fc = document.getElementById('floatingDebugConsoleContainer');
     if (fc) {
       fc.style.display = fc.style.display === 'none' ? 'flex' : 'none';
+    }
+  },
+
+  toggleDebugConsole() {
+    let fc = document.getElementById('floatingDebugConsoleContainer');
+    if (fc) {
+      fc.style.display = fc.style.display === 'none' ? 'flex' : 'none';
+    }
+  },
+
+  _activeRemoteReserve: null,
+
+  openRemoteReserveModal(targetRef, displayRef, lot, exp, maxDisplayQty, uomMult, isBundle, shelf) {
+    if (typeof AuthManager !== 'undefined' && AuthManager.isGuest) {
+      alert("Guest users cannot reserve inventory.");
+      return;
+    }
+
+    this._activeRemoteReserve = {
+      targetRef: String(targetRef || '').toUpperCase().trim(),
+      displayRef: String(displayRef || targetRef || '').toUpperCase().trim(),
+      lot: String(lot || 'NO_LOT').trim(),
+      exp: String(exp || 'NO_EXP').trim(),
+      maxDisplayQty: parseInt(maxDisplayQty, 10) || 1,
+      uomMult: parseInt(uomMult, 10) || 1,
+      isBundle: !!isBundle,
+      shelf: shelf || 'Unassigned'
+    };
+
+    let unitLabel = this._activeRemoteReserve.isBundle
+      ? `Boxes (Box of ${this._activeRemoteReserve.uomMult})`
+      : 'Units (Each)';
+
+    let summaryEl = document.getElementById('remoteReserveItemSummary');
+    if (summaryEl) {
+      summaryEl.innerHTML = `
+        <div><strong>REF:</strong> ${this._activeRemoteReserve.displayRef} &nbsp;|&nbsp; <strong>Shelf:</strong> ${this._activeRemoteReserve.shelf}</div>
+        <div><strong>Lot:</strong> ${this._activeRemoteReserve.lot} &nbsp;|&nbsp; <strong>Exp:</strong> ${this._activeRemoteReserve.exp}</div>
+        <div><strong>Max Unreserved Available:</strong> <span style="color:#2e7d32; font-weight:bold;">${this._activeRemoteReserve.maxDisplayQty} ${unitLabel}</span></div>
+      `;
+    }
+
+    let custSelect = document.getElementById('remoteReserveCustomer');
+    if (custSelect && typeof DatabaseManager !== 'undefined') {
+      let validCusts = (DatabaseManager.customers || []).filter(c => c && !c.startsWith('+') && c !== '#ERROR!');
+      custSelect.innerHTML = `<option value="">-- Select Customer --</option>` +
+        validCusts.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    let orderEl = document.getElementById('remoteReserveOrder');
+    if (orderEl) orderEl.value = '';
+
+    let qtyLabel = document.getElementById('remoteReserveQtyLabel');
+    if (qtyLabel) qtyLabel.textContent = `Quantity to Reserve (${unitLabel})`;
+
+    let qtyEl = document.getElementById('remoteReserveQty');
+    if (qtyEl) {
+      qtyEl.max = this._activeRemoteReserve.maxDisplayQty;
+      qtyEl.value = 1;
+    }
+
+    let modal = document.getElementById('remoteReserveModal');
+    if (modal) modal.style.display = 'flex';
+  },
+
+  closeRemoteReserveModal() {
+    this._activeRemoteReserve = null;
+    let modal = document.getElementById('remoteReserveModal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  async submitRemoteReserve() {
+    let ctx = this._activeRemoteReserve;
+    if (!ctx) return;
+
+    let customer = document.getElementById('remoteReserveCustomer') ? document.getElementById('remoteReserveCustomer').value.trim() : '';
+    let rawOrder = document.getElementById('remoteReserveOrder') ? document.getElementById('remoteReserveOrder').value.trim() : '';
+    let qty = parseInt(document.getElementById('remoteReserveQty') ? document.getElementById('remoteReserveQty').value : '0', 10) || 0;
+
+    if (!customer) { alert("Please select a Customer Account."); return; }
+    if (qty <= 0 || qty > ctx.maxDisplayQty) {
+      alert(`Please enter a quantity between 1 and ${ctx.maxDisplayQty}.`);
+      return;
+    }
+
+    let btn = document.getElementById('btnConfirmRemoteReserve');
+    let origText = btn ? btn.innerHTML : '🚩 Confirm Remote Reserve';
+    if (btn) { btn.innerHTML = '⏳ Reserving...'; btn.disabled = true; }
+
+    try {
+      let cleanOrder = rawOrder.replace(/^PO#?\s+/i, '').trim();
+      let totalEaches = qty * ctx.uomMult;
+      let sessId = 'RR-' + Date.now();
+      let now = new Date();
+      let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : 'Operator';
+
+      let sessionObj = {
+        id: sessId,
+        status: "Completed",
+        isSynced: true,
+        userName: userName,
+        sessionName: `${customer}${cleanOrder ? ' (' + cleanOrder + ')' : ''} [Remote Reserve]`,
+        orderNum: cleanOrder,
+        workflowType: "Reserving",
+        dateStr: now.toLocaleDateString(),
+        lastUpdated: now.toISOString(),
+        scannedObjects: [{
+          ref: ctx.targetRef,
+          lot: (ctx.lot && ctx.lot !== 'N/A' && ctx.lot !== 'NO_LOT') ? ctx.lot : 'NO_LOT',
+          exp: (ctx.exp && ctx.exp !== 'N/A' && ctx.exp !== 'NO_EXP') ? ctx.exp : 'NO_EXP',
+          qty: totalEaches,
+          actionTag: "Reserved",
+          customerTag: customer,
+          orderNum: cleanOrder,
+          sessionId: sessId,
+          pullStatus: "PENDING_PULL"
+        }]
+      };
+
+      let activeUrl = (typeof ApiManager !== 'undefined') ? ApiManager.getActiveArchiveUrl() : SessionManager.getActiveArchiveUrl();
+      let res = await fetch(activeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: "COMMIT_SESSION", payload: sessionObj })
+      });
+      let data = await res.json();
+      if (data.status !== "success") throw new Error(data.message || "Cloud reservation failed.");
+
+      // Update local catalog reserved count immediately and push Shopify update
+      if (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db)) {
+        let pItem = DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === ctx.targetRef);
+        if (pItem) {
+          pItem.reservedQty = (parseInt(pItem.reservedQty, 10) || 0) + totalEaches;
+          localStorage.setItem('asp_wh_db', JSON.stringify(DatabaseManager.db));
+        }
+        let shopifyPayload = DatabaseManager.buildShopifyPayload([ctx.targetRef]);
+        if (shopifyPayload.length > 0) {
+          fetch(activeUrl, {
+            method: 'POST', mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "SYNC_SHOPIFY", payload: shopifyPayload })
+          }).catch(() => console.warn("Background Shopify reserve sync failed."));
+        }
+      }
+
+      if (typeof SessionManager !== 'undefined' && typeof SessionManager.fetchAllocationsFromCloud === 'function') {
+        await SessionManager.fetchAllocationsFromCloud();
+      }
+
+      let reservedDesc = ctx.isBundle ? `${qty} box(es) (${totalEaches} units)` : `${totalEaches} unit(s)`;
+      this.closeRemoteReserveModal();
+      this.executeQuickLookup();
+
+      this.showCustomAlert(
+        "Remote Reserve Complete",
+        `✅ Reserved <strong>${reservedDesc}</strong> of <strong>${ctx.displayRef}</strong> (Lot: ${ctx.lot}) for <strong>${customer}</strong>${cleanOrder ? ' — Order ' + cleanOrder : ''}.<br><br>📦 <strong>Warehouse Reminder:</strong> Stock is deducted from Shopify and queued under <em>Pending Warehouse Bin Pulls</em> until the physical box is moved to the customer's reserved bin.`
+      );
+    } catch (err) {
+      alert("Remote Reserve Error: " + err.message);
+    } finally {
+      if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+    }
+  },
+
+  renderPendingBinPulls() {
+    let hub = document.getElementById('pendingBinPullsHub');
+    let listEl = document.getElementById('pendingBinPullsList');
+    let countEl = document.getElementById('pendingBinPullsCount');
+    if (!hub || !listEl) return;
+
+    if (typeof AuthManager !== 'undefined' && AuthManager.isGuest) {
+      hub.style.display = 'none';
+      return;
+    }
+
+    let allocations = JSON.parse(localStorage.getItem('asp_allocations') || '{}');
+    let pendingItems = [];
+
+    Object.keys(allocations).sort().forEach(cust => {
+      if (cust.toUpperCase() === 'ASP DAMAGED INVENTORY') return;
+      let custItems = allocations[cust] || {};
+      Object.keys(custItems).sort().forEach(ref => {
+        let bucket = custItems[ref];
+        if (!bucket || !Array.isArray(bucket.details)) return;
+        bucket.details.forEach(det => {
+          if (String(det.pullStatus || '').toUpperCase().trim() === 'PENDING_PULL' && (parseInt(det.qty, 10) || 0) > 0) {
+            let dbItem = (typeof DatabaseManager !== 'undefined' && Array.isArray(DatabaseManager.db))
+              ? DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === String(ref).toUpperCase().trim())
+              : null;
+            pendingItems.push({
+              cust: cust,
+              ref: ref,
+              orderNum: det.orderNum || '',
+              lot: det.lot || 'NO_LOT',
+              exp: det.exp || 'NO_EXP',
+              qty: parseInt(det.qty, 10) || 0,
+              sessionId: det.sessionId || '',
+              shelf: (dbItem && dbItem.shelf) ? dbItem.shelf : 'Unassigned'
+            });
+          }
+        });
+      });
+    });
+
+    if (pendingItems.length === 0) {
+      hub.style.display = 'none';
+      listEl.innerHTML = '';
+      if (countEl) countEl.textContent = '0';
+      return;
+    }
+
+    hub.style.display = 'block';
+    if (countEl) countEl.textContent = String(pendingItems.length);
+
+    let isSalesOnly = (typeof AuthManager !== 'undefined' && AuthManager.currentUser && AuthManager.currentUser.role === 'SALES');
+    const esc = (v) => String(v || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+    listEl.innerHTML = pendingItems.map(item => `
+      <div style="background:var(--card-bg, #fff); border:1px solid #ffcc80; border-radius:6px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div style="font-size:0.84rem; line-height:1.4;">
+          <div>
+            <strong style="color:#0277bd;">${item.cust}</strong>
+            ${item.orderNum ? `<span style="color:#555; font-weight:600;"> · Order: ${item.orderNum}</span>` : ''}
+          </div>
+          <div>
+            <strong style="color:var(--heading-color, #00796b);">${item.ref}</strong> &nbsp;|&nbsp;
+            <strong>Qty:</strong> ${item.qty} &nbsp;|&nbsp;
+            <strong>Shelf:</strong> <span style="color:#0277bd; font-weight:700;">${item.shelf}</span>
+          </div>
+          <div style="font-size:0.76rem; color:#666;">Lot: ${item.lot} &nbsp;|&nbsp; Exp: ${item.exp}</div>
+        </div>
+        ${isSalesOnly
+          ? `<span class="badge-info" style="background:#fff3e0; color:#e65100; border:1px solid #ffcc80; font-size:0.75rem; padding:4px 8px;">⏳ Awaiting Warehouse Pull</span>`
+          : `<button class="btn-saas-primary" style="width:auto; margin-top:0; padding:7px 12px; font-size:0.8rem; background:#2e7d32; white-space:nowrap;" onclick="UIManager.confirmBinPull('${esc(item.cust)}', '${esc(item.ref)}', '${esc(item.lot)}', '${esc(item.exp)}', '${esc(item.orderNum)}', '${esc(item.sessionId)}', ${item.qty}, this)">✅ Pulled to Bin</button>`
+        }
+      </div>
+    `).join('');
+  },
+
+  async confirmBinPull(cust, ref, lot, exp, orderNum, sessionId, qty, btnEl) {
+    let origText = btnEl ? btnEl.innerHTML : '✅ Pulled to Bin';
+    if (btnEl) { btnEl.innerHTML = '⏳ Updating...'; btnEl.disabled = true; }
+
+    try {
+      let userName = (typeof AuthManager !== 'undefined' && AuthManager.currentUser) ? AuthManager.currentUser.name : 'Warehouse Operator';
+      let activeUrl = (typeof ApiManager !== 'undefined') ? ApiManager.getActiveArchiveUrl() : SessionManager.getActiveArchiveUrl();
+
+      let res = await fetch(activeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: "MARK_ALLOCATION_PULLED",
+          payload: {
+            customerName: cust,
+            ref: ref,
+            lot: (lot === 'NO_LOT') ? '' : lot,
+            exp: (exp === 'NO_EXP') ? '' : exp,
+            orderNum: orderNum,
+            sessionId: sessionId,
+            qty: qty,
+            userName: userName
+          }
+        })
+      });
+      let data = await res.json();
+      if (data.status !== "success") throw new Error(data.message || "Could not confirm bin pull.");
+
+      if (typeof SessionManager !== 'undefined' && typeof SessionManager.fetchAllocationsFromCloud === 'function') {
+        await SessionManager.fetchAllocationsFromCloud();
+      } else {
+        this.renderPendingBinPulls();
+      }
+
+      let binModal = document.getElementById('binViewerModal');
+      if (binModal && binModal.style.display === 'flex') {
+        this.openBinViewerModal();
+      }
+    } catch (err) {
+      alert("Bin Pull Update Failed: " + err.message);
+      if (btnEl) { btnEl.innerHTML = origText; btnEl.disabled = false; }
     }
   }
 };

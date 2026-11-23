@@ -1,4 +1,4 @@
-<div id="screenSetup" class="saas-dashboard-container">
+<div id="screenSetup" style="display: none;" class="saas-dashboard-container">
   
   <!-- 1. Command Center Header -->
   <div class="dashboard-header">
@@ -38,6 +38,18 @@
         <option value="">-- Select Staged Order --</option>
       </select>
     </div>
+  </div>
+
+  <!-- 2B. Pending Warehouse Bin Pulls Hub (Auto-Hides When Empty) -->
+  <div id="pendingBinPullsHub" class="saas-card" style="display:none; border-left:4px solid #f57f17; margin-bottom:16px;">
+    <div class="flex-between" style="border-bottom:1px solid var(--border-color); padding-bottom:8px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-weight:700; color:#e65100; font-size:0.95rem;">🚩 Pending Warehouse Bin Pulls</span>
+        <span id="pendingBinPullsCount" class="badge-info" style="background:#f57f17; color:#fff; font-size:0.75rem; padding:2px 8px;">0</span>
+      </div>
+      <button class="btn-saas-sub-orange" onclick="SessionManager.fetchAllocationsFromCloud()">🔄 Refresh</button>
+    </div>
+    <div id="pendingBinPullsList" style="display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto;"></div>
   </div>
 
   <!-- 3. Primary Workflow Selector (Segmented Control Cards) -->

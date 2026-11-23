@@ -112,7 +112,7 @@ const QboManager = {
     items.forEach(item => {
       let isRes = item.customerTag && !item.customerTag.toUpperCase().includes('SHELF');
       SessionManager.expectedManifest.push({
-        ref: item.sku,
+        ref: item.sku || item.ref || '',
         expectedQty: item.qty,
         isReserved: isRes,
         customerTag: item.customerTag || '',

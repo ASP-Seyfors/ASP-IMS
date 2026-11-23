@@ -349,6 +349,8 @@ const ShippingManager = {
                 payload: {
                     customerName: document.getElementById('shipAddressCompany').value.trim(),
                     contactName: document.getElementById('shipAddressContact').value.trim(),
+                    email: document.getElementById('shipAddressEmail') ? document.getElementById('shipAddressEmail').value.trim() : "",
+                    phone: document.getElementById('shipAddressPhone') ? document.getElementById('shipAddressPhone').value.trim() : "",
                     orderNum: SessionManager.currentOrderNum || "N/A",
                     totalWeight: document.getElementById('shipWeight').value,
                     dimL: document.getElementById('shipDimL').value || "",
@@ -420,6 +422,8 @@ const ShippingManager = {
                 payload: {
                     customerName: document.getElementById('shipAddressCompany').value.trim(),
                     contactName: document.getElementById('shipAddressContact').value.trim(),
+                    email: document.getElementById('shipAddressEmail') ? document.getElementById('shipAddressEmail').value.trim() : "",
+                    phone: document.getElementById('shipAddressPhone') ? document.getElementById('shipAddressPhone').value.trim() : "",
                     orderNum: SessionManager.currentOrderNum || "N/A",
                     totalWeight: document.getElementById('shipWeight').value,
                     dimL: document.getElementById('shipDimL').value || "",
@@ -978,10 +982,10 @@ const ShippingManager = {
                 return;
             }
 
-            // Filter for pending or in-transit incoming shipments
-            let pending = data.incoming.filter(s => String(s.status).toLowerCase() !== 'delivered');
+            // Include Pending, In Transit, and recent Delivered-Awaiting-QC shipments
+            let pending = data.incoming.filter(s => String(s.status).toLowerCase() !== 'delivered' || s.awaitingQc === true);
             if (pending.length === 0) {
-                container.innerHTML = "<div style='color:#777; font-style:italic; text-align:center; padding:6px;'>All incoming shipments have been delivered.</div>";
+                container.innerHTML = "<div style='color:#777; font-style:italic; text-align:center; padding:6px;'>All incoming shipments have been delivered and quality checked.</div>";
                 return;
             }
 
@@ -989,14 +993,19 @@ const ShippingManager = {
                 let dStr = s.eta ? new Date(s.eta).toLocaleDateString() : (s.date ? new Date(s.date).toLocaleDateString() : 'TBD');
                 let safePartner = String(s.partner || '').replace(/'/g, "\\'");
                 let safePo = String(s.po || '').replace(/'/g, "\\'");
+                let isAwaitingQc = (s.awaitingQc === true || String(s.status).toLowerCase() === 'delivered');
+                let borderStyle = isAwaitingQc ? 'border:1px solid #2e7d32; border-left:4px solid #2e7d32;' : 'border:1px solid #ffcc80;';
+                let badgeHtml = isAwaitingQc
+                    ? `<span class="badge-info" style="background:#2e7d32; color:#fff; font-size:0.74rem; padding:3px 7px; white-space:nowrap;">📦 Delivered — Awaiting QC</span>`
+                    : `<span class="badge-info" style="background:#e65100; color:#fff; font-size:0.75rem; padding:2px 6px; white-space:nowrap;">ETA: ${dStr}</span>`;
                 
                 return `
-                <div onclick="ShippingManager.selectInboundTask('${safePartner}', '${safePo}')" style="background:#fff; border:1px solid #ffcc80; padding:8px 10px; border-radius:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" title="Click to auto-fill supplier and PO">
+                <div onclick="ShippingManager.selectInboundTask('${safePartner}', '${safePo}')" style="background:#fff; ${borderStyle} padding:8px 10px; border-radius:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:8px; transition:background 0.2s;" title="Click to auto-fill supplier and PO">
                     <div>
-                        <strong style="color:#e65100;">${s.partner}</strong> | <span style="color:#333; font-weight:bold;">PO: ${s.po || 'N/A'}</span>
+                        <strong style="color:${isAwaitingQc ? '#2e7d32' : '#e65100'};">${s.partner}</strong> | <span style="color:#333; font-weight:bold;">PO: ${s.po || 'N/A'}</span>
                         <div style="font-size:0.75rem; color:#666;">Carrier: ${s.carrier || 'N/A'} | Tracking: ${s.tracking || 'None'}</div>
                     </div>
-                    <span class="badge-info" style="background:#e65100; color:#fff; font-size:0.75rem; padding:2px 6px;">ETA: ${dStr}</span>
+                    ${badgeHtml}
                 </div>`;
             }).join('');
 

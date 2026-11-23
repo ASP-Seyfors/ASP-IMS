@@ -31,6 +31,12 @@ const AuthManager = {
             }
         }
     });
+
+    window.addEventListener('pagehide', () => {
+        if (this.currentUser && !this.isGuest) {
+            this.transmitUserStatus('Offline');
+        }
+    });
   },
 
   showLoginScreen() {
@@ -341,6 +347,9 @@ const AuthManager = {
     
     this.startIdleTimer();
     this.transmitUserStatus('Active');
+    if (typeof UIManager !== 'undefined' && typeof UIManager.renderPendingBinPulls === 'function') {
+      UIManager.renderPendingBinPulls();
+    }
   },
 
   // Initializes the idle auto-logout timer and attaches event listeners.  
@@ -427,15 +436,28 @@ const AuthManager = {
     if (!email) return Promise.resolve();
 
     let payload = { action: "UPDATE_USER_STATUS", payload: { email: email, status: status } };
+    let bodyStr = JSON.stringify(payload);
     
-    // ✨ FIX: Swapped SessionManager for ApiManager
     if (typeof ApiManager !== 'undefined' && ApiManager.getActiveArchiveUrl()) {
         let targetUrl = `${ApiManager.getActiveArchiveUrl()}?t=${Date.now()}`;
-        
-        return fetch(targetUrl, { 
-            method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload) 
-        }).catch(e => console.warn("Background status sync failed."));
+        try {
+            return fetch(targetUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                credentials: 'omit',
+                keepalive: true,
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: bodyStr
+            }).catch(() => {
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(targetUrl, new Blob([bodyStr], { type: 'text/plain;charset=utf-8' }));
+                }
+            });
+        } catch (err) {
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(targetUrl, new Blob([bodyStr], { type: 'text/plain;charset=utf-8' }));
+            }
+        }
     }
     return Promise.resolve();
   },

@@ -87,6 +87,10 @@
             <div style="display:flex; flex-direction:column; gap:8px;">
               <input type="text" id="shipAddressContact" class="saas-input" placeholder="Contact Person Name">
               <input type="text" id="shipAddressCompany" class="saas-input" placeholder="Company Name" style="font-weight:700;">
+              <div class="saas-field-grid-2col" style="margin-bottom:0;">
+                <input type="email" id="shipAddressEmail" class="saas-input" placeholder="Contact Email">
+                <input type="tel" id="shipAddressPhone" class="saas-input font-mono" placeholder="Phone Number">
+              </div>
               <input type="text" id="shipAddress1" class="saas-input" placeholder="Address Line 1" oninput="ShippingManager.resetQuoteUI()">
               <input type="text" id="shipAddress2" class="saas-input" placeholder="Address Line 2 (Suite, Floor, etc.)" oninput="ShippingManager.resetQuoteUI()">
               

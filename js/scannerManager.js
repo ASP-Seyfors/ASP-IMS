@@ -451,7 +451,7 @@ const ScannerManager = {
           words.forEach(word => {
             let cleanWord = word.replace(/[^A-Z0-9-]/g, '');
             if (DatabaseManager.db.find(i => DatabaseManager.getItemSku(i) === cleanWord)) {
-              SessionManager.addManifestRow(cleanWord, 1);
+              ManifestManager.addManifestRow(cleanWord, 1);
               foundMatches++;
             }
           });

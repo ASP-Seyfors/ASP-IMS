@@ -271,6 +271,9 @@ const ManifestManager = {
 
     document.getElementById('manifestScannedQty').textContent = totalScannedExp;
     document.getElementById('manifestTotalQty').textContent = totalExpected;
+    let pct = totalExpected > 0 ? Math.min(100, Math.round((totalScannedExp / totalExpected) * 100)) : 0;
+    let barFill = document.getElementById('manifestBarFill');
+    if (barFill) barFill.style.width = `${pct}%`;
     
     let unexpHtml = totalUnexpected > 0 ? ` | <span style="color:#e65100;">${totalUnexpected} Unexpected</span>` : '';
     document.getElementById('manifestUnexpectedStats').innerHTML = unexpHtml;

@@ -34,18 +34,24 @@ async function openActiveShipmentsHub() {
                 // ✨ NEW: Encode the data so we can pass it into the edit modal
                 let safeData = encodeURIComponent(JSON.stringify(s));
                 let type = s.weight !== undefined ? 'Outgoing' : 'Incoming';
+                let dirIcon = type === 'Outgoing' ? '📤' : '📥';
+                let safePartner = String(s.partner || '').replace(/'/g, "\\'");
+                let safePo = String(s.po || '').replace(/'/g, "\\'");
+                let safeEta = String(s.eta || '').replace(/'/g, "\\'");
+                let statusLabel = s.awaitingQc ? 'Delivered — Awaiting QC' : s.status;
+                let statusColor = s.awaitingQc ? '#2e7d32' : (s.status === 'Pending' ? '#e65100' : '#0277bd');
 
-                return `<div style="background:#fff; border:1px solid #ddd; padding:8px; margin-bottom:8px; border-radius:4px; cursor:pointer;" onclick="clickInboundTask('${s.partner}', '${s.po}', '${s.eta}')" title="Click to Load PO">
+                return `<div style="background:#fff; border:1px solid #ddd; padding:8px; margin-bottom:8px; border-radius:4px; ${type === 'Incoming' ? 'cursor:pointer;' : ''}" ${type === 'Incoming' ? `onclick="clickInboundTask('${safePartner}', '${safePo}', '${safeEta}')" title="Click to Load PO"` : ''}>
             <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:4px; margin-bottom:4px;">
-                <span style="font-weight:bold; color:#0277bd;">
-                    📥 ${s.partner}
+                <span style="font-weight:bold; color:#0277bd; cursor:pointer; text-decoration:underline;" onclick="event.stopPropagation(); openShipmentEditor('${type}', ${s.rowIdx}, '${safeData}')" title="Edit ${type} Shipment">
+                    ${dirIcon} ${s.partner}
                 </span>
                 <span style="color:#777; font-size:0.75rem;">Expected: ${dStr}</span>
             </div>
             <div style="color:#555; font-size:0.8rem;">PO / Invoice: ${s.po || 'N/A'}</div>
             <div style="margin-top:4px; display:flex; justify-content:space-between;">
                 ${link}
-                <span style="font-size:0.75rem; color:${s.status==='Pending'?'#e65100':'#2e7d32'}; font-weight:bold;">${s.status}</span>
+                <span style="font-size:0.75rem; color:${statusColor}; font-weight:bold;">${statusLabel}</span>
             </div>
         </div>`;
             }).join('');
@@ -172,7 +178,7 @@ function clickInboundTask(partner, po, eta) {
     let formattedPo = cleanPo ? "Order# " + cleanPo : "";
 
     // 3. Populate Order Details / PO input
-    let orderInput = document.getElementById('orderNumberInput') || document.getElementById('shipEditPo');
+    let orderInput = document.getElementById('orderDetailsInput') || document.getElementById('orderNumberInput') || document.getElementById('shipEditPo');
     if (orderInput) {
         orderInput.value = formattedPo;
         orderInput.dispatchEvent(new Event('input'));

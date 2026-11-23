@@ -1,4 +1,4 @@
-async function checkAppUpdates() {
+async function checkAppUpdates(event) {
   // Show an immediate visual feedback loading indicator
   const btn = event ? event.target : null;
   if (btn) btn.textContent = "⏳ Checking...";
